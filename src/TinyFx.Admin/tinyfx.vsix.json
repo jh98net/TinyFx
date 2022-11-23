@@ -1,0 +1,24 @@
+{
+  "OrmGen": [
+    {
+      "ConnStrInfo": {
+        "Provider": 7,
+        "ConnectionString": "server=10.0.0.101;user id=root;pwd=KFadguzd8Rh2JgKHsGFK;database=admin;Allow User Variables=True",
+        "DataSource": "10.0.0.101",
+        "Database": "admin",
+        "FileName": null,
+        "UserID": "root",
+        "Password": "KFadguzd8Rh2JgKHsGFK",
+        "ConnectTimeout": 15
+      },
+      "OrmSettings": {
+        "Namespaces": "TinyFx.Admin.DAL",
+        "OutputPath": "DAL\\"
+      },
+      "DbInitSettings": {
+        "CreateSqlFile": null,
+        "InitDataFile": null
+      }
+    }
+  ]
+}

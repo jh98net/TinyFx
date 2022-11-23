@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TinyFx.Extensions.AutoMapper\TinyFx.Extensions.AutoMapper.csproj" />
+    <ProjectReference Include="..\..\src\TinyFx.Extensions.DotNetty\TinyFx.Extensions.DotNetty.csproj" />
+    <ProjectReference Include="..\..\src\TinyFx.Extensions.RabbitMQ\TinyFx.Extensions.RabbitMQ.csproj" />
+    <ProjectReference Include="..\..\src\TinyFx.Extensions.Serilog\TinyFx.Extensions.Serilog.csproj" />
+    <ProjectReference Include="..\..\src\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Cmds\" />
+  </ItemGroup>
+
+</Project>
