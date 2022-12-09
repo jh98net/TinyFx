@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>RabbitMQ消息队列组件</Description>
-    <Version>3.4.1</Version>
+    <Version>3.4.8</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="EasyNetQ" Version="7.2.0" />

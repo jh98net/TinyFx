@@ -231,5 +231,34 @@ namespace TinyFx.IO
             }
 
         }
+
+        /// <summary>
+        /// 复制目录
+        /// </summary>
+        /// <param name="sourceDir">源目录</param>
+        /// <param name="destinationDir">目标目录</param>
+        /// <param name="recursive">是否复制子目录</param>
+        /// <exception cref="DirectoryNotFoundException"></exception>
+        public static void CopyDirectory(string sourceDir, string destinationDir, bool recursive = true)
+        {
+            var dir = new DirectoryInfo(sourceDir);
+            if (!dir.Exists)
+                throw new DirectoryNotFoundException($"源目录未找到: {dir.FullName}");
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            Directory.CreateDirectory(destinationDir);
+            foreach (FileInfo file in dir.GetFiles())
+            {
+                string targetFilePath = Path.Combine(destinationDir, file.Name);
+                file.CopyTo(targetFilePath);
+            }
+            if (recursive)
+            {
+                foreach (DirectoryInfo subDir in dirs)
+                {
+                    string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
+                    CopyDirectory(subDir.FullName, newDestinationDir, true);
+                }
+            }
+        }
     }
 }

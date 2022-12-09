@@ -355,7 +355,7 @@ namespace TinyFx.Data.ORM
         public List<TEntity> GetTopSort(string where, int top, string sort, params object[] values)
             => GetTopSort(where, top, sort, null, values);
         public async Task<List<TEntity>> GetTopSortAsync(string where, int top, string sort, params object[] values)
-            =>await GetTopSortAsync(where, top, sort, null, values);
+            => await GetTopSortAsync(where, top, sort, null, values);
 
         /// <summary>
         /// 按自定义条件查询
@@ -465,15 +465,15 @@ namespace TinyFx.Data.ORM
         /// <param name="paras"></param>
         /// <param name="tm"></param>
         /// <returns></returns>
-        public object GetScalar(string field, string where, IEnumerable<TParameter> paras, TransactionManager tm = null)
+        protected object GetScalar(string field, string where, IEnumerable<TParameter> paras, TransactionManager tm = null)
         {
-            var sql = BuildSelectSQL(where, 0, null, field);
+            var sql = BuildSelectSQL(where, 1, null, field);
             var ret = Database.ExecSqlScalar(sql, paras, tm);
             return (ret == DBNull.Value) ? null : ret;
         }
-        public async Task<object> GetScalarAsync(string field, string where, IEnumerable<TParameter> paras, TransactionManager tm = null)
+        protected async Task<object> GetScalarAsync(string field, string where, IEnumerable<TParameter> paras, TransactionManager tm = null)
         {
-            var sql = BuildSelectSQL(where, 0, null, field);
+            var sql = BuildSelectSQL(where, 1, null, field);
             var ret = await Database.ExecSqlScalarAsync(sql, paras, tm);
             return (ret == DBNull.Value) ? null : ret;
         }
@@ -488,7 +488,7 @@ namespace TinyFx.Data.ORM
         /// <param name="paras"></param>
         /// <param name="tm"></param>
         /// <returns></returns>
-        public DataTable GetTable(string fields, string where, int top=0, string sort=null, IEnumerable<TParameter> paras = null, TransactionManager tm=null)
+        public DataTable GetTable(string fields, string where, int top = 0, string sort = null, IEnumerable<TParameter> paras = null, TransactionManager tm = null)
         {
             var sql = BuildSelectSQL(where, top, sort, fields);
             return Database.ExecSqlTable(sql, paras, tm);
@@ -496,6 +496,18 @@ namespace TinyFx.Data.ORM
         public async Task<DataTable> GetTableAsync(string fields, string where, int top = 0, string sort = null, IEnumerable<TParameter> paras = null, TransactionManager tm = null)
         {
             var sql = BuildSelectSQL(where, top, sort, fields);
+            return await Database.ExecSqlTableAsync(sql, paras, tm);
+        }
+        public DataTable GetTable(string fields, string where, int top = 0, string sort = null, TransactionManager tm = null, params object[] values)
+        {
+            var sql = BuildSelectSQL(where, top, sort, fields);
+            var paras = GetParametersByDerive(sql, values);
+            return Database.ExecSqlTable(sql, paras, tm);
+        }
+        public async Task<DataTable> GetTableAsync(string fields, string where, int top = 0, string sort = null, TransactionManager tm = null, params object[] values)
+        {
+            var sql = BuildSelectSQL(where, top, sort, fields);
+            var paras = GetParametersByDerive(sql, values);
             return await Database.ExecSqlTableAsync(sql, paras, tm);
         }
 
@@ -508,14 +520,26 @@ namespace TinyFx.Data.ORM
         /// <param name="paras"></param>
         /// <param name="tm"></param>
         /// <returns></returns>
-        public DataRow GetSingleRow(string fields, string where, string sort=null, IEnumerable<TParameter> paras=null, TransactionManager tm=null)
+        public DataRow GetSingleRow(string fields, string where, string sort = null, IEnumerable<TParameter> paras = null, TransactionManager tm = null)
         {
-            var sql = BuildSelectSQL(where, 0, sort, fields);
+            var sql = BuildSelectSQL(where, 1, sort, fields);
             return Database.ExecSqlSingle(sql, paras, tm);
         }
         public async Task<DataRow> GetSingleRowAsync(string fields, string where, string sort = null, IEnumerable<TParameter> paras = null, TransactionManager tm = null)
         {
-            var sql = BuildSelectSQL(where, 0, sort, fields);
+            var sql = BuildSelectSQL(where, 1, sort, fields);
+            return await Database.ExecSqlSingleAsync(sql, paras, tm);
+        }
+        public DataRow GetSingleRow(string fields, string where, string sort = null, TransactionManager tm = null, params object[] values)
+        {
+            var sql = BuildSelectSQL(where, 1, sort, fields);
+            var paras = GetParametersByDerive(sql, values);
+            return Database.ExecSqlSingle(sql, paras, tm);
+        }
+        public async Task<DataRow> GetSingleRowAsync(string fields, string where, string sort = null, TransactionManager tm = null, params object[] values)
+        {
+            var sql = BuildSelectSQL(where, 1, sort, fields);
+            var paras = GetParametersByDerive(sql, values);
             return await Database.ExecSqlSingleAsync(sql, paras, tm);
         }
         #endregion
@@ -773,27 +797,31 @@ namespace TinyFx.Data.ORM
         /// <param name = "pageSize">页大小</param>
         /// <param name = "where">自定义条件,where子句</param>
         /// <param name = "sort">排序表达式</param>
+        /// <param name = "values">where 和 sort 中的参数值</param>
         /// <return>分页操作对象</return>
-        public IDataPager GetPager(int pageSize, string where = null, string sort = null)
+        public IDataPager GetPager(int pageSize, string where = null, string sort = null, params object[] values)
         {
             string sql = BuildSelectSQL(where, 0, sort);
-            return Database.GetPager(sql, pageSize);
+            var paras = GetParametersByDerive(sql, values);
+            var ret = Database.GetPager(sql, pageSize);
+            ret.AddParameters(paras);
+            return ret;
         }
-        public List<TEntity> GetPagerList(int pageSize, int pageIndex, string where = null, string sort = null)
+        public List<TEntity> GetPagerList(int pageSize, int pageIndex, string where = null, string sort = null, params object[] values)
         {
-            var pager = GetPager(pageSize, where, sort);
+            var pager = GetPager(pageSize, where, sort, values);
             var reader = pager.GetPageReader(pageIndex);
             return reader.MapToList<TEntity>(DataMappingMode.Interface);
         }
-        public async Task<List<TEntity>> GetPagerListAsync(int pageSize, int pageIndex, string where = null, string sort = null)
+        public async Task<List<TEntity>> GetPagerListAsync(int pageSize, int pageIndex, string where = null, string sort = null, params object[] values)
         {
-            var pager = GetPager(pageSize, where, sort);
+            var pager = GetPager(pageSize, where, sort, values);
             var reader = await pager.GetPageReaderAsync(pageIndex);
             return reader.MapToList<TEntity>(DataMappingMode.Interface);
         }
-        public async Task<long> GetPageCountAsync(int pageSize, string where = null, string sort = null, bool refresh = true)
+        public async Task<long> GetPageCountAsync(int pageSize, string where = null, string sort = null, bool refresh = true, params object[] values)
         {
-            var pager = GetPager(pageSize, where, sort);
+            var pager = GetPager(pageSize, where, sort, values);
             return await pager.GetPageCountAsync(refresh);
         }
         #endregion
@@ -874,8 +902,10 @@ namespace TinyFx.Data.ORM
         /// <returns></returns>
         protected IEnumerable<TParameter> GetParametersByDerive(string sql, object[] values)
         {
+            if (values == null || values.Length == 0)
+                return null;
             var key = $"{Database.ConnectionString}|{sql}";
-            var paras = _sqlParametersCache.GetOrAdd(key, (key1) =>
+            var paras = _sqlParametersCache.GetOrAdd(key, (_) =>
             {
                 return GetSqlCacheItem(sql);
             });
@@ -894,7 +924,7 @@ namespace TinyFx.Data.ORM
         protected (string parameterName, TDbType dbType)[] GetSqlCacheItem(string sql)
         {
             var key = $"{SourceType}|{SourceName}";
-            Dictionary<string, TDbType> paras = _objParametersCache.GetOrAdd(key, (key1) =>
+            Dictionary<string, TDbType> paras = _objParametersCache.GetOrAdd(key, (_) =>
             {
                 return OrmProvider.GetDbTypeMappings(Database, SourceName, SourceType);
             });

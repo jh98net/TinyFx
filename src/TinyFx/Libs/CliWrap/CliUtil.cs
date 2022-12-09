@@ -21,8 +21,8 @@ namespace TinyFx.CliWrap
         /// </summary>
         /// <param name="commandLine"></param>
         /// <returns></returns>
-        public static CliResult Execute(string commandLine)
-            => ExecuteBaseAsync(commandLine).Result;
+        public static CliResult Execute(string commandLine, string workDir = null)
+            => ExecuteBaseAsync(commandLine, workDir).Result;
         /// <summary>
         /// 执行命令，输出到outputAction
         /// </summary>
@@ -87,7 +87,7 @@ namespace TinyFx.CliWrap
             };
             return ret;
         }
-        private static Command CreateCommand(string commandLine)
+        private static Command CreateCommand(string commandLine, string workDir = null)
         {
             var cmds = commandLine.Split(' ');
             var cmd = cmds[0];
@@ -95,12 +95,14 @@ namespace TinyFx.CliWrap
             var command = Cli.Wrap(cmd)
                 .WithArguments(args)
                 .WithValidation(CommandResultValidation.None);
+            if(!string.IsNullOrEmpty(workDir))
+                command.WithWorkingDirectory(workDir);
                 //.WithWorkingDirectory(Path.GetDirectoryName(cmd));
             return command;
         }
-        private static async Task<CliResult> ExecuteBaseAsync(string commandLine)
+        private static async Task<CliResult> ExecuteBaseAsync(string commandLine, string workDir=null)
         {
-            var command = CreateCommand(commandLine);
+            var command = CreateCommand(commandLine, workDir);
 
             var streamOut = Console.OpenStandardOutput();
             var streamErr = Console.OpenStandardError();

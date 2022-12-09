@@ -183,6 +183,22 @@ namespace TinyFx.Reflection
             => CreateInstance(Type.GetType(typeName), args);
         #endregion
 
+        #region InvokeMethod
+        public static object InvokeMethod(string typeName, string methodName, params object[] args)
+        {
+            var type = Type.GetType(typeName);
+            var method = type.GetMethod(methodName);
+            var obj = Activator.CreateInstance(type);
+            return method.Invoke(obj, args);
+        }
+        public static object InvokeStaticMethod(string typeName, string methodName, params object[] args)
+        {
+            var type = Type.GetType(typeName);
+            var method = type.GetMethod(methodName);
+            return method.Invoke(null, args);
+        }
+        #endregion
+
         #region GetPropertyValue
         private static readonly ConcurrentDictionary<PropertyInfo, MethodInfo> _propertyGetterCache = new ConcurrentDictionary<PropertyInfo, MethodInfo>();
         /// <summary>
@@ -307,17 +323,20 @@ namespace TinyFx.Reflection
         /// <param name="name"></param>
         /// <param name="path"></param>
         /// <param name="overwrite"></param>
-        public static void SaveManifestResourceFile(Assembly assembly, string name, string path, bool overwrite = false)
+        public static void SaveManifestResourceFileToDir(Assembly assembly, string name, string path, bool overwrite = false)
         {
             var names = name.Split('.');
             var file = $"{names[names.Length - 2]}.{names[names.Length - 1]}";
             var target = Path.Combine(path, file);
+            SaveManifestResourceFileToFile(assembly, name, target, overwrite);
+        }
+        public static void SaveManifestResourceFileToFile(Assembly assembly, string name, string target, bool overwrite = false)
+        {
             if (File.Exists(target) && !overwrite)
                 return;
             var stream = assembly.GetManifestResourceStream(name);
             IOUtil.WriteStreamToFile(stream, target);
         }
-
         /// <summary>
         /// 判断类型type是否继承自某泛型类
         /// </summary>

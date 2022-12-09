@@ -16,7 +16,7 @@ namespace TinyFx.Net
         /// <param name="clientName">client名称，如果配置文件有配置，设置对应name，如果没有，每个场景使用各自的name公用</param>
         /// <param name="handlerBody">请求返回时是否保留RequestBody和ResponseBody信息</param>
         /// <returns></returns>
-        public static HttpClientEx Create(string clientName, bool handlerBody=true)
+        public static HttpClientEx Create(string clientName, bool handlerBody = true)
         {
             if (string.IsNullOrEmpty(clientName))
                 throw new ArgumentNullException($"clientName不能为空");
@@ -29,7 +29,8 @@ namespace TinyFx.Net
                 {
                     var element = section.Clients[clientName];
                     ret.AddBaseAddress(element.BaseAddress);
-                    element.RequestHeaders?.ForEach(kv => {
+                    element.RequestHeaders?.ForEach(kv =>
+                    {
                         ret.AddDefaultRequestHeaders(kv.Key, kv.Value);
                     });
                     var timeout = element.Timeout < 1000 ? 3000 : element.Timeout;
@@ -51,10 +52,10 @@ namespace TinyFx.Net
             return new HttpClientEx(null, handlerBody, client);
         }
 
-        public static HttpClient CreateClient(string name=null)
+        public static HttpClient CreateClient(string name = null)
         {
             var factory = DIUtil.GetRequiredService<IHttpClientFactory>();
-            return factory.CreateClient();
+            return factory.CreateClient(name);
         }
     }
 }

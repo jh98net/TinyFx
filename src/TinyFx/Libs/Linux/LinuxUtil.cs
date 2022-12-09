@@ -17,7 +17,7 @@ namespace TinyFx.Linux
         public static void ChmodSh(string sh) => CliUtil.ExecuteReturn($"sudo chmod +x {sh}");
 
         #region Execute
-        public static CliResult ExecCmd(string cmd) => CliUtil.Execute(cmd);
+        public static CliResult ExecCmd(string cmd, string workDir = null) => CliUtil.Execute(cmd, workDir);
         public static CliResult ExecCmdReturn(string cmd) => CliUtil.ExecuteReturn(cmd);
         public static CliResult ExecSh(string sh, params object[] args)
         {
@@ -27,7 +27,7 @@ namespace TinyFx.Linux
                 throw new FileNotFoundException($"sh文件未找到: {sh}");
             ChmodSh(sh);
             var paras = args.Select(item => item.ToString());
-            return CliUtil.Execute($"{sh} {string.Join(" ", paras)}");
+            return CliUtil.Execute($"{sh} {string.Join(" ", paras)}","/");
         }
         public static T ExecShReturn<T>(string sh, params object[] args)
         {

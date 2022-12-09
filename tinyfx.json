@@ -46,7 +46,7 @@
       {
         "Name": "default",
         "ProviderName": "mysql",
-        "ConnectionString": "server=172.28.99.21;user id=root;pwd=root;database=ldzb;Allow User Variables=True",
+        "ConnectionString": "server=123.127.93.180;database=ing;user id=root;port=23306;password=root;sslmode=Disabled;allowuservariables=True",
         "ReadConnectionString": "", // 支持读写分离
         "CommandTimeout": "30",
         "InstProvider": "",

@@ -68,7 +68,7 @@ namespace Demo.WebAPI.Apis
                 case 8:
                     return BadRequest(type);
                 case 9:
-                    throw new CustomException(1, "客户端Action=1", null, "其他数据");
+                    throw new CustomException("customErr","客户端Action=1", null, "其他数据");
                 case 10:
                     var i = 0;
                     var j = 1;

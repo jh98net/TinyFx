@@ -14,6 +14,8 @@ namespace TinyFx.Extensions.StackExchangeRedis.Serializers
         {
             isSuccess = true;
             var type = item.GetType();
+            if (type.IsClass)
+                return Encoding.UTF8.GetBytes(SerializerUtil.SerializeJson(item));
             switch (type.FullName)
             {
                 case SimpleTypeNames.Boolean:
@@ -43,8 +45,6 @@ namespace TinyFx.Extensions.StackExchangeRedis.Serializers
                 case SimpleTypeNames.Bytes:
                     return (byte[])item;
             }
-            if (type.IsClass)
-                return Encoding.UTF8.GetBytes(SerializerUtil.SerializeJson(item));
             isSuccess = false;
             return null;
         }
@@ -54,6 +54,8 @@ namespace TinyFx.Extensions.StackExchangeRedis.Serializers
         public object Deserialize(byte[] serializedObject, Type returnType, out bool isSuccess)
         {
             isSuccess = true;
+            if (returnType.IsClass)
+                return SerializerUtil.DeserializeJson(Encoding.UTF8.GetString(serializedObject), returnType);
             switch (returnType.FullName)
             {
                 case SimpleTypeNames.Boolean:
@@ -83,8 +85,6 @@ namespace TinyFx.Extensions.StackExchangeRedis.Serializers
                 case SimpleTypeNames.Bytes:
                     return serializedObject;
             }
-            if (returnType.IsClass)
-                return SerializerUtil.DeserializeJson(Encoding.UTF8.GetString(serializedObject), returnType);
             isSuccess = false;
             return null;
         }

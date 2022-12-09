@@ -77,7 +77,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="flags"></param>
         /// <returns></returns>
         public bool SetAndExpireDays(T value, int days, When when = When.Always, CommandFlags flags = CommandFlags.None)
-            => Database.StringSet(RedisKey, Serialize(value), new TimeSpan(days,0, 0, 0), when, flags);
+            => Database.StringSet(RedisKey, Serialize(value), new TimeSpan(days, 0, 0, 0), when, flags);
 
         /// <summary>
         /// 添加缓存
@@ -108,55 +108,72 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T Get(CommandFlags flags = CommandFlags.None)
+        public T Get(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             var redisValue = Database.StringGet(RedisKey, flags);
-            return Deserialize<T>(redisValue);
+            var ret = Deserialize<T>(redisValue);
+            if (expiry.HasValue)
+                KeyExpire(expiry.Value, flags);
+            return ret;
         }
-        public async Task<T> GetAsync(CommandFlags flags = CommandFlags.None)
-            => await Task.Factory.StartNew(() => Get(flags));
+        public async Task<T> GetAsync(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+            => await Task.Factory.StartNew(() => Get(expiry, flags));
 
-        public T GetOrLoad(CommandFlags flags = CommandFlags.None)
+        public T GetOrLoad(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
             var redisValue = Database.StringGet(RedisKey, flags);
             if (!TryDeserialize(redisValue, out T ret))
             {
                 ret = LoadValueWhenRedisNotExists();
-                Database.StringSet(RedisKey, Serialize(ret), null, When.Always, flags);
+                Database.StringSet(RedisKey, Serialize(ret), expiry, When.Always, flags);
+            }
+            else
+            {
+                if (expiry.HasValue)
+                    KeyExpire(expiry.Value, flags);
             }
             return ret;
         }
-        public async Task<T> GetOrLoadAsync(CommandFlags flags = CommandFlags.None)
-            => await Task.Factory.StartNew(() => GetOrLoad(flags));
+        public async Task<T> GetOrLoadAsync(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+            => await Task.Factory.StartNew(() => GetOrLoad(expiry, flags));
 
         /// <summary>
         /// 获取缓存，如果不存在则抛出异常CacheNotFound
         /// </summary>
-        /// <param name="commandFlags"></param>
+        /// <param name="flags"></param>
         /// <returns></returns>
-        public T GetOrException(CommandFlags commandFlags = CommandFlags.None)
+        public T GetOrException(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.StringGet(RedisKey, commandFlags);
-            if(!TryDeserialize(redisValue, out T ret))
+            var redisValue = Database.StringGet(RedisKey, flags);
+            if (!TryDeserialize(redisValue, out T ret))
                 throw new CacheNotFound($"[Redis String]缓存项不存在。key:{RedisKey} type:{GetType().FullName}");
+            if (expiry.HasValue)
+                KeyExpire(expiry.Value, flags);
             return ret;
         }
-        public async Task<T> GetOrExceptionAsync(CommandFlags flags = CommandFlags.None)
-            => await Task.Factory.StartNew(() => GetOrException(flags));
+        public async Task<T> GetOrExceptionAsync(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+            => await Task.Factory.StartNew(() => GetOrException(expiry,flags));
 
         /// <summary>
         /// 获取缓存,如果不存在，则返回默认值
         /// </summary>
         /// <param name="defaultValue"></param>
-        /// <param name="commandFlags"></param>
+        /// <param name="flags"></param>
         /// <returns></returns>
-        public T GetOrDefault(T defaultValue, CommandFlags commandFlags = CommandFlags.None)
+        public T GetOrDefault(T defaultValue, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.StringGet(RedisKey, commandFlags);
-            return TryDeserialize(redisValue, out T ret) ? ret : defaultValue;
+            var redisValue = Database.StringGet(RedisKey, flags);
+            if (!TryDeserialize(redisValue, out T ret))
+                ret = defaultValue;
+            else
+            { 
+                if(expiry.HasValue)
+                    KeyExpire(expiry.Value, flags);
+            }
+            return ret;
         }
-        public async Task<T> GetOrDefaultAsync(T defaultValue, CommandFlags flags = CommandFlags.None)
-            => await Task.Factory.StartNew(() => GetOrDefault(defaultValue, flags));
+        public async Task<T> GetOrDefaultAsync(T defaultValue, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+            => await Task.Factory.StartNew(() => GetOrDefault(defaultValue, expiry, flags));
         #endregion
 
         #region Increment

@@ -11,12 +11,12 @@ namespace TinyFx.Extensions.StackExchangeRedis.Serializers
     /// </summary>
     public class RedisJsonSerializer : ISerializer
     {
-        private static readonly Encoding _encoding = Encoding.UTF8;
+        //private static readonly Encoding _encoding = Encoding.UTF8;
         private static JsonSerializerOptions _jsonOptions;
 
         public RedisJsonSerializer(JsonSerializerOptions options = null)
         {
-            _jsonOptions = _jsonOptions ?? SerializerUtil.DefaultJsonOptions;
+            _jsonOptions = options ?? SerializerUtil.DefaultJsonOptions;
         }
 
 
