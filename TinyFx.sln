@@ -78,6 +78,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.WebAPI", "demo\Demo.We
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo.ConsoleEXE", "demo\Demo.ConsoleEXE\Demo.ConsoleEXE.csproj", "{C0DB0B65-3AE3-4FD8-A7D5-B0725BBDA775}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyFx.Data.SqlSugarEx", "src\TinyFx.Data.SqlSugarEx\TinyFx.Data.SqlSugarEx.csproj", "{92D74F61-39BD-42A1-AFB4-1722D0557097}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -184,6 +186,10 @@ Global
 		{C0DB0B65-3AE3-4FD8-A7D5-B0725BBDA775}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0DB0B65-3AE3-4FD8-A7D5-B0725BBDA775}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0DB0B65-3AE3-4FD8-A7D5-B0725BBDA775}.Release|Any CPU.Build.0 = Release|Any CPU
+		{92D74F61-39BD-42A1-AFB4-1722D0557097}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92D74F61-39BD-42A1-AFB4-1722D0557097}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92D74F61-39BD-42A1-AFB4-1722D0557097}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92D74F61-39BD-42A1-AFB4-1722D0557097}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -218,6 +224,7 @@ Global
 		{C2E1591A-2434-4CAD-9DDD-D3D1A13DC68C} = {7947FE6E-0EEF-4EC9-A1F3-41FD0DD2451E}
 		{D9C42F3F-5DA7-49AC-BE5C-F936AC674124} = {479C6C03-AE11-4CF0-B338-B6E98FE09C25}
 		{C0DB0B65-3AE3-4FD8-A7D5-B0725BBDA775} = {479C6C03-AE11-4CF0-B338-B6E98FE09C25}
+		{92D74F61-39BD-42A1-AFB4-1722D0557097} = {1FF166BB-BDA2-4A20-8EE9-209B210B1185}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6FDC92E-FBF2-40CE-9A71-2A4B6A4E6F3E}
