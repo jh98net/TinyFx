@@ -26,14 +26,8 @@ namespace TinyFx.Extensions.AutoMapper
     /// </summary>
     /// <typeparam name="T1"></typeparam>
     /// <typeparam name="T2"></typeparam>
-    public interface IMapFrom<T1, T2>
+    public interface IMapFrom<T1, T2> : IMapFrom<T1>
     {
-        /// <summary>
-        /// 实现从T1类型对象src构建当前对象
-        /// </summary>
-        /// <param name="source"></param>
-        void MapFrom(T1 source);
-
         /// <summary>
         /// 实现从T2类型对象src构建当前对象
         /// </summary>

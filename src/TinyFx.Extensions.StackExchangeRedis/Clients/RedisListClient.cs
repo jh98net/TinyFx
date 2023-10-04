@@ -19,20 +19,20 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <summary>
         /// 继承调用
         /// </summary>
-        public RedisListClient(RedisClientOptions options = null) : base(options) { }
+        public RedisListClient(object key = null, RedisClientOptions options = null) : base(key, options) { }
         #endregion
 
         #region LoadAllValuesWhenRedisNotExists
-        public delegate IEnumerable<T> LoadAllValuesDelegate();
+        public delegate Task<CacheValue<IEnumerable<T>>> LoadAllValuesDelegate();
         public LoadAllValuesDelegate LoadAllValuesHandler;
         /// <summary>
         /// 调用GetAllOrLoad()时，当RedisKey不存在，则调用此方法返回并存储全部list值到redis中，需要时子类实现override
         /// </summary>
         /// <returns></returns>
-        protected virtual IEnumerable<T> LoadAllValuesWhenRedisNotExists()
+        protected virtual async Task<CacheValue<IEnumerable<T>>> LoadAllValuesWhenRedisNotExistsAsync()
         {
             if (LoadAllValuesHandler != null)
-                return LoadAllValuesHandler();
+                return await LoadAllValuesHandler();
             throw new NotImplementedException();
         }
         #endregion
@@ -41,25 +41,30 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <summary>
         /// 删除并返回存储在key处的列表的第一个元素
         /// </summary>
-        /// <param name="commandFlags"></param>
+        /// <param name="flags"></param>
         /// <returns></returns>
-        public T LeftPop(CommandFlags commandFlags = CommandFlags.None)
+        public async Task<T> LeftPopAsync(CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.ListLeftPop(RedisKey, commandFlags);
-            return Deserialize<T>(redisValue);
+            var redisValue = await Database.ListLeftPopAsync(RedisKey, flags);
+            var ret = Deserialize<T>(redisValue);
+            await SetSlidingExpirationAsync();
+            return ret;
         }
+
         /// <summary>
         /// 删除并返回列表的多个元素
         /// </summary>
-        /// <param name="start">0代表第一个元素</param>
-        /// <param name="stop">-1代表最后一个元素，-2倒数第二个</param>
-        /// <param name="commandFlags"></param>
+        /// <param name="count">元素数量</param>
+        /// <param name="flags"></param>
         /// <returns></returns>
-        public List<T> LeftPopList(long start = 0, long stop = -1, CommandFlags commandFlags = CommandFlags.None)
+        public async Task<List<T>> LeftPopAsync(long count, CommandFlags flags = CommandFlags.None)
         {
-            var values = Database.ListRange(RedisKey, 0, -1, commandFlags);
-            return values.Select(value => Deserialize<T>(value)).ToList();
+            var values = await Database.ListLeftPopAsync(RedisKey, count);
+            var ret = values.Select(value => Deserialize<T>(value)).ToList();
+            await SetSlidingExpirationAsync();
+            return ret;
         }
+
         /// <summary>
         /// 将所有指定的值插入存储在key的列表的开头(左边第一个）。 如果键不存在，则在执行推入操作之前将其创建为空列表。 
         /// </summary>
@@ -67,8 +72,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="when"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long LeftPush(T value, When when = When.Always, CommandFlags flags = CommandFlags.None)
-            => Database.ListLeftPush(RedisKey, Serialize(value), when, flags);
+        public async Task<long> LeftPushAsync(T value, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.ListLeftPushAsync(RedisKey, Serialize(value), when, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 将所有指定的值插入存储在key的列表的开头(左边第一个）。 如果键不存在，则在执行推入操作之前将其创建为空列表。 
@@ -78,19 +87,26 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="values"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long LeftPushList(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
-            => Database.ListLeftPush(RedisKey, values.Select(x => Serialize(x)).ToArray(), flags);
+        public async Task<long> LeftPushAsync(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.ListLeftPushAsync(RedisKey, values.Select(x => Serialize(x)).ToArray(), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 删除并返回键处存储的列表的右边最后一个元素
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T RightPop(CommandFlags flags = CommandFlags.None)
+        public async Task<T> RightPopAsync(CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.ListRightPop(RedisKey, flags);
-            return Deserialize<T>(redisValue);
+            var redisValue = await Database.ListRightPopAsync(RedisKey, flags);
+            var ret = Deserialize<T>(redisValue);
+            await SetSlidingExpirationAsync();
+            return ret;
         }
+
         /// <summary>
         /// 将指定的值插入存储在key的列表的末尾。 如果键不存在，则在执行推入操作之前将其创建为空列表
         /// </summary>
@@ -98,8 +114,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="when"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long RightPush(T value, When when = When.Always, CommandFlags flags = CommandFlags.None)
-            => Database.ListRightPush(RedisKey, Serialize(value), when, flags);
+        public async Task<long> RightPushAsync(T value, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.ListRightPushAsync(RedisKey, Serialize(value), when, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 将所有指定的值插入存储在key的列表的末尾。 如果键不存在，则在执行推入操作之前将其创建为空列表。 
         /// 元素从最左边的元素到最右边的元素一个接一个插入到列表的末尾。 
@@ -108,18 +129,25 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="values"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long RightPushList(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
-            => Database.ListRightPush(RedisKey, values.Select(x => Serialize(x)).ToArray(), flags);
+        public async Task<long> RightPushAsync(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.ListRightPushAsync(RedisKey, values.Select(x => Serialize(x)).ToArray(), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 以原子方式返回并删除源中存储的列表的最后一个元素（尾部），并将该元素推入存储在目标位置的列表的第一个元素（头）
         /// </summary>
         /// <param name="destination"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T RightPopLeftPush(string destination, CommandFlags flags = CommandFlags.None)
+        public async Task<T> RightPopLeftPushAsync(string destination, CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.ListRightPopLeftPush(RedisKey, destination, flags);
-            return Deserialize<T>(redisValue);
+            var redisValue = await Database.ListRightPopLeftPushAsync(RedisKey, destination, flags);
+            var ret = Deserialize<T>(redisValue);
+            await SetSlidingExpirationAsync();
+            return ret;
         }
         #endregion
 
@@ -130,8 +158,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="index"></param>
         /// <param name="value"></param>
         /// <param name="flags"></param>
-        public void SetByIndex(long index, T value, CommandFlags flags = CommandFlags.None)
-            => Database.ListSetByIndex(RedisKey, index, Serialize(value), flags);
+        public async Task SetByIndexAsync(long index, T value, CommandFlags flags = CommandFlags.None)
+        {
+            await Database.ListSetByIndexAsync(RedisKey, index, Serialize(value), flags);
+            await SetSlidingExpirationAsync();
+        }
+
         /// <summary>
         /// 在指定列表缓存项后插入缓存项，如果键不存在，则将其视为空列表，并且不执行任何操作。
         /// </summary>
@@ -139,8 +171,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="value"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long InsertAfter(T pivot, T value, CommandFlags flags = CommandFlags.None)
-            => Database.ListInsertAfter(RedisKey, Serialize(pivot), Serialize(value), flags);
+        public async Task<long> InsertAfterAsync(T pivot, T value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.ListInsertAfterAsync(RedisKey, Serialize(pivot), Serialize(value), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 在指定列表缓存项前插入缓存项，如果键不存在，则将其视为空列表，并且不执行任何操作。
         /// </summary>
@@ -148,8 +185,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="value"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long InsertBefore(T pivot, T value, CommandFlags flags = CommandFlags.None)
-            => Database.ListInsertBefore(RedisKey, Serialize(pivot), Serialize(value), flags);
+        public async Task<long> InsertBeforeAsync(T pivot, T value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.ListInsertBeforeAsync(RedisKey, Serialize(pivot), Serialize(value), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
 
         #region GetByIndex & GetByIndexOrDefault & GetByIndexOrException & GetAll & GetAllOrLoad & Range
@@ -160,47 +201,88 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// 负索引可用于指定从列表末尾开始的元素。 -1表示最后一个元素，-2表示倒数第二个。</param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T GetByIndex(long index, CommandFlags flags = CommandFlags.None)
+        public async Task<T> GetByIndexAsync(long index, CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.ListGetByIndex(RedisKey, index, flags);
-            return Deserialize<T>(redisValue);
-        }
-        public T GetByIndexOrDefault(long index, T defaultValue, CommandFlags flags = CommandFlags.None)
-        {
-            var redisValue = Database.ListGetByIndex(RedisKey, index, flags);
-            return TryDeserialize(redisValue, out T ret) ? ret : defaultValue;
-        }
-        public T GetByIndexOrException(long index, CommandFlags flags = CommandFlags.None)
-        {
-            var redisValue = Database.ListGetByIndex(RedisKey, index, flags);
-            if (!TryDeserialize(redisValue, out T ret))
-                throw new CacheNotFound($"[Redis List]index不存在。Key:{RedisKey}, Index:{index} type:{GetType().FullName}");
+            var redisValue = await Database.ListGetByIndexAsync(RedisKey, index, flags);
+            var ret = Deserialize<T>(redisValue);
+            await SetSlidingExpirationAsync();
             return ret;
         }
+
+        public async Task<T> GetByIndexOrDefaultAsync(long index, T defaultValue, CommandFlags flags = CommandFlags.None)
+        {
+            var redisValue = await Database.ListGetByIndexAsync(RedisKey, index, flags);
+            if (!TryDeserialize(redisValue, out T ret))
+                ret = defaultValue;
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
+        public async Task<T> GetByIndexOrExceptionAsync(long index, CommandFlags flags = CommandFlags.None)
+        {
+            var redisValue = await Database.ListGetByIndexAsync(RedisKey, index, flags);
+            if (!TryDeserialize(redisValue, out T ret))
+                throw new CacheNotFound($"[Redis List]index不存在。Key:{RedisKey}, Index:{index} type:{GetType().FullName}");
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 获取全部list缓存值
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<T> GetAll(CommandFlags flags = CommandFlags.None)
-            => Range(0, -1, flags);
+        public async Task<IEnumerable<T>> GetAllAsync(CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await RangeAsync(0, -1, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 获取所有list缓存值，如果RedisKey不存在，则调用LoadAllValuesWhenRedisNotExists()返回并保存到redis中
         /// </summary>
+        /// <param name="enforce">是否强制加载</param>
+        /// <param name="expire"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<T> GetAllOrLoad(CommandFlags flags = CommandFlags.None)
+        public async Task<CacheValue<IEnumerable<T>>> GetAllOrLoadAsync(bool enforce = false, TimeSpan? expire = null, CommandFlags flags = CommandFlags.None)
         {
-            IEnumerable<T> ret = default;
-            if (!KeyExists(flags))
+            CacheValue<IEnumerable<T>> ret = default;
+            if (enforce || !await KeyExistsAsync(flags))
             {
-                ret = LoadAllValuesWhenRedisNotExists();
-                RightPushList(ret, flags);
+                ret = await LoadAllValuesWhenRedisNotExistsAsync();
+                if (ret.HasValue)
+                {
+                    await RightPushAsync(ret.Value, flags);
+                }
             }
             else
             {
-                ret = Range(0, -1, flags);
+                ret = new CacheValue<IEnumerable<T>>(await RangeAsync(0, -1, flags));
             }
+            if (ret.HasValue)
+                await SetSlidingExpirationAsync(expire);
+            return ret;
+        }
+
+        public async Task<IEnumerable<T>> GetAllOrDefaultAsync(IEnumerable<T> defaultValue, CommandFlags flags = CommandFlags.None)
+        {
+            if (await KeyExistsAsync(flags))
+            {
+                var ret = await RangeAsync(0, -1, flags);
+                await SetSlidingExpirationAsync();
+                return ret;
+            }
+            return defaultValue;
+        }
+
+        public async Task<IEnumerable<T>> GetAllOrExceptionAsync(CommandFlags flags = CommandFlags.None)
+        {
+            if (!await KeyExistsAsync(flags))
+                throw new CacheNotFound($"[Redis List]不存在。RedisKey: {RedisKey} type:{GetType().FullName}");
+            var ret = await RangeAsync(0, -1, flags);
+            await SetSlidingExpirationAsync();
             return ret;
         }
 
@@ -214,8 +296,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="stop">0表示第一个元素，-1表示最后一个元素</param>
         /// <param name="flags"></param>
         /// <returns>返回包含最右边的项</returns>
-        public IEnumerable<T> Range(long start = 0, long stop = -1, CommandFlags flags = CommandFlags.None)
-            => Database.ListRange(RedisKey, start, stop, flags).Select(x => Deserialize<T>(x));
+        public async Task<IEnumerable<T>> RangeAsync(long start = 0, long stop = -1, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = (await Database.ListRangeAsync(RedisKey, start, stop, flags))
+                .Select(x => Deserialize<T>(x));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
 
         #region Remove & Trim & GetLength
@@ -230,8 +317,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="count">count大于0 从头删除count个元素; count=0 删除全部; count小于0 从后删除count个元素</param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long Remove(T value, long count = 0, CommandFlags flags = CommandFlags.None)
-            => Database.ListRemove(RedisKey, Serialize(value), count, flags);
+        public async Task<long> RemoveAsync(T value, long count = 0, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.ListRemoveAsync(RedisKey, Serialize(value), count, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 修剪现有列表，使其仅包含指定范围的指定元素。 
@@ -242,16 +333,23 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="start"></param>
         /// <param name="stop"></param>
         /// <param name="flags"></param>
-        public void Trim(long start, long stop, CommandFlags flags = CommandFlags.None)
-            => Database.ListTrim(RedisKey, start, stop, flags);
+        public async Task TrimAsync(long start, long stop, CommandFlags flags = CommandFlags.None)
+        {
+            await Database.ListTrimAsync(RedisKey, start, stop, flags);
+            await SetSlidingExpirationAsync();
+        }
 
         /// <summary>
         /// 返回键处存储的列表的长度。 如果key不存在，则将其解释为空列表并返回0。
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long GetLength(CommandFlags flags = CommandFlags.None)
-            => Database.ListLength(RedisKey, flags);
+        public async Task<long> GetLengthAsync(CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.ListLengthAsync(RedisKey, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
     }
 }

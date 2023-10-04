@@ -14,13 +14,14 @@ namespace TinyFx.Extensions.StackExchangeRedis
     public class RedLock : IDisposable
     {
         public IDatabase Database { get; }
+        private System.Timers.Timer _timer;
         /// <summary>
         /// 要锁定资源的键值，针对每一个需要锁定的资源，名称必须唯一，如需要锁定操作用户coin，LockKey="lock_key_user_coin"
         /// </summary>
         public string LockKey { get; }
-        private string _lockId { get; }
+        private string _token { get; }
 
-        public TimeSpan Expiry { get;  }
+        public TimeSpan Expiry { get; }
         public int RetryCount { get; }
         public TimeSpan RetryInterval { get; set; }
 
@@ -38,41 +39,29 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public RedLock(IDatabase database, string lockKey, TimeSpan? expiry, int retryCount = 0, TimeSpan? retryInterval = null)
         {
             Database = database;
-            LockKey = lockKey;
-            _lockId = Guid.NewGuid().ToString();
-            Expiry = expiry.HasValue ? expiry.Value : TimeSpan.FromSeconds(10); ;
-            RetryCount = retryCount;
+            LockKey = $"_LOCK:{lockKey}";
+            _token = Guid.NewGuid().ToString();
+            Expiry = expiry.HasValue ? expiry.Value : TimeSpan.FromSeconds(2); ;
+            RetryCount = retryCount <= 0 ? 6 : retryCount;
             RetryInterval = retryInterval.HasValue ? retryInterval.Value : TimeSpan.FromMilliseconds(500);
+            _timer = new System.Timers.Timer(Expiry.TotalMilliseconds / 2);
         }
 
-        public void Start()
-        {
-            IsLocked = false;
-            int retry = RetryCount;
-            do
-            {
-                if (Database.LockTake(LockKey, _lockId, Expiry))
-                {
-                    LogUtil.Debug($"RedLock申请锁成功。Type:{ClientType.FullName} LockKey:{LockKey} LockId:{_lockId}");
-                    IsLocked = true;
-                    return;
-                }
-                Thread.Sleep(RetryInterval);
-                retry--;
-            }
-            while (retry > 0);
-            LogLockError();
-        }
         public async Task StartAsync()
         {
             IsLocked = false;
             int retry = RetryCount;
             do
             {
-                if (await Database.LockTakeAsync(LockKey, _lockId, Expiry))
+                if (await Database.LockTakeAsync(LockKey, _token, Expiry))
                 {
-                    LogUtil.Debug($"RedLock申请锁成功。Type:{ClientType.FullName} LockKey:{LockKey} LockId:{_lockId}");
+                    LogUtil.Debug("RedLock申请锁成功。clientType:{clientType} lockKey:{lockKey} token:{token}", ClientType.Name, LockKey, _token);
                     IsLocked = true;
+                    _timer.Elapsed += async (sender, args) =>
+                    {
+                        await Database.LockExtendAsync(LockKey, _token, Expiry);//过期中间，延期
+                    };
+                    _timer.Start();
                     return;
                 }
                 await Task.Delay(RetryInterval);
@@ -83,23 +72,32 @@ namespace TinyFx.Extensions.StackExchangeRedis
         }
         private void LogLockError()
         {
-            LogUtil.Error($"RedLock申请锁失败。Type:{ClientType.FullName} LockKey:{LockKey} LockId:{_lockId}");
+            LogUtil.Error("RedLock申请锁失败。clientType:{clientType} lockKey:{lockKey} token:{token}", ClientType.Name, LockKey, _token);
         }
-
+        /// <summary>
+        /// 手动释放锁
+        /// </summary>
+        public void Release()
+        {
+            _timer.Stop();
+            _timer.Dispose();
+            _timer = null;
+            Database.LockRelease(LockKey, _token);
+            GC.SuppressFinalize(this);
+            _disposed = true;
+        }
         #region IDisposable
         private bool _disposed = false;
         public void Dispose()
         {
             if (_disposed) return;
-            if(IsLocked)
-                Database.LockRelease(LockKey, _lockId);
-            GC.SuppressFinalize(this);
-            _disposed = true;
+            Release();
         }
 
         ~RedLock()
         {
-            LogUtil.Error($"RedLock没有Dispose，请使用using调用。Type:{ClientType.FullName} LockKey:{LockKey} LockId:{_lockId}");
+            Dispose();
+            LogUtil.Error("RedLock没有Dispose，请使用using调用。clientType:{clientType} lockKey:{lockKey} token:{token}", ClientType.Name, LockKey, _token);
         }
 
         public void Close()

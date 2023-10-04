@@ -182,5 +182,20 @@ namespace TinyFx.Randoms
         public static T[] RandomNotRepeat<T>(T[] src, int size)
             => DefaultProvider.RandomNotRepeat(src, size);
         #endregion
+
+        #region Utils
+        /// <summary>
+        /// 随机判定指定概率下是否命中
+        /// </summary>
+        /// <param name="ratio">概率，如 0.3</param>
+        /// <param name="precision">精度，如 100</param>
+        /// <returns></returns>
+        public static bool IsOdds(decimal ratio, int precision = 100)
+        {
+            var rnd = NextInt(precision);
+            var value = (int)(ratio * precision);
+            return value > rnd;
+        }
+        #endregion
     }
 }

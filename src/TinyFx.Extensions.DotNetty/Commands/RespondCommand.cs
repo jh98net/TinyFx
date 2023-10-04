@@ -10,7 +10,7 @@ using TinyFx.Reflection;
 
 namespace TinyFx.Extensions.DotNetty
 {
-    public abstract class RespondCommand<IRequest, IResponse>: CommandBase
+    public abstract class RespondCommand<IRequest, IResponse> : CommandBase
     {
         public override async Task ExecuteAsync(RequestContext ctx)
         {
@@ -20,10 +20,11 @@ namespace TinyFx.Extensions.DotNetty
                 try
                 {
                     result = (!ctx.Session.IsLogin && CheckLogin)
-                        ? new ProtoResponse<IResponse> { 
+                        ? new ProtoResponse<IResponse>
+                        {
                             Success = false,
                             Code = ResponseCode.G_Unauthorized,
-                            Message = "未登录用户无法访问"
+                            Message = ConfigUtil.Project.ResponseErrorMessage ? "未登录用户无法访问" : null
                         }
                         : await Respond(ctx, (IRequest)ctx.Packet.Body);
                 }
@@ -38,28 +39,32 @@ namespace TinyFx.Extensions.DotNetty
                         {
                             Success = false,
                             Code = exc.Code,
-                            Message = exc.Message,
+                            Message = ConfigUtil.Project.ResponseErrorMessage ? exc.Message : null,
                         };
-                        LogUtil.Debug($"[CustomException] commandId:{CommandId} userId:{ctx.UserId} commandName:{this.GetType().FullName} code:{exc.Code} message:{exc.Message}");
+                        LogUtil.Debug("[CustomException] commandId:{commandId} userId:{userId} commandName:{commandName} exc.code:{exc.code} exc.message:{exc.message}"
+                            , CommandId, ctx.UserId, this.GetType().FullName, exc.Code, exc.Message);
                     }
                     else
                     {
-                        result = new ProtoResponse<IResponse> {
+                        result = new ProtoResponse<IResponse>
+                        {
                             Success = false,
-                            Code = ResponseCode.G_UnhandledException,
-                            Message = ConfigUtil.Project.ResponseErrorDetail 
-                                ? $"{ex.Message}{Environment.NewLine}{ex.StackTrace}" : ex.Message
+                            Code = ResponseCode.G_InternalServerError,
+                            Message = ConfigUtil.Project.ResponseErrorMessage ? ex.Message : null,
+                            Exception = ConfigUtil.Project.ResponseErrorDetail ? ex : null
                         };
-                        LogUtil.Error(ex, $"未处理异常：commandId:{CommandId} userId:{ctx.UserId} commandName:{this.GetType().FullName} message:{ex.Message}");
+                        LogUtil.Error(ex, "未处理异常：commandId:{commandId} userId:{userId} commandName:{commandName} ex.message:{ex.message}"
+                            , CommandId, ctx.UserId, this.GetType().FullName, ex.Message);
                     }
                 }
                 var rsp = new Packet();
                 rsp.CommandId = CommandId;
                 rsp.Body = typeof(IResponse) == typeof(object)
-                    ? new ProtoResponse { 
+                    ? new ProtoResponse
+                    {
                         Success = result.Success,
                         Code = result.Code,
-                        Message= result.Message,
+                        Message = result.Message,
                         Exception = result.Exception
                     }
                     : result;
@@ -67,7 +72,8 @@ namespace TinyFx.Extensions.DotNetty
             }
             catch (Exception ex)
             {
-                LogUtil.Error(ex, $"未处理异常：commandId:{CommandId} userId:{ctx.UserId} commandName:{this.GetType().FullName} message:{ex.Message}");
+                LogUtil.Error(ex, "未处理异常：{commandId} {userId} {commandName} {ex.message}"
+                    , CommandId, ctx.UserId, this.GetType().FullName, ex.Message);
                 throw;
             }
         }

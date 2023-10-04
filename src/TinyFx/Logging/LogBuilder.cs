@@ -1,0 +1,101 @@
+﻿using Google.Protobuf.Reflection;
+using Google.Protobuf.WellKnownTypes;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using TinyFx.Collections;
+
+namespace TinyFx.Logging
+{
+    /// <summary>
+    /// 结构化日志构建器
+    /// </summary>
+    public class LogBuilder : ILogBuilder
+    {
+        public LogLevel Level { get; set; } = LogLevel.Debug;
+        public LogLevel CustomeExceptionLevel { get; set; } = LogLevel.Information;
+        public bool LogRequestHeaders { get; set; }
+        public bool LogRequestBody { get; set; }
+        public bool LogResponseBody { get; set; }
+
+        public string Flag { get; set; }
+        public StringBuilder Message { get; set; } = new();
+        public ConcurrentBag<(string field, object value)> Fields = new();
+        public Exception Exception { get; set; }
+
+        public LogBuilder(LogLevel level = LogLevel.Debug, string flag = null)
+        {
+            Level = level;
+            Flag = flag;
+        }
+        public LogBuilder(string flag) : this(LogLevel.Debug, flag) { }
+
+        #region Methods
+        public ILogBuilder SetLevel(LogLevel level)
+        {
+            Level = level;
+            return this;
+        }
+        public ILogBuilder SetLogRequestHeaders(bool isLog = true)
+        {
+            LogRequestHeaders = isLog;
+            return this;
+        }
+        public ILogBuilder SetLogRequestBody(bool isLog = true)
+        {
+            LogRequestBody = isLog;
+            return this;
+        }
+        public ILogBuilder SetLogResponseBody(bool isLog = true)
+        {
+            LogResponseBody = isLog;
+            return this;
+        }
+        public ILogBuilder SetFlag(string flag)
+        {
+            Flag = flag; return this;
+        }
+        public ILogBuilder AddMessage(string msg)
+        {
+            if (!string.IsNullOrEmpty(msg))
+                Message.AppendLine(msg);
+            return this;
+        }
+        public ILogBuilder AddField(string field, object value)
+        {
+            Fields.Add((field, value));
+            return this;
+        }
+        public ILogBuilder AddException(Exception ex, LogLevel level = LogLevel.Error)
+        {
+            Level = level;
+            Exception = ex;
+            return this;
+        }
+        #endregion
+
+        public LogLevel GetCustomeExceptionLevel()
+            => Level > CustomeExceptionLevel ? Level : CustomeExceptionLevel;
+
+        public void Log()
+        {
+            var fields = Fields.ToArray();
+            var msg = string.Empty;
+            var args = new List<object>(fields.Length + 2);
+            msg += "[{Flag}]";
+            args.Add(Flag);
+            msg += "{Message}";
+            args.Add(Message.ToString());
+            fields.ForEach(x =>
+            {
+                msg += $"{{{x.field}}}";
+                args.Add(x.value);
+            });
+            LogUtil.Log(Level, msg, Exception, args.ToArray());
+        }
+    }
+}

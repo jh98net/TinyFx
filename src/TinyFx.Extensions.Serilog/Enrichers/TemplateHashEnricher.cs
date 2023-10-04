@@ -10,9 +10,11 @@ namespace Serilog.Enrichers
     public class TemplateHashEnricher : ILogEventEnricher
     {
         public const string PropertyName = "TemplateHash";
-        private static ConcurrentDictionary<string, LogEventProperty> _hashs = new ConcurrentDictionary<string, LogEventProperty>();
+        // !内存泄漏
+        //private static ConcurrentDictionary<string, LogEventProperty> _hashs = new ConcurrentDictionary<string, LogEventProperty>();
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
+            /*
             var key = logEvent.MessageTemplate.Text;
             if (!_hashs.TryGetValue(key, out LogEventProperty value))
             {
@@ -24,6 +26,7 @@ namespace Serilog.Enrichers
                 _hashs.TryAdd(key, value);
             }
             logEvent.AddPropertyIfAbsent(value);
+            */
         }
     }
 }

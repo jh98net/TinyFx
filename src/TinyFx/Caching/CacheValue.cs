@@ -15,6 +15,7 @@ namespace TinyFx.Caching
         /// </summary>
         public bool HasValue { get; set; }
         public T Value { get; set; }
+
         public CacheValue()
         { }
         public CacheValue(T value)

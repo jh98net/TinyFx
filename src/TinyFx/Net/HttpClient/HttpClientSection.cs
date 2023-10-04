@@ -5,6 +5,10 @@ using System.Text;
 using TinyFx.Configuration;
 using System.Collections.Concurrent;
 using TinyFx.Net;
+using TinyFx.Serialization;
+using System.Xml.Linq;
+using TinyFx.Collections;
+using System.Security.Principal;
 
 namespace TinyFx.Configuration
 {
@@ -15,23 +19,36 @@ namespace TinyFx.Configuration
     {
         public override string SectionName => "HttpClient";
         //public string DefaultClientName { get; set; }
-        public Dictionary<string, HttpClientsElement> Clients = new Dictionary<string, HttpClientsElement>();
+        public Dictionary<string, HttpClientConfig> Clients = new Dictionary<string, HttpClientConfig>();
+        public HttpClientConfig GetClient(string name)
+            => Clients[name];
         public override void Bind(IConfiguration configuration)
         {
             base.Bind(configuration);
-            var items = configuration.GetSection("Clients").Get<HttpClientsElement[]>();
-            foreach (var item in items)
+            Clients = configuration.GetSection("Clients")
+                .Get<Dictionary<string, HttpClientConfig>>() ?? new();
+            Clients.ForEach(x => 
             {
-                if (Clients.ContainsKey(item.Name))
-                    throw new Exception($"配置文件HttpClient:Clients:Name中存在重复记录: {item.Name}");
-                if(item.Name == "") // HttpClientEx默认
-                    throw new Exception($"配置文件HttpClient:Clients:Name不能为 空");
-                foreach (var setting in item.Settings)
-                {
-                    item.SettingsDic.TryAdd(setting.Key, setting.Value);
-                }
-                Clients.Add(item.Name, item);
-            }
+                if (string.IsNullOrEmpty(x.Value.Name))
+                    x.Value.Name = x.Key;
+                x.Value.Settings = configuration.GetSection($"Clients:{x.Key}:Settings")
+                    .Get<Dictionary<string, string>>() ?? new();
+            });
+        }
+
+        public static HttpClientConfig GetClientConfig(string clientName)
+        {
+            var section = ConfigUtil.GetSection<HttpClientSection>();
+            if (section == null || section.Clients == null || !section.Clients.TryGetValue(clientName, out var ret))
+                throw new Exception($"配置文件中HttpClient:Clients没有配置name: {clientName}");
+            return ret;
+        }
+        public static T GetClientSettingValue<T>(string clientName, string key)
+        {
+            var config = GetClientConfig(clientName);
+            if (!config.Settings.TryGetValue(key, out var value))
+                throw new Exception($"配置文件HttpClient:Clients:{clientName}:Settings没有配置key:{key}");
+            return value.To<T>();
         }
     }
 }
@@ -41,11 +58,8 @@ namespace TinyFx.Net
     /// <summary>
     /// HttpClient配置信息
     /// </summary>
-    public class HttpClientsElement
+    public class HttpClientConfig
     {
-        /// <summary>
-        /// 名称
-        /// </summary>
         public string Name { get; set; }
         /// <summary>
         /// 序列化方式
@@ -58,24 +72,18 @@ namespace TinyFx.Net
         /// <summary>
         /// Headers
         /// </summary>
-        public List<KeyValueItem> RequestHeaders { get; set; }
+        public List<KeyValueItem> RequestHeaders { get; set; } = new List<KeyValueItem>();
         /// <summary>
-        /// 请求超时时长（毫秒）默认3秒
+        /// 请求超时时长（毫秒）默认30秒
         /// </summary>
-        public int Timeout { get; set; } = 3000;
+        public int Timeout { get; set; } = 30000;
+        public bool UseCookies { get; set; } = false;
         /// <summary>
-        /// 重试次数
+        /// 请求返回时是否保留RequestBody和ResponseBody信息
         /// </summary>
-        public int RetryCount { get; set; }
+        public bool ReserveBody { get; set; } = true;
         public string Encoding { get; set; }
-        public List<KeyValueItem> Settings { get; set; } = new List<KeyValueItem>();
 
-        public readonly ConcurrentDictionary<string, string> SettingsDic = new ConcurrentDictionary<string, string>();
-        public T GetSettingsValue<T>(string key)
-        {
-            if (!SettingsDic.TryGetValue(key, out string ret))
-                throw new Exception($"配置HttpClient:Clients[{Name}]:Key不存在。 key: {key}");
-            return ret.To<T>();
-        }
+        public Dictionary<string, string> Settings;
     }
 }

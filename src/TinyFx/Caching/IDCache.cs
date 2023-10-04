@@ -13,7 +13,7 @@ namespace TinyFx.Caching
         T GetOrDefault<T>(object key, T defaultValue);
         T GetOrException<T>(object key);
         void Remove(object key);
-        void Set<T>(object key, T value, TimeSpan expire = default);
+        void Set<T>(object key, T value, TimeSpan? expire=null);
     }
 
 }

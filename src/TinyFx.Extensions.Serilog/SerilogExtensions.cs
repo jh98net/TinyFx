@@ -14,20 +14,6 @@ namespace Serilog
     {
         #region Enrichers
 
-#if THREAD_NAME
-        /// <summary>
-        /// Enrich log events with a ThreadName property containing the <see cref="Thread.CurrentThread"/> <see cref="Thread.Name"/>.
-        /// </summary>
-        /// <param name="enrichmentConfiguration">Logger enrichment configuration.</param>
-        /// <returns>Configuration object allowing method chaining.</returns>
-        /// <exception cref="ArgumentNullException">If <paramref name="enrichmentConfiguration"/> is null.</exception>
-        public static LoggerConfiguration WithThreadName(
-            this LoggerEnrichmentConfiguration enrichmentConfiguration)
-        {
-            if (enrichmentConfiguration == null) throw new ArgumentNullException(nameof(enrichmentConfiguration));
-            return enrichmentConfiguration.With<ThreadNameEnricher>();
-        }
-#endif
         /// <summary>
         /// 将 logEvent.MessageTemplate 的 MurmurHash（高效hash）值添加到事件属性
         /// </summary>

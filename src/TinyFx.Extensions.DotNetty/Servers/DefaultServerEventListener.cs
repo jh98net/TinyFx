@@ -125,7 +125,7 @@ namespace TinyFx.Extensions.DotNetty
         public event EventHandler<ServerStartArgs> ServerStart;
         public void OnServerStart(object sender, ServerStartArgs args)
         {
-            LogUtil.Info("WebSocket server started. Port: {0}", args.Options.Port);
+            LogUtil.Info("WebSocket server started. Port:{Port}", args.Options.Port);
             LogUtil.Debug("========== Commands 开始 ============");
             LogUtil.Debug("CommandId: {0,6} 心跳（Body 返回 {1}）", 0, null);
             LogUtil.Debug("CommandId: {0,6} 自定义或未处理异常（Body 返回 {1}）", -1, nameof(ProtoResponse)); 
@@ -142,7 +142,7 @@ namespace TinyFx.Extensions.DotNetty
         public event EventHandler<ServerStopArgs> ServerStop;
         public void OnServerStop(object sender, ServerStopArgs args)
         {
-            LogUtil.Info($"WebSocket server closed. Port: {args.Options.Port}");
+            LogUtil.Info("WebSocket server closed. {Port}", args.Options.Port);
             ServerStop?.Invoke(sender, args);
         }
         public event EventHandler<ServerExceptionArgs> ServerException;
@@ -201,7 +201,7 @@ namespace TinyFx.Extensions.DotNetty
             if (args.Context.Channel != null)
             {
                 if (_logLevel <= LogLevel.DEBUG)
-                    LogUtil.Debug("Channel Inactive: UserId={userId} clientIP={remoteAddress}"
+                    LogUtil.Debug("Channel Inactive: UserId:{userId} clientIp:{remoteAddress}"
                         , args.Session?.UserId, args.Session?.RemoteAddressString);
                 ChannelInactive?.Invoke(sender, args);
             }

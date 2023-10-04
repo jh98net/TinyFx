@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using Google.Protobuf.WellKnownTypes;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
     public class RedisHashExpireBase<TField> : RedisClientBase
     {
         public override RedisType RedisType => RedisType.Hash;
-        public RedisHashExpireBase(RedisClientOptions options = null) : base(options) { }
+        /// <summary>
+        /// 保存field时，如果没有设置过期时间时使用的默认过期时间
+        /// </summary>
+        public RedisHashExpireBase(object key = null, RedisClientOptions options = null) : base(key, options) { }
 
         #region LoadValueWhenRedisNotExists
-        public delegate bool LoadValueDelegate(string field, out CacheItem<TField> value);
+        public delegate Task<CacheValue<CacheItem<TField>>> LoadValueDelegate(string field);
         public LoadValueDelegate LoadValueHandler;
         /// <summary>
         /// 在调用GetOrLoad时，当Redis不存在此field时，将调用此方法获取field对应的缓存值，返回并存储到Redis中，需要时子类实现override。
@@ -23,26 +27,24 @@ namespace TinyFx.Extensions.StackExchangeRedis
         ///     3) 可抛出异常CacheNotFound：表示field对应的值不存在
         /// </summary>
         /// <param name="field">key</param>
-        /// <param name="value">返回的缓存项</param>
         /// <returns></returns>
-        protected virtual bool LoadValueWhenRedisNotExists(string field, out CacheItem<TField> value)
+        protected virtual async Task<CacheValue<CacheItem<TField>>> LoadValueWhenRedisNotExistsAsync(string field)
         {
             if (LoadValueHandler != null)
-            {
-                return LoadValueHandler(field, out value);
-            }
+                return await LoadValueHandler(field);
             throw new NotImplementedException();
         }
-        public delegate Dictionary<string, CacheItem<TField>> LoadAllValuesDelegate();
+
+        public delegate Task<CacheValue<Dictionary<string, CacheItem<TField>>>> LoadAllValuesDelegate();
         public LoadAllValuesDelegate LoadAllValuesHandler;
         /// <summary>
         /// 调用GetAllOrLoad()时，当RedisKey不存在，则调用此方法返回并存储全部hash值到redis中，需要时子类实现override
         /// </summary>
         /// <returns></returns>
-        protected virtual Dictionary<string, CacheItem<TField>> LoadAllValuesWhenRedisNotExists()
+        protected virtual async Task<CacheValue<Dictionary<string, CacheItem<TField>>>> LoadAllValuesWhenRedisNotExistsAsync()
         {
             if (LoadAllValuesHandler != null)
-                return LoadAllValuesHandler();
+                return await LoadAllValuesHandler();
             throw new NotImplementedException();
         }
         #endregion
@@ -53,40 +55,26 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         /// <param name="values"></param>
         /// <param name="flags"></param>
-        public void Set(Dictionary<string, CacheItem<TField>> values, CommandFlags flags = CommandFlags.None)
-        {
-            var entries = values.Select(kv => new HashEntry(kv.Key, SerializeExpire(kv.Value)));
-            Database.HashSet(RedisKey, entries.ToArray(), flags);
-        }
-
-        /// <summary>
-        /// 【创建或更新】设置hash结构中的field。如果key不存在创建，如果field存在则覆盖，不存在则添加
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
         public async Task SetAsync(Dictionary<string, CacheItem<TField>> values, CommandFlags flags = CommandFlags.None)
         {
             var entries = values.Select(kv => new HashEntry(kv.Key, SerializeExpire(kv.Value)));
             await Database.HashSetAsync(RedisKey, entries.ToArray(), flags);
+            await SetSlidingExpirationAsync();
         }
+
         #endregion
 
         #region Get & GetAll
+        public async Task<CacheValue<TField>> GetAsync(string field, CommandFlags flags = CommandFlags.None)
+        {
+            var value = await Database.HashGetAsync(RedisKey, field, flags);
+            var ret = GetCacheValue(field, value);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 获取一组field对应的缓存值
-        /// </summary>
-        /// <param name="fields"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public Dictionary<string, CacheValue<TField>> Get(IEnumerable<string> fields, CommandFlags flags = CommandFlags.None)
-        {
-            var arrFields = fields.Select(key => (RedisValue)key).ToArray();
-            var values = Database.HashGet(RedisKey, arrFields, flags);
-            return GetCacheValues(arrFields, values);
-        }
-        /// <summary>
-        /// 从Hash结构Get缓存项
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="flags"></param>
@@ -95,7 +83,9 @@ namespace TinyFx.Extensions.StackExchangeRedis
         {
             var arrFields = fields.Select(key => (RedisValue)key).ToArray();
             var values = await Database.HashGetAsync(RedisKey, arrFields, flags);
-            return GetCacheValues(arrFields, values);
+            var ret = GetCacheValues(arrFields, values);
+            await SetSlidingExpirationAsync();
+            return ret;
         }
         private Dictionary<string, CacheValue<TField>> GetCacheValues(RedisValue[] fields, RedisValue[] values)
         {
@@ -111,22 +101,11 @@ namespace TinyFx.Extensions.StackExchangeRedis
             }
             return ret;
         }
-
-        /// <summary>
-        /// 从Hash结构Get所有缓存项
-        /// </summary>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public Dictionary<string, TField> GetAll(CommandFlags flags = CommandFlags.None)
+        private CacheValue<TField> GetCacheValue(string field, RedisValue value)
         {
-            var ret = new Dictionary<string, TField>();
-            var entries = Database.HashGetAll(RedisKey, flags);
-            foreach (var entry in entries)
-            {
-                if (TryDeserializeExpire(entry.Name, entry.Value, out TField v))
-                    ret.Add(entry.Name, v);
-            }
-            return ret;
+            return TryDeserializeExpire(field, value, out TField v)
+                ? new CacheValue<TField>(true, v)
+                : new CacheValue<TField>(false);
         }
 
         /// <summary>
@@ -143,6 +122,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
                 if (TryDeserializeExpire(entry.Name, entry.Value, out TField v))
                     ret.Add(entry.Name, v);
             }
+            await SetSlidingExpirationAsync();
             return ret;
         }
 
@@ -151,19 +131,32 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public Dictionary<string, TField> GetAllOrLoad(CommandFlags flags = CommandFlags.None)
+        public async Task<CacheValue<Dictionary<string, TField>>> GetAllOrLoadAsync(CommandFlags flags = CommandFlags.None)
         {
-            if (KeyExists(flags))
-                return GetAll(flags);
-            var values = LoadAllValuesWhenRedisNotExists();
-            Set(values, flags);
-            var ret = new Dictionary<string, TField>();
-            foreach (var item in values)
-                ret.Add(item.Key, item.Value.Value);
+            CacheValue<Dictionary<string, TField>> ret = null;
+            if (!await KeyExistsAsync(flags))
+            {
+                var loadValues = await LoadAllValuesWhenRedisNotExistsAsync();
+                if (loadValues.HasValue)
+                {
+                    await SetAsync(loadValues.Value, flags);
+                    ret = new CacheValue<Dictionary<string, TField>>(true, new Dictionary<string, TField>());
+                    foreach (var item in loadValues.Value)
+                    {
+                        if(!item.Value.IsExpired)
+                            ret.Value.Add(item.Key, item.Value.Value);
+                    }
+                    await SetSlidingExpirationAsync();
+                }
+                else
+                    ret = new CacheValue<Dictionary<string, TField>>(false);
+            }
+            else
+            {
+                ret = new CacheValue<Dictionary<string, TField>>(await GetAllAsync(flags));
+            }
             return ret;
         }
-        public async Task<Dictionary<string, TField>> GetAllOrLoadAsync(CommandFlags flags = CommandFlags.None)
-            => await Task.Factory.StartNew(() => GetAllOrLoad(flags));
         #endregion
 
         #region Delete
@@ -171,37 +164,27 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// 从Hash结构移除kefield。时间复杂度：O(1)
         /// </summary>
         /// <param name="field"></param>
-        /// <param name="commandFlags"></param>
+        /// <param name="flags"></param>
         /// <returns></returns>
-        public bool Delete(string field, CommandFlags commandFlags = CommandFlags.None)
-            => Database.HashDelete(RedisKey, field, commandFlags);
+        public async Task<bool> DeleteAsync(string field, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.HashDeleteAsync(RedisKey, field, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 从Hash结构移除fields。时间复杂度：O(1)
         /// </summary>
         /// <param name="fields"></param>
-        /// <param name="commandFlags"></param>
+        /// <param name="flags"></param>
         /// <returns></returns>
-        public long Delete(IEnumerable<string> fields, CommandFlags commandFlags = CommandFlags.None)
-            => Database.HashDelete(RedisKey, fields.Select(x => (RedisValue)x).ToArray(), commandFlags);
-
-        /// <summary>
-        /// 从Hash结构移除field。时间复杂度：O(1)
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="commandFlags"></param>
-        /// <returns></returns>
-        public Task<bool> DeleteAsync(string field, CommandFlags commandFlags = CommandFlags.None)
-            => Database.HashDeleteAsync(RedisKey, field, commandFlags);
-
-        /// <summary>
-        /// 从Hash结构移除fields。时间复杂度：O(1)
-        /// </summary>
-        /// <param name="fields"></param>
-        /// <param name="commandFlags"></param>
-        /// <returns></returns>
-        public Task<long> DeleteAsync(IEnumerable<string> fields, CommandFlags commandFlags = CommandFlags.None)
-            => Database.HashDeleteAsync(RedisKey, fields.Select(x => (RedisValue)x).ToArray(), commandFlags);
+        public async Task<long> DeleteAsync(IEnumerable<string> fields, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.HashDeleteAsync(RedisKey, fields.Select(x => (RedisValue)x).ToArray(), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
 
         #region Exists/GetFields/GetValues/GetLength/Scan
@@ -211,25 +194,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="field"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public bool Exists(string field, CommandFlags flags = CommandFlags.None)
-            => Database.HashExists(RedisKey, field, flags);
-
-        /// <summary>
-        /// Hash是否存在指定field
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public Task<bool> ExistsAsync(string field, CommandFlags flags = CommandFlags.None)
-            => Database.HashExistsAsync(RedisKey, field, flags);
-
-        /// <summary>
-        /// 获取hash中所有的fields
-        /// </summary>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public IEnumerable<string> GetFields(CommandFlags flags = CommandFlags.None)
-            => Database.HashKeys(RedisKey, flags).Select(x => x.ToString());
+        public async Task<bool> ExistsAsync(string field, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.HashExistsAsync(RedisKey, field, flags);
+            if (ret)
+                await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 获取hash中所有的fields
@@ -237,24 +208,9 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="flags"></param>
         /// <returns></returns>
         public async Task<IEnumerable<string>> GetFieldsAsync(CommandFlags flags = CommandFlags.None)
-            => (await Database.HashKeysAsync(RedisKey, flags)).Select(x => x.ToString());
-
-        /// <summary>
-        /// 返回hash中所有的values
-        /// </summary>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public List<TField> GetValues(CommandFlags flags = CommandFlags.None)
         {
-            var ret = new List<TField>();
-            var values = Database.HashValues(RedisKey, flags);
-            foreach (var value in values)
-            {
-                if (TryDeserializeExpire(value, out CacheItem<TField> v) && !v.IsExpired)
-                {
-                    ret.Add(v.Value);
-                }
-            }
+            var ret = (await Database.HashKeysAsync(RedisKey, flags)).Select(x => x.ToString());
+            await SetSlidingExpirationAsync();
             return ret;
         }
 
@@ -269,21 +225,15 @@ namespace TinyFx.Extensions.StackExchangeRedis
             var values = await Database.HashValuesAsync(RedisKey, flags);
             foreach (var value in values)
             {
-                if (TryDeserializeExpire(value, out CacheItem<TField> v) && !v.IsExpired)
+                if (TryDeserializeExpire(value, out CacheItem<TField> v))
                 {
-                    ret.Add(v.Value);
+                    if (!v.IsExpired)
+                        ret.Add(v.Value);
                 }
             }
+            await SetSlidingExpirationAsync();
             return ret;
         }
-
-        /// <summary>
-        /// 获取hash内缓存项数量
-        /// </summary>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public long GetLength(CommandFlags flags = CommandFlags.None)
-            => Database.HashLength(RedisKey, flags);
 
         /// <summary>
         /// 获取hash内缓存项数量
@@ -291,56 +241,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="flags"></param>
         /// <returns></returns>
         public async Task<long> GetLengthAsync(CommandFlags flags = CommandFlags.None)
-            => await Database.HashLengthAsync(RedisKey, flags);
-
-        /// <summary>
-        /// HSCAN游标查询命令。时间复杂度O(N).N为hash中的field数量
-        /// </summary>
-        /// <param name="pattern">要获取条目的键的模式</param>
-        /// <param name="pageSize">要迭代的页面大小</param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public Dictionary<string, TField> Scan(string pattern, int pageSize, CommandFlags flags = CommandFlags.None)
         {
-            var ret = new Dictionary<string, TField>();
-            var entries = Database.HashScan(RedisKey, pattern, pageSize, flags);
-            foreach (var entry in entries)
-            {
-                if (TryDeserializeExpire(entry.Name, entry.Value, out TField v))
-                    ret.Add(entry.Name, v);
-            }
+            var ret = await Database.HashLengthAsync(RedisKey, flags);
+            await SetSlidingExpirationAsync();
             return ret;
         }
 
-        /// <summary>
-        /// HSCAN游标查询命令
-        /// </summary>
-        /// <param name="pattern"></param>
-        /// <param name="pageSize"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public async Task<Dictionary<string, TField>> ScanAsync(string pattern, int pageSize, CommandFlags flags = CommandFlags.None)
-            => await Task.Run(() => Scan(pattern, pageSize, flags));
-        /// <summary>
-        /// HSCAN游标查询命令
-        /// </summary>
-        /// <param name="pattern">查询表达式，如：t*</param>
-        /// <param name="pageSize">要迭代的页面大小</param>
-        /// <param name="cursor">HSCAN 命令每次被调用之后， 都会向用户返回一个新的游标， 用户在下次迭代时需要使用这个新游标作为 HSCAN 命令的游标参数， 以此来延续之前的迭代过程。返回0表示结束</param>
-        /// <param name="pageOffset"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public Dictionary<string, TField> Scan(RedisValue pattern, int pageSize, long cursor, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
-        {
-            var ret = new Dictionary<string, TField>();
-            var entries = Database.HashScan(RedisKey, pattern, pageSize, cursor, pageOffset, flags);
-            foreach (var entry in entries)
-            {
-                if (TryDeserializeExpire(entry.Name, entry.Value, out TField v))
-                    ret.Add(entry.Name, v);
-            }
-            return ret;
-        }
         /// <summary>
         /// HSCAN游标查询命令
         /// </summary>
@@ -350,99 +256,57 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="pageOffset"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public async Task<Dictionary<string, TField>> ScanAsync(RedisValue pattern, int pageSize, long cursor, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
-            => await Task.Run(() => Scan(pattern, pageSize, cursor, pageOffset, flags));
-        #endregion
-
-        #region Increment
-        /// <summary>
-        /// Hash结构存储增量数字。如果field不存在则设置为0。支持long
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="value"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public long Increment(string field, long value = 1, CommandFlags flags = CommandFlags.None)
-            => Database.HashIncrement(RedisKey, field, value, flags);
-
-        /// <summary>
-        /// Hash结构存储增量数字。如果field不存在则设置为0。支持long
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="value"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public double Increment(string field, double value, CommandFlags flags = CommandFlags.None)
-            => Database.HashIncrement(RedisKey, field, value, flags);
-        public async Task<long> IncerementAsync(string field, long value = 1, CommandFlags flags = CommandFlags.None)
-            => await Database.HashIncrementAsync(RedisKey, field, value, flags);
-
-        public async Task<double> IncerementAsync(string field, double value, CommandFlags flags = CommandFlags.None)
-            => await Database.HashIncrementAsync(RedisKey, field, value, flags);
-
-        /// <summary>
-        /// 减量数字-value,如不存在key则创建，返回减量后值
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="value"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public long Decrement(string field, long value = 1, CommandFlags flags = CommandFlags.None)
-            => Database.HashDecrement(RedisKey, field, value, flags);
-
-        /// <summary>
-        /// 减量数字-value,如不存在key则创建，返回减量后值
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="value"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public double Decrement(string field, double value, CommandFlags flags = CommandFlags.None)
-            => Database.HashDecrement(RedisKey, field, value, flags);
-        public async Task<long> DecrementAsync(string field, long value = 1, CommandFlags flags = CommandFlags.None)
-            => await Database.HashDecrementAsync(RedisKey, field, value, flags);
-
-        public async Task<double> DecrementAsync(string field, double value, CommandFlags flags = CommandFlags.None)
-            => await Database.HashDecrementAsync(RedisKey, field, value, flags);
-
+        public async Task<Dictionary<string, TField>> ScanAsync(RedisValue pattern, int pageSize, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = new Dictionary<string, TField>();
+            var entries = Database.HashScanAsync(RedisKey, pattern, pageSize, cursor, pageOffset, flags);
+            await foreach (var entry in entries)
+            {
+                if (TryDeserializeExpire(entry.Name, entry.Value, out TField v))
+                    ret.Add(entry.Name, v);
+            }
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
 
         #region FieldExpire
-        public bool FieldExpire(string field, DateTime expire, CommandFlags flags = CommandFlags.None)
+        public Task<bool> FieldExpireAtAsync(string field, DateTime expire, CommandFlags flags = CommandFlags.None)
             => FieldExpireBase(field, item => item.SetExpire(expire), flags);
-        public bool FieldExpire(string field, TimeSpan expire, CommandFlags flags = CommandFlags.None)
+
+        public Task<bool> FieldExpireAsync(string field, TimeSpan expire, CommandFlags flags = CommandFlags.None)
             => FieldExpireBase(field, item => item.SetExpire(expire), flags);
-        public bool FieldExpireAtSeconds(string field, int seconds, CommandFlags flags = CommandFlags.None)
+
+        public Task<bool> FieldExpireSecondsAsync(string field, int seconds, CommandFlags flags = CommandFlags.None)
             => FieldExpireBase(field, item => item.SetExpire(new TimeSpan(0, 0, seconds)), flags);
-        public bool FieldExpireAtMinutes(string field, int minutes, CommandFlags flags = CommandFlags.None)
+
+        public Task<bool> FieldExpireMinutesAsync(string field, int minutes, CommandFlags flags = CommandFlags.None)
             => FieldExpireBase(field, item => item.SetExpire(new TimeSpan(0, minutes, 0)), flags);
-        public bool FieldExpireAtHours(string field, int hours, CommandFlags flags = CommandFlags.None)
+
+        public Task<bool> FieldExpireHoursAsync(string field, int hours, CommandFlags flags = CommandFlags.None)
             => FieldExpireBase(field, item => item.SetExpire(new TimeSpan(hours, 0, 0)), flags);
-        public bool FieldExpireAtDays(string field, int days, CommandFlags flags = CommandFlags.None)
+
+        public Task<bool> FieldExpireDaysAsync(string field, int days, CommandFlags flags = CommandFlags.None)
             => FieldExpireBase(field, item => item.SetExpire(new TimeSpan(days, 0, 0, 0)), flags);
-        private bool FieldExpireBase(string field, Action<CacheItem<TField>> setExpire, CommandFlags flags = CommandFlags.None)
+
+        private async Task<bool> FieldExpireBase(string field, Action<CacheItem<TField>> setExpire, CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.HashGet(RedisKey, field, flags);
+            var redisValue = await Database.HashGetAsync(RedisKey, field, flags);
             if (!TryDeserializeExpire(redisValue, out CacheItem<TField> cacheItem))
                 return false;
             setExpire(cacheItem);
-            Database.HashSet(RedisKey, field, SerializeExpire(cacheItem), When.Always, flags);
+            await Database.HashSetAsync(RedisKey, field, SerializeExpire(cacheItem), When.Always, flags);
             return true;
         }
         #endregion
 
         #region Serializer
-        protected RedisValue SerializeExpire(TField value)
-        {
-            var cacheItem = new CacheItem<TField>(value);
-            return Serializer.Serialize(cacheItem);
-        }
-        protected RedisValue SerializeExpire(TField value, DateTime expireAt)
+        protected RedisValue SerializeExpire(TField value, DateTime? expireAt)
         {
             var cacheItem = new CacheItem<TField>(value, expireAt);
             return Serializer.Serialize(cacheItem);
         }
-        protected RedisValue SerializeExpire(TField value, TimeSpan expire)
+        protected RedisValue SerializeExpire(TField value, TimeSpan? expire)
         {
             var cacheItem = new CacheItem<TField>(value, expire);
             return Serializer.Serialize(cacheItem);
@@ -467,10 +331,14 @@ namespace TinyFx.Extensions.StackExchangeRedis
             else // 正常有值
             {
                 cacheItem = (CacheItem<TField>)Serializer.Deserialize(redisValue, typeof(CacheItem<TField>));
+                return !cacheItem.IsExpired;
             }
-            return true;
         }
         protected bool TryDeserializeExpire(string field, RedisValue redisValue, out TField value)
+        {
+            return TryDeserializeExpire<TField>(field, redisValue, out value);
+        }
+        protected bool TryDeserializeExpire<T>(string field, RedisValue redisValue, out T value)
         {
             value = default;
             if (redisValue.IsNull)// redis不存在此key
@@ -479,10 +347,10 @@ namespace TinyFx.Extensions.StackExchangeRedis
             }
             else // 正常有值
             {
-                var cacheItem = (CacheItem<TField>)Serializer.Deserialize(redisValue, typeof(CacheItem<TField>));
+                var cacheItem = (CacheItem<T>)Serializer.Deserialize(redisValue, typeof(CacheItem<T>));
                 if (cacheItem.IsExpired)
                 {
-                    Database.HashDelete(RedisKey, field);
+                    var _ = DeleteAsync(field);
                     return false;
                 }
                 else

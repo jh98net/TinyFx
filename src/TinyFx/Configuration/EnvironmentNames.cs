@@ -14,19 +14,23 @@ namespace TinyFx.Configuration
         /// </summary>
         Unknown,
         /// <summary>
-        /// dev 开发环境，一般是开发人员电脑
+        /// 开发人员电脑
+        /// </summary>
+        Local,
+        /// <summary>
+        /// dev 开发测试环境
         /// </summary>
         Development,
         /// <summary>
-        /// test 测试环境，一般发布到测试服务器
+        /// sit 集成测试环境
         /// </summary>
         Testing,
         /// <summary>
-        /// qa QA环境，一般发布到QA服务器
+        /// qa fat 测试人员测试环境
         /// </summary>
         QA,
         /// <summary>
-        /// staging 客户演示、新功能预演、仿真环境
+        /// uat 用户验收、仿真环境
         /// </summary>
         Staging,
         /// <summary>

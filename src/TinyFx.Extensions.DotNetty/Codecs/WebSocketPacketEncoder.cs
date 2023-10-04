@@ -26,6 +26,10 @@ namespace TinyFx.Extensions.DotNetty
             _sessions = DIUtil.GetRequiredService<AppSessionContainer>();
             _events = DIUtil.GetRequiredService<DefaultServerEventListener>();
             _option = ConfigUtil.GetSection<DotNettySection>()?.Server;
+            //ConfigUtil.ConfigChange += (_, _) =>
+            //{
+            //    _option = ConfigUtil.GetSection<DotNettySection>()?.Server;
+            //};
         }
         protected override void Encode(IChannelHandlerContext context, IPacket message, List<object> output)
         {

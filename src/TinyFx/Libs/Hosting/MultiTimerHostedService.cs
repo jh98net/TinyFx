@@ -63,7 +63,8 @@ namespace TinyFx.Hosting
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
             await TimerWorks.StopAsync(cancellationToken);
-            await _timerTask;
+            if (_timerTask != null)
+                await _timerTask;
             await base.StopAsync(cancellationToken);
             LogUtil.Info($"MultiTimerHostedService 服务已经停止...");
         }

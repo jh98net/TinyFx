@@ -9,6 +9,7 @@ using Serilog.Events;
 using TinyFx.Logging;
 using TinyFx.Configuration;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace TinyFx
 {
@@ -23,6 +24,7 @@ namespace TinyFx
             builder.Host.UseAutoMapperEx();
             builder.Host.UseRedisEx();
             builder.Host.UseRabbitMQEx();
+            builder.Host.UseIDGenerator();
             return builder;
         }
     }

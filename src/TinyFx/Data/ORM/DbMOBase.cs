@@ -4,6 +4,8 @@ using System.Data.Common;
 using System.Text;
 using TinyFx.Data.DataMapping;
 using System.Collections.Concurrent;
+using TinyFx.Configuration;
+using System.Xml.Linq;
 
 namespace TinyFx.Data.ORM
 {
@@ -17,10 +19,15 @@ namespace TinyFx.Data.ORM
         where TParameter : DbParameter
         where TDbType : struct
     {
-        // key: connectionStringName_provider_typeNamespace
-        private static ConcurrentDictionary<string, Database> DatabaseCache = new ConcurrentDictionary<string, Database>();
-        //private static ConcurrentDictionary<Type, Dictionary<string, TParameter>> _parameterCache = new ConcurrentDictionary<Type, Dictionary<string, TParameter>>();
-
+        // key: Type.FullName value: ConnectionStringConfig
+        private static ConcurrentDictionary<string, ConnectionStringConfig> TypeNameDict = new();
+        static DbMOBase()
+        {
+            ConfigUtil.ConfigChange += (_, _) =>
+            {
+                TypeNameDict.Clear();
+            };
+        }
         /// <summary>
         /// 当前对象初始化,如果不指定connectionStringName，则使用命名空间过滤查询，而不是用默认
         /// </summary>
@@ -36,27 +43,42 @@ namespace TinyFx.Data.ORM
                 Database = builder(config);
                 return;
             }
-
-            // 缓存
-            var ns = this.GetType().Namespace;
-            var key = ns;
-            if (DatabaseCache.TryGetValue(key, out Database database))
+            // Cache
+            var thisType = GetType();
+            var key = thisType.FullName;
+            if (TypeNameDict.TryGetValue(key, out config))
             {
-                Database = (TDatabase)database;
+                Database = builder(config);
                 return;
             }
+
+            // IOrmConnectionRouter
+            if (ConfigUtil.Data.OrmConnectionRouter != null)
+            {
+                var connName = ConfigUtil.Data.OrmConnectionRouter.Route(thisType, SourceName);
+                config = DbConfigManager.GetConnectionStringConfig(connName);
+                if (config != null)
+                {
+                    TypeNameDict.TryAdd(key, config);
+                    Database = builder(config);
+                    return;
+                }
+            }
+
             // 命名空间配置
+            var ns = thisType.Namespace;
             config = DbConfigManager.GetOrmConnectionStringConfig(ns);
             if (config != null)
             {
+                TypeNameDict.TryAdd(key, config);
                 Database = builder(config);
-                DatabaseCache.TryAdd(key, Database);
                 return;
             }
+
             // 默认数据库
             config = DbConfigManager.GetConnectionStringConfig(null);
+            TypeNameDict.TryAdd(key, config);
             Database = builder(config);
-            DatabaseCache.TryAdd(key, Database);
         }
 
         /// <summary>

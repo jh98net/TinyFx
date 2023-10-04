@@ -18,7 +18,7 @@ namespace TinyFx.Extensions.DotNetty.NettyInfoCommand
     /// Class to produce the template output
     /// </summary>
     
-    #line 1 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+    #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "17.0.0.0")]
     public partial class ProtoT : ProtoTBase
     {
@@ -28,187 +28,193 @@ namespace TinyFx.Extensions.DotNetty.NettyInfoCommand
         /// </summary>
         public virtual string TransformText()
         {
-            this.Write("// 代码生成器生成，请不要修改\r\n// Engine:      ");
+            this.Write("\n");
+            this.Write("\n");
+            this.Write("\n");
+            this.Write("\n");
+            this.Write("\n// 代码生成器生成，请不要修改\n// Engine:      ");
             
-            #line 7 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssemblyName));
             
             #line default
             #line hidden
             this.Write(" v");
             
-            #line 7 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Version));
             
             #line default
             #line hidden
-            this.Write("\r\n// Date:        ");
+            this.Write("\n// Date:        ");
             
-            #line 8 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
             
             #line default
             #line hidden
-            this.Write("\r\n// Description: ");
+            this.Write("\n// Description: ");
             
-            #line 9 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Data.Description));
             
             #line default
             #line hidden
-            this.Write("\r\n\r\nsyntax = \"proto3\";\r\n\r\n");
+            this.Write("\n\nsyntax = \"proto3\";\n\n");
             
-            #line 13 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  if (!string.IsNullOrEmpty(Data.PackageName)){ 
             
             #line default
             #line hidden
             this.Write("package ");
             
-            #line 13 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Data.PackageName));
             
             #line default
             #line hidden
             this.Write(";");
             
-            #line 13 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  } 
             
             #line default
             #line hidden
-            this.Write("\r\n");
+            this.Write("\n\n");
             
-            #line 15 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  foreach(var msg in Data.Messages) { 
             
             #line default
             #line hidden
-            this.Write("/**\r\n");
+            this.Write("\n/**\n");
             
-            #line 17 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GetMessageDescription(msg)));
             
             #line default
             #line hidden
-            this.Write("\r\n */\r\n");
+            this.Write("\n */\n");
             
-            #line 19 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  if (msg.IsEnum){ 
             
             #line default
             #line hidden
-            this.Write("enum ");
+            this.Write("\nenum ");
             
-            #line 20 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(msg.Name));
             
             #line default
             #line hidden
-            this.Write(" {\r\n");
+            this.Write(" {\n");
             
-            #line 21 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  foreach(var field in msg.Fields) { 
             
             #line default
             #line hidden
-            this.Write("\t");
+            this.Write("\n\t");
             
-            #line 22 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(field.Name));
             
             #line default
             #line hidden
             this.Write(" = ");
             
-            #line 22 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(field.Tag));
             
             #line default
             #line hidden
             this.Write("; ");
             
-            #line 22 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GetFieldDescription(field)));
             
             #line default
             #line hidden
-            this.Write("\r\n");
+            this.Write("\n");
             
-            #line 23 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  } 
             
             #line default
             #line hidden
-            this.Write("}\r\n");
+            this.Write("\n}\n");
             
-            #line 25 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  } else { 
             
             #line default
             #line hidden
-            this.Write("message ");
+            this.Write("\nmessage ");
             
-            #line 26 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(msg.Name));
             
             #line default
             #line hidden
-            this.Write(" {\r\n");
+            this.Write(" {\n");
             
-            #line 27 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  foreach(var field in msg.Fields) { 
             
             #line default
             #line hidden
-            this.Write("\t");
+            this.Write("\n\t");
             
-            #line 28 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(field.TypeString));
             
             #line default
             #line hidden
             this.Write(" ");
             
-            #line 28 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(field.Name));
             
             #line default
             #line hidden
             this.Write(" = ");
             
-            #line 28 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(field.Tag));
             
             #line default
             #line hidden
             this.Write("; ");
             
-            #line 28 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GetFieldDescription(field)));
             
             #line default
             #line hidden
-            this.Write("\r\n");
+            this.Write("\n");
             
-            #line 29 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  } 
             
             #line default
             #line hidden
-            this.Write("}\r\n");
+            this.Write("\n}\n");
             
-            #line 31 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  } 
             
             #line default
             #line hidden
+            this.Write("\n");
             
-            #line 32 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\ProtoT.tt"
  } 
             
             #line default
             #line hidden
+            this.Write("\n");
             return this.GenerationEnvironment.ToString();
         }
     }

@@ -97,7 +97,7 @@ namespace TinyFx.Common
                         var _ = task.ContinueWith(t =>
                         {
                             if (t.IsFaulted)
-                                LogUtil.Error(t.Exception, $"执行MultiTimerWorks任务失败。WorkId:{work.WorkId} message:{t.Exception?.Message}");
+                                LogUtil.Error(t.Exception, "执行MultiTimerWorks任务失败。workId:{workId} message:{ex.message}", work.WorkId, t.Exception?.Message);
                             if (t.IsCompleted)
                                 RunningTasks.Remove(t);
                         });
@@ -134,7 +134,7 @@ namespace TinyFx.Common
                     if (task.IsFaulted)
                         errMsg += task.Exception?.Message;
                 }
-                LogUtil.Error($"{GetType().FullName} 等待停止运行任务时Timerout! {errMsg}");
+                LogUtil.Error("{typeName} 等待停止运行任务时Timerout! {errorMessage}", GetType().FullName, errMsg);
             }
             return Task.CompletedTask;
         }

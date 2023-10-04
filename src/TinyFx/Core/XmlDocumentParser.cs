@@ -22,6 +22,8 @@ namespace TinyFx
         private const string FieldExpression = "/doc/members/member[@name='F:{0}']";
         private const string ParameterExpression = "param[@name='{0}']";
 
+        public XPathDocument Document { get; private set; }
+
         #region Constructors
         public XmlDocumentParser(Stream stream)
         {
@@ -48,8 +50,8 @@ namespace TinyFx
         }
         private void Init(Stream stream)
         {
-            XPathDocument xpath = new XPathDocument(stream);
-            _documentNavigator = xpath.CreateNavigator();
+            Document = new XPathDocument(stream);
+            _documentNavigator = Document.CreateNavigator();
         }
         #endregion
 

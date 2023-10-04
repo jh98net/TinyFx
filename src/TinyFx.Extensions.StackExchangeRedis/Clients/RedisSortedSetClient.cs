@@ -3,6 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Org.BouncyCastle.Utilities;
+using Google.Protobuf.WellKnownTypes;
+using static System.Formats.Asn1.AsnWriter;
+using TinyFx.Caching;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
@@ -14,25 +18,23 @@ namespace TinyFx.Extensions.StackExchangeRedis
     {
         public override RedisType RedisType => RedisType.SortedSet;
 
-        public string Id { get; set; }
-
         #region Constructors
-        public RedisSortedSetClient(RedisClientOptions options = null) : base(options)
+        public RedisSortedSetClient(object key = null, RedisClientOptions options = null) : base(key, options)
         {
         }
         #endregion
 
         #region LoadAllValuesWhenRedisNotExists
-        public delegate IEnumerable<T> LoadAllValuesDelegate();
+        public delegate Task<CacheValue<IEnumerable<T>>> LoadAllValuesDelegate();
         public LoadAllValuesDelegate LoadAllValuesHandler;
         /// <summary>
         /// 调用GetAllOrLoad()时，当RedisKey不存在，则调用此方法返回并存储全部zset值到redis中，需要时子类实现override
         /// </summary>
         /// <returns></returns>
-        protected virtual IEnumerable<T> LoadAllValuesWhenRedisNotExists()
+        protected virtual async Task<CacheValue<IEnumerable<T>>> LoadAllValuesWhenRedisNotExists()
         {
             if (LoadAllValuesHandler != null)
-                return LoadAllValuesHandler();
+                return await LoadAllValuesHandler();
             throw new NotImplementedException();
         }
         #endregion
@@ -44,32 +46,17 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         /// <param name="value"></param>
         /// <param name="score">成员要添加到排序集中的分数</param>
+        /// <param name="when"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public bool Add(T value, double score, CommandFlags flags= CommandFlags.None)
-            => Add(value, score, When.Always, flags);
+        public async Task<bool> AddAsync(T value, double score, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetAddAsync(RedisKey, Serialize(value), score, when, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
-        /// 将指定分数的成员添加到zset中。
-        /// 如果已存在，则将更新分数并在正确的位置重新插入元素
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="score">成员要添加到排序集中的分数</param>
-        /// <param name="when"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool Add(T value, double score, When when, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetAdd(RedisKey, Serialize(value), score, when, flags);
-        /// <summary>
-        /// 将一组指定分数的成员添加到zset中。
-        /// 如果已存在，则将更新分数并在正确的位置重新插入元素
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public long Add(IEnumerable<(T value, double score)> values, CommandFlags flags = CommandFlags.None)
-            => Add(values, When.Always, flags);
-        /// <summary>
         /// 将一组指定分数的成员添加到zset中。
         /// 如果已存在，则将更新分数并在正确的位置重新插入元素
         /// </summary>
@@ -77,10 +64,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="values"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long Add(IEnumerable<(T value, double score)> values, When when, CommandFlags flags = CommandFlags.None)
+        public async Task<long> AddAsync(IEnumerable<(T value, double score)> values, When when = When.Always, CommandFlags flags = CommandFlags.None)
         {
             var entries = values.Select(item => new SortedSetEntry(Serialize(item.value), item.score));
-            return Database.SortedSetAdd(RedisKey, entries.ToArray(), when, flags);
+            var ret = await Database.SortedSetAddAsync(RedisKey, entries.ToArray(), when, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
         }
         #endregion
 
@@ -91,8 +80,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="members"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long Remove(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetRemove(RedisKey, members.Select(member => Serialize(member)).ToArray(), flags);
+        public async Task<long> RemoveAsync(IEnumerable<T> members, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetRemoveAsync(RedisKey, members.Select(member => Serialize(member)).ToArray(), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 从存储在key的排序集中删除指定的成员。 不存在的成员将被忽略
@@ -100,8 +93,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="member"></param>
         /// <param name="flags"></param>
         /// <returns>如果成员存在于已排序集中并已被删除，则为true；否则为true。 否则为假</returns>
-        public bool Remove(T member, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetRemove(RedisKey, Serialize(member), flags);
+        public async Task<bool> RemoveAsync(T member, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetRemoveAsync(RedisKey, Serialize(member), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 删除指定排名区间的元素。顺序从0开始，倒序-1开始
         /// </summary>
@@ -109,8 +107,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="stop"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long RemoveRangeByRank(long start, long stop, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetRemoveRangeByRank(RedisKey, start, stop, flags);
+        public async Task<long> RemoveRangeByRankAsync(long start, long stop, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetRemoveRangeByRankAsync(RedisKey, start, stop, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 删除指定score区间的元素，默认包含start和stop
         /// </summary>
@@ -119,19 +122,19 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="exclude"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long RemoveRangeByScore(double start, double stop, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetRemoveRangeByScore(RedisKey, start, stop, exclude, flags);
-        /// <summary>
-        /// 删除ZSet（所有元素分数相同，按字典排序）中指定元素区间的元素
-        /// </summary>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <param name="exclude"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public long RemoveRangeByValue(T min, T max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetRemoveRangeByValue(RedisKey, Serialize(min), Serialize(max), exclude, flags);
+        public async Task<long> RemoveRangeByScoreAsync(double start, double stop, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetRemoveRangeByScoreAsync(RedisKey, start, stop, exclude, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
+        public async Task<long> RemoveRangeByValueAsync(T min, T max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetRemoveRangeByValueAsync(RedisKey, Serialize(min), Serialize(max), exclude, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
 
         #region Pop & Scan & Score & Rank & GetLength & LengthByValue
@@ -141,15 +144,16 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="order">排序依据（默认为升序）</param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public (T Element, double Score)? Pop(Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+        public async Task<(T Element, double Score)?> PopAsync(Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
         {
             (T Element, double Score)? ret = null;
-            var entry = Database.SortedSetPop(RedisKey, order, flags);
+            var entry = await Database.SortedSetPopAsync(RedisKey, order, flags);
             if (entry.HasValue)
             {
                 var value = Deserialize<T>(entry.Value.Element);
                 ret = (Element: value, Score: entry.Value.Score);
             }
+            await SetSlidingExpirationAsync();
             return ret;
         }
 
@@ -160,9 +164,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="order">排序依据（默认为升序）</param>
         /// <param name="flags"></param>
         /// <returns>一个元素数组，或者当键不存在时为空数组。</returns>
-        public IEnumerable<(T Element, double Score)> Pop(long count, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetPop(RedisKey, count, order, flags).Select(entry => (Element: Deserialize<T>(entry.Element), Score: entry.Score));
-
+        public async Task<IEnumerable<(T Element, double Score)>> PopAsync(long count, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = (await Database.SortedSetPopAsync(RedisKey, count, order, flags))
+                .Select(entry => (Element: Deserialize<T>(entry.Element), Score: entry.Score));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// ZSCAN命令用于对迭代集进行增量迭代
@@ -173,16 +181,30 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="pageOffset"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<(T Element, double Score)> Scan(string pattern, int pageSize, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetScan(RedisKey, pattern, pageSize, cursor, pageOffset, flags).Select(entry => (Element: Deserialize<T>(entry.Element), Score: entry.Score));
+        public async Task<IEnumerable<(T Element, double Score)>> ScanAsync(string pattern, int pageSize, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = new List<(T Element, double Score)>();
+            var entries = Database.SortedSetScanAsync(RedisKey, pattern, pageSize, cursor, pageOffset, flags);
+            await foreach (var entry in entries)
+            {
+                ret.Add((Element: Deserialize<T>(entry.Element), Score: entry.Score));
+            }
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 返回key排序集中的成员分数； 如果成员不存在于排序集中，或者键不存在，则返回null
         /// </summary>
         /// <param name="member"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public double? Score(T member, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetScore(RedisKey, Serialize(member), flags);
+        public async Task<double?> ScoreAsync(T member, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetScoreAsync(RedisKey, Serialize(member), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 返回ZSet中的成员的排名，默认情况下，分数从低到高排序。 等级（或索引）从0开始
@@ -191,8 +213,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="order"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long? Rank(T member, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetRank(RedisKey, Serialize(member), order, flags);
+        public async Task<long?> RankAsync(T member, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetRankAsync(RedisKey, Serialize(member), order, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 返回区间值之间的元素数
         /// </summary>
@@ -201,8 +228,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="exclude">是否从范围检查中排除最小值和最大值（默认值包括两者）</param>
         /// <param name="flags"></param>
         /// <returns>排序集的基数（元素数）；如果键不存在，则为0。</returns>
-        public long GetLength(double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetLength(RedisKey, min, max, exclude, flags);
+        public async Task<long> GetLengthAsync(double min = double.NegativeInfinity, double max = double.PositiveInfinity, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetLengthAsync(RedisKey, min, max, exclude, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 当以相同的分数插入排序集中的所有元素时，为了强制按字典顺序排序，此命令将返回键中排序集中的元素数，其值介于min和max之间
@@ -212,9 +243,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="exclude"></param>
         /// <param name="flags"></param>
         /// <returns>指定分数范围内的元素数。</returns>
-        public long LengthByValue(T min, T max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetLengthByValue(RedisKey, Serialize(min), Serialize(max), exclude, flags);
-        #endregion 
+        public async Task<long> LengthByValueAsync(T min, T max, Exclude exclude = Exclude.None, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetLengthByValueAsync(RedisKey, Serialize(min), Serialize(max), exclude, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+        #endregion
 
         #region RangeByRank & RangeByRankWithScores & RangeByScore & RangeByScoreWithScores & RangeByValue
         /// <summary>
@@ -226,8 +261,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="order">排序依据（默认为升序）</param>
         /// <param name="flags"></param>
         /// <returns>指定范围内的元素列表</returns>
-        public IEnumerable<T> RangeByRank(long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetRangeByRank(RedisKey, start, stop, order, flags).Select(value => Deserialize<T>(value));
+        public async Task<IEnumerable<T>> RangeByRankAsync(long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = (await Database.SortedSetRangeByRankAsync(RedisKey, start, stop, order, flags))
+                .Select(value => Deserialize<T>(value));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 返回指定范围的元素，默认从低到高。
@@ -238,8 +278,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="order">排序依据（默认为升序）</param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<(T Element, double Score)> RangeByRankWithScores(long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
-          => Database.SortedSetRangeByRankWithScores(RedisKey, start, stop, order, flags).Select(entry => (Element: Deserialize<T>(entry.Element), Score: entry.Score));
+        public async Task<IEnumerable<(T Element, double Score)>> RangeByRankWithScoresAsync(long start = 0, long stop = -1, Order order = Order.Ascending, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = (await Database.SortedSetRangeByRankWithScoresAsync(RedisKey, start, stop, order, flags))
+                .Select(entry => (Element: Deserialize<T>(entry.Element), Score: entry.Score));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 返回指定Score范围的元素，默认从低到高。
@@ -252,8 +297,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="take">取多少个元素</param>
         /// <param name="flags"></param>
         /// <returns>指定分数范围内的元素列表</returns>
-        public IEnumerable<T> RangeByScore(double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetRangeByScore(RedisKey, start, stop, exclude, order, skip, take, flags).Select(value => Deserialize<T>(value));
+        public async Task<IEnumerable<T>> RangeByScoreAsync(double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = (await Database.SortedSetRangeByScoreAsync(RedisKey, start, stop, exclude, order, skip, take, flags))
+                .Select(value => Deserialize<T>(value));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 返回指定Score范围的元素，默认从低到高。
@@ -266,8 +316,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="take">取多少个元素</param>
         /// <param name="flags"></param>
         /// <returns>指定分数范围内的元素列表</returns>
-        public IEnumerable<(T Element, double Score)> RangeByScoreWithScores(double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetRangeByScoreWithScores(RedisKey, start, stop, exclude, order, skip, take, flags).Select(entry => (Element: Deserialize<T>(entry.Element), Score: entry.Score));
+        public async Task<IEnumerable<(T Element, double Score)>> RangeByScoreWithScoresAsync(double start = double.NegativeInfinity, double stop = double.PositiveInfinity, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = (await Database.SortedSetRangeByScoreWithScoresAsync(RedisKey, start, stop, exclude, order, skip, take, flags))
+                .Select(entry => (Element: Deserialize<T>(entry.Element), Score: entry.Score));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 当以相同的分数插入排序集中的所有元素时，为了强制按字典顺序排序，
@@ -281,8 +336,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="take"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<T> RangeByValue(T min, T max, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip=0, long take = -1, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetRangeByValue(RedisKey, Serialize(min), Serialize(max), exclude, order, skip, take, flags).Select(value => Deserialize<T>(value));
+        public async Task<IEnumerable<T>> RangeByValueAsync(T min, T max, Exclude exclude = Exclude.None, Order order = Order.Ascending, long skip = 0, long take = -1, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = (await Database.SortedSetRangeByValueAsync(RedisKey, Serialize(min), Serialize(max), exclude, order, skip, take, flags))
+                .Select(value => Deserialize<T>(value));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
 
         #region Increment & Decrement
@@ -294,8 +354,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="value"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public double Decrement(T member, double value, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetDecrement(RedisKey, Serialize(member), value, flags);
+        public async Task<double> DecrementAsync(T member, double value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetDecrementAsync(RedisKey, Serialize(member), value, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 按增量递增存储在键中的排序集中成员的分数。 
@@ -305,8 +369,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="value"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public double Increment(T member, double value, CommandFlags flags = CommandFlags.None)
-            => Database.SortedSetIncrement(RedisKey, Serialize(member), value, flags);
+        public async Task<double> IncrementAsync(T member, double value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SortedSetIncrementAsync(RedisKey, Serialize(member), value, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
     }
 }

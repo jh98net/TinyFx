@@ -29,6 +29,6 @@ namespace TinyFx.Data.ORM
         /// <summary>
         /// 存储过程名
         /// </summary>
-        public abstract string ProcName { get; }
+        public abstract string ProcName { get; set; }
     }
 }

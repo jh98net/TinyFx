@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,8 +15,17 @@ namespace TinyFx
 {
     public static class TinyFxHost
     {
+        internal static List<IHostLifetimeEvent> LifetimeEvents = new();
         /// <summary>
-        /// 创建默认TinyFxHost
+        /// 添加应用程序生命周期事件类
+        /// </summary>
+        /// <param name="lifetimeEvent"></param>
+        public static void RegisterLifetimeEvent(IHostLifetimeEvent lifetimeEvent)
+        {
+            LifetimeEvents.Add(lifetimeEvent);
+        }
+        /// <summary>
+        /// 创建默认Host并UseTinyFx
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>

@@ -15,6 +15,7 @@ namespace TinyFx.Security
         public DateTime? Expires { get; set; }
         public DateTime? IssuedAt { get; set; }
         public string UserIp { get; set; }
+        public string CustomData { get; set; }
         [JsonIgnore]
         public ClaimsPrincipal Principal { get;set;}
     }

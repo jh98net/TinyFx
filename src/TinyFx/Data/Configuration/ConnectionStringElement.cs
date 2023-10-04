@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TinyFx.Configuration;
 
 namespace TinyFx.Data
 {
@@ -9,11 +10,6 @@ namespace TinyFx.Data
     /// </summary>
     public class ConnectionStringElement
     {
-        /// <summary>
-        /// 名称标识，必须唯一
-        /// </summary>
-        public string Name { get; set; }
-        
         /// <summary>
         /// 读写数据库连接字符串
         /// </summary>

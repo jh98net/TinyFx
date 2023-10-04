@@ -848,8 +848,8 @@ namespace TinyFx.Data.ORM
         /// <param name="sort"></param>
         /// <param name="fields"></param>
         /// <returns></returns>
-        protected string BuildSelectSQL(string where, int top, string sort, string fields = null)
-            => OrmProvider.BuildSelectSQL(SourceName, where, top, sort, fields);
+        protected string BuildSelectSQL(string where, int top, string sort, string fields = null, bool isForUpdate = false)
+            => OrmProvider.BuildSelectSQL(SourceName, where, top, sort, fields, isForUpdate);
         /// <summary>
         /// 获取Update语句
         /// </summary>
@@ -888,7 +888,7 @@ namespace TinyFx.Data.ORM
         /// <summary>
         /// key: connectionString|SQL value: parameterName MyDbType
         /// </summary>
-        protected static ConcurrentDictionary<string, (string parameterName, TDbType dbType)[]> _sqlParametersCache = new ConcurrentDictionary<string, (string parameterName, TDbType dbType)[]>();
+        //protected static ConcurrentDictionary<string, (string parameterName, TDbType dbType)[]> _sqlParametersCache = new ConcurrentDictionary<string, (string parameterName, TDbType dbType)[]>();
 
         /// <summary>
         /// key : SourceName, value: 所有字段类型
@@ -904,13 +904,12 @@ namespace TinyFx.Data.ORM
         {
             if (values == null || values.Length == 0)
                 return null;
-            var key = $"{Database.ConnectionString}|{sql}";
-            var paras = _sqlParametersCache.GetOrAdd(key, (_) =>
-            {
-                return GetSqlCacheItem(sql);
-            });
-            if (paras.Length != values.Length)
-                throw new Exception($"解析SQL语句获得的参数数量与赋值的数量不一致。paras: {paras.Length} values: {values.Length}");
+            //var key = $"{Database.ConnectionString}|{sql}";
+            //var paras = _sqlParametersCache.GetOrAdd(key, (_) =>
+            //{
+            //    return GetSqlCacheItem(sql, values);
+            //});
+            var paras = GetSqlCacheItem(sql, values);
             var ret = new List<TParameter>();
             for (int i = 0; i < paras.Length; i++)
                 ret.Add(Database.CreateInParameter(paras[i].parameterName, values[i], paras[i].dbType));
@@ -921,7 +920,7 @@ namespace TinyFx.Data.ORM
         /// </summary>
         /// <param name="sql"></param>
         /// <returns></returns>
-        protected (string parameterName, TDbType dbType)[] GetSqlCacheItem(string sql)
+        protected (string parameterName, TDbType dbType)[] GetSqlCacheItem(string sql, object[] values)
         {
             var key = $"{SourceType}|{SourceName}";
             Dictionary<string, TDbType> paras = _objParametersCache.GetOrAdd(key, (_) =>
@@ -929,16 +928,25 @@ namespace TinyFx.Data.ORM
                 return OrmProvider.GetDbTypeMappings(Database, SourceName, SourceType);
             });
             var parameterNames = Database.ParseSqlParameterNames(sql);
-            var ret = new (string parameterName, TDbType dbType)[parameterNames.Count];
-            for (int i = 0; i < parameterNames.Count; i++)
+            var namesHash = new HashSet<string>();
+
+            var ret = new List<(string parameterName, TDbType dbType)>();
+            foreach (var parameterName in parameterNames)
             {
-                var parameterName = parameterNames[i];
-                if (paras.ContainsKey(parameterName.ToUpper()))
-                    ret[i] = (parameterName, paras[parameterName.ToUpper()]);
-                else
-                    ret[i] = (parameterName, default(TDbType));
+                var paramKey = parameterName.ToUpper();
+                if (namesHash.Contains(paramKey))
+                    continue;
+                if (!paras.TryGetValue(paramKey, out TDbType dbType))
+                {
+                    var valueType = values[namesHash.Count].GetType();
+                    dbType = OrmProvider.MapDotNetTypeToDbType(valueType);
+                }
+                ret.Add((parameterName, dbType));
+                namesHash.Add(paramKey);
             }
-            return ret;
+            if (ret.Count != values.Length)
+                throw new Exception($"解析SQL语句获得的参数数量与赋值的数量不一致。paras: {ret.Count} values: {values.Length}");
+            return ret.ToArray();
         }
         #endregion
     }

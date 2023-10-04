@@ -44,10 +44,19 @@ namespace TinyFx
         /// <param name="input"></param>
         /// <param name="textColor"></param>
         /// <param name="bgColor"></param>
-        public static void WriteCurrentLine(string input, ConsoleColor textColor = default, ConsoleColor bgColor = default)
+        public static void WriteCursorTop(string input, ConsoleColor textColor = default, ConsoleColor bgColor = default)
         {
             Console.SetCursorPosition(0, Console.CursorTop);
             Write(input, textColor, bgColor);
         }
+
+        public static void WriteLineInfo(string msg)
+            => WriteLine(msg, ConsoleColor.Blue);
+        public static void WriteLineSuccess(string msg)
+            => WriteLine(msg, ConsoleColor.Green);
+        public static void WriteLineWarn(string msg)
+            => WriteLine(msg, ConsoleColor.Yellow);
+        public static void WriteLineError(string msg)
+            => WriteLine(msg, ConsoleColor.Red);
     }
 }

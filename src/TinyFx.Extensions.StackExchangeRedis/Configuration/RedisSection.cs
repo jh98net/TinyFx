@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using TinyFx.Configuration;
 using System.Linq;
 using TinyFx.Extensions.StackExchangeRedis;
+using TinyFx.Collections;
 
 namespace TinyFx.Configuration
 {
@@ -22,6 +23,7 @@ namespace TinyFx.Configuration
         /// 默认redis连接
         /// </summary>
         public string DefaultConnectionStringName { get; set; }
+        public bool RunNewTaskWhenSync { get; set; } = true;
         /// <summary>
         /// redis连接集合
         /// </summary>
@@ -38,22 +40,19 @@ namespace TinyFx.Configuration
         public override void Bind(IConfiguration configuration)
         {
             base.Bind(configuration);
+            ConnectionStrings = configuration.GetSection("ConnectionStrings")
+                .Get<Dictionary<string, ConnectionStringElement>>() ?? new();
+            ConnectionStrings.ForEach(x => x.Value.Name = x.Key);
 
-            var connStrs = configuration.GetSection("ConnectionStrings").Get<ConnectionStringElement[]>();
-            ConnectionStrings.Clear();
             ConnectionStringNamespaces.Clear();
-            foreach (var connStr in connStrs)
+            foreach (var conn in ConnectionStrings)
             {
-                if (ConnectionStrings.ContainsKey(connStr.Name))
-                    throw new Exception($"配置中Redis:ConnectionStrings:Name 重复。Name: {connStr.Name}");
-                ConnectionStrings.Add(connStr.Name, connStr);
-                // 
-                if (!string.IsNullOrEmpty(connStr.NamespaceMap))
+                if (!string.IsNullOrEmpty(conn.Value.NamespaceMap))
                 {
-                    foreach (var ns in connStr.NamespaceMap.Split(';'))
+                    foreach (var ns in conn.Value.NamespaceMap.Split(';'))
                     {
-                        if (!ConnectionStringNamespaces.TryAdd(ns, connStr.Name))
-                            throw new Exception($"tinyfx配置中Redis:ConnectionStrings:NamespaceMap配置重复。name: {connStr.Name} NamespaceMap: {ns}");
+                        if (!ConnectionStringNamespaces.TryAdd(ns, conn.Key))
+                            throw new Exception($"tinyfx配置中Redis:ConnectionStrings:NamespaceMap配置重复。name: {conn.Key} NamespaceMap: {ns}");
                     }
                 }
             }

@@ -132,7 +132,8 @@ namespace TinyFx
         /// <param name="url"></param>
         /// <returns></returns>
         public static bool IsUrl(string url)
-            => Regex.IsMatch(url, @"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?");
+            => Regex.IsMatch(url, @"((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?");
+            //=> Regex.IsMatch(url, @"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?");
 
         /// <summary>
         /// 验证是否是非负数，包括正数和0

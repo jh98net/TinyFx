@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,18 +25,32 @@ namespace TinyFx
             var section = ConfigUtil.GetSection<RedisSection>();
             if (section != null && section.ConnectionStrings != null && section.ConnectionStrings.Count > 0)
             {
+                //ConnectionMultiplexer.SetFeatureFlag("preventthreadtheft", true);
                 builder.ConfigureServices((context, services) =>
                 {
                     // 支持IDistributedCache。（AddRequestLimitEx 和 AddRedisSessionEx 需要）
-                    services.AddStackExchangeRedisCache(options=> {
+                    services.AddStackExchangeRedisCache(options =>
+                    {
                         var name = string.IsNullOrEmpty(connectionStringName) ? section.DefaultConnectionStringName : connectionStringName;
-                        options.Configuration = section.ConnectionStrings[name].ConnectionString;
-                        options.InstanceName = $"{ConfigUtil.Project?.ProjectId}:DCache";
+                        var connStr = section.ConnectionStrings[name].ConnectionString;
+                        options.ConfigurationOptions = ConfigurationOptions.Parse(connStr);
+                        options.InstanceName = $"{ConfigUtil.Project.ProjectId}:";
                     });
                 });
+                
+                //redis 资源释放
+                TinyFxHost.RegisterLifetimeEvent(new RedisHostLifetimeEvent());
             }
             LogUtil.Trace("Redis 配置启动");
             return builder;
+        }
+    }
+    public class RedisHostLifetimeEvent : DefaultHostLifetimeEvent
+    {
+        public override Task OnStopped()
+        {
+            RedisUtil.ReleaseAllRedis();
+            return Task.CompletedTask;
         }
     }
 }

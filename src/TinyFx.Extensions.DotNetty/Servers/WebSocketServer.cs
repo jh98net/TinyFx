@@ -118,7 +118,7 @@ namespace TinyFx.Extensions.DotNetty
                 }
                 if (task.IsFaulted)
                 {
-                    LogUtil.Error(task.Exception, $"WebSocket server exception. {_options}");
+                    LogUtil.Error(task.Exception, "WebSocket server exception. options:{options}", _options);
                     Events.OnServerException(this, new ServerExceptionArgs { Options = _options, Exception = task.Exception });
                 }
             });

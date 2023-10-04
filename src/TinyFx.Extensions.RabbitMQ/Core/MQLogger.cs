@@ -12,8 +12,15 @@ namespace TinyFx.Extensions.RabbitMQ
 {
     public class MQLogger<T> : EasyNetQ.Logging.ILogger<T>
     {
-        private RabbitMQSection _section;
-        private bool _enabled;
+        private static bool _enabled;
+        static MQLogger()
+        {
+            ConfigUtil.ConfigChange += (_, _) =>
+            {
+                var section = ConfigUtil.GetSection<RabbitMQSection>();
+                _enabled = section != null && section.LogEnabled;
+            };
+        }
         public MQLogger()
         {
             var section = ConfigUtil.GetSection<RabbitMQSection>();
@@ -21,14 +28,19 @@ namespace TinyFx.Extensions.RabbitMQ
         }
         public bool Log(EasyNetQ.Logging.LogLevel logLevel, Func<string> messageFunc, Exception exception = null, params object[] formatParameters)
         {
-            if (!_enabled)
+            if (!_enabled || messageFunc == null)
                 return false;
-            if (messageFunc == null)
+            var lv = logLevel switch
             {
-                return true;
-            }
+                EasyNetQ.Logging.LogLevel.Trace => Microsoft.Extensions.Logging.LogLevel.Trace,
+                EasyNetQ.Logging.LogLevel.Debug => Microsoft.Extensions.Logging.LogLevel.Debug,
+                EasyNetQ.Logging.LogLevel.Info => Microsoft.Extensions.Logging.LogLevel.Information,
+                EasyNetQ.Logging.LogLevel.Warn => Microsoft.Extensions.Logging.LogLevel.Warning,
+                EasyNetQ.Logging.LogLevel.Error => Microsoft.Extensions.Logging.LogLevel.Error,
+                EasyNetQ.Logging.LogLevel.Fatal => Microsoft.Extensions.Logging.LogLevel.Critical,
+                _ => throw new ArgumentOutOfRangeException()
+            };
             var msg = messageFunc();
-            var lv = EnumUtil.ToEnum((int)logLevel, Microsoft.Extensions.Logging.LogLevel.Warning);
             LogUtil.Log(lv, msg, exception, formatParameters);
             return true;
         }

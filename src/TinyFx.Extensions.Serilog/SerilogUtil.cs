@@ -23,9 +23,10 @@ namespace TinyFx.Extensions.Serilog
         public const string ProjectIdPropertyName = "ProjectId";
         public const string EnvironmentNamePropertyName = "EnvironmentName";
         public const string MachineIPPropertyName = "MachineIP";
-        public const string MachineNamePropertyName = "MachineName";
-        public const string ThreadIdPropertyName = "ThreadId";
-        public const string ThreadNamePropertyName = "ThreadName";
+        public const string IndexNamePropertyName = "IndexName";
+        //public const string MachineNamePropertyName = "MachineName";
+        //public const string ThreadIdPropertyName = "ThreadId";
+        //public const string ThreadNamePropertyName = "ThreadName";
 
         /// <summary>
         /// 特殊情况下的日志：./logs/ext.log
@@ -88,7 +89,9 @@ namespace TinyFx.Extensions.Serilog
         {
             if (_customSection == null)
                 _customSection = ConfigUtil.Configuration.GetSection("Serilog:Custom");
-            return _customSection == null ? defaultValue : _customSection[name].To(defaultValue);
+            var ret = _customSection?[name];
+            return !string.IsNullOrEmpty(ret)
+                ? ret.To<T>() : defaultValue;
         }
 
         public static bool ExistSection

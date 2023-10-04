@@ -1,9 +1,14 @@
-﻿using TinyFx.Extensions.AutoMapper;
+﻿using System.ComponentModel.DataAnnotations;
+using TinyFx.AspNet;
+using TinyFx.Extensions.AutoMapper;
 
 namespace Demo.WebAPI.BLL.Demo
 {
+    /*
     public class DemoIpo
     {
+        [StringLength(50)]
+        [StringLengthEx(2,"ErrorCode","Message")]
         public string Value { get; set; }
     }
     public class DemoDto : IMapFrom<Demo_userEO>
@@ -28,5 +33,5 @@ namespace Demo.WebAPI.BLL.Demo
             this.Name = source.ClassID;
         }
     }
-
+    */
 }

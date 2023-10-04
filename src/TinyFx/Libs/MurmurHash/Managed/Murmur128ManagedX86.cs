@@ -41,9 +41,6 @@ namespace Murmur
             Body(array, ibStart, cbSize);
         }
 
-#if NETFX45
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private void Body(byte[] data, int start, int length)
         {
             int remainder = length & 15;
@@ -72,9 +69,6 @@ namespace Murmur
                 Tail(data, alignedLength, remainder);
         }
 
-#if NETFX45
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private void Tail(byte[] tail, int position, int remainder)
         {
             // create our keys and initialize to 0

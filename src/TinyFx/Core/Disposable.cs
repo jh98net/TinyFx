@@ -37,7 +37,7 @@ namespace TinyFx
         /// </summary>
         ~Disposable()
         {
-            LogUtil.Warning($"类型通过析构函数释放资源: {GetType().FullName}");
+            LogUtil.Warning("类型通过析构函数释放资源。typeName:{typeName}", GetType().FullName);
             Dispose(false);
         }
 

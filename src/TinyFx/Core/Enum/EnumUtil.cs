@@ -107,14 +107,23 @@ namespace TinyFx
         #endregion // EnumInfo
 
         /// <summary>
-        /// 判断flags枚举类型variable是否包含value
+        /// 判断flags枚举值value是否包含flag
+        /// </summary>
+        /// <param name="value">枚举值，如5</param>
+        /// <param name="target">要判断的值，如3</param>
+        /// <returns></returns>
+        public static bool HasFlag(int value, int flag)
+            => (value & flag) != 0;
+
+        /// <summary>
+        /// 判断flags枚举类型variable是否包含flag
         /// </summary>
         /// <param name="variable">要验证的Enum值</param>
-        /// <param name="value">判断value是否包含在variable中</param>
+        /// <param name="flag">判断value是否包含在variable中</param>
         /// <returns></returns>
-        public static bool HasFlag(Enum variable, Enum value)
+        public static bool HasFlag(Enum variable, Enum flag)
         {
-            var valueNum = Convert.ToUInt64(value);
+            var valueNum = Convert.ToUInt64(flag);
             return (Convert.ToUInt64(variable) & valueNum) == valueNum;
         }
 
@@ -167,14 +176,9 @@ namespace TinyFx
         public static T ToEnum<T>(this string value)
             where T : Enum
         {
-            try
-            {
-                return (T)Enum.Parse(typeof(T), value, true);
-            }
-            catch
-            {
-                    throw new Exception($"string数值{value}在枚举{typeof(T).FullName}中没有定义");
-            }
+            return Enum.TryParse(typeof(T), value, true, out var ret)
+               ? (T)ret 
+               : throw new Exception($"string数值{value}在枚举{typeof(T).FullName}中没有定义");
         }
 
         /// <summary>
@@ -186,14 +190,8 @@ namespace TinyFx
         public static T? ToEnumN<T>(this string value)
             where T : struct
         {
-            try
-            {
-                return (T)Enum.Parse(typeof(T), value, true);
-            }
-            catch
-            {
-                return null;
-            }
+            return Enum.TryParse(typeof(T), value, true, out var ret)
+                ? (T)ret : null;
         }
 
         /// <summary>
@@ -206,13 +204,30 @@ namespace TinyFx
         public static T ToEnum<T>(this string value, T defaultValue)
                  where T : Enum
         {
+            return Enum.TryParse(typeof(T), value, true, out var ret)
+                ? (T)ret : defaultValue;
+        }
+
+        /// <summary>
+        /// 通过EnumMapAttribute指定枚举值的字符串映射转换
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static T ToEnumByMap<T>(this string value)
+            where T : Enum
+        {
             try
             {
-                return (T)Enum.Parse(typeof(T), value, true);
+                var info = GetInfo<T>();
+                if (!info.TryGetItemByMap(value, out int v))
+                    throw new Exception($"Enum类型没有定义EnumMapAttribute进行映射。type: {typeof(T).FullName} string:{value}");
+                return v.ToEnum<T>();
             }
             catch
             {
-                return defaultValue;
+                throw new Exception($"string数值{value}在枚举{typeof(T).FullName}中没有定义");
             }
         }
         #endregion

@@ -29,6 +29,7 @@ namespace TinyFx
 
         private Dictionary<int, EnumItem> _itemsInt;
         private Dictionary<string, EnumItem> _itemsStr;
+        private Dictionary<string, int> _itemsMapDic;
         /// <summary>
         /// 枚举值获取
         /// </summary>
@@ -67,18 +68,23 @@ namespace TinyFx
             var fields = EnumType.GetFields(BindingFlags.Public | BindingFlags.Static);
             _itemsInt = new Dictionary<int, EnumItem>();
             _itemsStr = new Dictionary<string, EnumItem>();
+            _itemsMapDic = new Dictionary<string, int>();
             foreach (var field in fields)
             {
                 var attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+                var mapName = (Attribute.GetCustomAttribute(field, typeof(EnumMapAttribute)) as EnumMapAttribute)?.MapName;
                 var item = new EnumItem()
                 {
                     Name = field.Name,
+                    MapName = mapName,
                     Value = (int)Enum.Parse(EnumType, field.Name),
                     Description = (attr != null) ? attr.Description : null,
                     FieldInfo = field
                 };
                 _itemsInt.Add(item.Value, item);
                 _itemsStr.Add(item.Name, item);
+                if(!string.IsNullOrEmpty(mapName))
+                    _itemsMapDic.Add(mapName, item.Value);
             }
         }
 
@@ -133,5 +139,8 @@ namespace TinyFx
                 : (int)Enum.Parse(EnumType, Convert.ToString(value), true);
             return GetItem(key);
         }
+
+        public bool TryGetItemByMap(string mapName, out int value)
+            => _itemsMapDic.TryGetValue(mapName, out value);
     }
 }

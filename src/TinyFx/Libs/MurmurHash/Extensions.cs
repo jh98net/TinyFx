@@ -5,9 +5,6 @@ namespace Murmur
 {
     internal static class Extensions
     {
-#if NETFX45
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         internal static uint ToUInt32(this byte[] data, int start)
         {
             return BitConverter.IsLittleEndian
@@ -15,9 +12,6 @@ namespace Murmur
                     : (uint)(data[start] << 24 | data[start + 1] << 16 | data[start + 2] << 8 | data[start + 3]);
         }
 
-#if NETFX45
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         internal static ulong ToUInt64(this byte[] data, int start)
         {
             if (BitConverter.IsLittleEndian)
@@ -38,25 +32,16 @@ namespace Murmur
             }
         }
 
-#if NETFX45
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         internal static uint RotateLeft(this uint x, byte r)
         {
             return (x << r) | (x >> (32 - r));
         }
 
-#if NETFX45
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         internal static ulong RotateLeft(this ulong x, byte r)
         {
             return (x << r) | (x >> (64 - r));
         }
 
-#if NETFX45
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         internal static uint FMix(this uint h)
         {
             // pipelining friendly algorithm
@@ -65,9 +50,6 @@ namespace Murmur
             return h ^ (h >> 16);
         }
 
-#if NETFX45
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         internal static ulong FMix(this ulong h)
         {
             // pipelining friendly algorithm

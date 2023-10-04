@@ -60,14 +60,6 @@ namespace TinyFx.Data.MySql
             return dao;
         }
         /// <summary>
-        /// MySQL分页大小不能通过参数传入，因此缓存KEY需要加入PageSize
-        /// </summary>
-        /// <returns></returns>
-        protected override string GetCacheKey()
-        {
-            return $"{Database.ConnectionString}_{OriginalSql}_{PageSize}";
-        }
-        /// <summary>
         /// 获得SQL
         /// </summary>
         /// <returns></returns>

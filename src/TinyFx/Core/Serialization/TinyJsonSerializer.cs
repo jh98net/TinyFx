@@ -1,48 +1,37 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
+using TinyFx.Text;
 
-namespace TinyFx
+namespace TinyFx.Serialization
 {
-    public class TinyJsonSerializer : ISerializer
+    public class TinyJsonSerializer : SerializerBase
     {
-        private static JsonSerializerOptions Options = SerializerUtil.DefaultJsonOptions;
-
-        public byte[] Serialize<T>(T item)
-            => JsonSerializer.SerializeToUtf8Bytes<T>(item, Options);
-
-        public Task<byte[]> SerializeAsync<T>(T item)
-            => Task.FromResult(JsonSerializer.SerializeToUtf8Bytes(item, Options));
-
-        public byte[] Serialize(object value, Type inputType)
-            => JsonSerializer.SerializeToUtf8Bytes(value, inputType, Options);
-
-        public Task<byte[]> SerializeAsync(object value, Type inputType)
-            => Task.FromResult(Serialize(value, inputType));
-
-
-        public T Deserialize<T>(byte[] utf8Bytes)
-            => JsonSerializer.Deserialize<T>(utf8Bytes, Options);
-
-        public Task<T> DeserializeAsync<T>(byte[] utf8Bytes)
+        public JsonSerializerSettings JsonOptions;
+        public TinyJsonSerializer()
         {
-            using (var stream = new MemoryStream(utf8Bytes))
-            {
-                return JsonSerializer.DeserializeAsync<T>(stream, Options).AsTask();
-            }
+            JsonOptions = SerializerUtil.ConfigJsonNetSettings(new JsonSerializerSettings());
+        }
+        public override byte[] Serialize(object value)
+        {
+            //return JsonSerializer.SerializeToUtf8Bytes(value, value.GetType(), _options);
+            //return Encoding.UTF8.GetBytes(SerializerUtil.SerializeJson(value, JsonOptions));
+            return Encoding.UTF8.GetBytes(SerializerUtil.SerializeJsonNet(value, JsonOptions));
+            //return Encoding.UTF8.GetBytes(SerializerUtil.SerializeJsonNet(value));
         }
 
-        public object Deserialize(byte[] utf8Bytes, Type returnType)
-            => JsonSerializer.Deserialize(utf8Bytes, returnType, Options);
-        public Task<object> DeserializeAsync(byte[] utf8Bytes, Type returnType)
+        public override object Deserialize(byte[] utf8Bytes, Type returnType)
         {
-            using (var stream = new MemoryStream(utf8Bytes))
-            {
-                return JsonSerializer.DeserializeAsync(stream, returnType, Options).AsTask();
-            }
+            //var reader = new Utf8JsonReader(utf8Bytes);
+            //return JsonSerializer.Deserialize(ref reader, returnType, _options);
+            return SerializerUtil.DeserializeJsonNet(Encoding.UTF8.GetString(utf8Bytes), returnType, JsonOptions);
+            //return SerializerUtil.DeserializeJson(Encoding.UTF8.GetString(utf8Bytes), returnType, JsonOptions);
+            //return SerializerUtil.DeserializeJsonNet(utf8Bytes, returnType);
+
         }
     }
 }

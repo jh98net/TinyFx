@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
 using MySql.Data.MySqlClient;
 using Serilog.Core;
 using Serilog.Debugging;
@@ -12,7 +13,10 @@ using Serilog.Sinks.Batch;
 using Serilog.Sinks.Extensions;
 using TinyFx;
 using TinyFx.Data.MySql;
+using TinyFx.Extensions.IDGenerator;
 using TinyFx.Extensions.Serilog;
+using TinyFx.Extensions.Serilog.MySQL;
+using TinyFx.Text;
 using MySqlDatabase = TinyFx.Data.MySql.MySqlDatabase;
 
 namespace Serilog.Sinks.TinyFxMySQL
@@ -23,17 +27,20 @@ namespace Serilog.Sinks.TinyFxMySQL
         private readonly bool _storeTimestampInUtc;
         private readonly string _tableName;
         private readonly bool _enabled;
+        private LogTablePKType _pkType;
 
         public TinyFxMySqlSink(
             string connectionString,
             bool enabled,
-            string tableName = "Logs",
+            string tableName,
+            LogTablePKType pkType,
             bool storeTimestampInUtc = false,
             uint batchSize = 100) : base((int) batchSize)
         {
             _connectionString    = connectionString;
             _enabled = enabled;
             _tableName           = tableName;
+            _pkType = pkType;
             _storeTimestampInUtc = storeTimestampInUtc;
         }
 
@@ -55,13 +62,29 @@ namespace Serilog.Sinks.TinyFxMySQL
         {
             var tableCommandBuilder = new StringBuilder();
             tableCommandBuilder.Append($"INSERT INTO  {_tableName} (");
-            tableCommandBuilder.Append("LogID, Timestamp, Level, LevelNum, Template, Message, Exception, Properties,ProjectId,Environment,MachineIP,TemplateHash) ");
-            tableCommandBuilder.Append("VALUES (@LogID, @Timestamp,@Level,@LevelNum, @Template, @Message, @Exception,@Properties, @ProjectId, @Environment, @MachineIP, @TemplateHash)");
+            if (_pkType == LogTablePKType.Identity)
+            {
+                tableCommandBuilder.Append("Timestamp, Level, LevelNum, Template, Message, Exception, Properties,ProjectId,Environment,MachineIP,TemplateHash) ");
+                tableCommandBuilder.Append("VALUES (@Timestamp,@Level,@LevelNum, @Template, @Message, @Exception,@Properties, @ProjectId, @Environment, @MachineIP, @TemplateHash)");
+            }
+            else
+            {
+                tableCommandBuilder.Append("LogID, Timestamp, Level, LevelNum, Template, Message, Exception, Properties,ProjectId,Environment,MachineIP,TemplateHash) ");
+                tableCommandBuilder.Append("VALUES (@LogID, @Timestamp,@Level,@LevelNum, @Template, @Message, @Exception,@Properties, @ProjectId, @Environment, @MachineIP, @TemplateHash)");
+            }
 
             var cmd = sqlConnection.CreateCommand();
             cmd.CommandText = tableCommandBuilder.ToString();
 
-            cmd.Parameters.Add(new MySqlParameter("@LogID", MySqlDbType.VarChar));
+            switch (_pkType)
+            {
+                case LogTablePKType.Guid:
+                    cmd.Parameters.Add(new MySqlParameter("@LogID", MySqlDbType.VarChar));
+                    break;
+                case LogTablePKType.Snowflake:
+                    cmd.Parameters.Add(new MySqlParameter("@LogID", MySqlDbType.Int64));
+                    break;
+            }
             cmd.Parameters.Add(new MySqlParameter("@Timestamp", MySqlDbType.DateTime));
             cmd.Parameters.Add(new MySqlParameter("@Level", MySqlDbType.VarChar));
             cmd.Parameters.Add(new MySqlParameter("@LevelNum", MySqlDbType.Byte));
@@ -91,7 +114,15 @@ namespace Serilog.Sinks.TinyFxMySQL
                     var logMessageString = new StringWriter(new StringBuilder());
                     logEvent.RenderMessage(logMessageString);
 
-                    insertCommand.Parameters["@LogID"].Value = Guid.NewGuid().ToString();
+                    switch (_pkType)
+                    {
+                        case LogTablePKType.Guid:
+                            insertCommand.Parameters["@LogID"].Value = ObjectId.NewId();
+                            break;
+                        case LogTablePKType.Snowflake:
+                            insertCommand.Parameters["@LogID"].Value = IDGeneratorUtil.NextId();
+                            break;
+                    }
                     insertCommand.Parameters["@Timestamp"].Value = _storeTimestampInUtc
                         ? logEvent.Timestamp.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")
                         : logEvent.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
@@ -113,8 +144,8 @@ namespace Serilog.Sinks.TinyFxMySQL
                         insertCommand.Parameters["@Environment"].Value = value2?.ToString().Trim('"');
                     if (properties.TryGetValue(SerilogUtil.MachineIPPropertyName, out LogEventPropertyValue value3))
                         insertCommand.Parameters["@MachineIP"].Value = value3?.ToString().Trim('"');
-                    if (properties.TryGetValue(TemplateHashEnricher.PropertyName, out LogEventPropertyValue value4))
-                        insertCommand.Parameters["@TemplateHash"].Value = value4?.ToString();
+                    //if (properties.TryGetValue(TemplateHashEnricher.PropertyName, out LogEventPropertyValue value4))
+                    //    insertCommand.Parameters["@TemplateHash"].Value = value4?.ToString();
                     await insertCommand.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
 

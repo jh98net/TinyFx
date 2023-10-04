@@ -4,12 +4,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>DotNetty组件</Description>
-    <Version>3.4.8</Version>
+    <Version>3.8.40</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DotNetty.Codecs.Http" Version="0.7.5" />
     <PackageReference Include="DotNetty.Transport.Libuv" Version="0.7.5" />
-    <PackageReference Include="protobuf-net" Version="3.1.22" />
+    <PackageReference Include="protobuf-net" Version="3.2.26" />
     <PackageReference Include="System.CodeDom" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>

@@ -3,6 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using Google.Protobuf.WellKnownTypes;
+using TinyFx.Caching;
+using Newtonsoft.Json.Linq;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
@@ -15,20 +18,20 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public override RedisType RedisType => RedisType.Set;
 
         #region Constructors
-        public RedisSetClient(RedisClientOptions options = null) : base(options) { }
+        public RedisSetClient(object key = null, RedisClientOptions options = null) : base(key, options) { }
         #endregion
 
         #region LoadAllValuesWhenRedisNotExists
-        public delegate IEnumerable<T> LoadAllValuesDelegate();
+        public delegate Task<CacheValue<IEnumerable<T>>> LoadAllValuesDelegate();
         public LoadAllValuesDelegate LoadAllValuesHandler;
         /// <summary>
         /// 调用GetAllOrLoad()时，当RedisKey不存在，则调用此方法返回并存储全部set值到redis中，需要时子类实现override
         /// </summary>
         /// <returns></returns>
-        protected virtual IEnumerable<T> LoadAllValuesWhenRedisNotExists()
+        protected virtual async Task<CacheValue<IEnumerable<T>>> LoadAllValuesWhenRedisNotExistsAsync()
         {
             if (LoadAllValuesHandler != null)
-                return LoadAllValuesHandler();
+                return await LoadAllValuesHandler();
             throw new NotImplementedException();
         }
         #endregion
@@ -39,32 +42,43 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<T> Members(CommandFlags flags = CommandFlags.None)
-            => Database.SetMembers(RedisKey, flags).Select(value => Deserialize<T>(value));
+        public async Task<IEnumerable<T>> MembersAsync(CommandFlags flags = CommandFlags.None)
+        {
+            var ret = (await Database.SetMembersAsync(RedisKey, flags))
+                .Select(value => Deserialize<T>(value));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 获取SET所有成员
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<T> GetAll(CommandFlags flags = CommandFlags.None)
-            => Members(flags);
+        public Task<IEnumerable<T>> GetAllAsync(CommandFlags flags = CommandFlags.None)
+            => MembersAsync(flags);
+
         /// <summary>
         /// 获取所有SET缓存值，如果RedisKey不存在，则调用LoadAllValuesWhenRedisNotExists()返回并保存到redis中
         /// </summary>
+        /// <param name="expire"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<T> GetAllOrLoad(CommandFlags flags = CommandFlags.None)
+        public async Task<CacheValue<IEnumerable<T>>> GetAllOrLoadAsync(TimeSpan? expire = null, CommandFlags flags = CommandFlags.None)
         {
-            IEnumerable<T> ret = default;
-            if (!KeyExists(flags))
+            CacheValue<IEnumerable<T>> ret = default;
+            if (!await KeyExistsAsync(flags))
             {
-                ret = LoadAllValuesWhenRedisNotExists();
-                Add(ret, flags);
+                ret = await LoadAllValuesWhenRedisNotExistsAsync();
+                if (ret.HasValue)
+                    await AddAsync(ret.Value, flags);
             }
             else
             {
-                ret = Members(flags);
+                ret = new CacheValue<IEnumerable<T>>(await MembersAsync(flags));
             }
+            if(ret.HasValue)
+                await SetSlidingExpirationAsync(expire);
             return ret;
         }
         #endregion
@@ -76,19 +90,32 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="value"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public bool Add(T value, CommandFlags flags = CommandFlags.None)
-            => Database.SetAdd(RedisKey, Serialize(value), flags);
+        public async Task<bool> AddAsync(T value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SetAddAsync(RedisKey, Serialize(value), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
-        public long Add(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
-            => Database.SetAdd(RedisKey, values.Select(value => Serialize(value)).ToArray(), flags);
+        public async Task<long> AddAsync(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SetAddAsync(RedisKey, values.Select(value => Serialize(value)).ToArray(), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 从SET中移除指定元素
         /// </summary>
         /// <param name="value"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public bool Remove(T value, CommandFlags flags = CommandFlags.None)
-            => Database.SetRemove(RedisKey, Serialize(value), flags);
+        public async Task<bool> RemoveAsync(T value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SetRemoveAsync(RedisKey, Serialize(value), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 从SET中移除多个指定元素
@@ -96,8 +123,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="values"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long Remove(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
-            => Database.SetRemove(RedisKey, values.Select(value => Serialize(value)).ToArray(), flags);
+        public async Task<long> RemoveAsync(IEnumerable<T> values, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SetRemoveAsync(RedisKey, values.Select(value => Serialize(value)).ToArray(), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 将成员从源集合移到目标集合。 此操作是原子的。 
         /// 在每个给定的时刻，该元素将似乎是其他客户端的源或目标的成员。 如果指定的元素已存在于目标集中，则仅将其从源集中删除
@@ -106,8 +138,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="value"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public bool Move(string destinationKey, T value, CommandFlags flags = CommandFlags.None)
-            => Database.SetMove(RedisKey, destinationKey, Serialize(value), flags);
+        public async Task<bool> MoveAsync(string destinationKey, T value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SetMoveAsync(RedisKey, destinationKey, Serialize(value), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// SET是否存在此值
@@ -115,16 +151,24 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="value"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public bool Contains(T value, CommandFlags flags = CommandFlags.None)
-            => Database.SetContains(RedisKey, Serialize(value), flags);
+        public async Task<bool> ContainsAsync(T value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SetContainsAsync(RedisKey, Serialize(value), flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// SET缓存个数
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long GetLength(CommandFlags flags = CommandFlags.None)
-            => Database.SetLength(RedisKey, flags);
+        public async Task<long> GetLengthAsync(CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.SetLengthAsync(RedisKey, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
 
         #region Pop & Random & Scan
@@ -134,24 +178,39 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T Pop(CommandFlags flags = CommandFlags.None)
-            => Deserialize<T>(Database.SetPop(RedisKey, flags));
+        public async Task<T> PopAsync(CommandFlags flags = CommandFlags.None)
+        {
+            var ret = Deserialize<T>(await Database.SetPopAsync(RedisKey, flags));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 随机从SET中删除并返回指定数量的元素
         /// </summary>
         /// <param name="count"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<T> Pop(long count, CommandFlags flags = CommandFlags.None)
-            => Database.SetPop(RedisKey, count, flags).Select(value => Deserialize<T>(value));
+        public async Task<IEnumerable<T>> PopAsync(long count, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = (await Database.SetPopAsync(RedisKey, count, flags))
+                .Select(value => Deserialize<T>(value));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 随机从SET中取出一个元素
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T Random(CommandFlags flags = CommandFlags.None)
-            => Deserialize<T>(Database.SetRandomMember(RedisKey, flags));
+        public async Task<T> RandomAsync(CommandFlags flags = CommandFlags.None)
+        {
+            var ret = Deserialize<T>(await Database.SetRandomMemberAsync(RedisKey, flags));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 随机从SET中取出指定数量的元素.
         ///     如果count为正数，返回由count个不同元素组成的数组。
@@ -160,18 +219,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="count">取出的随机数量。正数：返回不同元素的数组。负数：返回可重复元素的数组，数组长度是此值的绝对值</param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<T> Random(long count, CommandFlags flags = CommandFlags.None)
-            => Database.SetRandomMembers(RedisKey, count, flags).Select(value => Deserialize<T>(value));
-
-        /// <summary>
-        /// 使用SSCAN命令遍历集合
-        /// </summary>
-        /// <param name="pattern">查询表达式</param>
-        /// <param name="pageSize"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public IEnumerable<T> Scan(string pattern, int pageSize, CommandFlags flags)
-            => Database.SetScan(RedisKey, pattern, pageSize, flags).Select(value => Deserialize<T>(value));
+        public async Task<IEnumerable<T>> RandomAsync(long count, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = (await Database.SetRandomMembersAsync(RedisKey, count, flags))
+                .Select(value => Deserialize<T>(value));
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 使用SSCAN命令遍历集合
@@ -182,8 +236,17 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="pageOffset"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public IEnumerable<T> Scan(string pattern = default, int pageSize = 10, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
-            => Database.SetScan(RedisKey, pattern, pageSize, cursor, pageOffset, flags).Select(value => Deserialize<T>(value));
+        public async Task<IEnumerable<T>> ScanAsync(string pattern = default, int pageSize = 10, long cursor = 0, int pageOffset = 0, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = new List<T>();
+            var entries = Database.SetScanAsync(RedisKey, pattern, pageSize, cursor, pageOffset, flags);
+            await foreach (var entry in entries)
+            {
+                ret.Add(Deserialize<T>(entry));
+            }
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
     }
 }

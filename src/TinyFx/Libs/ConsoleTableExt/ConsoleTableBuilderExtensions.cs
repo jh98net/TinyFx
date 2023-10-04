@@ -16,11 +16,7 @@ namespace TinyFx.ConsoleTableExt
 
         public static ConsoleTableBuilder AddColumn(this ConsoleTableBuilder builder, List<string> columnNames)
         {
-#if NET35
-            columnNames.ForEach(f => builder.Column.Add(f));
-#else
             builder.Column.AddRange(columnNames);
-#endif
             return builder;
         }
 
@@ -33,11 +29,7 @@ namespace TinyFx.ConsoleTableExt
         public static ConsoleTableBuilder WithColumn(this ConsoleTableBuilder builder, List<string> columnNames)
         {
             builder.Column = new List<object>();
-#if NET35
-            columnNames.ForEach(f => builder.Column.Add(f));
-#else
             builder.Column.AddRange(columnNames);
-#endif
             return builder;
         }
 

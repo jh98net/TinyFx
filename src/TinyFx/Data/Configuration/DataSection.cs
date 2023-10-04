@@ -8,6 +8,7 @@ using TinyFx.Data.Instrumentation;
 using System.Linq;
 using TinyFx.Reflection;
 using TinyFx.Data;
+using TinyFx.Data.ORM.Router;
 
 namespace TinyFx.Configuration
 {
@@ -26,10 +27,11 @@ namespace TinyFx.Configuration
         /// </summary>
         public string DefaultConnectionStringName { get; set; }
 
+        public string OrmConnectionRouterType { get; set; }
         /// <summary>
-        /// 数据路由提供程序
+        /// ORM连接路由（表名）
         /// </summary>
-        public string DataRouter { get; set; }
+        public IOrmConnectionRouter OrmConnectionRouter { get; set; }
 
         /// <summary>
         /// 跟踪服务提供程序
@@ -46,15 +48,11 @@ namespace TinyFx.Configuration
         public override void Bind(IConfiguration configuration)
         {
             base.Bind(configuration);
-            var conns = configuration.GetSection("ConnectionStrings")
-                .Get<ConnectionStringElement[]>();
-            foreach (var conn in conns)
-            {
-                if (ConnectionStrings.ContainsKey(conn.Name))
-                    throw new Exception($"tinyfx配置中Data:ConnectionStrings:Name重复。Name: {conn.Name}");
-                ConnectionStrings.Add(conn.Name, conn);
-            }
+            ConnectionStrings = configuration.GetSection("ConnectionStrings")
+                .Get<Dictionary<string, ConnectionStringElement>>() ?? new();
             LoadConnectionStringConfigs();
+            if (!string.IsNullOrEmpty(OrmConnectionRouterType))
+                OrmConnectionRouter = ReflectionUtil.CreateInstance<IOrmConnectionRouter>(OrmConnectionRouterType);
         }
         #endregion 
 
@@ -73,30 +71,34 @@ namespace TinyFx.Configuration
         {
             ConnectionStringConfigs.Clear();
             ConnectionStringNamespaces.Clear();
-            foreach (var sett in ConnectionStrings.Values)
+            foreach (var sett in ConnectionStrings)
             {
-                if (string.IsNullOrEmpty(sett.Name) || string.IsNullOrEmpty(sett.ConnectionString))
-                    continue;
-                string instType = !string.IsNullOrEmpty(sett.InstProvider) ? sett.InstProvider : InstProvider;
+                if(string.IsNullOrEmpty(sett.Key))
+                    throw new Exception("配置中Data:ConnectionStrings:Name不能为空");
+                if(string.IsNullOrEmpty(sett.Value.ConnectionString))
+                    throw new Exception($"配置中Data:ConnectionStrings:Name[{sett.Key}].ConnectionString不能为空");
+                if(string.IsNullOrEmpty(sett.Value.ProviderName))
+                    throw new Exception($"配置中Data:ConnectionStrings:Name[{sett.Key}].ProviderName不能为空");
+                string instType = !string.IsNullOrEmpty(sett.Value.InstProvider) ? sett.Value.InstProvider : InstProvider;
                 var config = new ConnectionStringConfig
                 {
-                    ConnectionStringName = sett.Name,
-                    Provider = DbDataProviderUtil.GetProvider(sett.ProviderName),
-                    ConnectionString = sett.ConnectionString,
-                    ReadConnectionString = sett.ReadConnectionString,
-                    CommandTimeout = sett.CommandTimeout,
+                    ConnectionStringName = sett.Key,
+                    Provider = DbDataProviderUtil.GetProvider(sett.Value.ProviderName),
+                    ConnectionString = sett.Value.ConnectionString,
+                    ReadConnectionString = sett.Value.ReadConnectionString,
+                    CommandTimeout = sett.Value.CommandTimeout == 0 ? 30 : sett.Value.CommandTimeout,
                     InstProvider = string.IsNullOrEmpty(instType) ? DefaultDataInstProvider.Instance
                         : (IDataInstProvider)ReflectionUtil.CreateInstance(Type.GetType(instType))
                 };
                 if (!ConnectionStringConfigs.TryAdd(config.ConnectionStringName, config))
-                    throw new Exception("tinyfx配置中Data:ConnectionStrings:Name重复。Name: " + config.ConnectionStringName);
+                    throw new Exception("配置中Data:ConnectionStrings:Name重复。Name: " + config.ConnectionStringName);
 
-                if (!string.IsNullOrEmpty(sett.OrmMap))
+                if (!string.IsNullOrEmpty(sett.Value.OrmMap))
                 {
-                    foreach (var ns in sett.OrmMap.Split(';'))
+                    foreach (var ns in sett.Value.OrmMap.Split(';'))
                     {
                         if (!ConnectionStringNamespaces.TryAdd(ns, config))
-                            throw new Exception($"tinyfx配置中Data:ConnectionStrings:OrmMap配置重复。name: {sett.Name} ormMap: {ns}");
+                            throw new Exception($"tinyfx配置中Data:ConnectionStrings:OrmMap配置重复。name: {sett.Key} ormMap: {ns}");
                     }
                 }
             }

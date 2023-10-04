@@ -1,5 +1,4 @@
-﻿#if !NETSTANDARD2_0
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -122,4 +121,3 @@ namespace TinyFx.Reflection
         }
     }
 }
-#endif

@@ -214,6 +214,7 @@ namespace TinyFx.Data.Schema
         /// DbType类型
         /// </summary>
         public abstract DbType SysDbType { get; }
+        public abstract Type DotNetType{get;}
         /// <summary>
         /// .Net 数据类型字符串表示
         /// </summary>
@@ -274,7 +275,7 @@ namespace TinyFx.Data.Schema
         /// <summary>
         /// 通过MySQL字段原始类型推断的 .NET 类型
         /// </summary>
-        public Type DotNetType => TypeMapper.MapDotNetType(EngineType);
+        public override Type DotNetType => TypeMapper.MapDotNetType(EngineType);
 
         /// <summary>
         /// .NET类型字符串表示，支持可空类型，如int?

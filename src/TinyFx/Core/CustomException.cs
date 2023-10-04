@@ -20,20 +20,27 @@ namespace TinyFx
         /// 返回给客户端的数据
         /// </summary>
         public object Result { get; set; }
+        
         private string _stackTrace;
-        public override string StackTrace => string.IsNullOrEmpty(_stackTrace) ? base.StackTrace : _stackTrace;
-        public void SetStackTrace(string value) => _stackTrace = value;
+        public override string StackTrace 
+            => string.IsNullOrEmpty(_stackTrace) ? base.StackTrace : _stackTrace;
+        public void SetStackTrace(string value) 
+            => _stackTrace = value;
+        
         private string _message;
-        public override string Message => string.IsNullOrEmpty(_message) ? base.Message : _message;
-        public void SetMessage(string value) => _message = value;
+        public override string Message 
+            => string.IsNullOrEmpty(_message) ? base.Message : _message;
+        public void SetMessage(string value) 
+            => _message = value;
 
         public CustomException(string message) : base(message)
         {
             Code = ResponseCode.G_BadRequest;
         }
-        public CustomException(string code, string message, Exception innerException = null, object result = null) : base(message, innerException)
+        public CustomException(string code, string message, Exception innerException = null, object result = null)
+            : base(message ?? code, innerException)
         {
-            Code = string.IsNullOrEmpty(code) ? ResponseCode.G_BadRequest: code;
+            Code = string.IsNullOrEmpty(code) ? ResponseCode.G_BadRequest : code;
             Result = result;
         }
     }

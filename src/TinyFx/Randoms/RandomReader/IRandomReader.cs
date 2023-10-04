@@ -24,7 +24,10 @@ namespace TinyFx.Randoms
             for (int i = 0; i < size; i++)
             {
                 var value = BitConverter.ToInt32(buffer, i * 4);
-                ret[i] = Math.Abs(value);
+                if (value >= 0)
+                    ret[i] = value;
+                else
+                    ret[i] = value == int.MinValue ? int.MaxValue : -value;
             }
             return ret;
         }

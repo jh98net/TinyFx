@@ -227,7 +227,7 @@ namespace TinyFx.Data.MySql
                     return DbType.UInt64;
                 case MySqlDbType.Bit:
                     return DbType.Int32;
-                    //return DbType.UInt64;
+                //return DbType.UInt64;
                 case MySqlDbType.Float:
                     return DbType.Single;
                 case MySqlDbType.Double:
@@ -404,6 +404,51 @@ namespace TinyFx.Data.MySql
                     return typeof(Guid);
                 default:
                     throw new Exception("未知的 MySqlDbType 类型" + dbType.ToString());
+            }
+        }
+
+        public MySqlDbType MapDotNetTypeToDbType(Type type)
+        {
+            switch (type.FullName)
+            {
+                case SimpleTypeNames.Byte:
+                    return MySqlDbType.Byte;
+                case SimpleTypeNames.SByte:
+                    return MySqlDbType.UByte;
+                case SimpleTypeNames.Int16:
+                    return MySqlDbType.Int16;
+                case SimpleTypeNames.UInt16:
+                    return MySqlDbType.UInt16;
+                case SimpleTypeNames.Int32:
+                    return MySqlDbType.Int32;
+                case SimpleTypeNames.UInt32:
+                    return MySqlDbType.UInt32;
+                case SimpleTypeNames.Int64:
+                    return MySqlDbType.Int64;
+                case SimpleTypeNames.UInt64:
+                    return MySqlDbType.UInt64;
+                case SimpleTypeNames.Single:
+                    return MySqlDbType.Float;
+                case SimpleTypeNames.Double:
+                    return MySqlDbType.Double;
+                case SimpleTypeNames.Boolean:
+                    return MySqlDbType.Byte;
+                case SimpleTypeNames.Char:
+                    return MySqlDbType.VarChar;
+                case SimpleTypeNames.Decimal:
+                    return MySqlDbType.Decimal;
+                case SimpleTypeNames.TimeSpan:
+                    return MySqlDbType.Time;
+                case SimpleTypeNames.DateTime:
+                    return MySqlDbType.DateTime;
+                case SimpleTypeNames.Guid:
+                    return MySqlDbType.Guid;
+                case SimpleTypeNames.String:
+                    return MySqlDbType.VarString;
+                case SimpleTypeNames.Bytes:
+                    return MySqlDbType.Blob;
+                default:
+                    return default;
             }
         }
     }

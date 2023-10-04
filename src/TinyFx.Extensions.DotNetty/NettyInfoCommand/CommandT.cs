@@ -18,7 +18,7 @@ namespace TinyFx.Extensions.DotNetty.NettyInfoCommand
     /// Class to produce the template output
     /// </summary>
     
-    #line 1 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+    #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.TextTemplating", "17.0.0.0")]
     public partial class CommandT : CommandTBase
     {
@@ -28,37 +28,41 @@ namespace TinyFx.Extensions.DotNetty.NettyInfoCommand
         /// </summary>
         public virtual string TransformText()
         {
-            this.Write("// 代码生成器生成，请不要修改\r\n// Engine:      ");
+            this.Write("\n");
+            this.Write("\n");
+            this.Write("\n");
+            this.Write("\n");
+            this.Write("\n// 代码生成器生成，请不要修改\n// Engine:      ");
             
-            #line 7 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(AssemblyName));
             
             #line default
             #line hidden
             this.Write(" v");
             
-            #line 7 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Version));
             
             #line default
             #line hidden
-            this.Write("\r\n// Date:        ");
+            this.Write("\n// Date:        ");
             
-            #line 8 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")));
             
             #line default
             #line hidden
-            this.Write("\r\n// Description: ");
+            this.Write("\n// Description: ");
             
-            #line 9 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Data.Description));
             
             #line default
             #line hidden
-            this.Write("\r\n\r\nimport $root from \'./");
+            this.Write("\n\nimport $root from \'./");
             
-            #line 11 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(Data.Package));
             
             #line default
@@ -110,214 +114,217 @@ abstract class RpcCommandBase<TReq, TRsp> extends PushCommandBase<TRsp>{
 
 ");
             
-            #line 56 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
  foreach(var cmd in Data.RpcCommands) { 
             
             #line default
             #line hidden
+            this.Write("\n");
             
-            #line 57 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GetCommandDescription(cmd)));
             
             #line default
             #line hidden
-            this.Write("\r\nclass ");
+            this.Write("\nclass ");
             
-            #line 58 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.CommandName));
             
             #line default
             #line hidden
             this.Write(" extends RpcCommandBase<$root.");
             
-            #line 58 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.RequestName=="object"?"object":$"I{cmd.RequestName}"));
             
             #line default
             #line hidden
             this.Write(", $root.I");
             
-            #line 58 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.ResponseName));
             
             #line default
             #line hidden
-            this.Write("> {\r\n  public commandId: number = ");
+            this.Write("> {\n  public commandId: number = ");
             
-            #line 59 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.CommandId));
             
             #line default
             #line hidden
-            this.Write(";\r\n  protected encode(req: $root.");
+            this.Write(";\n  protected encode(req: $root.");
             
-            #line 60 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.RequestName));
             
             #line default
             #line hidden
-            this.Write("): Uint8Array {\r\n");
+            this.Write("): Uint8Array {\n");
             
-            #line 61 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
  if(cmd.RequestName=="object") { 
             
             #line default
             #line hidden
-            this.Write("    return null;\r\n");
+            this.Write("\n    return null;\n");
             
-            #line 63 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
  } else { 
             
             #line default
             #line hidden
-            this.Write("    return $root.");
+            this.Write("\n    return $root.");
             
-            #line 64 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.RequestName));
             
             #line default
             #line hidden
-            this.Write(".encode(req).finish();\r\n");
+            this.Write(".encode(req).finish();\n");
             
-            #line 65 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
  } 
             
             #line default
             #line hidden
-            this.Write("  }\r\n  protected decode(data: Uint8Array): $root.");
+            this.Write("\n  }\n  protected decode(data: Uint8Array): $root.");
             
-            #line 67 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.ResponseName));
             
             #line default
             #line hidden
-            this.Write(" {\r\n");
+            this.Write(" {\n");
             
-            #line 68 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
  if(cmd.ResponseName=="object") { 
             
             #line default
             #line hidden
-            this.Write("    return $root.ProtoResponse.decode(data);\r\n");
+            this.Write("\n    return $root.ProtoResponse.decode(data);\n");
             
-            #line 70 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
  } else { 
             
             #line default
             #line hidden
-            this.Write("    return $root.");
+            this.Write("\n    return $root.");
             
-            #line 71 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.ResponseName));
             
             #line default
             #line hidden
-            this.Write(".decode(data);\r\n");
+            this.Write(".decode(data);\n");
             
-            #line 72 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
  } 
             
             #line default
             #line hidden
-            this.Write("  }\r\n}\r\n");
+            this.Write("\n  }\n}\n");
             
-            #line 75 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GetCommandDescription(cmd)));
             
             #line default
             #line hidden
-            this.Write("\r\nexport let ");
+            this.Write("\nexport let ");
             
-            #line 76 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.CommandNameVar));
             
             #line default
             #line hidden
             this.Write(" = new ");
             
-            #line 76 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.CommandName));
             
             #line default
             #line hidden
-            this.Write("();\r\n\r\n");
+            this.Write("();\n\n");
             
-            #line 78 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
  } 
             
             #line default
             #line hidden
+            this.Write("\n");
             
-            #line 79 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
  foreach(var cmd in Data.PushCommands) { 
             
             #line default
             #line hidden
+            this.Write("\n");
             
-            #line 80 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GetCommandDescription(cmd)));
             
             #line default
             #line hidden
-            this.Write("\r\nclass ");
+            this.Write("\nclass ");
             
-            #line 81 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.CommandName));
             
             #line default
             #line hidden
             this.Write("Cmd extends PushCommandBase<$root.I");
             
-            #line 81 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.ResponseName));
             
             #line default
             #line hidden
-            this.Write("> {\r\n  public commandId: number = ");
+            this.Write("> {\n  public commandId: number = ");
             
-            #line 82 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.CommandId));
             
             #line default
             #line hidden
-            this.Write(";\r\n  protected decode(data: Uint8Array): $root.");
+            this.Write(";\n  protected decode(data: Uint8Array): $root.");
             
-            #line 83 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.ResponseName));
             
             #line default
             #line hidden
-            this.Write(" {\r\n    return $root.");
+            this.Write(" {\n    return $root.");
             
-            #line 84 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.ResponseName));
             
             #line default
             #line hidden
-            this.Write(".decode(data);\r\n  }\r\n}\r\n");
+            this.Write(".decode(data);\n  }\n}\n");
             
-            #line 87 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(GetCommandDescription(cmd)));
             
             #line default
             #line hidden
-            this.Write("\r\nexport let ");
+            this.Write("\nexport let ");
             
-            #line 88 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.CommandNameVar));
             
             #line default
             #line hidden
             this.Write("Cmd = new ");
             
-            #line 88 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
             this.Write(this.ToStringHelper.ToStringWithCulture(cmd.CommandName));
             
             #line default
             #line hidden
-            this.Write("Cmd();\r\n\r\n");
+            this.Write("Cmd();\n\n");
             
-            #line 90 "D:\TinyFx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
+            #line 1 "D:\tinyfx\src\TinyFx.Extensions.DotNetty\NettyInfoCommand\CommandT.tt"
  } 
             
             #line default

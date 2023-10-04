@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -159,6 +161,7 @@ namespace TinyFx
         #endregion
 
         #region Other
+        private static ConcurrentDictionary<Type, bool> _nullableTypeCache = new ConcurrentDictionary<Type, bool>();
         /// <summary>
         /// 判断是否为可空类型
         /// </summary>
@@ -168,8 +171,11 @@ namespace TinyFx
         {
             if (type == null)
                 throw new ArgumentException("Type类型不能为NULL。");
-            return type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));
-            //return type.FullName.StartsWith("System.Nullable`");
+            if (_nullableTypeCache.TryGetValue(type, out bool ret))
+                return ret;
+            ret = type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));
+            _nullableTypeCache.TryAdd(type, ret);
+            return ret;
         }
 
 
@@ -232,5 +238,27 @@ namespace TinyFx
         /// <returns></returns>
         public static bool IsWindowsOS
             => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        public static bool IsLinuxOS
+            => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+
+
+        public static T GetTaskResult<T>(this Task<T> task, bool isRunNewTask = false, bool continueOnCapturedContext = false)
+        {
+            return isRunNewTask
+                ? Task.Run(() => task).ConfigureAwait(continueOnCapturedContext).GetAwaiter().GetResult()
+                : task.ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+        public static void GetTaskResult(this Task task, bool isRunNewTask = false, bool continueOnCapturedContext = false)
+        {
+            if (isRunNewTask)
+                Task.Run(() => task).ConfigureAwait(continueOnCapturedContext).GetAwaiter().GetResult();
+            else
+                task.ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        public static void ClearCaching()
+        {
+            HttpClientExFactory.ClearClientCaching();
+        }
     }
 }

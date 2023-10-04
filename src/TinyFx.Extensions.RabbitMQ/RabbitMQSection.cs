@@ -2,19 +2,30 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
+using TinyFx.Collections;
 using TinyFx.Configuration;
 using TinyFx.Extensions.RabbitMQ;
+using TinyFx.Logging;
 
 namespace TinyFx.Configuration
 {
     public class RabbitMQSection : ConfigSection
     {
         public override string SectionName => "RabbitMQ";
-        public string DefaultConnectionStringName { get; set; }
+        public bool Enabled { get; set; } = true;
         public bool LogEnabled { get; set; }
+        /// <summary>
+        /// 顺序订阅消费者SAC检查延迟时间（秒）默认2分钟
+        /// </summary>
+        public int SACBindDelay { get; set; } = 120;
+        /// <summary>
+        /// SAC使用的Redis
+        /// </summary>
+        public string RedisConnectionStringName { get; set; }
+        public string DefaultConnectionStringName { get; set; }
         public Dictionary<string, MQConnectionStringElement> ConnectionStrings = new();
-        public List<string> MessageAssemblies { get; set; } = new List<string>();
         /// <summary>
         /// ReceiveConsumer、RespondConsumer、SubscribeConsumer所在的程序集,用于消费注册
         /// </summary>
@@ -22,20 +33,15 @@ namespace TinyFx.Configuration
         public override void Bind(IConfiguration configuration)
         {
             base.Bind(configuration);
-            // ConnectionStrings
-            var connStrs = configuration.GetSection("ConnectionStrings").Get<MQConnectionStringElement[]>();
-            ConnectionStrings.Clear();
-            foreach (var connStr in connStrs)
-            {
-                if (ConnectionStrings.ContainsKey(connStr.Name))
-                    throw new Exception($"配置中RabbitMQ:ConnectionStrings:Name 重复。Name: {connStr.Name}");
-                ConnectionStrings.Add(connStr.Name, connStr);
-            }
+            ConnectionStrings = configuration.GetSection("ConnectionStrings")
+                .Get<Dictionary<string, MQConnectionStringElement>>() ?? new();
+            ConnectionStrings.ForEach(x => {
+                x.Value.Name = x.Key;
+            });
+
             if (string.IsNullOrEmpty(DefaultConnectionStringName) && ConnectionStrings.Count == 1)
                 DefaultConnectionStringName = ConnectionStrings.First().Key;
             // Assemblies
-            MessageAssemblies.Clear();
-            MessageAssemblies = configuration?.GetSection("MessageAssemblies").Get<List<string>>();
             ConsumerAssemblies.Clear();
             ConsumerAssemblies = configuration?.GetSection("ConsumerAssemblies").Get<List<string>>();
         }
@@ -46,7 +52,19 @@ namespace TinyFx.Extensions.RabbitMQ
 {
     public class MQConnectionStringElement
     {
-        public string Name { get; set; }
+        public string Name { get; internal set; }
+        /// <summary>
+        /// 是否使用简短的名字定义ExchangeName和QueueName(MQConventions)
+        /// </summary>
+        public bool UseShortNaming { get; set; }
+        /// <summary>
+        /// 是否使用ConfigUtil.EnvironmentString作为VirtualHost
+        /// </summary>
+        public bool UseEnvironmentVirtualHost { get; set; }
+        /// <summary>
+        /// 是否启用高可用(仅MQ群集使用)
+        /// </summary>
+        public bool UseQuorum { get; set; }
         public string ConnectionString { get; set; }
     }
 }

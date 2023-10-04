@@ -14,10 +14,6 @@ namespace TinyFx.Data
     /// </summary>
     public abstract class DataPagerBase : IDataPager
     {
-        /// <summary>
-        /// key : ConnectionString_sql 
-        /// </summary>
-        protected static Dictionary<string, SqlPagerCacheItem> _pagerSqlCache { get; } = new Dictionary<string, SqlPagerCacheItem>();
         private static object _locker { get; } = new object();
         /// <summary>
         /// 实现分页相关缓存项
@@ -73,30 +69,8 @@ namespace TinyFx.Data
             PageSize = pageSize;
             Database = database;
             UserData = userData;
-            InitSqlCacheItem();
+            _cacheItem = GetSqlCacheItem();
         }
-        private void InitSqlCacheItem()
-        {
-            string key = GetCacheKey();
-            if (!_pagerSqlCache.ContainsKey(key))
-            {
-                lock (_locker)
-                {
-                    if (!_pagerSqlCache.ContainsKey(key))
-                    {
-                        SqlPagerCacheItem item = GetSqlCacheItem();
-                        _pagerSqlCache.Add(key, item);
-                    }
-                }
-            }
-            _cacheItem = _pagerSqlCache[key];
-        }
-        /// <summary>
-        /// 获得缓存Key
-        /// </summary>
-        /// <returns></returns>
-        protected virtual string GetCacheKey()
-            => $"{Database.ConnectionString}_{OriginalSql}";
 
         /// <summary>
         /// 不同的数据库进行不同的SQL解析

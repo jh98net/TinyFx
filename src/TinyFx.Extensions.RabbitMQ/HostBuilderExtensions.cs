@@ -8,6 +8,9 @@ using TinyFx.Extensions.RabbitMQ;
 using TinyFx.Logging;
 using EasyNetQ.Logging;
 using EasyNetQ;
+using EasyNetQ.ConnectionString;
+using TinyFx.Net;
+using Nacos.V2.Naming.Dtos;
 
 namespace TinyFx
 {
@@ -16,7 +19,7 @@ namespace TinyFx
         public static IHostBuilder UseRabbitMQEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<RabbitMQSection>();
-            if (section != null && section.ConnectionStrings != null && section.ConnectionStrings.Count > 0)
+            if (section != null && section.Enabled && section.ConnectionStrings != null && section.ConnectionStrings.Count > 0)
             {
                 builder.ConfigureServices((context, services) =>
                 {

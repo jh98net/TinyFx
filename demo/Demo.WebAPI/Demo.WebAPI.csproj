@@ -9,7 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.17.0" />
+    <Compile Remove="DAL\**" />
+    <Content Remove="DAL\**" />
+    <EmbeddedResource Remove="DAL\**" />
+    <None Remove="DAL\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Apis\v2\" />
     <Folder Include="BLL\Caching\" />
     <Folder Include="BLL\Common\" />
   </ItemGroup>

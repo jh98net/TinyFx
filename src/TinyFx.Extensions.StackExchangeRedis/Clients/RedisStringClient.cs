@@ -15,214 +15,136 @@ namespace TinyFx.Extensions.StackExchangeRedis
     public class RedisStringClient<T> : RedisClientBase
     {
         public override RedisType RedisType => RedisType.String;
+        /// <summary>
+        /// GetOrLoad时，如值不存在是否保存到redis
+        /// </summary>
+        public virtual bool IsLoadValueNotExistsToRedis { get; } = false;
 
         #region Constructors
-        public RedisStringClient(RedisClientOptions options = null) : base(options) { }
+        public RedisStringClient(object key = null, RedisClientOptions options = null) : base(key, options) { }
         #endregion
 
         #region LoadValueWhenRedisNotExists
+        public delegate Task<CacheValue<T>> LoadValueDelegate();
+        public LoadValueDelegate LoadValueHeadler;
         /// <summary>
         /// 在调用GetOrLoad时，当RedisKey不存时，将调用此方法获取缓存值，返回并存储到Redis中，需要时子类实现override。
         /// 子类实现时注意：
-        /// 1)可返回null，存入Redis的值为RedisValue.EmptyString
+        /// 1)value可等于null，存入Redis的值为RedisValue.EmptyString
         /// 2)可抛出异常CacheNotFound：表示缓存值不存在
         /// </summary>
         /// <returns></returns>
-        protected virtual T LoadValueWhenRedisNotExists()
+        protected virtual async Task<CacheValue<T>> LoadValueWhenRedisNotExistsAsync()
         {
+            if (LoadValueHeadler != null)
+                return await LoadValueHeadler();
             throw new NotImplementedException();
         }
         #endregion
 
         #region Set
-        /// <summary>
-        /// 设置值并设置指定秒数过期
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="seconds"></param>
-        /// <param name="when"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool SetAndExpireSeconds(T value, int seconds, When when = When.Always, CommandFlags flags = CommandFlags.None)
-            => Database.StringSet(RedisKey, Serialize(value), new TimeSpan(0, 0, seconds), when, flags);
+        public Task<bool> SetAndExpireSecondsAsync(T value, int seconds, When when = When.Always, CommandFlags flags = CommandFlags.None)
+            => Database.StringSetAsync(RedisKey, Serialize(value), new TimeSpan(0, 0, seconds), when, flags);
 
-        /// <summary>
-        /// 设置值并设置指定分钟数过期
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="minutes"></param>
-        /// <param name="when"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool SetAndExpireMinutes(T value, int minutes, When when = When.Always, CommandFlags flags = CommandFlags.None)
-            => Database.StringSet(RedisKey, Serialize(value), new TimeSpan(0, minutes, 0), when, flags);
+        public Task<bool> SetAndExpireMinutesAsync(T value, int minutes, When when = When.Always, CommandFlags flags = CommandFlags.None)
+            => Database.StringSetAsync(RedisKey, Serialize(value), new TimeSpan(0, minutes, 0), when, flags);
 
-        /// <summary>
-        /// 设置值并设置指定小时数过期
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="hours"></param>
-        /// <param name="when"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool SetAndExpireHours(T value, int hours, When when = When.Always, CommandFlags flags = CommandFlags.None)
-            => Database.StringSet(RedisKey, Serialize(value), new TimeSpan(hours, 0, 0), when, flags);
+        public Task<bool> SetAndExpireHoursAsync(T value, int hours, When when = When.Always, CommandFlags flags = CommandFlags.None)
+            => Database.StringSetAsync(RedisKey, Serialize(value), new TimeSpan(hours, 0, 0), when, flags);
 
-        /// <summary>
-        /// 设置值并设置指定天数过期
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="days"></param>
-        /// <param name="when"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool SetAndExpireDays(T value, int days, When when = When.Always, CommandFlags flags = CommandFlags.None)
-            => Database.StringSet(RedisKey, Serialize(value), new TimeSpan(days, 0, 0, 0), when, flags);
+        public Task<bool> SetAndExpireDaysAsync(T value, int days, When when = When.Always, CommandFlags flags = CommandFlags.None)
+            => Database.StringSetAsync(RedisKey, Serialize(value), new TimeSpan(days, 0, 0, 0), when, flags);
 
-        /// <summary>
-        /// 添加缓存
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="expiry"></param>
-        /// <param name="when"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool Set(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
-            => Database.StringSet(RedisKey, Serialize(value), expiry, when, flags);
-
-        /// <summary>
-        /// 添加缓存
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="expiry"></param>
-        /// <param name="when"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public Task<bool> SetAsync(T value, TimeSpan? expiry = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
-            => Database.StringSetAsync(RedisKey, Serialize(value), expiry, when, flags);
+        public async Task<bool> SetAsync(T value, TimeSpan? expire = null, When when = When.Always, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.StringSetAsync(RedisKey, Serialize(value), expire, when, flags);
+            if (!expire.HasValue)
+                await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
 
         #region Get & GetOrLoad & GetOrException & GetOrDefault
         /// <summary>
         /// 获取此Hash中field对应的缓存值，不存在返回default(T)
         /// </summary>
+        /// <param name="expire"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T Get(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<T> GetAsync(TimeSpan? expire = null, CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.StringGet(RedisKey, flags);
+            var redisValue = await Database.StringGetAsync(RedisKey, flags);
             var ret = Deserialize<T>(redisValue);
-            if (expiry.HasValue)
-                KeyExpire(expiry.Value, flags);
+            await SetSlidingExpirationAsync(expire);
             return ret;
         }
-        public async Task<T> GetAsync(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
-            => await Task.Factory.StartNew(() => Get(expiry, flags));
-
-        public T GetOrLoad(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        /// <summary>
+        /// 获取缓存项，如果不存在则调用LoadValueWhenRedisNotExists()放入redis并返回
+        /// </summary>
+        /// <param name="enforce">是否强制Load</param>
+        /// <param name="expire"></param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public async Task<CacheValue<T>> GetOrLoadAsync(bool enforce = false, TimeSpan? expire = null, CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.StringGet(RedisKey, flags);
-            if (!TryDeserialize(redisValue, out T ret))
+            CacheValue<T> ret;
+            var isExpired = false;
+            if (enforce || !TryDeserialize(await Database.StringGetAsync(RedisKey, flags), out T value))
             {
-                ret = LoadValueWhenRedisNotExists();
-                Database.StringSet(RedisKey, Serialize(ret), expiry, When.Always, flags);
+                ret = await LoadValueWhenRedisNotExistsAsync();
+                if (ret.HasValue)
+                {
+                    isExpired = expire.HasValue;
+                    await Database.StringSetAsync(RedisKey, Serialize(ret.Value), expire, When.Always, flags);
+                }
+                else
+                {
+                    if (IsLoadValueNotExistsToRedis)
+                    {
+                        isExpired = expire.HasValue;
+                        await Database.StringSetAsync(RedisKey, Serialize(null), expire, When.Always, flags);
+                    }
+                }
             }
             else
             {
-                if (expiry.HasValue)
-                    KeyExpire(expiry.Value, flags);
+                ret = new CacheValue<T>(value);
             }
+            if (!isExpired)
+                await SetSlidingExpirationAsync(expire);
             return ret;
         }
-        public async Task<T> GetOrLoadAsync(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
-            => await Task.Factory.StartNew(() => GetOrLoad(expiry, flags));
 
         /// <summary>
         /// 获取缓存，如果不存在则抛出异常CacheNotFound
         /// </summary>
+        /// <param name="expire"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T GetOrException(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<T> GetOrExceptionAsync(TimeSpan? expire = null, CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.StringGet(RedisKey, flags);
+            var redisValue = await Database.StringGetAsync(RedisKey, flags);
             if (!TryDeserialize(redisValue, out T ret))
                 throw new CacheNotFound($"[Redis String]缓存项不存在。key:{RedisKey} type:{GetType().FullName}");
-            if (expiry.HasValue)
-                KeyExpire(expiry.Value, flags);
+            await SetSlidingExpirationAsync(expire);
             return ret;
         }
-        public async Task<T> GetOrExceptionAsync(TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
-            => await Task.Factory.StartNew(() => GetOrException(expiry,flags));
 
         /// <summary>
         /// 获取缓存,如果不存在，则返回默认值
         /// </summary>
         /// <param name="defaultValue"></param>
+        /// <param name="expire"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T GetOrDefault(T defaultValue, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
+        public async Task<T> GetOrDefaultAsync(T defaultValue, TimeSpan? expire = null, CommandFlags flags = CommandFlags.None)
         {
-            var redisValue = Database.StringGet(RedisKey, flags);
+            var redisValue = await Database.StringGetAsync(RedisKey, flags);
             if (!TryDeserialize(redisValue, out T ret))
                 ret = defaultValue;
-            else
-            { 
-                if(expiry.HasValue)
-                    KeyExpire(expiry.Value, flags);
-            }
+            await SetSlidingExpirationAsync(expire);
             return ret;
         }
-        public async Task<T> GetOrDefaultAsync(T defaultValue, TimeSpan? expiry = null, CommandFlags flags = CommandFlags.None)
-            => await Task.Factory.StartNew(() => GetOrDefault(defaultValue, expiry, flags));
-        #endregion
-
-        #region Increment
-        /// <summary>
-        /// Hash结构存储增量数字。如果field不存在则设置为0。支持long
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public long Increment(long value = 1, CommandFlags flags = CommandFlags.None)
-            => Database.StringIncrement(RedisKey, value, flags);
-
-        /// <summary>
-        /// Hash结构存储增量数字。如果field不存在则设置为0。支持long
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public double Increment(double value, CommandFlags flags = CommandFlags.None)
-            => Database.StringIncrement(RedisKey, value, flags);
-        public async Task<long> IncerementAsync(long value = 1, CommandFlags flags = CommandFlags.None)
-            => await Database.StringIncrementAsync(RedisKey, value, flags);
-
-        public async Task<double> IncerementAsync(double value, CommandFlags flags = CommandFlags.None)
-            => await Database.StringIncrementAsync(RedisKey, value, flags);
-
-        /// <summary>
-        /// 减量数字-value,如不存在key则创建，返回减量后值
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public long Decrement(long value = 1, CommandFlags flags = CommandFlags.None)
-            => Database.StringDecrement(RedisKey, value, flags);
-
-        /// <summary>
-        /// 减量数字-value,如不存在key则创建，返回减量后值
-        /// </summary>
-        /// <param name="value"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public double Decrement(double value, CommandFlags flags = CommandFlags.None)
-            => Database.StringDecrement(RedisKey, value, flags);
-        public async Task<long> DecrementAsync(long value = 1, CommandFlags flags = CommandFlags.None)
-            => await Database.StringDecrementAsync(RedisKey, value, flags);
-
-        public async Task<double> DecrementAsync(double value, CommandFlags flags = CommandFlags.None)
-            => await Database.StringDecrementAsync(RedisKey, value, flags);
-
         #endregion
 
         #region GetLength & Append & BitCount & GetRange &SetRange
@@ -231,8 +153,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long GetLength(CommandFlags flags = CommandFlags.None)
-            => Database.StringLength(RedisKey, flags);
+        public async Task<long> GetLengthAsync(CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.StringLengthAsync(RedisKey, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 如果key已经存在并且是字符串，则此命令将值附加在字符串的末尾。 
         /// 如果key不存在，则会创建key并将其设置为空字符串，因此APPEND在这种特殊情况下将类似于SET
@@ -240,8 +167,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="value"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long Append(string value, CommandFlags flags = CommandFlags.None)
-            => Database.StringAppend(RedisKey, value, flags);
+        public async Task<long> AppendAsync(string value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.StringAppendAsync(RedisKey, value, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 计算字符串中的设置位数（填充计数）。 
         /// 默认情况下，将检查字符串中包含的所有字节，也可以仅在传递附加参数start和end的间隔中指定计数操作。 
@@ -251,8 +183,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="end"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public long BitCount(long start = 0, long end = -1, CommandFlags flags = CommandFlags.None)
-            => Database.StringBitCount(RedisKey, start, end, flags);
+        public async Task<long> BitCountAsync(long start = 0, long end = -1, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.StringBitCountAsync(RedisKey, start, end, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 返回存储在key处的字符串值的子字符串，该字符串由偏移量start和end（包括两端）确定。 
@@ -262,8 +198,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="end"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public string GetRange(long start, long end, CommandFlags flags = CommandFlags.None)
-            => Database.StringGetRange(RedisKey, start, end, flags);
+        public async Task<string> GetRangeAsync(long start, long end, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.StringGetRangeAsync(RedisKey, start, end, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
         /// <summary>
         /// 从指定的偏移量开始，覆盖整个值范围内从key存储的字符串的一部分。 
         /// 如果偏移量大于key处字符串的当前长度，则该字符串将填充零字节以使偏移量适合。 
@@ -273,8 +214,66 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="value"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public string SetRange(long offset, string value, CommandFlags flags = CommandFlags.None)
-            => Database.StringSetRange(RedisKey, offset, value, flags);
+        public async Task<string> SetRangeAsync(long offset, string value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.StringSetRangeAsync(RedisKey, offset, value, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+        #endregion
+
+        #region Increment
+        /// <summary>
+        /// Hash结构存储增量数字。如果field不存在则设置为0。支持long
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public async Task<long> IncrementAsync(long value = 1, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.StringIncrementAsync(RedisKey, value, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
+        /// <summary>
+        /// Hash结构存储增量数字。如果field不存在则设置为0。支持long
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public async Task<double> IncrementAsync(double value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.StringIncrementAsync(RedisKey, value, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
+        /// <summary>
+        /// 减量数字-value,如不存在key则创建，返回减量后值
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public async Task<long> DecrementAsync(long value = 1, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.StringDecrementAsync(RedisKey, value, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+
+        /// <summary>
+        /// 减量数字-value,如不存在key则创建，返回减量后值
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="flags"></param>
+        /// <returns></returns>
+        public async Task<double> DecrementAsync(double value, CommandFlags flags = CommandFlags.None)
+        {
+            var ret = await Database.StringDecrementAsync(RedisKey, value, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
         #endregion
     }
 }

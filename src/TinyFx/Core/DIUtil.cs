@@ -35,26 +35,21 @@ namespace TinyFx
         /// DI 初始化
         /// </summary>
         /// <param name="services"></param>
-        public static void Init(IServiceCollection services = null)
+        internal static void SetServices(IServiceCollection services = null)
         {
             Services = services ?? new ServiceCollection();
         }
+        public static void SetServiceProvider(IServiceProvider provider = null)
+        {
+            _serviceProvider = provider ?? Services.BuildServiceProvider();
+        }
 
-        //private static ServiceProvider _serviceProvider;
+        private static IServiceProvider _serviceProvider;
         /// <summary>
         /// 服务提供程序
         /// </summary>
-        public static ServiceProvider ServiceProvider => Services.BuildServiceProvider();
-        //{
-        //    get
-        //    {
-        //        if (Services == null)
-        //            throw new Exception("需要使用DIUtil.Init()初始化DI容器");
-        //        if (_serviceProvider == null)
-        //            _serviceProvider = Services.BuildServiceProvider();
-        //        return _serviceProvider;
-        //    }
-        //}
+        public static IServiceProvider ServiceProvider
+            => _serviceProvider ??= Services.BuildServiceProvider();
 
         /// <summary>
         /// 从System.IServiceProvider获取类型为T的Service
@@ -150,14 +145,5 @@ namespace TinyFx
             => Services.AddTransient(serviceType, implementationType);
         #endregion
         #endregion
-
-        /// <summary>
-        /// 在ConfigureServices中调用，以便之后可以使用IOption<typeparamref name="T"/>依赖注入
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public static void Configure<T>() where T : class, IConfigSection, new()
-        {
-            Services.Configure<T>(options => options = ConfigUtil.GetSection<T>());
-        }
     }
 }

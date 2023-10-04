@@ -27,7 +27,7 @@ namespace TinyFx.Net
         public event Action OnClosed;
         public event Action<Exception> OnError;
 
-        private bool IsConnected => _webSocket.State == WebSocketState.Open;
+        public bool IsConnected => _webSocket.State == WebSocketState.Open;
 
         public WebSocketClientEx(string url) : this(new Uri(url)) { }
         public WebSocketClientEx(Uri uri)

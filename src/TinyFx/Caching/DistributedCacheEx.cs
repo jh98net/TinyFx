@@ -20,13 +20,13 @@ namespace TinyFx.Caching
             _cache.Remove(GetKey(key));
         }
 
-        public void Set<T>(object key, T value, TimeSpan expire = default)
+        public void Set<T>(object key, T value, TimeSpan? expire = null)
         {
             var k = GetKey(key);
             var data = Serialize(value);
             var opts = new DistributedCacheEntryOptions();
-            if (expire != default)
-                opts.SlidingExpiration = expire;
+            if (expire.HasValue)
+                opts.SlidingExpiration = expire.Value;
             _cache.Set(k, data, opts);
         }
 
@@ -50,7 +50,7 @@ namespace TinyFx.Caching
             if (!TryGet(key, out T ret))
             {
                 var value = valueFactory(key);
-                Set(key, value.Value, value.ExpireSpan);
+                Set(key, value.Value, value.GetExpireSpan());
                 return value.Value;
             }
             return ret;
@@ -75,9 +75,9 @@ namespace TinyFx.Caching
             return ret;
         }
         private byte[] Serialize<T>(T value)
-            => Encoding.UTF8.GetBytes(SerializerUtil.SerializeJson(value));
+            => Encoding.UTF8.GetBytes(SerializerUtil.SerializeJsonNet(value));
         private T Deserialize<T>(byte[] data)
-            => SerializerUtil.DeserializeJson<T>(Encoding.UTF8.GetString(data));
+            => SerializerUtil.DeserializeJsonNet<T>(Encoding.UTF8.GetString(data));
     }
 
 }

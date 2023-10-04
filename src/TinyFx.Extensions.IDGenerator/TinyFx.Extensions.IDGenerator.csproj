@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <Description>IDGenerator 雪花算法</Description>
+    <Version>3.8.40</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
+  </ItemGroup>
+</Project>

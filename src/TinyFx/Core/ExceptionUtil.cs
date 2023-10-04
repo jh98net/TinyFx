@@ -28,6 +28,19 @@ namespace TinyFx
             }
             return ex as TException;
         }
+
+        /// <summary>
+        /// 获取CustomException
+        /// </summary>
+        /// <param name="ex"></param>
+        /// <param name="exc"></param>
+        /// <returns></returns>
+        public static bool TryGetCustomException(Exception ex, out CustomException exc)
+        {
+            exc = GetException<CustomException>(ex);
+            return exc != null;
+        }
+
         /// <summary>
         /// 获得异常链(InnerException)最初的异常
         /// </summary>
@@ -57,7 +70,7 @@ namespace TinyFx
         /// <returns></returns>
         public static string SerializeUserData(Exception ex)
         {
-            return SerializerUtil.SerializeJson(ex.Data);
+            return SerializerUtil.SerializeJsonNet(ex.Data);
         }
 
         /// <summary>

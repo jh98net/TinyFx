@@ -87,7 +87,8 @@ namespace TinyFx.Extensions.AutoMapper
                     if (!type.IsClass) continue;
                     foreach (var currInterface in type.GetInterfaces())
                     {
-                        RegisterInterface(currInterface, type, cfg);
+                        if (!string.IsNullOrEmpty(currInterface.FullName))
+                            RegisterInterface(currInterface, type, cfg);
                     }
                 }
             };
@@ -139,7 +140,7 @@ namespace TinyFx.Extensions.AutoMapper
         /// <returns></returns>
         public static TDestination Map<TDestination>(this object source)
             => Mapper.Map<TDestination>(source);
-        
+
         /// <summary>
         /// 自动映射成目标对象
         /// </summary>

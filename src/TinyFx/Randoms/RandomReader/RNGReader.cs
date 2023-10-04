@@ -9,16 +9,16 @@ namespace TinyFx.Randoms
 {
     public class RNGReader : RandomReaderBase
     {
-        private RandomNumberGenerator _rng = RandomNumberGenerator.Create();
+        public readonly RandomNumberGenerator RNG = RandomNumberGenerator.Create();
         public override byte[] ReadBytes(int size)
         {
             var buffer = new byte[size];
-            _rng.GetBytes(buffer);
+            RNG.GetBytes(buffer);
             return buffer;
         }
         public override void Dispose()
         {
-            _rng.Dispose();
+            RNG.Dispose();
         }
     }
 }

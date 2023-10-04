@@ -14,6 +14,7 @@ namespace TinyFx.Data.MySql
     /// </summary>
     public class MySqlOrmProvider : IDbOrmProvider<MySqlDatabase, MySqlParameter, MySqlDbType>
     {
+        private MySqlTypeMapper _typeMapper = new MySqlTypeMapper();
         /// <summary>
         /// 获得Select SQL
         /// </summary>
@@ -22,14 +23,16 @@ namespace TinyFx.Data.MySql
         /// <param name="top"></param>
         /// <param name="sort"></param>
         /// <param name="fields"></param>
+        /// <param name="isForUpdate"></param>
         /// <returns></returns>
-        public string BuildSelectSQL(string sourceName, string where, int top, string sort, string fields = null)
+        public string BuildSelectSQL(string sourceName, string where, int top, string sort, string fields = null, bool isForUpdate = false)
         {
             var topStr = (top > 0) ? " LIMIT " + top : string.Empty;
             var whereStr = !string.IsNullOrEmpty(where) ? " WHERE " + where : string.Empty;
             var sortStr = !string.IsNullOrEmpty(sort) ? " ORDER BY " + sort : string.Empty;
             var fieldsStr = !string.IsNullOrEmpty(fields) ? fields : "*";
-            return $"SELECT {fieldsStr} FROM {sourceName}{whereStr}{sortStr}{topStr}";
+            var forUpdate = isForUpdate ? " FOR UPDATE" : string.Empty;
+            return $"SELECT {fieldsStr} FROM {sourceName}{whereStr}{sortStr}{topStr}{forUpdate}";
         }
         /// <summary>
         /// 获取表或试图列参数名对应的MySqlDbType集合
@@ -91,6 +94,11 @@ namespace TinyFx.Data.MySql
             var paramNames = columns.Select(item => { return item.SqlParamName; });
             ret.Append($"VALUE ({string.Join(", ", paramNames)})");
             return ret.ToString();
+        }
+
+        public MySqlDbType MapDotNetTypeToDbType(Type type)
+        {
+            return _typeMapper.MapDotNetTypeToDbType(type);
         }
     }
 }

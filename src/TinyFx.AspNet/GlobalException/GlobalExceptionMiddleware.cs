@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using TinyFx.Configuration;
 using TinyFx.Logging;
@@ -17,29 +18,14 @@ namespace TinyFx.AspNet
     public class GlobalExceptionMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger _logger;
-        private IWebHostEnvironment _environment;
-        private GlobalExceptionSection _option;
-        /// <summary>
-        /// 需要处理的状态码字典
-        /// </summary>
-        private IDictionary<int, string> _exceptionStatusCodeDic;
-        public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger, IWebHostEnvironment environment)
+        private bool _useGlobalException = true;
+        public GlobalExceptionMiddleware(RequestDelegate next)
         {
             _next = next;
-            _option = ConfigUtil.GetSection<GlobalExceptionSection>();
-            _logger = logger;
-            _environment = environment;
-            _exceptionStatusCodeDic = new Dictionary<int, string>
-            {
-                { 401, "未授权的请求" },
-                { 404, "找不到该页面" },
-                { 403, "访问被拒绝" },
-                { 500, "服务器发生意外的错误" }
-                //其余状态自行扩展
-            };
+            _useGlobalException = ConfigUtil.GetSection<AspNetSection>()
+                ?.UseApiActionResultFilter ?? true;
         }
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context, ILogBuilder logger)
         {
             bool handled = false;
             try
@@ -49,128 +35,63 @@ namespace TinyFx.AspNet
             catch (Exception ex)
             {
                 handled = true;
-                var msg = "全局未处理异常";
-                try
+                if (_useGlobalException)
                 {
-                    var result = GlobalExceptionUtil.BuildApiResult(ex);
-                    if (result.Code == ResponseCode.G_InternalServerError)
-                        result.Code = ResponseCode.G_UnhandledException;
-                    await ResponseApiResult(context, result);
+                    ApiResult result = GlobalExceptionUtil.BuildApiResult(ex, logger, context);
+                    await ResponseApiResult(context, result, logger);
                 }
-                catch (Exception exi)
+                else
                 {
-                    msg = $"全局未处理异常-GlobalExceptionMiddleware处理异常时错，必须处理:{exi.Message}";
-                    var result = new ApiResult(ResponseCode.G_UnhandledException, msg);
-                    await ResponseApiResult(context, result);
+                    await ResponseInternalServerError(context, ex, logger);
                 }
-                try
-                {
-                    // 正常情况下，异常已在ApiResponseFilter中处理，在此处不应该捕获到异常
-                    LogUtil.Error(ex, msg);
-                }
-                catch
-                { }
             }
             finally
             {
-                if (!handled // 未处理过
-                    && context.Items.ContainsKey(ResponseCode.ErrorCodeKey) // 自定义返回Code
-                    //&& _exceptionStatusCodeDic.ContainsKey(context.Response.StatusCode) // 非正常StatusCode
-                    )
+                if (!handled && context.Items.ContainsKey(GlobalExceptionUtil.ERROR_CODE_KEY))
                 {
-                    string errorCode = null;
-                    if (context.Items.ContainsKey(ResponseCode.ErrorCodeKey))
-                        errorCode = Convert.ToString(context.Items[ResponseCode.ErrorCodeKey]);
-                    string errorMessage = null;
-                    if (context.Items.ContainsKey(ResponseCode.ErrorMessageKey))
-                        errorMessage = Convert.ToString(context.Items[ResponseCode.ErrorMessageKey]);
-                    if (string.IsNullOrEmpty(errorMessage))
-                        errorMessage = _exceptionStatusCodeDic[context.Response.StatusCode];
-                    await HandleException(context, errorCode, errorMessage, null);
+                    string errorCode = Convert.ToString(context.Items[GlobalExceptionUtil.ERROR_CODE_KEY]);
+                    string errorMessage = context.Items.ContainsKey(GlobalExceptionUtil.ERROR_MESSAGE_KEY)
+                        ? Convert.ToString(context.Items[GlobalExceptionUtil.ERROR_MESSAGE_KEY]) : null;
+                    if (_useGlobalException)
+                    {
+                        ApiResult result = new ApiResult(errorCode, errorMessage);
+                        logger.AddException(new CustomException(errorCode, errorMessage), logger.GetCustomeExceptionLevel());
+                        await ResponseApiResult(context, result, logger);
+                    }
+                    else
+                    {
+                        var msg = $"没有使用ApiActionFilter时，不支持context.Items自定义错误！{GlobalExceptionUtil.ERROR_CODE_KEY}: {errorCode} {GlobalExceptionUtil.ERROR_MESSAGE_KEY}: {errorMessage}";
+                        await ResponseInternalServerError(context, new Exception(msg), logger);
+                    }
                 }
             }
         }
-        private async Task HandleException(HttpContext context, string errorCode, string errorMessage, Exception exception)
-        {
-            var handleType = _option.HandleType;
-            if (handleType == ExceptionHandleType.Both)   //根据Url关键字决定异常处理方式
-            {
-                var requestPath = context.Request.Path;
-                handleType = _option.JsonHandleUrlKeys != null && _option.JsonHandleUrlKeys.Count(
-                    k => requestPath.StartsWithSegments(k, StringComparison.CurrentCultureIgnoreCase)) > 0 ?
-                    ExceptionHandleType.JsonHandle :
-                    ExceptionHandleType.PageHandle;
-            }
 
-            if (handleType == ExceptionHandleType.JsonHandle)
-                await JsonHandle(context, errorCode, errorMessage, exception);
-            else
-                await PageHandle(context, exception, _option.ErrorHandingPath);
-        }
-
-
-        /// <summary>
-        /// 处理方式：返回Json格式
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="errorCode"></param>
-        /// <param name="errorMessage"></param>
-        /// <param name="ex"></param>
-        /// <returns></returns>
-        private async Task JsonHandle(HttpContext context, string errorCode, string errorMessage, Exception ex)
+        #region Utils
+        private async Task ResponseApiResult(HttpContext context, ApiResult result, ILogBuilder logger)
         {
-            if (string.IsNullOrEmpty(errorCode))
-                errorCode = $"{context.Response.StatusCode}";
-            var rsp = new ApiResult()
-            {
-                Success = false,
-                Status = context.Response.StatusCode,
-                Code = errorCode,
-                Message = errorMessage
-            };
-            await ResponseException(context, rsp, ex);
-        }
-        private async Task ResponseException(HttpContext context, ApiResult result, Exception ex)
-        {
-            if (ConfigUtil.Project.ResponseErrorDetail)
-            {
-                result.Exception = ex;
-                if (string.IsNullOrEmpty(result.Message))
-                    result.Message = ex?.Message;
-            }
-            await ResponseApiResult(context, result);
-        }
-
-        /// <summary>
-        /// 处理方式：跳转网页
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="ex"></param>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        private async Task PageHandle(HttpContext context, Exception ex, PathString path)
-        {
-            context.Items.Add("Exception", ex);
-            var originPath = context.Request.Path;
-            context.Request.Path = path;   //设置请求页面为错误跳转页面
+            string json = null;
             try
             {
-                await _next(context);
+                json = SerializerUtil.SerializeJson(result);
+                logger.AddField("Response.Body", json);
             }
-            catch { }
-            finally
+            catch (Exception ex)
             {
-                context.Request.Path = originPath;   //恢复原始请求页面
+                logger.AddMessage("ApiResult序列化异常，必须处理!");
+                logger.AddException(ex, LogLevel.Error);
             }
-        }
-
-        private async Task ResponseApiResult(HttpContext context, ApiResult result)
-        {
-            
-            var json = SerializerUtil.SerializeJson(result);
             context.Response.Clear();
             context.Response.ContentType = "application/json; charset=utf-8";
             await context.Response.WriteAsync(json, Encoding.UTF8);
         }
+        private async Task ResponseInternalServerError(HttpContext context, Exception ex, ILogBuilder logger)
+        {
+            logger.AddException(ex, LogLevel.Error);
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            context.Response.ContentType = "text/plain";
+            await context.Response.WriteAsync("发生意外错误: InternalServerError");
+        }
+        #endregion
     }
 }

@@ -13,7 +13,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
-using Org.BouncyCastle.X509.Store;
 using System.Diagnostics;
 
 namespace TinyFx.Common

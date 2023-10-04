@@ -19,43 +19,45 @@ namespace TinyFx.Extensions.DotNetty.NettyInfoCommand
     {
         public override async Task<NettyDemoAck> Respond(RequestContext ctx, NettyDemoReq request)
         {
-            var date = TinyFxUtil.TimestampToDateTime(request.DateTime);
-            Console.WriteLine($"收到DateTime: {date.ToString("yyyy-MM-dd HH:mm:ss")}");
-            var dt = DateTime.Now;
-            Console.WriteLine($"发送DateTime: {dt.ToString("yyyy-MM-dd HH:mm:ss")}");
-            var ack = new NettyDemoAck()
-            {
-                Byte = 1,
-                SByte = 2,
-                Int16 = 3,
-                UInt16 = 4,
-                Int32 = 5,
-                UInt32 = 6,
-                Int64 = 7,
-                UInt64 = 8,
-                Single = 9,
-                Double = 10,
-                Boolean = true,
-                String = "字符串",
-                Bytes = BitConverter.GetBytes(13),
-                Char = '字',
-                Decimal = 123.456m,
-                TimeSpan = (int)TimeSpan.FromSeconds(10).TotalMilliseconds,
-                DateTime = dt.DateTimeToTimestamp(),
-                Guid = Guid.NewGuid(),
-                Sex = NettyDemoSexEnum.Female,
-                EmbedProto = new NettyDemoReq
+            return await Task.Run(() => {
+                var date = TinyFxUtil.TimestampToDateTime(request.DateTime);
+                Console.WriteLine($"收到DateTime: {date.ToString("yyyy-MM-dd HH:mm:ss")}");
+                var dt = DateTime.UtcNow;
+                Console.WriteLine($"发送DateTime: {dt.ToString("yyyy-MM-dd HH:mm:ss")}");
+                var ack = new NettyDemoAck()
                 {
-                    Id = request.Id
-                },
-                IntArray = new int[] { 1, 2 },
-                List = new List<string>(){ "aaa", "bbb" },
-                Dictionary = new Dictionary<int, string>(){ { 3, "ccc" }, { 4, "ddd" } },
-                EmbedProtos = new NettyDemoReq[] { new NettyDemoReq { Id = 5 }, new NettyDemoReq { Id = 6 } },
-                EmbedProtoList =new List<NettyDemoReq>() { new NettyDemoReq { Id = 7 }, new NettyDemoReq { Id = 8 } },
-                EmbedProtoDict =new Dictionary<string, NettyDemoReq>() { { "eee", new NettyDemoReq { Id = 9 } }, { "ffff", new NettyDemoReq { Id = 10 } } }
-            };
-            return ack;
+                    Byte = 1,
+                    SByte = 2,
+                    Int16 = 3,
+                    UInt16 = 4,
+                    Int32 = 5,
+                    UInt32 = 6,
+                    Int64 = 7,
+                    UInt64 = 8,
+                    Single = 9,
+                    Double = 10,
+                    Boolean = true,
+                    String = "字符串",
+                    Bytes = BitConverter.GetBytes(13),
+                    Char = '字',
+                    Decimal = 123.456m,
+                    TimeSpan = (int)TimeSpan.FromSeconds(10).TotalMilliseconds,
+                    DateTime = dt.DateTimeToTimestamp(),
+                    Guid = Guid.NewGuid(),
+                    Sex = NettyDemoSexEnum.Female,
+                    EmbedProto = new NettyDemoReq
+                    {
+                        Id = request.Id
+                    },
+                    IntArray = new int[] { 1, 2 },
+                    List = new List<string>() { "aaa", "bbb" },
+                    Dictionary = new Dictionary<int, string>() { { 3, "ccc" }, { 4, "ddd" } },
+                    EmbedProtos = new NettyDemoReq[] { new NettyDemoReq { Id = 5 }, new NettyDemoReq { Id = 6 } },
+                    EmbedProtoList = new List<NettyDemoReq>() { new NettyDemoReq { Id = 7 }, new NettyDemoReq { Id = 8 } },
+                    EmbedProtoDict = new Dictionary<string, NettyDemoReq>() { { "eee", new NettyDemoReq { Id = 9 } }, { "ffff", new NettyDemoReq { Id = 10 } } }
+                };
+                return ack;
+            });
         }
     }
     /// <summary>

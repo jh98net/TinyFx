@@ -1,0 +1,44 @@
+﻿<Project>
+	<PropertyGroup>
+		<PackageTags>TinyFx</PackageTags>
+		<Authors>JiangHui</Authors>
+		<Copyright>JiangHui</Copyright>
+		<RepositoryType>Git</RepositoryType>
+		<RepositoryUrl>https://github.com/jh98net/TinyFx</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/jh98net/TinyFx</PackageProjectUrl>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageLicenseFile>LICENSE.TXT</PackageLicenseFile>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<!--<LangVersion>10</LangVersion>-->
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DocumentationFile>bin\$(MSBuildProjectName).xml</DocumentationFile>
+		<NoWarn>1701;1702;1591;3001;3002;3003;3008;8002;VSTHRD010;VSTHRD10;1603;8625;8629;8618;8603;8600;NU1803</NoWarn>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DocumentationFile>bin\$(MSBuildProjectName).xml</DocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<SignAssembly>true</SignAssembly>
+		<AssemblyOriginatorKeyFile>..\..\tinyfx.snk</AssemblyOriginatorKeyFile>
+	</PropertyGroup>
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<!--<Exec Command="set source=&quot;$(TargetDir)*.*&quot;&#xD;&#xA;set target=&quot;$(SolutionDir)publish&quot;&#xD;&#xA;xcopy %25source%25 %25target%25 /Y /R /q /i" />-->
+	</Target>
+
+	<ItemGroup>
+		<!--<PackageReference Include="Microsoft.SourceLink.GitLab" Version="1.1.1" PrivateAssets="All"/>-->
+		<None Include="..\..\icon.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Include="..\..\LICENSE.TXT">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+</Project>

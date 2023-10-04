@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using TinyFx.Collections;
 using TinyFx.Configuration;
 using TinyFx.Net;
 
@@ -17,17 +18,23 @@ namespace TinyFx.Configuration
         public override void Bind(IConfiguration configuration)
         {
             base.Bind(configuration);
-            Clients = BindDictionary<SmtpClientElement>(configuration, "Clients");
-            SendTos = BindDictionary<SendToElement>(configuration, "SendTos");
+            Clients = configuration.GetSection("Clients")
+                .Get<Dictionary<string, SmtpClientElement>>() ?? new();
+            Clients.ForEach(x =>
+            {
+                if (string.IsNullOrEmpty(x.Value.FromAddress))
+                    x.Value.FromAddress = x.Value.UserName;
+            });
+            SendTos = configuration.GetSection("SendTos")
+                .Get<Dictionary<string, SendToElement>>() ?? new();
         }
     }
 }
 
-namespace TinyFx.Net 
+namespace TinyFx.Net
 {
-    public class SmtpClientElement : IOnlyKeyConfigElement
+    public class SmtpClientElement
     {
-        public string Name { get; set; }
         public string Host { get; set; }
         public int Port { get; set; }
         public string FromAddress { get; set; }
@@ -35,22 +42,11 @@ namespace TinyFx.Net
         public string UserName { get; set; }
         public string Password { get; set; }
         public bool UseSsl { get; set; }
-
-        public string GetConfigElementKey()
-        {
-            return Name;
-        }
     }
-    public class SendToElement : IOnlyKeyConfigElement
+    public class SendToElement
     {
-        public string Name { get; set; }
         public List<string> To { get; set; }
         public List<string> CC { get; set; }
-
-        public string GetConfigElementKey()
-        {
-            return Name;
-        }
     }
 }
 

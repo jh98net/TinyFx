@@ -26,14 +26,8 @@ namespace TinyFx.Extensions.AutoMapper
     /// </summary>
     /// <typeparam name="T1"></typeparam>
     /// <typeparam name="T2"></typeparam>
-    public interface IMapTo<T1, T2>
+    public interface IMapTo<T1, T2>: IMapTo<T1>
     {
-        /// <summary>
-        /// 实现当前对象映射到T1对象destination
-        /// </summary>
-        /// <param name="destination"></param>
-        void MapTo(T1 destination);
-
         /// <summary>
         /// 实现当前对象映射到T1对象destination
         /// </summary>

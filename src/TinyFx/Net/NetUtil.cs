@@ -46,14 +46,32 @@ namespace TinyFx.Net
         /// <param name="ip">IP地址</param>
         /// <returns></returns>
         public static IpAddressMode GetIpMode(string ip)
-            => IpAddressParser.GetIpMode(ip);
+        {
+            if (ip == "::1" || ip == "0.0.0.1" || GetLocalIPs().Contains(ip))
+                return IpAddressMode.Local;
+            if (!IPAddress.TryParse(ip, out var address))
+                return IpAddressMode.Unknown;
+            var bytes = address.GetAddressBytes();
+            if (bytes[0] == 127)
+                return IpAddressMode.Loopback;
+            return (bytes switch
+            {
+                var x when x[0] == 10 => true,
+                var x when x[0] == 172 && x[1] >= 16 && x[1] <= 31 => true,
+                var x when x[0] == 192 && x[1] == 168 => true,
+                _ => false
+            }) ? IpAddressMode.Intranet : IpAddressMode.External;
+        }
 
+        private static HashSet<string> _localIps;
         /// <summary>
         /// 获取本机 IPV4 集合
         /// </summary>
         /// <returns></returns>
         public static List<string> GetLocalIPs()
         {
+            if(_localIps != null)
+                return _localIps.ToList();
             var ret = new List<string>();
             var ipEntry = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in ipEntry.AddressList)
@@ -61,44 +79,49 @@ namespace TinyFx.Net
                 if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
                     ret.Add(ip.ToString());
             }
+            _localIps =  ret.ToHashSet();
             return ret;
         }
 
+        private static string _localIp;
         /// <summary>
         /// 获取一个IPv4 地址
         /// </summary>
         /// <returns></returns>
         public static string GetLocalIP()
         {
+            if (!string.IsNullOrEmpty(_localIp))
+                return _localIp;
+            string ret = null;
             //获取所有网卡
-            NetworkInterface[] networks = NetworkInterface.GetAllNetworkInterfaces();
+            var networks = NetworkInterface.GetAllNetworkInterfaces();
             //遍历数组
             foreach (var network in networks)
             {
+                if (network.OperationalStatus != OperationalStatus.Up)
+                    continue;
                 //单个网卡的IP对象
-                IPInterfaceProperties ip = network.GetIPProperties();
-                GatewayIPAddressInformationCollection gateways = ip.GatewayAddresses;
-                if (gateways.Count == 0) continue;
-                return ip.UnicastAddresses.Where(p => p.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && !System.Net.IPAddress.IsLoopback(p.Address))
-                        .FirstOrDefault()?.Address.ToString();
+                var props = network.GetIPProperties();
+                if (props.GatewayAddresses.Count == 0) continue;
+                foreach(var ip in props.UnicastAddresses)
+                {
+                    if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork
+                        && !System.Net.IPAddress.IsLoopback(ip.Address))
+                    {
+                        ret = ip.Address.ToString();
+                    }
+                }
             }
-            return networks.Select(p => p.GetIPProperties())
-              .SelectMany(p => p.UnicastAddresses)
-              .Where(p => p.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && !System.Net.IPAddress.IsLoopback(p.Address))
-              .FirstOrDefault()?.Address.ToString();
+            _localIp = ret;
+            return ret;
         }
+        
         /// <summary>
         /// 获得本地IP地址集合
         /// </summary>
         /// <returns></returns>
-        public static IEnumerable<IPAddress> GetLocalIPAddressCollection()
-        {
-            var ipEntry = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in ipEntry.AddressList)
-            {
-                yield return ip;
-            }
-        }
+        public static IPAddress[] GetHostAddresses()
+            => Dns.GetHostAddresses(Dns.GetHostName());
         #endregion
 
         /// <summary>
@@ -147,6 +170,21 @@ namespace TinyFx.Net
         /// <returns></returns>
         public static bool IsSuccessStatusCode(int statusCode)
             => statusCode >= 200 && statusCode < 300;
+
+        /// <summary>
+        /// 文件扩展名映射的HTTP content-type
+        /// </summary>
+        /// <param name="fileExt"></param>
+        /// <returns></returns>
+        public static string GetContentTypeByFileExt(string fileExt) 
+            => FileExtContentTypeMapper.GetContentType(fileExt);
+        /// <summary>
+        /// HTTP content-type映射的文件扩展名
+        /// </summary>
+        /// <param name="contentType"></param>
+        /// <returns></returns>
+        public static string GetFileExtByContentType(string contentType) 
+            => FileExtContentTypeMapper.GetFileExtension(contentType);
     }
 
 }

@@ -17,6 +17,7 @@ namespace TinyFx.Net
             var section = ConfigUtil.GetSection<SMSSection>();
             if (!section.Clients.TryGetValue(name ?? section.DefaultClientName, out var element))
                 return null;
+            /*
             switch (element.Provider)
             {
                 case SMSProvider.Tencent:
@@ -24,6 +25,7 @@ namespace TinyFx.Net
                 case SMSProvider.Bluegoon:
                     return new BluegoonSMSProvider(element as BluegoonSMSElement);
             }
+            */
             return null;
         }
     }

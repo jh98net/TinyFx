@@ -4,6 +4,10 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using TinyFx;
+using System.IO.Pipelines;
+using System.Threading.Tasks;
+using System.Buffers;
+using System.Threading;
 
 namespace TinyFx.IO
 {
@@ -56,7 +60,7 @@ namespace TinyFx.IO
         {
             byte[] buffer = new byte[2048];
             var dir = Path.GetDirectoryName(path);
-            if (!Directory.Exists(dir))
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
             {
                 Directory.CreateDirectory(dir);
             }
@@ -143,42 +147,6 @@ namespace TinyFx.IO
             => (new FileInfo(path).Attributes & FileAttributes.Directory) != 0;
 
         /// <summary>
-        /// 获取绝对路径。可以将相对路径转成绝对路径（可以使用SetCurrentDirectory设置相对的当前目录）
-        /// </summary>
-        /// <param name="fromDir">基路径</param>
-        /// <param name="relativePath">相对的目录</param>
-        /// <returns></returns>
-        public static string GetAbsolutePath(string fromDir, string relativePath)
-        {
-            var tmp = Path.Combine(fromDir, relativePath);
-            return Path.GetFullPath(tmp);
-            /*
-            relativeTo = Path.GetDirectoryName(relativeTo);
-            var schar = Path.DirectorySeparatorChar;
-            var src = relativePath.TrimStart(schar).Split(schar);
-            var count = src.Count(str => str == "..");
-            var behind = string.Join(schar.ToString(), src.Skip(count));
-            var taget = relativeTo.TrimEnd(schar).Split(schar);
-            var front = string.Join(schar.ToString(), taget.Take(taget.Length - count));
-            return $"{front}{schar}{behind}";
-            */
-        }
-
-        /// <summary>
-        /// 获取相对路径。可将绝对路径转换成相对路径
-        /// </summary>
-        /// <param name="fromDir">相对的目录（起始目录）</param>
-        /// <param name="absolutePath">绝对路径（目标目录）</param>
-        /// <returns></returns>
-        public static string GetRelativePath(string fromDir, string absolutePath)
-        {
-#if !NETSTANDARD2_0
-            return Path.GetRelativePath(fromDir, absolutePath);
-#else
-            return NetFxRelativePath.GetRelativePath(fromDir, absolutePath);
-#endif
-        }
-        /// <summary>
         /// 删除目录中的所有
         /// </summary>
         /// <param name="targetDirectory"></param>
@@ -259,6 +227,35 @@ namespace TinyFx.IO
                     CopyDirectory(subDir.FullName, newDestinationDir, true);
                 }
             }
+        }
+
+        /// <summary>
+        /// 从Pipe中读取String
+        /// </summary>
+        /// <param name="reader"></param>
+        /// <returns></returns>
+        public static async Task<string> GetStringFromPipe(PipeReader reader)
+        {
+            StringBuilder ret = null;
+            while (true)
+            {
+                ReadResult read = await reader.ReadAsync();
+                var buffer = read.Buffer;
+                if (buffer.IsEmpty && read.IsCompleted)
+                    break;
+                ret = new StringBuilder();
+                foreach (var segment in buffer)
+                {
+                    var newData = Encoding.UTF8.GetString(segment.Span);
+                    ret.Append(newData);
+                }
+                reader.AdvanceTo(buffer.Start, buffer.End);
+                if (read.IsCompleted)
+                {
+                    break;
+                }
+            }
+            return Convert.ToString(ret);
         }
     }
 }

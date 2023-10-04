@@ -148,74 +148,45 @@ namespace TinyFx
         #endregion
 
         #region DateTime和TimeStamp (又叫Unix时间戳, Unix epoch, Unix time, Unix timestamp)
-
-        private static DateTime _utcStartDate = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         /// <summary>
         /// 将DateTime转换为Unix时间戳timestamp
         /// </summary>
         /// <param name="date">转换的日期时间</param>
+        /// <param name="toSeconds">使用秒还是毫秒</param>
         /// <returns></returns>
-        public static long DateTimeToTimestamp(this DateTime date)
+        public static long DateTimeToTimestamp(this DateTime date, bool toSeconds = true)
         {
-            var utc = date.ToUniversalTime();
-            TimeSpan ts = (utc - _utcStartDate);
-            return (long)ts.TotalMilliseconds;//精确到毫秒
+            return toSeconds ? ((DateTimeOffset)date).ToUnixTimeSeconds()
+                : ((DateTimeOffset)date).ToUnixTimeMilliseconds();
         }
-        private static DateTime _localStartDate = DateTime.MinValue;
-        //private static DateTime _localStartDate = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1));
-        private static DateTime localStartDate 
+        public static long UtcDateTimeToTimestamp(this DateTime date, bool toSeconds = true)
         {
-            get
-            {
-                if (_localStartDate == DateTime.MinValue) 
-                {
-                    TimeZoneInfo.ClearCachedData();
-                    _localStartDate = new DateTime(1970, 1, 1) + TimeZoneInfo.Local.BaseUtcOffset;
-                }
-                return _localStartDate;
-            }
+            date =DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            return DateTimeToTimestamp(date, toSeconds);
         }
-        /// <summary>
-        /// Unix时间戳timestamp转为DateTime
-        /// </summary>
-        /// <param name="timeStamp">Unix时间戳格式,例如1482115779</param>
-        /// <returns></returns>
-        public static DateTime TimestampToDateTime(string timeStamp)
-        {
-            long longTimeStamp = long.Parse(timeStamp + (timeStamp.Length == 13 ? "0000" : "0000000"));
-            TimeSpan ts = new TimeSpan(longTimeStamp);
-            return localStartDate.Add(ts);
-        }
+
         /// <summary>
         /// 将Unix时间戳timestamp转换为DateTime
         /// </summary>
-        /// <param name="unixTime">Unix时间戳</param>
+        /// <param name="timeStamp">Unix时间戳</param>
+        /// <param name="isLocal">utc时间还是本地时间</param>
+        /// <param name="isSeconds">使用秒还是毫秒</param>
         /// <returns></returns>
-        public static DateTime TimestampToDateTime(this long unixTime)
-            => TimestampToDateTime(unixTime.ToString());
-
-        /// <summary>
-        /// 将DateTimeOffset转换为Unix时间戳timestamp
-        /// </summary>
-        /// <param name="dateTime"></param>
-        /// <returns></returns>
-        public static long DateTimeOffsetToTimestamp(DateTimeOffset dateTime)
+        public static DateTime TimestampToDateTime(this long timeStamp, bool isLocal = true, bool? isSeconds = true)
         {
-            var date = dateTime.ToUniversalTime();
-            var ticks = date.Ticks - new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero).Ticks;
-            var ts = ticks / TimeSpan.TicksPerSecond;
-            return ts;
+            if (!isSeconds.HasValue)
+                isSeconds = timeStamp.ToString().Length == 10;
+            var offset = isSeconds.Value ? DateTimeOffset.FromUnixTimeSeconds(timeStamp)
+                : DateTimeOffset.FromUnixTimeMilliseconds(timeStamp);
+            return isLocal ? offset.LocalDateTime : offset.UtcDateTime;
         }
-        /// <summary>
-        /// 将Unix时间戳timestamp转换为DateTimeOffset
-        /// </summary>
-        /// <param name="intDate"></param>
-        /// <returns></returns>
-        public static DateTimeOffset TimestampToDateTimeOffset(long intDate)
-        {
-            var timeInTicks = intDate * TimeSpan.TicksPerSecond;
-            return new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero).AddTicks(timeInTicks);
-        }
+        public static DateTime TimestampToDateTime(string timeStamp, bool isLocal = true, bool? isSeconds = null)
+            => TimestampToDateTime(long.Parse(timeStamp), isLocal, isSeconds.HasValue
+                ? isSeconds.Value : timeStamp.Length == 10);
+        public static DateTime TimestampToUtcDateTime(this long timeStamp, bool? isSeconds = true)
+            => TimestampToDateTime(timeStamp, false, isSeconds);
+        public static DateTime TimestampToUtcDateTime(string timeStamp, bool? isSeconds = null)
+            => TimestampToDateTime(timeStamp, false, isSeconds);
         #endregion
 
         #region 星座

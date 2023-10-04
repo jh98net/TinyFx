@@ -69,7 +69,7 @@ namespace TinyFx.Extensions.DotNetty
                 {
                     if (stoppingToken.IsCancellationRequested)
                         break;
-                    if (!session.IsLogin && _options.CheckSessionTimeout > 0 && (DateTime.Now - session.CreateTime).TotalMilliseconds > _options.CheckSessionTimeout)
+                    if (!session.IsLogin && _options.CheckSessionTimeout > 0 && (DateTime.UtcNow - session.CreateTime).TotalMilliseconds > _options.CheckSessionTimeout)
                     {
                         session.Channel.WriteAndFlushAsync(GetInvalidSessionPacket());
                         session.Channel.CloseAsync();

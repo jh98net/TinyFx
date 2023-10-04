@@ -271,6 +271,15 @@ namespace TinyFx.Extensions.EPPlus
             else
                 pkg.Save();
         }
+        /// <summary>
+        /// 根据excel模板文件或者新建excel写入数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="file"></param>
+        /// <param name="sheetName"></param>
+        /// <param name="list"></param>
+        /// <param name="config"></param>
+        /// <param name="toFile"></param>
         public static void Write<T>(string file, string sheetName, List<T> list, ExcelWriteConfig config, string toFile = null)
         {
             using (var pkg = new ExcelPackageEx(file))
@@ -279,6 +288,15 @@ namespace TinyFx.Extensions.EPPlus
                 Write<T>(pkg, sheetName, list, config, toFile);
             }
         }
+        /// <summary>
+        /// 根据excel模板文件写入数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="file"></param>
+        /// <param name="sheetIndex">模板文件所在index，0开始</param>
+        /// <param name="list"></param>
+        /// <param name="config"></param>
+        /// <param name="toFile"></param>
         public static void Write<T>(string file, int sheetIndex, List<T> list, ExcelWriteConfig config, string toFile = null)
         {
             using (var pkg = new ExcelPackageEx(file))

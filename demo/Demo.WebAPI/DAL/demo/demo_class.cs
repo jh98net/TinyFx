@@ -131,12 +131,14 @@ namespace Demo.WebAPI
 		/// 表名
 		/// </summary>
 	    public override string TableName => "`demo_class`";
-		#region Constructors
-		/// <summary>
-		/// 构造函数
-		/// </summary>
-		/// <param name = "database">数据来源</param>
-		public Demo_classMO(MySqlDatabase database) : base(database) { }
+
+        public override string TableName { set => throw new NotImplementedException(); }
+        #region Constructors
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name = "database">数据来源</param>
+        public Demo_classMO(MySqlDatabase database) : base(database) { }
 		/// <summary>
 		/// 构造函数
 		/// </summary>

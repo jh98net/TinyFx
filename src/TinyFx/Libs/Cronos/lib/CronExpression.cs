@@ -779,9 +779,7 @@ namespace Cronos
             return GetBits(field, low, high, step);
         }
 
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private static unsafe long ParseLastDayOfMonth(CronField field, ref char* pointer, ref CronExpressionFlag flags, ref byte lastMonthOffset)
         {
             flags |= CronExpressionFlag.DayOfMonthLast;
@@ -791,9 +789,7 @@ namespace Cronos
             return field.AllBits;
         }
 
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private static unsafe long ParseNthWeekDay(CronField field, ref char* pointer, int dayOfWeek, ref CronExpressionFlag flags, out byte nthDayOfWeek)
         {
             nthDayOfWeek = (byte)ParseNumber(field, ref pointer, MinNthDayOfWeek, MaxNthDayOfWeek);
@@ -802,18 +798,14 @@ namespace Cronos
         }
 
 
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private static long ParseLastWeekDay(int dayOfWeek, ref CronExpressionFlag flags)
         {
             flags |= CronExpressionFlag.DayOfWeekLast;
             return GetBit(dayOfWeek);
         }
 
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private static unsafe bool Accept(ref char* pointer, char character)
         {
             if (*pointer == character)
@@ -825,9 +817,7 @@ namespace Cronos
             return false;
         }
 
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private static unsafe bool AcceptCharacter(ref char* pointer, char character)
         {
             if (ToUpper(*pointer) == character)
@@ -849,9 +839,7 @@ namespace Cronos
             return num;
         }
 
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private static unsafe int ParseValue(CronField field, ref char* pointer)
         {
             var num = GetNumber(ref pointer, field.Names);
@@ -862,9 +850,7 @@ namespace Cronos
             return num;
         }
 
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private static StringBuilder AppendFieldValue(StringBuilder expressionBuilder, CronField field, long fieldValue)
         {
             if (field.AllBits == fieldValue) return expressionBuilder.Append('*');
@@ -882,9 +868,7 @@ namespace Cronos
             return expressionBuilder;
         }
 
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private StringBuilder AppendDayOfMonth(StringBuilder expressionBuilder, int domValue)
         {
             if (HasFlag(CronExpressionFlag.DayOfMonthLast))
@@ -902,9 +886,7 @@ namespace Cronos
             return expressionBuilder;
         }
 
-#if !NET40
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         private void AppendDayOfWeek(StringBuilder expressionBuilder, int dowValue)
         {
             AppendFieldValue(expressionBuilder, CronField.DaysOfWeek, dowValue);

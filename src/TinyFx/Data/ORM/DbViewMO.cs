@@ -30,6 +30,6 @@ namespace TinyFx.Data.ORM
         /// <summary>
         /// 视图名
         /// </summary>
-        public abstract string ViewName { get; }
+        public abstract string ViewName { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,41 +12,62 @@ namespace TinyFx.AspNet
 {
     internal static class GlobalExceptionUtil
     {
-        private static GlobalExceptionSection _option;
+        /// <summary>
+        /// 保存返回客户端的错误码：HttpContext.Items添加的Key
+        /// </summary>
+        public const string ERROR_CODE_KEY = "ERROR_CODE";
+        public const string ERROR_MESSAGE_KEY = "ERROR_MESSAGE";
+
         static GlobalExceptionUtil()
         {
-            _option = ConfigUtil.GetSection<GlobalExceptionSection>();
         }
-        public static ApiResult BuildApiResult(Exception ex)
+        public static ApiResult BuildApiResult(Exception ex, ILogBuilder logger, HttpContext context)
         {
             ApiResult ret;
             // 获取异常链中的 CustomException
-            var exc = ExceptionUtil.GetException<CustomException>(ex);
+            CustomException exc = null;
+            if (ex != null&& ex.Message == "Unexpected end of request content.")
+            {
+                exc = new CustomException(ResponseCode.G_BadRequest, "客户端中断请求");
+                if (AspNetUtil.TryGetUnhandledExceptionCode(out var code))
+                    exc.Code = code;
+            }
+            if (exc == null)
+                exc = ExceptionUtil.GetException<CustomException>(ex);
+
             if (exc != null)
             {
+                logger.AddException(exc, logger.GetCustomeExceptionLevel());
                 ret = new ApiResult()
                 {
                     Success = false,
                     Status = 400,// (int)HttpStatusCode.BadRequest,
                     Code = exc.Code,
-                    Message = string.IsNullOrEmpty(exc.Message) ? ex.Message : exc.Message,
                     Result = exc.Result,
+                    TraceId = context.GetTraceId(),
                     Exception = null
                 };
-                LogUtil.Info($"[CustomException] code:{exc.Code} message:{exc.Message} result:{exc.Result}");
+                if (string.IsNullOrEmpty(ret.Code) && AspNetUtil.TryGetUnhandledExceptionCode(out var code))
+                    ret.Code = code;
+
+                if (ConfigUtil.Project?.ResponseErrorMessage ?? false)
+                    ret.Message = exc.Message;
             }
             else
             {
+                logger.AddException(ex, Microsoft.Extensions.Logging.LogLevel.Error);
                 ret = new ApiResult()
                 {
                     Success = false,
                     Status = 500,//(int)HttpStatusCode.InternalServerError,
-                    Code = ResponseCode.G_InternalServerError,
-                    Message = ex.Message,
+                    Code = AspNetUtil.TryGetUnhandledExceptionCode(out var code)
+                        ? code : ResponseCode.G_InternalServerError,
+                    Message = (ConfigUtil.Project?.ResponseErrorMessage ?? false)
+                        ? ex.Message : null,
                     Result = null,
-                    Exception = ConfigUtil.Project.ResponseErrorDetail ? ex : null
+                    TraceId = context.GetTraceId(),
+                    Exception = AspNetUtil.GetResponseExceptionDetail() ? ex : null
                 };
-                LogUtil.Error(ex, "未处理异常");
             }
             return ret;
         }

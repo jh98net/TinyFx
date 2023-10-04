@@ -22,8 +22,8 @@ namespace TinyFx.Extensions.EPPlus
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             _pkg = string.IsNullOrEmpty(password) 
-                ? new ExcelPackage(new FileInfo(file), true)
-                : new ExcelPackage(new FileInfo(file), true, password);
+                ? new ExcelPackage(file)
+                : new ExcelPackage(file, password);
         }
         public ExcelPackageEx(Stream stream, string password = null) 
         {
@@ -44,6 +44,9 @@ namespace TinyFx.Extensions.EPPlus
         }
         public void Save(string file, string password = null) 
         {
+            if (System.IO.File.Exists(file))
+                System.IO.File.SetAttributes(file, FileAttributes.Normal);
+
             if (string.IsNullOrEmpty(password))
                 _pkg.SaveAs(new FileInfo(file));
             else

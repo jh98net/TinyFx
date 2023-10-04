@@ -96,7 +96,7 @@ namespace TinyFx
         /// <param name="src"></param>
         /// <returns></returns>
         public static string[] SplitNewLine(this string src)
-            => src.Trim().Split(new string[] { Environment.NewLine, "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
+            => src.Trim().Split(new string[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
         /// <summary>
         /// 将字符串按空格进行Split
         /// </summary>
@@ -160,14 +160,14 @@ namespace TinyFx
         /// 格式化字符串固定长度显示
         /// </summary>
         /// <param name="src"></param>
-        /// <param name="len"></param>
+        /// <param name="fixedLen"></param>
         /// <param name="leftAlign">true:左对齐</param>
         /// <param name="paddingChar">填充字符</param>
         /// <returns></returns>
-        public static string FormatFixedLength(object src, int len, bool leftAlign = true, char paddingChar = ' ')
+        public static string FormatFixedLength(object src, int fixedLen, bool leftAlign = true, char paddingChar = ' ')
         {
             var str = Convert.ToString(src);
-            return leftAlign ? str.PadRight(len, paddingChar) : str.PadLeft(len, paddingChar);
+            return leftAlign ? str.PadRight(fixedLen, paddingChar) : str.PadLeft(fixedLen, paddingChar);
         }
 
         /// <summary>
@@ -190,6 +190,30 @@ namespace TinyFx
                 ret.Add(Convert.ToString(m.Groups[1]));
             }
             return ret;
+        }
+
+        /// <summary>
+        /// 字符串固定长度显示，指定位置用*隐藏
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="toFixedLength">转换后需要显示的字符串总长度</param>
+        /// <param name="beginReservedLen">起始保留的字符串长度。0-不保留</param>
+        /// <param name="endReservedLen">结尾保留的字符串长度。0-不保留</param>
+        /// <param name="paddingChar">隐藏时显示的字符</param>
+        /// <returns></returns>
+        public static string HideFixedLength(this string src, int toFixedLength, int beginReservedLen, int endReservedLen, char paddingChar = '*')
+        {
+            if (string.IsNullOrEmpty(src) || (beginReservedLen == 0 && endReservedLen == 0))
+                return string.Empty.PadRight(toFixedLength, paddingChar);
+            if (src.Length < toFixedLength)
+                return src.PadRight(toFixedLength, paddingChar);
+            if (beginReservedLen == 0)
+                return src.Substring(src.Length - endReservedLen).PadLeft(toFixedLength, paddingChar);
+            if (endReservedLen == 0)
+                return src.Substring(0, beginReservedLen).PadRight(toFixedLength, paddingChar);
+            var start = src.Substring(0, beginReservedLen);
+            var end = src.Substring(src.Length - endReservedLen);
+            return start.PadRight(toFixedLength - endReservedLen, paddingChar) + end;
         }
     }
 }

@@ -56,13 +56,7 @@ namespace Murmur
 
         static bool Is64BitProcess()
         {
-#if NETFX45
-            return Environment.Is64BitProcess;
-#elif NETFX40 || NETFX35
-            return IntPtr.Size == 8;
-#else
             return false;
-#endif
         }
     }
 }

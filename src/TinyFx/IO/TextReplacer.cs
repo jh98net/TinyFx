@@ -12,6 +12,8 @@ namespace TinyFx.IO
     /// </summary>
     public class TextReplacer
     {
+
+        #region core
         private string _file;
         private string _content;
         private Encoding _encoding;
@@ -31,6 +33,8 @@ namespace TinyFx.IO
         {
             _content += content;
         }
+        #endregion
+
         public TextReplacer Replace(string src, object desc)
         {
             _content = _content.Replace(src, Convert.ToString(desc));
@@ -44,6 +48,36 @@ namespace TinyFx.IO
         public TextReplacer InsertLine(string line)
         {
             _content = $"{line}{Environment.NewLine}" + _content;
+            return this;
+        }
+        /// <summary>
+        /// 添加或更新行（更新根据该行是否包含mark）
+        /// </summary>
+        /// <param name="mark"></param>
+        /// <param name="newLine"></param>
+        /// <returns></returns>
+        public TextReplacer AppendOrUpdateLine(string mark, string newLine, string ignoreStart="#")
+        {
+            var lines = _content.SplitNewLine().ToList();
+            var isUpdate = false;
+            for (int i = 0; i < lines.Count; i++)
+            {
+                var line = lines[i];
+                if (!string.IsNullOrEmpty(ignoreStart) && line.StartsWith(ignoreStart))
+                    continue;
+                if (line.Contains(mark))
+                {
+                    if (isUpdate)
+                        throw new Exception($"TextReplacer.AppendOrUpdateLine()时mark标识查找到多行记录。file:{_file} mark:{mark}");
+                    lines[i] = newLine;
+                    isUpdate = true;
+                }
+            }
+            if(!isUpdate)
+            {
+                lines.Add(newLine);
+            }
+            _content = string.Join(Environment.NewLine, lines);
             return this;
         }
         public void Save(string descFile=null, Encoding encoding = null)

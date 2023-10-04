@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Net;
 
 namespace TinyFx.Net
 {
@@ -17,5 +18,9 @@ namespace TinyFx.Net
         public HttpRequestBody Request { get; set; }
         public HttpResponseBody Response { get; set; }
         public Exception Exception { get; set; }
+        public string ExceptionString { get; set; }
+        public List<Cookie> Cookies { get; set; }
+        public DateTime RequestUtcTime { get; set; }
+        public DateTime ResponseUtcTime { get; set; }
     }
 }

@@ -12,30 +12,15 @@ namespace TinyFx.Net
     /// </summary>
     public class ResponseCode
     {
-        /// <summary>
-        /// 保存返回客户端的错误码：HttpContext.Items添加的Key
-        /// </summary>
-        public const string ErrorCodeKey = "ERROR_CODE";
-        public const string ErrorMessageKey = "ERROR_MESSAGE";
-
         #region 基础
-        /// <summary>
-        /// 任务取消
-        /// </summary>
-        public const string G_Canceled = "G_Canceled";
-
         /// <summary>
         /// 请求错误
         /// </summary>
         public const string G_BadRequest = "G_BadRequest";
         /// <summary>
-        /// 服务器错误
+        /// 服务器未处理异常
         /// </summary>
         public const string G_InternalServerError = "G_InternalServerError";
-        /// <summary>
-        /// 未处理异常
-        /// </summary>
-        public const string G_UnhandledException = "G_UnhandledException";
         #endregion
 
         #region 认证和安全
@@ -44,17 +29,13 @@ namespace TinyFx.Net
         /// </summary>
         public const string G_Unauthorized = "G_Unauthorized";
         /// <summary>
-        /// Jwt Token过期
-        /// </summary>
-        public const string G_JwtTokenExpired = "G_JwtTokenExpired";
-        /// <summary>
         /// Jwt Token无效
         /// </summary>
         public const string G_JwtTokenInvalid = "G_JwtTokenInvalid";
         /// <summary>
-        /// Ticket过期
+        /// Jwt Token过期
         /// </summary>
-        public const string G_TicketExpired = "G_TicketExpired";
+        public const string G_JwtTokenExpired = "G_JwtTokenExpired";
         /// <summary>
         /// Ticket无效
         /// </summary>
@@ -75,14 +56,13 @@ namespace TinyFx.Net
 
         #region 服务器
         /// <summary>
-        /// 服务器超载，需要重新请求服务地址
-        /// </summary>
-        public const string G_ServiceOverload = "G_ServiceOverload";
-
-        /// <summary>
         /// 虽然建立连接但未准备好Session，稍等再通讯
         /// </summary>
         public const string G_ServiceNotReady = "G_ServiceNotReady";
+        /// <summary>
+        /// 服务器超载，需要重新请求服务地址
+        /// </summary>
+        public const string G_ServiceOverload = "G_ServiceOverload";
         /// <summary>
         /// 系统维护中
         /// </summary>

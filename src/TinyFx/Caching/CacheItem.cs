@@ -12,38 +12,61 @@ namespace TinyFx.Caching
     /// <typeparam name="T"></typeparam>
     public class CacheItem<T>
     {
-        private static long MaxTime = DateTime.MaxValue.DateTimeToTimestamp();
         public T Value { get; set; }
-        public long ExpireTime { get; set; }
-        [System.Text.Json.Serialization.JsonIgnore]
-        public bool IsExpired => (DateTime.Now.DateTimeToTimestamp() - ExpireTime) > 0;
-        public TimeSpan ExpireSpan { get; private set; }
+        public long? ExpireTime { get; set; }
+
+        public CacheItem()
+        {
+        }
+
         public CacheItem(T value)
         {
             Value = value;
-            ExpireTime = MaxTime;
         }
-        public CacheItem(T value, DateTime expireAt)
+        public CacheItem(T value, DateTime? expireAt)
         {
             Value = value;
             SetExpire(expireAt);
         }
-        public CacheItem(T value, TimeSpan expireSpan)
+        public CacheItem(T value, TimeSpan? expireSpan)
         {
             Value = value;
             SetExpire(expireSpan);
         }
-        public void SetExpire(DateTime expireAt)
+
+
+        [System.Text.Json.Serialization.JsonIgnore]
+        [Newtonsoft.Json.JsonIgnore]
+        public bool IsExpired => ExpireTime.HasValue
+            ? (DateTime.UtcNow.DateTimeToTimestamp() - ExpireTime) > 0
+            : false;
+        public void SetExpire(DateTime? expireAt)
         {
-            ExpireSpan = (expireAt - DateTime.Now);
-            ExpireTime = expireAt.DateTimeToTimestamp();
+            if (expireAt.HasValue)
+                ExpireTime = expireAt.Value.DateTimeToTimestamp();
         }
-        public void SetExpire(TimeSpan expireSpan)
+        public void SetExpire(TimeSpan? expireSpan)
         {
-            ExpireSpan = expireSpan;
-            ExpireTime = DateTime.Now.AddMilliseconds(expireSpan.TotalMilliseconds)
-                .DateTimeToTimestamp();
+            if (expireSpan.HasValue)
+                ExpireTime = DateTime.UtcNow.Add(expireSpan.Value).DateTimeToTimestamp();
+        }
+        public TimeSpan? GetExpireSpan()
+        {
+            if (!ExpireTime.HasValue)
+                return null;
+            return ExpireTime.Value.TimestampToDateTime() - DateTime.UtcNow;
+        }
+        public DateTime? GetExpireUtcTime()
+        {
+            if (!ExpireTime.HasValue)
+                return null;
+            return ExpireTime.Value.TimestampToDateTime(false);
+        }
+        public DateTime? GetExpireTime()
+        {
+            if (!ExpireTime.HasValue)
+                return null;
+            return ExpireTime.Value.TimestampToDateTime(true);
         }
     }
-
 }

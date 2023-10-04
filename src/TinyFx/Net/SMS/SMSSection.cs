@@ -12,7 +12,7 @@ namespace TinyFx.Configuration
     {
         public override string SectionName => "SMS";
         public string DefaultClientName { get; set; }
-        public Dictionary<string, SMSClientElement> Clients = new Dictionary<string, SMSClientElement>();
+        public Dictionary<string, IConfigurationSection> Clients = new ();
 
         public override void Bind(IConfiguration configuration)
         {
@@ -29,11 +29,11 @@ namespace TinyFx.Configuration
                         element = item.Get<SMSClientElement>();
                         break;
                 }
-                Clients.Add(element.Name, element);
+                //Clients.Add(element.Name, element);
             }
         }
     }
-    public abstract class SMSClientElement : OnlyKeyConfigElement
+    public abstract class SMSClientElement
     {
         public abstract SMSProvider Provider { get; }
         /// <summary>

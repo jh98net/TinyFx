@@ -11,7 +11,7 @@ namespace TinyFx.Data
     {
         #region Parameter
         // DbCommand参数缓存对象
-        private static readonly CommandParametersCache _parametersCache = new CommandParametersCache();
+        //private static readonly CommandParametersCache _parametersCache = new CommandParametersCache();
 
         /// <summary>
         /// 获得符合数据库提供者的参数名称
@@ -33,26 +33,36 @@ namespace TinyFx.Data
         //自动填充参数，使用参数缓存
         internal void AutoDeriveParameters(CommandWrapper command)
         {
-            if (_parametersCache.Contains(command))
+            DeriveParameters(command);
+            //存储过程DeriveParameters时无法区分InputOutput，所以全部设置成Output
+            if (command.CommandType == CommandType.StoredProcedure)
             {
-                IDataParameter[] paras = _parametersCache.Get(command, this);
-                if (paras != null && paras.Length > 0)
-                    command.Parameters.AddRange(paras);
-            }
-            else
-            {
-                DeriveParameters(command);
-                //存储过程DeriveParameters时无法区分InputOutput，所以全部设置成Output
-                if (command.CommandType == CommandType.StoredProcedure)
+                foreach (IDataParameter para in command.Parameters)
                 {
-                    foreach (IDataParameter para in command.Parameters)
-                    {
-                        if (para.Direction == ParameterDirection.InputOutput)
-                            para.Direction = ParameterDirection.Output;
-                    }
+                    if (para.Direction == ParameterDirection.InputOutput)
+                        para.Direction = ParameterDirection.Output;
                 }
-                _parametersCache.Set(command, this);
             }
+            //if (_parametersCache.Contains(command))
+            //{
+            //    IDataParameter[] paras = _parametersCache.Get(command, this);
+            //    if (paras != null && paras.Length > 0)
+            //        command.Parameters.AddRange(paras);
+            //}
+            //else
+            //{
+            //    DeriveParameters(command);
+            //    //存储过程DeriveParameters时无法区分InputOutput，所以全部设置成Output
+            //    if (command.CommandType == CommandType.StoredProcedure)
+            //    {
+            //        foreach (IDataParameter para in command.Parameters)
+            //        {
+            //            if (para.Direction == ParameterDirection.InputOutput)
+            //                para.Direction = ParameterDirection.Output;
+            //        }
+            //    }
+            //    _parametersCache.Set(command, this);
+            //}
         }
 
         // 设置Command所有参数的值
@@ -64,7 +74,11 @@ namespace TinyFx.Data
                     if (values.Length != command.Parameters.Count)
                         throw new ArgumentException("传入的参数值的数量错误，请核实SQL语句中的参数顺序和数量重新传入。");
                     for (int i = 0; i < values.Length; i++)
-                        command.Parameters[i].Value = values[i] ?? DBNull.Value;
+                    {
+                        var value = values[i];
+                        command.Parameters[i].Value = value ?? DBNull.Value;
+                        SetParameterDbType(command.Parameters[i], value);
+                    }
                     break;
                 case CommandType.StoredProcedure:
                     int index = 0;
@@ -83,6 +97,7 @@ namespace TinyFx.Data
                     throw new ArgumentException("TableDirect不支持自动配置参数集合。");
             }
         }
+        protected abstract void SetParameterDbType(DbParameter para, object value);
 
         #endregion // Parameter
 

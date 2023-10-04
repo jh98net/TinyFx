@@ -35,7 +35,10 @@ namespace TinyFx.Extensions.DotNetty
         public WebSocketServerHandler()
         {
             _logger = LogUtil.DefaultLogger;
-            _option = ConfigUtil.GetSection<DotNettySection>()?.Server;
+            _option = ConfigUtil.GetSection<DotNettySection>()!.Server;
+            //ConfigUtil.ConfigChange += (_, _) => {
+            //    _option = ConfigUtil.GetSection<DotNettySection>()!.Server;
+            //};
             _sessions = DIUtil.GetRequiredService<AppSessionContainer>();
             _serializer = DIUtil.GetRequiredService<IPacketSerializer>();
             _commands = DIUtil.GetRequiredService<CommandContainer>();
@@ -221,7 +224,7 @@ namespace TinyFx.Extensions.DotNetty
             // User黑名单验证
             if (!IsAllowUser(session))
                 return;
-            session.LastAccessTime = DateTime.Now; //更新用户激活状态
+            session.LastAccessTime = DateTime.UtcNow; //更新用户激活状态
             
             // 心跳
             if (packet.CommandId == DotNettyUtil.HeartbeatCommandId)

@@ -10,6 +10,7 @@ using TinyFx.Security;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using TinyFx.Configuration;
 
 namespace TinyFx.Data
 {
@@ -57,7 +58,7 @@ namespace TinyFx.Data
         /// 是否使用只读数据库连接
         /// 解决问题：当需要读取刚操作的数据，并且他们不在一个事务时，需要设置此属性为false访问主库
         /// </summary>
-        public bool UseOnlyRead { get; set; } = true;
+        public bool UseReadConnectionString { get; set; } = false;
 
         /// <summary>
         /// 获取或设置在终止执行命令的尝试并生成错误之前的等待时间，单位秒。默认30秒，0表示不限制时间
@@ -77,13 +78,14 @@ namespace TinyFx.Data
         /// </summary>
         /// <returns></returns>
         protected abstract ConnectionStringInfo GetConnectionStringInfo();
-        
+
         /// <summary>
         /// 数据库连接字符串信息
         /// </summary>
-        public  ConnectionStringInfo ConnectionStringInfo
+        public ConnectionStringInfo ConnectionStringInfo
         {
-            get {
+            get
+            {
                 if (_connectionStringInfo == null)
                     _connectionStringInfo = GetConnectionStringInfo();
                 if (_connectionStringInfo == null)
@@ -91,7 +93,7 @@ namespace TinyFx.Data
                 return _connectionStringInfo;
             }
         }
-        
+
         /// <summary>
         ///  数据库名称
         /// </summary>
@@ -190,7 +192,7 @@ namespace TinyFx.Data
         protected internal DbConnection CreateConnection(string connectionString = null)
         {
             DbConnection ret = Factory.CreateConnection();
-            ret.ConnectionString = connectionString ?? ConnectionString; ;
+            ret.ConnectionString = connectionString ?? ConnectionString;
             return ret;
         }
         /// <summary>
@@ -204,7 +206,7 @@ namespace TinyFx.Data
                 conn.Open();
                 InstProvider.FireConnectionOpenedEvent(ConnectionString);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 ex.Data.Add("错误信息", "打开数据库连接失败。");
                 ex.Data.Add("方法名", "OpenConnection()");
@@ -244,7 +246,8 @@ namespace TinyFx.Data
                 ret = conn.State == ConnectionState.Open;
             }
             catch { }
-            finally {
+            finally
+            {
                 conn.Close();
             }
             return ret;
@@ -301,8 +304,6 @@ namespace TinyFx.Data
             return command;
         }
 
-        // 根据SQL语句判断是否只读，尝试分配只读 ReadConnectionString
-        private static readonly ConcurrentDictionary<string, bool> _useReadConnection = new ConcurrentDictionary<string, bool>();
         internal void RepairCommandConnection(DbCommand command, TransactionManager tm)
         {
             if (tm != null)
@@ -313,13 +314,12 @@ namespace TinyFx.Data
             }
             else
             {
-                var isOnlyRead = false;
-                if (tm == null && UseOnlyRead && !string.IsNullOrEmpty(ReadConnectionString) && command.CommandType == CommandType.Text)
-                {
-                    isOnlyRead = _useReadConnection.GetOrAdd(command.CommandText, (sql) => {
-                        return (sql.TrimStart().Substring(0, 7).ToLower() == "select ");
-                    });
-                }
+                // 根据SQL语句判断是否只读，尝试分配只读 ReadConnectionString
+                var isOnlyRead = tm == null
+                    && UseReadConnectionString
+                    && !string.IsNullOrEmpty(ReadConnectionString)
+                    && command.CommandType == CommandType.Text
+                    && command.CommandText.TrimStart().Substring(0, 7).ToLower() == "select ";
                 command.Connection = isOnlyRead ? CreateConnection(ReadConnectionString) : CreateConnection();
             }
         }
@@ -342,20 +342,20 @@ namespace TinyFx.Data
             {
                 if (command.Connection.State == ConnectionState.Closed)
                     OpenConnection(command.Connection);
-                DateTime startTime = DateTime.Now;
+                DateTime startTime = DateTime.UtcNow;
                 try
                 {
                     ret = action(command);
-                    InstProvider.FireCommandExecutedEvent(command, startTime, DateTime.Now);
+                    InstProvider.FireCommandExecutedEvent(command, startTime, DateTime.UtcNow);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     RepairCommandException(command, ex);
                     InstProvider.FireCommandFailedEvent(command, ex);
                     throw;
                 }
             }
-            finally 
+            finally
             {
                 if (closeConnection) // 返回DataReader时不能关闭Connection
                     command.Dispose(); // 如存在事务Command对象内有处理
@@ -370,11 +370,11 @@ namespace TinyFx.Data
             {
                 if (command.Connection.State == ConnectionState.Closed)
                     await OpenConnectionAsync(command.Connection);
-                DateTime startTime = DateTime.Now;
+                DateTime startTime = DateTime.UtcNow;
                 try
                 {
                     ret = await action(command);
-                    InstProvider.FireCommandExecutedEvent(command, startTime, DateTime.Now);
+                    InstProvider.FireCommandExecutedEvent(command, startTime, DateTime.UtcNow);
                 }
                 catch (Exception ex)
                 {
@@ -406,7 +406,8 @@ namespace TinyFx.Data
         // *** 执行ExecReader 返回封装的DbDataReader
         internal DataReaderWrapper ExecReader(CommandWrapper command)
         {
-            DataReaderWrapper action(CommandWrapper cmd) {
+            DataReaderWrapper action(CommandWrapper cmd)
+            {
                 // 如果没有事务，则当遍历完成时,关闭Reader的同时关闭Connection
                 return cmd.HasTransaction ? cmd.ExecuteReader() : cmd.ExecuteReader(CommandBehavior.CloseConnection);
             }
@@ -440,7 +441,10 @@ namespace TinyFx.Data
             ex.Data.Add("错误信息", string.Format("执行{0}出现异常。", commandType));
             if (command.Transaction != null)
                 ex.Data.Add("Transaction", "在事务中");
-            ex.Data.Add("ConnectionString", command.ConnectionString);
+            if (ConfigUtil.IsDebugEnvironment)
+                ex.Data.Add("ConnectionString", command.ConnectionString);
+            else
+                ex.Data.Add("Database: ", command.Connection.Database);
             ex.Data.Add("CommandText", command.CommandText);
             foreach (DbParameter param in command.Parameters)
             {

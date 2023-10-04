@@ -211,7 +211,7 @@ namespace Serilog.Sinks.Batch
                 // Flush events batch
                 while (!_batchEventsCollection.IsCompleted) {
                     var eventBatch = _batchEventsCollection.Take();
-                    WriteLogEventAsync(eventBatch).GetAwaiter().GetResult();
+                    WriteLogEventAsync(eventBatch).ConfigureAwait(false).GetAwaiter().GetResult();
                     SelfLog.WriteLine($"Sending batch of {eventBatch.Count} logs");
                 }
 

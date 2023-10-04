@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <PackageId>nacos-sdk-csharp.Extensions.Configuration</PackageId>
+    <VersionPrefix>$(NugetVersion)</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <Authors>nacos-sdk-csharp Contributors</Authors>
+    <Description>nacos csharp sdk</Description>
+    <PackageTags>nacos,csharp,sdk,msconfig</PackageTags>
+    <PackageProjectUrl>https://github.com/nacos-group/nacos-sdk-csharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/nacos-group/nacos-sdk-csharp</RepositoryUrl>
+    <ProjectUrl>https://github.com/nacos-group/nacos-sdk-csharp</ProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>
+    </PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <SignAssembly>False</SignAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../LICENSE" Pack="true" Visible="false" PackagePath="" />
+    <None Include="README.md" Pack="true" Visible="false" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Nacos\Nacos.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <InternalsVisibleTo Include="Nacos.Microsoft.Extensions.Configuration.Tests" />
+  </ItemGroup>
+
+</Project>

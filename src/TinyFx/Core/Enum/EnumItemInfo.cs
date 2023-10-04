@@ -18,6 +18,7 @@ namespace TinyFx
         /// 枚举名称
         /// </summary>
         public string Name { get; set; }
+        public string MapName { get; set; }
         /// <summary>
         /// 枚举描述，通过DescriptionAttribute定义的描述
         /// </summary>

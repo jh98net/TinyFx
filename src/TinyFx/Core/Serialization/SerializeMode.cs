@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TinyFx
+namespace TinyFx.Serialization
 {
     /// <summary>
     /// 序列化方式

@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using StackExchange.Redis;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using TinyFx.Caching;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis.Serializers;
+using TinyFx.Serialization;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
@@ -16,7 +18,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
     /// </summary>
     public abstract class RedisClientBase
     {
-        #region Properties
+        #region Properties & Constructors
         /// <summary>
         /// Redis类型
         /// </summary>
@@ -28,6 +30,11 @@ namespace TinyFx.Extensions.StackExchangeRedis
         ///     GetGlobalRedisKey(id)
         /// </summary>
         public string RedisKey { get; set; }
+
+        /// <summary>
+        /// 如果设置，每次访问，RedisKey的过期将自动延续
+        /// </summary>
+        public TimeSpan? SlidingExpiration { get; set; }
 
         /// <summary>
         /// Redis设置
@@ -54,6 +61,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
                     _serializer = RedisUtil.GetSerializer(Options.SerializeMode);
                 return _serializer;
             }
+            set { _serializer = value; }
         }
 
         private static ConcurrentDictionary<Type, string> _connectionStringCache = new ConcurrentDictionary<Type, string>();
@@ -71,7 +79,6 @@ namespace TinyFx.Extensions.StackExchangeRedis
                 _connectionStringCache.TryAdd(type, ret);
             return ret;
         }
-        private IDatabase _database;
         /// <summary>
         /// 操作缓存数据的Database
         /// </summary>
@@ -79,57 +86,51 @@ namespace TinyFx.Extensions.StackExchangeRedis
         {
             get
             {
-                if (_database == null)
-                {
-                    var connString = GetConnectionString();
-                    _database = RedisUtil.GetMultiplexer(connString)
-                        .GetDatabase(Options.DatabaseIndex);
-                }
-                return _database;
+                var connString = GetConnectionString();
+                return RedisUtil.GetRedisByConnectionString(connString)
+                    .GetDatabase(Options.DatabaseIndex);
             }
         }
 
-        /// <summary>
-        /// 根据 Options 的设置 Redis Key 的 Expire
-        /// </summary>
-        public void KeyExpire()
+        public RedisClientBase(object key = null, RedisClientOptions options = null)
         {
-            if (Options.ExpirySpan.HasValue)
-                _database.KeyExpire(RedisKey, Options.ExpirySpan.Value);
-            else if (Options.ExpiryAt.HasValue)
-                _database.KeyExpire(RedisKey, Options.ExpiryAt.Value);
+            Options = options ?? new RedisClientOptions();
+            RedisKey = RedisUtil.GetProjectRedisKey(GetType(), key);
+        }
+        protected async Task SetSlidingExpirationAsync(TimeSpan? expire = null)
+        {
+            if (expire.HasValue)
+            {
+                await KeyExpireAsync(expire.Value);
+            }
+            else
+            {
+                if (SlidingExpiration.HasValue)
+                {
+                    await KeyExpireAsync(SlidingExpiration.Value);
+                }
+            }
         }
         #endregion
 
-        #region Constructors
-
-        public RedisClientBase(RedisClientOptions options = null)
-        {
-            Options = options ?? new RedisClientOptions();
-            RedisKey = RedisUtil.GetProjectRedisKey(GetType());
-        }
-        #endregion    
-
         #region Methods
-        public bool KeyDelete(CommandFlags flags = CommandFlags.None)
-            => Database.KeyDelete(RedisKey, flags);
-        public byte[] KeyDump(RedisKey key, CommandFlags flags = CommandFlags.None)
-            => Database.KeyDump(RedisKey, flags);
-        /// <summary>
-        /// 当前RedisKey是否存在
-        /// </summary>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool KeyExists(CommandFlags flags = CommandFlags.None)
-            => Database.KeyExists(RedisKey, flags);
+        public Task<bool> KeyDeleteAsync(CommandFlags flags = CommandFlags.None)
+            => Database.KeyDeleteAsync(RedisKey, flags);
+
+        public Task<byte[]> KeyDumpAsync(CommandFlags flags = CommandFlags.None)
+            => Database.KeyDumpAsync(RedisKey, flags);
+
+        public Task<bool> KeyExistsAsync(CommandFlags flags = CommandFlags.None)
+            => Database.KeyExistsAsync(RedisKey, flags);
+
         /// <summary>
         /// 设置当前缓存的确切到期时间
         /// </summary>
         /// <param name="expiryAt">要设置的确切到期日期</param>
         /// <param name="flags"></param>
         /// <returns>如果设置了超时，则为true。 如果密钥不存在或无法设置超时，则为false</returns>
-        public bool KeyExpireAt(DateTime expiryAt, CommandFlags flags = CommandFlags.None)
-            => Database.KeyExpire(RedisKey, expiryAt, flags);
+        public Task<bool> KeyExpireAtAsync(DateTime expiryAt, CommandFlags flags = CommandFlags.None)
+            => Database.KeyExpireAsync(RedisKey, expiryAt, flags);
 
         /// <summary>
         /// 设置当前缓存从添加时算起，缓存多长时间到期
@@ -137,43 +138,26 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="expirySpan">要设置的超时时间</param>
         /// <param name="flags"></param>
         /// <returns>如果设置了超时，则为true。 如果密钥不存在或无法设置超时，则为false</returns>
-        public bool KeyExpire(TimeSpan expirySpan, CommandFlags flags = CommandFlags.None)
-            => Database.KeyExpire(RedisKey, expirySpan, flags);
-        public bool KeyExpireMilliseconds(int milliseconds, CommandFlags flags = CommandFlags.None)
-             => KeyExpire(TimeSpan.FromMilliseconds(milliseconds), flags);
-        /// <summary>
-        /// 设置当前缓存到指定秒数后过期
-        /// </summary>
-        /// <param name="seconds"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool KeyExpireSeconds(int seconds, CommandFlags flags = CommandFlags.None)
-            => KeyExpire(TimeSpan.FromSeconds(seconds), flags);
-        /// <summary>
-        /// 设置当前缓存到指定分钟数后过期
-        /// </summary>
-        /// <param name="minutes"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool KeyExpireMinutes(int minutes, CommandFlags flags = CommandFlags.None)
-            => KeyExpire(TimeSpan.FromMinutes(minutes), flags);
-        /// <summary>
-        /// 设置当前缓存到指定小时数后过期
-        /// </summary>
-        /// <param name="hours"></param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool KeyExpireHours(int hours, CommandFlags flags = CommandFlags.None)
-            => KeyExpire(TimeSpan.FromHours(hours), flags);
-        public bool KeyExpireDays(int days, CommandFlags flags = CommandFlags.None)
-            => KeyExpire(TimeSpan.FromDays(days), flags);
+        public Task<bool> KeyExpireAsync(TimeSpan expirySpan, CommandFlags flags = CommandFlags.None)
+            => Database.KeyExpireAsync(RedisKey, expirySpan, flags);
+        public Task<bool> KeyExpireMillisecondsAsync(int milliseconds, CommandFlags flags = CommandFlags.None)
+            => KeyExpireAsync(TimeSpan.FromMilliseconds(milliseconds), flags);
+        public Task<bool> KeyExpireSecondsAsync(int seconds, CommandFlags flags = CommandFlags.None)
+            => KeyExpireAsync(TimeSpan.FromSeconds(seconds), flags);
+        public Task<bool> KeyExpireMinutesAsync(int minutes, CommandFlags flags = CommandFlags.None)
+            => KeyExpireAsync(TimeSpan.FromMinutes(minutes), flags);
+        public Task<bool> KeyExpireHoursAsync(int hours, CommandFlags flags = CommandFlags.None)
+            => KeyExpireAsync(TimeSpan.FromHours(hours), flags);
+        public Task<bool> KeyExpireDaysAsync(int days, CommandFlags flags = CommandFlags.None)
+            => KeyExpireAsync(TimeSpan.FromDays(days), flags);
+
         /// <summary>
         /// 返回自存储在指定键处的对象处于空闲状态以来的时间（未请求读或写操作）
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public TimeSpan? KeyIdleTime(CommandFlags flags = CommandFlags.None)
-            => Database.KeyIdleTime(RedisKey, flags);
+        public Task<TimeSpan?> KeyIdleTimeAsync(CommandFlags flags = CommandFlags.None)
+            => Database.KeyIdleTimeAsync(RedisKey, flags);
 
         /// <summary>
         /// 将键重命名为newkey。 当源名称和目标名称相同或键不存在时，它将返回错误
@@ -182,94 +166,24 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="when"></param>
         /// <param name="flags"></param>
         /// <returns>如果密钥已重命名，则为true，否则为false</returns>
-        public bool KeyRename(RedisKey newKey, When when = When.Always, CommandFlags flags = CommandFlags.None)
-            => Database.KeyRename(RedisKey, newKey, when, flags);
+        public Task<bool> KeyRenameAsync(RedisKey newKey, When when = When.Always, CommandFlags flags = CommandFlags.None)
+            => Database.KeyRenameAsync(RedisKey, newKey, when, flags);
+
         /// <summary>
         /// 返回具有超时的键的剩余生存时间
         /// </summary>
         /// <param name="flags"></param>
         /// <returns>TTL，如果键不存在或没有超时，则为null</returns>
-        public TimeSpan? KeyTimeToLive(CommandFlags flags = CommandFlags.None)
-            => Database.KeyTimeToLive(RedisKey, flags);
+        public Task<TimeSpan?> KeyTimeToLiveAsync(CommandFlags flags = CommandFlags.None)
+            => Database.KeyTimeToLiveAsync(RedisKey, flags);
+
         /// <summary>
         /// 当前Redis缓存数据类型
         /// </summary>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public RedisType KeyType(CommandFlags flags = CommandFlags.None)
-            => Database.KeyType(RedisKey, flags);
-
-        /// <summary>
-        /// 如果尚未使用，则获取一个锁（指定令牌值）
-        /// </summary>
-        /// <param name="key">锁的key</param>
-        /// <param name="token">要在key上设置的值</param>
-        /// <param name="expiry">key到期</param>
-        /// <param name="flags"></param>
-        public bool LockTake(string key, string token, TimeSpan expiry, CommandFlags flags = CommandFlags.None)
-            => Database.LockTake(key, token, expiry, flags);
-
-        /// <summary>
-        /// 如果令牌值正确，则释放一个锁
-        /// </summary>
-        /// <param name="key">锁的key</param>
-        /// <param name="token">key上必须匹配的值</param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public bool LockRelease(string key, string token, CommandFlags flags = CommandFlags.None)
-            => Database.LockRelease(key, token, flags);
-
-        /// <summary>
-        /// 查询针对锁持有的令牌
-        /// </summary>
-        /// <param name="key">锁的key</param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
-        public string LockQuery(string key, CommandFlags flags = CommandFlags.None)
-            => Database.LockQuery(key, flags);
-
-        /// <summary>
-        /// 分布式锁定
-        /// </summary>
-        /// <param name="lockKey">要锁定资源的键值，针对每一个需要锁定的资源，名称必须唯一，如需要锁定操作用户coin，LockKey="lock_key_user_coin"</param>
-        /// <param name="expiryTime">锁定资源后，如不手动释放，则在过期时间后自动释放锁（注意需确保锁定后的执行完成），默认10秒</param>
-        /// <param name="retryCount">重试次数</param>
-        /// <param name="retryInterval">重试间隔</param>
-        /// <returns></returns>
-        public RedLock Lock(string lockKey, TimeSpan? expiryTime = null, int retryCount = 0, TimeSpan? retryInterval = null)
-        {
-            var ret = new RedLock(Database, lockKey, expiryTime, retryCount, retryInterval);
-            ret.ClientType = GetType();
-            ret.Start();
-            return ret;
-        }
-        public RedLock Lock(string lockKey, int seconds, int retryCount = 0, TimeSpan? retryInterval = null)
-            => Lock(lockKey, TimeSpan.FromSeconds(seconds), retryCount, retryInterval);
-        
-        /// <summary>
-        /// 分布式锁定，样例
-        /// using(var redLock = await LockAsync())
-        /// {
-        ///     if(redLock.IsLocked) //成功上锁
-        ///     { }
-        ///     else
-        ///     { }
-        /// }
-        /// </summary>
-        /// <param name="lockKey">要锁定资源的键值，针对每一个需要锁定的资源，名称必须唯一，如需要锁定操作用户coin，LockKey="lock_key_user_coin"</param>
-        /// <param name="expiryTime">锁定资源后，如不手动释放，则在过期时间后自动释放锁（注意需确保锁定后的执行完成），默认10秒</param>
-        /// <param name="retryCount">重试次数</param>
-        /// <param name="retryInterval">重试间隔</param>
-        /// <returns></returns>
-        public async Task<RedLock> LockAsync(string lockKey, TimeSpan? expiryTime = null, int retryCount = 0, TimeSpan? retryInterval = null)
-        {
-            var ret = new RedLock(Database, lockKey, expiryTime, retryCount, retryInterval);
-            ret.ClientType = GetType();
-            await ret.StartAsync();
-            return ret;
-        }
-        public async Task<RedLock> LockAsync(string lockKey, int seconds, int retryCount = 0, TimeSpan? retryInterval = null)
-            => await LockAsync(lockKey, TimeSpan.FromSeconds(seconds), retryCount, retryInterval);
+        public Task<RedisType> KeyTypeAsync(CommandFlags flags = CommandFlags.None)
+            => Database.KeyTypeAsync(RedisKey, flags);
         #endregion
 
         #region Utils
@@ -336,6 +250,8 @@ namespace TinyFx.Extensions.StackExchangeRedis
         #endregion
 
         #region GetRedisKey
+        protected string GetGlobalGroupRedisKey(string group, object id = null)
+            => RedisUtil.GetGlobalGroupRedisKey(group, GetType(), id);
         /// <summary>
         /// 全局默认RedisKey格式:Global:TypeName:Id
         /// </summary>
@@ -343,6 +259,8 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <returns></returns>
         protected string GetGlobalRedisKey(object id = null)
             => RedisUtil.GetGlobalRedisKey(GetType(), id);
+        protected string GetProjectGroupRedisKey(string group, object id = null)
+            => RedisUtil.GetProjectGroupRedisKey(group, GetType(), id);
         /// <summary>
         /// 全局默认RedisKey格式:Global:TypeName:Id
         /// </summary>

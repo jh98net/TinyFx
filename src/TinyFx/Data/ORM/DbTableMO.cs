@@ -4,6 +4,7 @@ using System.Data.Common;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Data.DataMapping;
+using TinyFx.Data.ORM.Router;
 
 namespace TinyFx.Data.ORM
 {
@@ -32,7 +33,12 @@ namespace TinyFx.Data.ORM
         /// <summary>
         /// 表名
         /// </summary>
-        public abstract string TableName { get; }
+        public abstract string TableName { get; set; }
+        public bool UseReadConnectionString
+        {
+            get => Database.UseReadConnectionString;
+            set => Database.UseReadConnectionString = value;
+        }
         #endregion
 
         #region Add
@@ -42,9 +48,9 @@ namespace TinyFx.Data.ORM
         /// <param name="item"></param>
         /// <param name="tm"></param>
         /// <returns></returns>
-        public abstract int Add(TEntity item, TransactionManager tm = null);
+        public abstract int Add(TEntity item, TransactionManager tm = null, bool useIgnore = false);
 
-        public abstract Task<int> AddAsync(TEntity item, TransactionManager tm = null);
+        public abstract Task<int> AddAsync(TEntity item, TransactionManager tm = null, bool useIgnore = false);
 
         /// <summary>
         /// 插入一组数据

@@ -19,8 +19,19 @@ namespace TinyFx.Data
     {
         /// <summary>
         /// 事务级别
+        /// ReadUncommitted - 未提交读(存在其他事务未提交的数据造成的脏读)
+        /// ReadCommitted - 已提交读(存在其他事务update和delete并提交后造成的不可重复读)
+        /// RepeatableRead - 可重复读(存在其他事务insert时造成的幻读)
+        /// Serializable - 序列化
         /// </summary>
         public IsolationLevel IsolationLevel { get; set; }
+
+        private List<Action> _commitCallbacks = new List<Action>();
+        private List<Action> _rollbackCallbacks = new List<Action>();
+        public void AddCommitCallback(Action callback)
+            => _commitCallbacks.Add(callback);
+        public void AddRollbackCallback(Action callback)
+            => _rollbackCallbacks.Add(callback);
 
         /// <summary>
         /// 构造函数
@@ -66,6 +77,7 @@ namespace TinyFx.Data
 
         private void Process(bool isCommit)
         {
+            GC.SuppressFinalize(this);
             if (_isOpened)
             {
                 try
@@ -83,19 +95,19 @@ namespace TinyFx.Data
                 finally
                 {
                     CloseConnections();
-                    GC.SuppressFinalize(this);
+                    if (isCommit)
+                        _commitCallbacks.ForEach(x => x());
+                    else
+                        _rollbackCallbacks.ForEach(x => x());
                 }
             }
-            else
-                throw new Exception($"TransactionManager事物对象没有使用，不能Commit或Rollback。_isOpened:{_isOpened} _trans.Count:{_trans.Count}");
         }
         private void CloseConnections()
         {
             _isOpened = false;
             foreach (DbTransaction tran in _trans.Values)
             {
-                if (tran != null && tran.Connection != null)
-                    tran.Connection.Close();
+                tran?.Connection?.Close();
             }
         }
         /// <summary>

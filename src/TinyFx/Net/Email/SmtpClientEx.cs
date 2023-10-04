@@ -26,7 +26,7 @@ namespace TinyFx.Net
         public SmtpClientEx(string clientName = null)
         {
             Section = ConfigUtil.GetSection<SmtpSection>();
-            if(Section == null)
+            if (Section == null)
                 throw new Exception($"配置文件中不存在配置节：Smtp");
             clientName = clientName ?? Section.DefaultClientName;
             if (!Section.Clients.ContainsKey(clientName))
@@ -65,21 +65,25 @@ namespace TinyFx.Net
         private void SendTo(IEnumerable<string> tos, IEnumerable<string> ccs, string subject, string body, params Attachment[] atts)
         {
             var msg = GetMessage();
-            if (tos != null) {
-                foreach (var to in tos)
-                    msg.To.Add(to);
-            }
-            if (ccs != null) {
-                foreach (var cc in ccs)
-                    msg.CC.Add(cc);
-            }
+            tos?.ForEach(t =>
+            {
+                t = t.Trim();
+                if (!string.IsNullOrEmpty(t))
+                    msg.To.Add(t);
+            });
+            ccs?.ForEach(c =>
+            {
+                c = c.Trim();
+                if (!string.IsNullOrEmpty(c))
+                    msg.CC.Add(c);
+            });
             msg.Subject = subject;
             msg.Body = body;
-            if (atts != null)
+            atts?.ForEach(att =>
             {
-                foreach (var att in atts)
+                if (att != null)
                     msg.Attachments.Add(att);
-            }
+            });
             Client.Send(msg);
         }
         private MailMessage GetMessage()

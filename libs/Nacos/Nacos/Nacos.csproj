@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <PackageId>nacos-sdk-csharp</PackageId>
+    <VersionPrefix>$(NugetVersion)</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
+    <Authors>nacos-sdk-csharp Contributors</Authors>
+    <Description>nacos csharp sdk</Description>
+    <PackageTags>nacos,csharp,sdk</PackageTags>
+    <PackageProjectUrl>https://github.com/nacos-group/nacos-sdk-csharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/nacos-group/nacos-sdk-csharp</RepositoryUrl>
+    <ProjectUrl>https://github.com/nacos-group/nacos-sdk-csharp</ProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>
+    </PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <SignAssembly>False</SignAssembly>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.21.2" />
+    <PackageReference Include="Grpc.Core" Version="2.46.3" />
+    <!--<PackageReference Include="Grpc.Net.Client" Version="2.33.1" />-->
+    <!--<Protobuf Include="V2\protos\nacos_grpc_service.proto" GrpcServices="Client" />-->
+    <!--<PackageReference Include="Grpc.Tools" Version="2.36.1" PrivateAssets="All" />-->
+  </ItemGroup>
+
+</Project>

@@ -7,7 +7,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
     public enum RedisSerializeMode
     {
         Json,
-        Xml,
-        DefaultBytes
+        Bytes,
+        MemoryPack
     }
 }

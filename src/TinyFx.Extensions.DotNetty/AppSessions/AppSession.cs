@@ -51,7 +51,7 @@ namespace TinyFx.Extensions.DotNetty
         {
             Channel = channel;
             ChannelId = channel.Id.AsLongText();
-            CreateTime = DateTime.Now;
+            CreateTime = DateTime.UtcNow;
             RemoteAddress = remoteAddress;
             LastAccessTime = CreateTime;
 

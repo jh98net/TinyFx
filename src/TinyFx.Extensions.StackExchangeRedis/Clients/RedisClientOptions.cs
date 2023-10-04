@@ -25,13 +25,5 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// 序列化方式
         /// </summary>
         public RedisSerializeMode SerializeMode { get; set; } = RedisSerializeMode.Json;
-        /// <summary>
-        /// 过期时间
-        /// </summary>
-        public TimeSpan? ExpirySpan { get; set; }
-        /// <summary>
-        /// 过期时间点
-        /// </summary>
-        public DateTime? ExpiryAt { get; set; }
     }
 }

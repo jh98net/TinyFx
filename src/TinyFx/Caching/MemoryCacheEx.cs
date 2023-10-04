@@ -18,8 +18,13 @@ namespace TinyFx.Caching
         public void Remove(object key)
             => _cache.Remove(key);
 
-        public void Set<T>(object key, T value, TimeSpan expire = default)
-            => _cache.Set(key, value, expire);
+        public void Set<T>(object key, T value, TimeSpan? expire = null)
+        {
+            if (expire.HasValue)
+                _cache.Set(key, value, expire.Value);
+            else
+                _cache.Set(key, value);
+        }
 
         public bool TryGet<T>(object key, out T value)
             => _cache.TryGetValue(key, out value);
@@ -29,7 +34,7 @@ namespace TinyFx.Caching
             if (!TryGet(key, out T ret))
             {
                 var value = valueFactory(key);
-                Set(key, value.Value, value.ExpireSpan);
+                Set(key, value.Value, value.GetExpireSpan());
                 return value.Value;
             }
             return ret;

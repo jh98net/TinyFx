@@ -37,7 +37,7 @@ namespace TinyFx.Data.Schema
         /// 主键
         /// </summary>
         [Browsable(false)]
-        public PrimaryKeySchema PrimaryKey { get; set; }
+        public PrimaryKeySchema PrimaryKey { get; set; } = new PrimaryKeySchema();
         /// <summary>
         /// 外键集合
         /// </summary>
@@ -70,10 +70,10 @@ namespace TinyFx.Data.Schema
         {
             get
             {
-                var index = Indexes.SingleOrDefault(item => {
+                return Indexes.Any(item =>
+                {
                     return item.IsUnique && !item.IsPrimaryKey;
                 });
-                return index != null;
             }
         }
         #endregion

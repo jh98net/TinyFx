@@ -44,15 +44,18 @@ namespace TinyFx.Extensions.DotNetty
         {
             Sessions = AppSessionContainer.Instance;
             Commands = CommandContainer.Instance;
-            var section = ConfigUtil.GetSection<DotNettySection>();
-            _serverOptions = section.Server;
+            _serverOptions = ConfigUtil.GetSection<DotNettySection>()!.Server;
+            //ConfigUtil.ConfigChange += (_, _) =>
+            //{
+            //    _serverOptions = ConfigUtil.GetSection<DotNettySection>()!.Server;
+            //};
         }
         private static XmlDocumentParser _xmlParser;
         public static XmlDocumentParser XmlParser
         {
-            get 
+            get
             {
-                if (_xmlParser == null) 
+                if (_xmlParser == null)
                 {
                     var xmlFiles = CommandContainer.Instance.Assemblies.Select(asm
                             => Path.Combine(Path.GetDirectoryName(asm.Location), $"{Path.GetFileNameWithoutExtension(asm.Location)}.xml")
@@ -162,7 +165,7 @@ namespace TinyFx.Extensions.DotNetty
             var type = message.GetType();
             if (!Commands.TryGet(type, out CommandDescriptor cmd))
                 throw new Exception($"CommandDescriptorContainer中不存在对应的CommandDescriptor：{type.FullName}");
-            
+
             return new Packet()
             {
                 CommandId = cmd.CommandId,
@@ -180,19 +183,19 @@ namespace TinyFx.Extensions.DotNetty
         /// <returns></returns>
         internal static Packet CreateExceptionPacket(string code, string message)
         {
-            return new Packet 
-            { 
+            return new Packet
+            {
                 CommandId = ExceptionCommandId,
                 Body = new ProtoResponse
                 {
                     Success = false,
                     Code = code,
-                    Message = message
+                    Message = ConfigUtil.Project.ResponseErrorMessage ? message : null
                 }
             };
         }
         internal static Packet CreateExceptionPacket(Exception ex, AppSession session, out bool isCustomEx)
-        { 
+        {
             var ret = new Packet { CommandId = ExceptionCommandId };
             var exc = ExceptionUtil.GetException<CustomException>(ex);
             isCustomEx = exc != null;
@@ -202,20 +205,21 @@ namespace TinyFx.Extensions.DotNetty
                 {
                     Success = false,
                     Code = exc.Code,
-                    Message = exc.Message
+                    Message = ConfigUtil.Project.ResponseErrorMessage ? exc.Message : null
                 };
-                LogUtil.Debug($"[CustomException] userId:{session?.UserId} code:{exc.Code} message:{exc.Message}");
+                LogUtil.Debug("[CustomException] userId:{userId} exc.code:{exc.code} exc.message:{exc.message}"
+                    , session?.UserId, exc.Code, exc.Message);
             }
             else
             {
                 ret.Body = new ProtoResponse
                 {
                     Success = false,
-                    Code = ResponseCode.G_UnhandledException,
-                    Message = ConfigUtil.Project.ResponseErrorDetail
-                        ? $"{ex.Message}{Environment.NewLine}{ex.StackTrace}" : ex.Message
+                    Code = ResponseCode.G_InternalServerError,
+                    Message = ConfigUtil.Project.ResponseErrorMessage ? ex.Message : null,
+                    Exception = ConfigUtil.Project.ResponseErrorDetail ? ex : null
                 };
-                LogUtil.Error(ex, $"未处理异常: {session}");
+                LogUtil.Error(ex, "未处理异常: session:{session}", session);
             }
             return ret;
         }

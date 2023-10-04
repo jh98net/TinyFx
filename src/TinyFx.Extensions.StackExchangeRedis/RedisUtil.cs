@@ -6,6 +6,15 @@ using System.Text;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis.Serializers;
 using StackExchange.Redis.KeyspaceIsolation;
+using TinyFx.Serialization;
+using TinyFx.Data;
+using static System.Collections.Specialized.BitVector32;
+using Newtonsoft.Json;
+using TinyFx.Collections;
+using System.Net;
+using static StackExchange.Redis.RedisChannel;
+using TinyFx.Reflection;
+using System.Reflection;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
@@ -16,12 +25,57 @@ namespace TinyFx.Extensions.StackExchangeRedis
     /// </summary>
     public static class RedisUtil
     {
+        #region Constructors
+        private static ConcurrentDictionary<string, ConnectionStringElement> _elementDic = new();
         // key: ConfigString
-        private static readonly ConcurrentDictionary<string, ConnectionMultiplexer> _multiplexers = new ConcurrentDictionary<string, ConnectionMultiplexer>();
-        private static readonly ISerializer _jsonSerializer = new RedisJsonSerializer();
-        //private static readonly ISerializer _bytesSerializer = new RedisDefaultBytesSerializer();
+        private static readonly ConcurrentDictionary<string, ConnectionMultiplexer> _redisDict = new();
 
-        #region Create
+        private static ISerializer _jsonSerializer { get; }
+        public static JsonSerializerSettings JsonOptions { get; }
+        private static readonly ISerializer _bytesSerializer = new RedisBytesSerializer();
+        //private static readonly ISerializer _memoryPackSerializer = new RedisMemoryPackSerializer();
+
+        static RedisUtil()
+        {
+            var serializer = new TinyJsonSerializer();
+            _jsonSerializer = serializer;
+            JsonOptions = serializer.JsonOptions;
+        }
+        #endregion
+
+        #region Redis & Database
+        public static ConnectionMultiplexer GetRedis(string connectionStringName = null)
+        {
+            var element = GetConfigElement(connectionStringName);
+            return GetRedisByConnectionString(element.ConnectionString);
+        }
+        public static ConnectionMultiplexer GetRedisByConnectionString(string connectionString)
+        {
+            if (string.IsNullOrEmpty(connectionString))
+                throw new ArgumentNullException("connectionString");
+            return _redisDict.GetOrAdd(connectionString, (key) =>
+            {
+                return ConnectionMultiplexer.ConnectAsync(connectionString).GetTaskResult(true);
+            });
+        }
+        public static async Task<ConnectionMultiplexer> GetRedisByConnectionStringAsync(string connectionString)
+        {
+            if (string.IsNullOrEmpty(connectionString))
+                throw new ArgumentNullException("connectionString");
+
+            if (!_redisDict.TryGetValue(connectionString, out var ret))
+            {
+                ret = await ConnectionMultiplexer.ConnectAsync(connectionString);
+                _redisDict.TryAdd(connectionString, ret);
+            }
+            return ret;
+        }
+        /// <summary>
+        /// 默认Database
+        /// </summary>
+        public static IDatabase DefaultDatabase
+            => GetDatabase();
+
         /// <summary>
         /// 获得基础Redis操作类IDatabase
         /// </summary>
@@ -31,8 +85,36 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public static IDatabase GetDatabase(string connectionStringName = null, int databaseIndex = -1)
         {
             var element = GetConfigElement(connectionStringName);
-            return GetMultiplexer(element.ConnectionString).GetDatabase(databaseIndex);
+            return GetRedisByConnectionString(element.ConnectionString).GetDatabase(databaseIndex);
         }
+        internal static ConnectionStringElement GetConfigElement(string connectionStringName = null, Type type = null)
+        {
+            var key = $"{type?.FullName}|{connectionStringName}";
+            if (!_elementDic.TryGetValue(key, out var ret))
+            {
+                var section = ConfigUtil.GetSection<RedisSection>();
+                if (section == null)
+                    throw new Exception($"Redis配置不存在");
+                if (string.IsNullOrEmpty(connectionStringName))
+                {
+                    connectionStringName = (type == null)
+                        || !section.ConnectionStringNamespaces.TryGetValue(type.Namespace, out string name)
+                        ? section.DefaultConnectionStringName
+                        : name;
+                }
+                if (string.IsNullOrEmpty(connectionStringName))
+                    throw new ArgumentNullException("connectionStringName");
+                if (!section.ConnectionStrings.TryGetValue(connectionStringName, out ret))
+                    throw new Exception($"Redis配置Redis:ConnectionStrings:Name不存在。Name:{connectionStringName}");
+                if (string.IsNullOrEmpty(ret.ConnectionString))
+                    throw new Exception($"Redis配置Redis:ConnectionStrings:ConnectionString不能为空。Name:{ret.Name}");
+                _elementDic.TryAdd(key, ret);
+            }
+            return ret;
+        }
+        #endregion
+
+        #region CreateClient
         public static RedisListClient<T> CreateListClient<T>(string redisKey, string connectionStringName = null)
         {
             var options = GetOptions(connectionStringName, null);
@@ -92,6 +174,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         #endregion
 
         #region GetRedisKey
+        public static string GetGlobalGroupRedisKey(string group, Type type, object id = null)
+        {
+            return id == null
+            ? $"Global:{group}:{GetTypeName(type)}"
+            : $"Global:{group}:{GetTypeName(type)}:{Convert.ToString(id)}";
+        }
         /// <summary>
         /// 全局默认RedisKey格式:Global:TypeName:Id
         /// </summary>
@@ -115,6 +203,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
             return id == null
                 ? $"Global:{type}"
                 : $"Global:{type}:{Convert.ToString(id)}";
+        }
+        public static string GetProjectGroupRedisKey(string group, Type type, object id = null)
+        {
+            return id == null
+                ? $"{ConfigUtil.Project.ProjectId}:{group}:{GetTypeName(type)}"
+                : $"{ConfigUtil.Project.ProjectId}:{group}:{GetTypeName(type)}:{Convert.ToString(id)}";
         }
         /// <summary>
         /// 项目默认RedisKey格式:ProjectId:TypeName:Id
@@ -149,12 +243,116 @@ namespace TinyFx.Extensions.StackExchangeRedis
             var idx = typeName.IndexOf('`');
             if (idx > 0)
                 typeName = typeName.Substring(0, idx);
+            typeName = typeName.TrimEnd("DCache", false);
             _typeNameCache.TryAdd(type, typeName);
             return typeName;
         }
         #endregion
 
+        #region Lock
+        /// <summary>
+        /// 分布式事务锁(锁自动延期)
+        /// using(var redLock = await LockAsync())
+        /// {
+        ///     if(redLock.IsLocked) //成功上锁
+        ///     { }
+        ///     else
+        ///     { }
+        /// }
+        /// </summary>
+        /// <param name="lockKey">要锁定资源的键值（一般指业务范围）</param>
+        /// <param name="seconds">锁定资源后，如不手动释放，则在过期时间后自动释放锁（注意需确保锁定后的执行完成），单位秒</param>
+        /// <param name="retryCount">重试次数，默认6次</param>
+        /// <param name="retryInterval">重试间隔，默认500</param>
+        /// <returns></returns>
+        public static async Task<RedLock> LockAsync(string lockKey, int seconds, int retryCount = 6, int retryInterval = 500)
+            => await LockAsync(lockKey, TimeSpan.FromSeconds(seconds), retryCount, TimeSpan.FromMilliseconds(retryInterval));
+        /// <summary>
+        /// 申请锁，直到等待时间到期。申请到后锁自动延期
+        /// </summary>
+        /// <param name="lockKey"></param>
+        /// <param name="waitSeconds"></param>
+        /// <returns></returns>
+        public static async Task<RedLock> LockWaitAsync(string lockKey, int waitSeconds)
+        {
+            var retryCount = waitSeconds * 1000 / 500;
+            var retryInterval = TimeSpan.FromMilliseconds(500);
+            return await LockAsync(lockKey, null, retryCount, retryInterval);
+        }
+        public static async Task<RedLock> LockAsync(string lockKey, TimeSpan? expiryTime = null, int retryCount = 0, TimeSpan? retryInterval = null)
+        {
+            var ret = new RedLock(DefaultDatabase, lockKey, expiryTime, retryCount, retryInterval);
+            ret.ClientType = typeof(RedisUtil);
+            await ret.StartAsync();
+            return ret;
+        }
+        #endregion
+
+        #region Publish
+        /// <summary>
+        /// 发布广播消息（RedisSubscribeConsumer子类消费）
+        /// </summary>
+        /// <typeparam name="TMessage"></typeparam>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static async Task PublishAsync<TMessage>(TMessage message)
+        {
+            var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
+            var channel = GetRedisChannel<TMessage>(attr?.PatternMode ?? PatternMode.Auto);
+            var msg = await GetSerializer(RedisSerializeMode.Json).SerializeAsync(message);
+            await GetRedis(attr?.ConnectionStringName)
+                .GetSubscriber()
+                .PublishAsync(channel, msg);
+        }
+        /// <summary>
+        /// 发布队列消息,队列消息将被阻塞且单一执行（RedisQueueConsumer子类消费）
+        /// </summary>
+        /// <typeparam name="TMessage"></typeparam>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static async Task PublishQueueAsync<TMessage>(TMessage message)
+        {
+            var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
+            var channel = GetRedisChannel<TMessage>(attr?.PatternMode ?? PatternMode.Auto);
+            var msg = await GetSerializer(RedisSerializeMode.Json).SerializeAsync(message);
+            var redis = GetRedis(attr?.ConnectionStringName);
+            var key = GetQueueKey<TMessage>();
+            await redis.GetDatabase().ListLeftPushAsync(key, msg, flags: CommandFlags.FireAndForget);
+            await redis.GetSubscriber().PublishAsync(channel, string.Empty);
+        }
+        internal static RedisChannel GetRedisChannel<TMessage>(PatternMode mode = PatternMode.Auto)
+        {
+            var channelName = $"_PubSub:{typeof(TMessage).FullName}";
+            return new RedisChannel(channelName, mode);
+        }
+        internal static string GetQueueKey<TMessage>()
+        {
+            return $"_Queue:{typeof(TMessage).FullName}";
+        }
+        #endregion
+
         #region Utils
+        /// <summary>
+        /// 获得服务器节点信息
+        /// </summary>
+        /// <param name="connectionStringName"></param>
+        /// <returns></returns>
+        public static EndPoint[] GetEndPoints(string connectionStringName = null)
+            => GetRedis(connectionStringName).GetEndPoints();
+        public static EndPoint[] GetEndPointsByConnectionString(string connectionString)
+            => GetRedisByConnectionString(connectionString).GetEndPoints();
+        /// <summary>
+        /// 获取redis server，以便于使用服务器命令
+        /// </summary>
+        /// <param name="hostAndPort"></param>
+        /// <param name="asyncState"></param>
+        /// <param name="connectionStringName"></param>
+        /// <returns></returns>
+        public static IServer GetServer(string hostAndPort, object? asyncState = null, string connectionStringName = null)
+            => GetRedis(connectionStringName).GetServer(hostAndPort, asyncState);
+        public static IServer GetServerByConnectionString(string connectionString, string hostAndPort, object? asyncState = null)
+            => GetRedisByConnectionString(connectionString).GetServer(hostAndPort, asyncState);
+
         internal static RedisClientOptions GetOptions(string connectionStringName = null, Type type = null)
         {
             var element = GetConfigElement(connectionStringName, type);
@@ -165,35 +363,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
                 SerializeMode = element.SerializeMode
             };
         }
-        internal static ConnectionStringElement GetConfigElement(string connectionStringName = null, Type type = null)
-        {
-            var section = ConfigUtil.GetSection<RedisSection>();
-            if (section == null)
-                throw new Exception($"Redis配置不存在");
-            if (string.IsNullOrEmpty(connectionStringName))
-            {
-                connectionStringName = (type == null)
-                    || !section.ConnectionStringNamespaces.TryGetValue(type.Namespace, out string name)
-                    ? section.DefaultConnectionStringName
-                    : name;
-            }
-            if (string.IsNullOrEmpty(connectionStringName))
-                throw new ArgumentNullException("connectionStringName");
-            if (!section.ConnectionStrings.TryGetValue(connectionStringName, out ConnectionStringElement config))
-                throw new Exception($"Redis配置Redis:ConnectionStrings:Name不存在。Name:{connectionStringName}");
-            if (string.IsNullOrEmpty(config.ConnectionString))
-                throw new Exception($"Redis配置Redis:ConnectionStrings:ConnectionString不能为空。Name:{config.Name}");
-            return config;
-        }
-        internal static ConnectionMultiplexer GetMultiplexer(string connectionString)
-        {
-            if (string.IsNullOrEmpty(connectionString))
-                throw new ArgumentNullException("connectionString");
-            return _multiplexers.GetOrAdd(connectionString, (key) =>
-            {
-                return ConnectionMultiplexer.Connect(connectionString);
-            });
-        }
+
         internal static ISerializer GetSerializer(RedisSerializeMode serializer)
         {
             ISerializer ret = null;
@@ -202,13 +372,21 @@ namespace TinyFx.Extensions.StackExchangeRedis
                 case RedisSerializeMode.Json:
                     ret = _jsonSerializer;
                     break;
-                //case RedisSerializeMode.DefaultBytes:
-                //    ret = _bytesSerializer;
+                case RedisSerializeMode.Bytes:
+                    ret = _bytesSerializer;
+                    break;
+                //case RedisSerializeMode.MemoryPack:
+                //    ret = _memoryPackSerializer;
                 //    break;
                 default:
                     throw new Exception("仅支持json序列化");
             }
             return ret;
+        }
+
+        internal static void ReleaseAllRedis()
+        {
+            _redisDict.ForEach(x => x.Value.Dispose());
         }
         #endregion 
     }

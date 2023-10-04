@@ -37,7 +37,7 @@ namespace TinyFx.Extensions.DotNetty
             _rspDic.AddOrUpdate(cmdid, data, (k, v) => data);
             OnMessage?.Invoke(cmdid, data);
         }
-        private void WSClient_OnError(Exception obj)
+        private void WSClient_OnError(Exception exc)
         {
         }
 

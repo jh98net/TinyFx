@@ -14,9 +14,9 @@ namespace TinyFx.Extensions.DotNetty.NettyInfoCommand
     [Command(-2, false)]
     public class NettyInfoCmd : RespondCommand<NettyInfoReq, NettyInfoAck>
     {
-        public override async Task<NettyInfoAck> Respond(RequestContext ctx, NettyInfoReq request)
+        public override Task<NettyInfoAck> Respond(RequestContext ctx, NettyInfoReq request)
         {
-            if (ConfigUtil.Environment != EnvironmentNames.Development && ConfigUtil.Environment != EnvironmentNames.Testing)
+            if (ConfigUtil.IsDebugEnvironment)
             {
                 return null;
             }
@@ -27,7 +27,7 @@ namespace TinyFx.Extensions.DotNetty.NettyInfoCommand
             ret.CommandsContent = new CommandT(cmdData).TransformText();
             ret.CommandsDesc = string.Join(Environment.NewLine, DotNettyUtil.Commands.GetCommands().FindAll(item => !item.IsPush).Select(
                     item => $"{item.CommandId.ToString().PadRight(6)} = {item.CommandType.Name}"));
-            return ret;
+            return Task.FromResult(ret);
         }
     }
     [ProtoContract]

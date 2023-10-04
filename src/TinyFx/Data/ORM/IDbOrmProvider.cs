@@ -22,7 +22,7 @@ namespace TinyFx.Data.ORM
         /// <param name="sort"></param>
         /// <param name="fields"></param>
         /// <returns></returns>
-        string BuildSelectSQL(string sourceName, string where, int top, string sort, string fields = null);
+        string BuildSelectSQL(string sourceName, string where, int top, string sort, string fields = null, bool isForUpdate = false);
 
         /// <summary>
         /// 获取参数名称（字段对应的参数名）与Command参数类型的映射
@@ -34,5 +34,6 @@ namespace TinyFx.Data.ORM
         /// <returns></returns>
         Dictionary<string, TDbType> GetDbTypeMappings(TDatabase database, string sourceName, DbObjectType objectType);
 
+        TDbType MapDotNetTypeToDbType(Type type);
     }
 }

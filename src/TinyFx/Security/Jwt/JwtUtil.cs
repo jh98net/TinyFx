@@ -22,7 +22,7 @@ namespace TinyFx.Security
         /// <param name="signSecret"></param>
         /// <returns></returns>
         public static string GenerateJwtToken(object userId, UserRole role, string userIp = null, string signSecret = null)
-            => GenerateJwtToken(userId, Convert.ToString(role), userIp, signSecret);
+            => GenerateJwtToken(userId, Convert.ToString(role), userIp, null, signSecret);
 
         /// <summary>
         /// 创建JWT Token
@@ -32,7 +32,7 @@ namespace TinyFx.Security
         /// <param name="userIp">用户IP</param>
         /// <param name="signSecret">签名秘钥</param>
         /// <returns></returns>
-        public static string GenerateJwtToken(object userId, string role = null, string userIp = null, string signSecret = null)
+        public static string GenerateJwtToken(object userId, string role = null, string userIp = null, string customData = null, string signSecret = null)
         {
             var section = GetSection(userIp, signSecret, out string finalSecret);
             var signKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(finalSecret));
@@ -45,9 +45,7 @@ namespace TinyFx.Security
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, uid),
-                    //new Claim(ClaimTypes.Role, role),
-                    //new Claim("uip", userIp)
+                    new Claim(ClaimTypes.Name, uid)
                 }),
                 Issuer = section?.Issuer,
                 Audience = section?.Audience,
@@ -58,7 +56,9 @@ namespace TinyFx.Security
                 tokenDescriptor.Subject.AddClaim(new Claim(ClaimTypes.Role, role));
             if (!string.IsNullOrEmpty(userIp))
                 tokenDescriptor.Subject.AddClaim(new Claim("uip", userIp));
-            var expire = (section?.ExpiresMinute) ?? 0;
+            if (!string.IsNullOrEmpty(customData))
+                tokenDescriptor.Subject.AddClaim(new Claim("custom", customData));
+            var expire = (section?.ExpireMinutes) ?? 0;
             if (expire > 0)
                 tokenDescriptor.Expires = DateTime.UtcNow.AddMinutes(expire);
 
@@ -89,7 +89,7 @@ namespace TinyFx.Security
                 var handler = new JwtSecurityTokenHandler();
                 var principal = handler.ValidateToken(token, parameters, out SecurityToken stoken);
                 ret = ReadJwtToken(principal);
-                if (ret.Expires.HasValue && ret.Expires.Value < DateTime.Now)
+                if (ret.Expires.HasValue && ret.Expires.Value < DateTime.UtcNow)
                     ret.Status = JwtTokenStatus.Expired;
             }
             catch (SecurityTokenExpiredException)
@@ -109,7 +109,8 @@ namespace TinyFx.Security
 
         public static JwtTokenInfo ReadJwtToken(ClaimsPrincipal principal)
         {
-            var ret = new JwtTokenInfo() { 
+            var ret = new JwtTokenInfo()
+            {
                 Status = JwtTokenStatus.Success,
                 Principal = principal,
             };
@@ -118,14 +119,16 @@ namespace TinyFx.Security
             var claims = ret.Principal.Claims;
             // role
             var role = claims.FirstOrDefault(item => item.Type == ClaimTypes.Role);
-            ret.RoleString = role.Value;
             ret.Role = role == null ? UserRole.Unknow : role.Value.ToEnum(UserRole.Unknow);
+            ret.RoleString = role?.Value;
             // iat
             var iat = claims.FirstOrDefault(item => item.Type == "iat")?.Value;
             if (iat != null)
                 ret.IssuedAt = TinyFxUtil.TimestampToDateTime(iat);
             // userIp
             ret.UserIp = claims.FirstOrDefault(item => item.Type == "uip")?.Value;
+            // customData
+            ret.CustomData = claims.FirstOrDefault(item => item.Type == "custom")?.Value;
             // exp
             var exp = claims.FirstOrDefault(item => item.Type == "exp")?.Value;
             if (exp != null)
@@ -134,7 +137,7 @@ namespace TinyFx.Security
         }
         private static JwtAuthSection GetSection(string userIp, string signSecret, out string finalSecret)
         {
-            var section = ConfigUtil.GetSection<JwtAuthSection>()??new JwtAuthSection();
+            var section = ConfigUtil.GetSection<JwtAuthSection>() ?? new JwtAuthSection();
             if (!string.IsNullOrEmpty(signSecret))
                 finalSecret = signSecret;
             else if (!string.IsNullOrEmpty(section.SignSecret))

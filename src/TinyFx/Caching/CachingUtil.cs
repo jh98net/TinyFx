@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
-using Org.BouncyCastle.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +38,7 @@ namespace TinyFx.Caching
             => GetCache().GetOrException<T>(key);
         public static void Remove(object key)
             => GetCache().Remove(key);
-        public static void Set<T>(object key, T value, TimeSpan expire = default)
+        public static void Set<T>(object key, T value, TimeSpan? expire = null)
             => GetCache().Set(key, value, expire);
     }
 

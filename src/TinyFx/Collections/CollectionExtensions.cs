@@ -31,6 +31,7 @@ namespace TinyFx.Collections
         /// <param name="action"></param>
         public static void ForEach<T>(this IEnumerable<T> list, Action<T> action)
         {
+            if (list == null) return;
             foreach (T item in list)
                 action(item);
         }
@@ -42,6 +43,7 @@ namespace TinyFx.Collections
         /// <param name="action"></param>
         public static void ForEach<T>(this ICollection list, Action<T> action)
         {
+            if (list == null) return;
             foreach (var item in list)
                 action((T)item);
         }
@@ -53,9 +55,15 @@ namespace TinyFx.Collections
         /// <param name="list"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public static Task ForEachAsync<T>(this IEnumerable<T> list, Func<T, Task> action)
-            => Task.WhenAll(from item in list select Task.Run(() => action(item)));
-        
+        public static async Task ForEachAsync<T>(this IEnumerable<T> list, Func<T, Task> action)
+        {
+            if (list == null) return;
+            foreach (var item in list)
+            {
+                await action(item);
+            }
+        }
+
         /// <summary>
         /// 集合中是否有值
         /// </summary>

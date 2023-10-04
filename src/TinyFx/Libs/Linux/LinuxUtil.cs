@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using TinyFx.CliWrap;
+using TinyFx.IO;
 using TinyFx.Reflection;
 
 namespace TinyFx.Linux
@@ -105,7 +106,7 @@ namespace TinyFx.Linux
         /// <param name="value"></param>
         public static void SetEnvironmentVariable(string variable, string value)
         {
-            var file = "~/.bashrc";
+            var file = $"{GetHomePath()}/.bashrc";
             var sign = $"export {variable}=";
             var envStr = $"{sign}{value}";
             var content = File.ReadAllText(GetAbsolutePathOfHome(file));
@@ -122,13 +123,13 @@ namespace TinyFx.Linux
         }
 
         /// <summary>
-        /// 添加别名 /etc/bashrc
+        /// 添加别名 ~/.bashrc
         /// </summary>
         /// <param name="alias"></param>
         /// <param name="cmd"></param>
         public static void AddAlias(string alias, string cmd)
         {
-            var file = "/etc/bashrc";
+            var file = $"{GetHomePath()}/.bashrc";
             var input = $"alias {alias}='{cmd}'";
             var sign = $"alias {alias}=";
             var content = File.ReadAllText(file);
@@ -153,7 +154,7 @@ namespace TinyFx.Linux
         }
         public static void RemoveAlias(string alias)
         {
-            var file = "/etc/bashrc";
+            var file = $"{GetHomePath()}/.bashrc";
             var sign = $"alias {alias}=";
             var content = File.ReadAllText(file);
             if (content.Contains(sign))

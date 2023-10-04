@@ -30,27 +30,27 @@ namespace TinyFx
                 return builder;
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
-
-            Log.Logger = new LoggerConfiguration()
+            SetELKSinkIndexFormat(ConfigUtil.Configuration);
+            var config = new LoggerConfiguration()
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty(SerilogUtil.EnvironmentNamePropertyName, ConfigUtil.EnvironmentString)
-                .Enrich.WithProperty(SerilogUtil.MachineIPPropertyName, NetUtil.GetLocalIP())
-                .Enrich.WithProperty(SerilogUtil.MachineNamePropertyName, Environment.MachineName)
                 .Enrich.WithProperty(SerilogUtil.ProjectIdPropertyName, ConfigUtil.Project?.ProjectId ?? "未知程序")
-                .Enrich.WithThreadId()
-                .Enrich.WithThreadName()
-                .ReadFrom.Configuration(ConfigUtil.Configuration)
-                .CreateLogger(); 
+                .Enrich.WithProperty(SerilogUtil.MachineIPPropertyName, NetUtil.GetLocalIP())
+                //.Enrich.WithProperty(SerilogUtil.IndexNamePropertyName, ConfigUtil.Project?.ProjectId.Replace('.', '_').ToLowerInvariant())
+                //.Enrich.WithTemplateHash()
+                .ReadFrom.Configuration(ConfigUtil.Configuration);
+
+            Log.Logger = config.CreateLogger();
             builder.ConfigureLogging(logger =>
             {
                 logger.ClearProviders();
             });
             builder.UseSerilog(logger: Log.Logger, dispose: true);
-            LogUtil.Rebuild();
+
             /*
             builder.UseSerilog((context, config) =>
             {
-                config.ReadFrom.Configuration(ConfigUtil.Configuration, "Serilog")
+                config.ReadFrom.Configuration(context.Configuration)
                     .Enrich.FromLogContext();
             });
             builder.ConfigureServices((services) => {
@@ -59,12 +59,26 @@ namespace TinyFx
                 });
             });
             */
+            LogUtil.Rebuild();
 
             // 启动Serilog内部调试
-            //SL.Debugging.SelfLog.Enable(msg => System.Diagnostics.Debug.WriteLine(msg));
-            //SL.Debugging.SelfLog.Enable(Console.Error);
+            //Serilog.Debugging.SelfLog.Enable(msg => System.Diagnostics.Debug.WriteLine(msg));
+            //Serilog.Debugging.SelfLog.Enable(Console.Error);
             LogUtil.Trace("Serilog 配置启动");
             return builder;
+        }
+        private static void SetELKSinkIndexFormat(IConfiguration config)
+        {
+            var elk = config["Serilog:WriteTo:ELKSink:Name"];
+            if (!string.IsNullOrEmpty(elk))
+            {
+                var idx = config["Serilog:WriteTo:ELKSink:Args:indexFormat"];
+                if (string.IsNullOrEmpty(idx))
+                {
+                    config["Serilog:WriteTo:ELKSink:Args:indexFormat"] 
+                        = $"idx-{ConfigUtil.Project.ProjectId.Replace('.', '_')}-{{0:yyyy.MM.dd}}";
+                }
+            }
         }
     }
 }

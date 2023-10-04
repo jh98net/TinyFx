@@ -5,14 +5,15 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Linq;
 using System.Collections;
+using TinyFx.Net;
 
-namespace TinyFx
+namespace TinyFx.Serialization
 {
-    internal class JsonExceptionConverter : JsonConverter<Exception>
+    internal class JsonCustomExceptionConverter : JsonConverter<CustomException>
     {
-        public override Exception Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override CustomException Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var ret = new CustomException("json反序列化Exception");
+            var ret = new CustomException(ResponseCode.G_BadRequest, "json反序列化Exception");
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();
             while (reader.Read())
@@ -31,7 +32,58 @@ namespace TinyFx
                             ret.SetStackTrace(reader.GetString());
                             break;
                         case "Data":
-                            var datas = SerializerUtil.DeserializeJson<Dictionary<string, string>>(reader.GetString());
+                            var datas = SerializerUtil.DeserializeJsonNet<Dictionary<string, string>>(reader.GetString());
+                            if (datas == null) continue;
+                            foreach (var item in datas)
+                                ret.Data.Add(item.Key, item.Value);
+                            break;
+                        case "Code":
+                            ret.Code = reader.GetString();
+                            break;
+                        case "Result":
+                            ret.Result = reader.GetString();
+                            break;
+                    }
+                }
+            }
+            return ret;
+        }
+
+        public override void Write(Utf8JsonWriter writer, CustomException value, JsonSerializerOptions options)
+        {
+            writer.WriteStartObject();
+            writer.WriteString("Message", value.Message);
+            writer.WriteString("StackTrace", value.StackTrace);
+            writer.WriteString("Data", SerializerUtil.SerializeJsonNet(value.Data));
+            writer.WriteString("Code", value.Code);
+            writer.WriteString("Result", SerializerUtil.SerializeJsonNet(value.Result));
+            writer.WriteEndObject();
+        }
+    }
+    internal class JsonExceptionConverter : JsonConverter<Exception>
+    {
+        public override Exception Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            var ret = new CustomException(ResponseCode.G_BadRequest, "json反序列化Exception");
+            if (reader.TokenType != JsonTokenType.StartObject)
+                throw new JsonException();
+            while (reader.Read())
+            {
+                if (reader.TokenType == JsonTokenType.EndObject)
+                    break;
+                if (reader.TokenType == JsonTokenType.PropertyName)
+                {
+                    var propertyName = reader.GetString();
+                    switch (propertyName)
+                    {
+                        case "Message":
+                            ret.SetMessage(reader.GetString());
+                            break;
+                        case "StackTrace":
+                            ret.SetStackTrace(reader.GetString());
+                            break;
+                        case "Data":
+                            var datas = SerializerUtil.DeserializeJsonNet<Dictionary<string, string>>(reader.GetString());
                             if (datas == null) continue;
                             foreach (var item in datas)
                                 ret.Data.Add(item.Key, item.Value);
@@ -53,12 +105,7 @@ namespace TinyFx
             writer.WriteStartObject();
             writer.WriteString("Message", value.Message);
             writer.WriteString("StackTrace", value.StackTrace);
-            writer.WriteString("Data", SerializerUtil.SerializeJson(value.Data));
-            if (value is CustomException ex)
-            {
-                writer.WriteString("Code", ex.Code);
-                writer.WriteString("Result", SerializerUtil.SerializeJson(ex.Result));
-            }
+            writer.WriteString("Data", SerializerUtil.SerializeJsonNet(value.Data));
             writer.WriteEndObject();
         }
     }

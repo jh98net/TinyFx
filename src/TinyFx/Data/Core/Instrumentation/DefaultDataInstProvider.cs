@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
+using TinyFx.Collections;
 using TinyFx.Configuration;
 using TinyFx.Logging;
 
@@ -42,7 +44,7 @@ namespace TinyFx.Data.Instrumentation
         /// <param name="exception">执行失败时抛出的异常</param>
         public virtual void FireConnectionFailedEvent(string connectionString, Exception exception)
         {
-            LogUtil.Error(exception, "无法连接数据库。ConnectionString:" + connectionString);
+            LogUtil.Error(exception, "无法连接数据库。connectionString:{connectionString}", connectionString);
         }
 
         /// <summary>
@@ -52,7 +54,11 @@ namespace TinyFx.Data.Instrumentation
         /// <param name="exception">执行失败时抛出的异常</param>
         public virtual void FireCommandFailedEvent(CommandWrapper command, Exception exception)
         {
-            LogUtil.Error(exception, "Command对象执行错误。CommandText: " + command.CommandText);
+            var list = new List<string>();
+            foreach ( DbParameter item in command.Parameters )
+                list.Add($"[{item.DbType}] {item.ParameterName} = {item.Value}");
+            string msg = "Command对象执行错误。commandText:{commandText} commandParams:{commandParams}";
+            LogUtil.Error(exception, msg, command.CommandText,string.Join(Environment.NewLine, list.ToArray()));
         }
 
         /// <summary>

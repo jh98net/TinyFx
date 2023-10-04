@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,7 +17,7 @@ namespace TinyFx.Net
     {
         #region Properties
         private HttpClientEx _client;
-        public string Url { get; set; }
+        public string Url { get; private set; }
         public readonly Dictionary<string, string> Parameters = new Dictionary<string, string>();
         public readonly Dictionary<string, string> RequestHeaders = new Dictionary<string, string>();
 
@@ -32,7 +34,7 @@ namespace TinyFx.Net
         #region Methods
         public ClientAgent AddUrl(string url)
         {
-            Url = url;
+            Url = url?.Trim()?.TrimStart('/');
             return this;
         }
         /// <summary>
@@ -75,8 +77,8 @@ namespace TinyFx.Net
 
         #region PostContent
         /// <summary>
-        /// application/json
-        /// asp.net core 默认使用此模式，等同[FromBody]
+        /// Content-Type = application/json
+        /// 对应asp.net core中的 [FromBody]，默认模式
         /// </summary>
         /// <param name="json"></param>
         /// <returns></returns>
@@ -84,20 +86,22 @@ namespace TinyFx.Net
         {
             CheckPostContent();
             PostContent = new StringContent(json, _client.Encoding, "application/json");
+            PostContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            PostContentType = PostContentType.JsonContent;
             RequestContent = json;
             return this;
         }
         /// <summary>
-        /// application/json
-        /// asp.net core 默认使用此模式，等同[FromBody]
+        /// Content-Type = application/json
+        /// 对应asp.net core中的 [FromBody]，默认模式
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>
         public ClientAgent BuildJsonContent(object obj)
-            => BuildJsonContent(SerializerUtil.SerializeJson(obj));
+            => BuildJsonContent(SerializerUtil.SerializeJsonNet(obj, _client.JsonOptions));
 
         /// <summary>
-        /// 服务器mutipart/form-data
+        /// Content-Type = text/plain
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
@@ -110,8 +114,9 @@ namespace TinyFx.Net
             return this;
         }
         /// <summary>
-        /// 请求正文中的表单数据(即key/value方式)来绑定参数或属性，有大小限制
-        /// 对应asp.net core [FromForm] => x-www-form-urlencoded
+        /// Content-Type = x-www-form-urlencoded
+        /// 表单数据编码为名称/值对, POST 的默认格式。有大小限制
+        /// 对应asp.net core中的 [FromForm]
         /// </summary>
         /// <returns></returns>
         public ClientAgent BuildFormUrlEncodedContent()
@@ -123,11 +128,12 @@ namespace TinyFx.Net
             return this;
         }
         /// <summary>
-        /// 请求正文中的表单数据来绑定参数或属性
-        /// 对应asp.net core [FromForm] => multipart/form-data
+        /// Content-Type = multipart/form-data
+        /// 表单数据编码为多部分 MIME 消息。 如果要将文件上传到服务器，请使用此格式
+        /// 对应asp.net core [FromForm]
         /// </summary>
         /// <returns></returns>
-        public ClientAgent BuildMultipartFormDataContent()
+        public ClientAgent BuildFormDataContent()
         {
             CheckPostContent();
             var content = new MultipartFormDataContent();
@@ -141,22 +147,29 @@ namespace TinyFx.Net
             return this;
         }
         /// <summary>
-        /// 服务器mutipart/form-data
+        /// 向FormDataContent中添加上传文件
         /// </summary>
-        /// <param name="content"></param>
-        /// <param name="mediaType"></param>
+        /// <param name="stream"></param>
+        /// <param name=""></param>
+        /// <param name="mediaType">"image/png"</param>
         /// <returns></returns>
-        public ClientAgent BuildByteArrayContent(byte[] content, string mediaType)
+        public ClientAgent AddFileToFormDataContent(string file, string mediaType)
         {
-            PostContent = new ByteArrayContent(content);
-            PostContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
-            RequestContent = Convert.ToBase64String(content);
-            return this;
+            using var stream = File.OpenRead(file);
+            return AddFileToFormDataContent(stream, mediaType, Path.GetFileName(file));
         }
-        private void CheckPostContent()
+        public ClientAgent AddFileToFormDataContent(Stream stream, string mediaType, string fileName)
         {
-            if (PostContent != null)
-                throw new Exception($"已设置当前PostContent: {PostContentType}");
+            var content = new ByteArrayContent(new StreamContent(stream).ReadAsByteArrayAsync().Result);
+            content.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
+            content.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+            {
+                FileName = fileName,
+            };
+            if (PostContent == null)
+                PostContent = new MultipartContent();
+            ((MultipartFormDataContent)PostContent).Add(content);
+            return this;
         }
         #endregion
 
@@ -166,7 +179,7 @@ namespace TinyFx.Net
         /// </summary>
         /// <returns></returns>
         public async Task<HttpResponseResult> GetStringAsync()
-            => await _client.RequestAsync(BuildGetRequest(), Parameters,RequestContent);
+            => await _client.RequestAsync(BuildGetRequest(), Parameters, RequestContent);
         /// <summary>
         /// GET返回对象
         /// </summary>
@@ -242,6 +255,11 @@ namespace TinyFx.Net
                 }
             }
             return ret;
+        }
+        private void CheckPostContent()
+        {
+            if (PostContent != null)
+                throw new Exception($"已设置当前PostContent: {PostContentType}");
         }
         #endregion
     }

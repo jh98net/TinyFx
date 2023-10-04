@@ -18,9 +18,9 @@ namespace TinyFx.Extensions.StackExchangeRedis
     /// </summary>
     public class RedisHashMultiClient : RedisHashBase<object>
     {
-        public RedisHashMultiClient(RedisClientOptions options = null) : base(options) { }
+        public RedisHashMultiClient(object key = null, RedisClientOptions options = null) : base(key, options) { }
 
-        #region Set & SetItem
+        #region Set & SetEntity
         /// <summary>
         /// 【创建或更新】设置hash结构中的field对应的缓存值
         /// </summary>
@@ -29,19 +29,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="always">true:无论是否存在总是添加，false：不存在时才添加</param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public bool Set<T>(string field, T value, bool always = true, CommandFlags flags = CommandFlags.None)
-            => Database.HashSet(RedisKey, field, Serialize(value), always ? When.Always : When.NotExists, flags);
-
-        /// <summary>
-        /// 【创建或更新】设置hash结构中的field
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="value"></param>
-        /// <param name="always">true:无论是否存在总是添加，false：不存在时才添加</param>
-        /// <param name="flags"></param>
-        /// <returns></returns>
         public async Task<bool> SetAsync<T>(string field, T value, bool always = true, CommandFlags flags = CommandFlags.None)
-            => await Database.HashSetAsync(RedisKey, field, Serialize(value), always ? When.Always : When.NotExists, flags);
+        {
+            var ret = await Database.HashSetAsync(RedisKey, field, Serialize(value), always ? When.Always : When.NotExists, flags);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         /// <summary>
         /// 【创建或更新】根据item对象的属性名和值设置hash结构中的field
@@ -49,18 +42,14 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <typeparam name="T"></typeparam>
         /// <param name="item"></param>
         /// <param name="flags"></param>
-        public void SetItem<T>(T item, CommandFlags flags = CommandFlags.None)
-              where T : new()
-        {
-            var entries = GetEntries(item);
-            Database.HashSet(RedisKey, entries, flags);
-        }
-        public async Task SetItemAsync<T>(T item, CommandFlags flags = CommandFlags.None)
+        public async Task SetEntityAsync<T>(T item, CommandFlags flags = CommandFlags.None)
               where T : new()
         {
             var entries = GetEntries(item);
             await Database.HashSetAsync(RedisKey, entries, flags);
+            await SetSlidingExpirationAsync();
         }
+
         private HashEntry[] GetEntries<T>(T item)
               where T : new()
         {
@@ -79,34 +68,18 @@ namespace TinyFx.Extensions.StackExchangeRedis
         }
         #endregion
 
-        #region TryGet & GetItem
-        /// <summary>
-        /// 获取此Hash中field对应的缓存值
-        /// </summary>
-        /// <param name="field"></param>
-        /// <param name="value"></param>
-        /// <param name="flags"></param>
-        /// <returns>true: 缓存项存在</returns>
-        public bool TryGet<T>(string field, out T value, CommandFlags flags = CommandFlags.None)
-        {
-            var redisValue = Database.HashGet(RedisKey, field, flags);
-            return TryDeserialize(redisValue, out value);
-        }
+        #region TryGet & GetEntity
 
-        public T GetItem<T>(CommandFlags commandFlags = CommandFlags.None)
+        public async Task<T> GetEntityAsync<T>(CommandFlags flags = CommandFlags.None)
             where T : new()
         {
-            var entries = Database.HashGetAll(RedisKey, commandFlags);
-            return GetItemByHashEntry<T>(entries);
-        }
-        public async Task<T> GetItemAsync<T>(CommandFlags commandFlags = CommandFlags.None)
-            where T : new()
-        {
-            var entries = await Database.HashGetAllAsync(RedisKey, commandFlags);
-            return GetItemByHashEntry<T>(entries);
+            var entries = await Database.HashGetAllAsync(RedisKey, flags);
+            var ret = GetEntityByHashEntry<T>(entries);
+            await SetSlidingExpirationAsync();
+            return ret;
         }
 
-        private T GetItemByHashEntry<T>(HashEntry[] entries)
+        private T GetEntityByHashEntry<T>(HashEntry[] entries)
             where T : new()
         {
             T ret = new T();
@@ -128,29 +101,34 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// 从Hash结构根据field获取缓存项，如果不存在则调用LoadValueWhenRedisNotExists()放入redis并返回
         /// </summary>
         /// <param name="field"></param>
+        /// <param name="enforce">是否强制Load</param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public CacheValue<T> GetOrLoad<T>(string field, CommandFlags flags = CommandFlags.None)
+        public async Task<CacheValue<T>> GetOrLoadAsync<T>(string field, bool enforce = false, CommandFlags flags = CommandFlags.None)
         {
-            CacheValue<T> ret = null;
-            var redisValue = Database.HashGet(RedisKey, field, flags);
-            if (!TryDeserialize(redisValue, out T value))
+            CacheValue<T> ret;
+            if (enforce || !TryDeserialize(await Database.HashGetAsync(RedisKey, field, flags), out T value))
             {
-                if (LoadValueWhenRedisNotExists(field, out object objRet))
+                var loadValue = await LoadValueWhenRedisNotExistsAsync(field);
+                if (loadValue.HasValue)
                 {
-                    ret = new CacheValue<T>((T)objRet);
-                    Database.HashSet(RedisKey, field, Serialize(ret), When.Always, flags);
+                    await Database.HashSetAsync(RedisKey, field, Serialize(loadValue.Value), When.Always, flags);
+                    ret = new CacheValue<T>((T)loadValue.Value);
                 }
                 else
+                {
+                    if (IsLoadValueNotExistsToRedis)
+                        await Database.HashSetAsync(RedisKey, field, Serialize(null), When.Always, flags);
                     ret = new CacheValue<T>(false);
+                }
             }
             else
+            {
                 ret = new CacheValue<T>(value);
+            }
+            await SetSlidingExpirationAsync();
             return ret;
         }
-        public async Task<CacheValue<T>> GetOrLoadAsync<T>(string field, CommandFlags flags = CommandFlags.None)
-            => await Task.Factory.StartNew(() => GetOrLoad<T>(field, flags));
-
         #endregion
 
         #region GetOrException
@@ -160,18 +138,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="field"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T GetOrException<T>(string field, CommandFlags flags = CommandFlags.None)
-        {
-            var redisValue = Database.HashGet(RedisKey, field, flags);
-            if (!TryDeserialize(redisValue, out T ret))
-                throw new CacheNotFound($"[Redis Hash]field不存在。RedisKey: {RedisKey} field: {field} type:{GetType().FullName}");
-            return ret;
-        }
         public async Task<T> GetOrExceptionAsync<T>(string field, CommandFlags flags = CommandFlags.None)
         {
             var redisValue = await Database.HashGetAsync(RedisKey, field, flags);
             if (!TryDeserialize(redisValue, out T ret))
                 throw new CacheNotFound($"[Redis Hash]field不存在。RedisKey: {RedisKey} field: {field} type:{GetType().FullName}");
+            await SetSlidingExpirationAsync();
             return ret;
         }
         #endregion
@@ -184,15 +156,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="defaultValue"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public T GetOrDefault<T>(string field, T defaultValue, CommandFlags flags = CommandFlags.None)
-        {
-            var redisValue = Database.HashGet(RedisKey, field, flags);
-            return TryDeserialize(redisValue, out T ret) ? ret : defaultValue;
-        }
         public async Task<T> GetOrDefaultAsync<T>(string field, T defaultValue, CommandFlags flags = CommandFlags.None)
         {
             var redisValue = await Database.HashGetAsync(RedisKey, field, flags);
-            return TryDeserialize(redisValue, out T ret) ? ret : defaultValue;
+            if (!TryDeserialize(redisValue, out T ret))
+                ret = defaultValue;
+            await SetSlidingExpirationAsync();
+            return ret;
         }
         #endregion
     }

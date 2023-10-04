@@ -41,17 +41,17 @@ namespace TinyFx.Data
         /// DbConnection对象
         /// </summary>
         public DbConnection Connection { get { return _command.Connection; } set { _command.Connection = value; } }
-        
+
         /// <summary>
         /// 事务对象
         /// </summary>
         public DbTransaction Transaction { get { return _command.Transaction; } set { _command.Transaction = value; } }
-        
+
         /// <summary>
         /// 是否存在事务处理
         /// </summary>
         public bool HasTransaction => _command.Transaction != null;
-        
+
         /// <summary>
         /// 获取DbCommand对象的参数集合
         /// </summary>
@@ -129,17 +129,21 @@ namespace TinyFx.Data
 
         #region IDisposable
         private bool _isDisposed = false;
-        
+        /// <summary>
+        /// 释放资源
+        /// </summary>
+        public void Close()
+            => Dispose();
         /// <summary>
         /// 释放资源
         /// </summary>
         public void Dispose()
         {
             if (_isDisposed) return;
-            if (!HasTransaction && _command.Connection!=null) //如果存在事务，交给事务释放资源，此处忽略
-                _command.Connection.Close();
             GC.SuppressFinalize(this);
             _isDisposed = true;
+            if (!HasTransaction && _command.Connection != null) //如果存在事务，交给事务释放资源，此处忽略
+                _command.Connection.Close();
         }
 
         /// <summary>
@@ -147,25 +151,14 @@ namespace TinyFx.Data
         /// </summary>
         ~CommandWrapper()
         {
-            string msg = "CommandWrapper不应进入析构函数，请检查并释放资源。";
-            if (_command != null && _command.Connection != null)
+            if (_command != null && _command.Connection != null && _command.Connection.State != ConnectionState.Closed)
             {
-                // 不能让析构函数释放资源，错误!!!
-                msg = string.Format("CommandWrapper对象在析构函数中调用Dispose。{0}，连接{1}。CommandText: {2}"
+                _command.Connection.Close();
+                LogUtil.Error("CommandWrapper对象在析构函数中调用Dispose时连接未关闭。transaction:{transaction} commandText:{commandText}"
                     , _command.Transaction != null ? "Transaction对象未Commit或Rollback" : string.Empty
-                    , _command.Connection.State == ConnectionState.Closed ? "已关闭" : "未关闭"
                     , _command.CommandText);
-                if (_command.Connection.State != ConnectionState.Closed)
-                    _command.Connection.Close();
             }
-            LogUtil.Error(msg);
         }
-
-        /// <summary>
-        /// 释放资源
-        /// </summary>
-        public void Close()
-            => ((IDisposable)this).Dispose();
         #endregion
     }
 }

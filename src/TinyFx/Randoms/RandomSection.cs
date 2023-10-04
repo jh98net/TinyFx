@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.Collections;
 using TinyFx.Randoms;
 
 namespace TinyFx.Configuration
@@ -16,14 +17,15 @@ namespace TinyFx.Configuration
         public override void Bind(IConfiguration configuration)
         {
             base.Bind(configuration);
-            Providers = BindDictionary<RandomProviderElement>(configuration, "Providers");
+            Providers = configuration.GetSection("Providers")
+                .Get<Dictionary<string, RandomProviderElement>>() ?? new();
+            Providers.ForEach(x => x.Value.Name = x.Key);
         }
     }
-    public class RandomProviderElement : IOnlyKeyConfigElement
+    public class RandomProviderElement
     {
-        public string Name { get; set; }
+        public string Name { get; internal set; }
         public string RandomType { get; set; }
         public SamplingOptions Options { get; set; }
-        public string GetConfigElementKey() => Name;
     }
 }

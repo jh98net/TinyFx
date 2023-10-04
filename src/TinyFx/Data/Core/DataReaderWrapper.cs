@@ -52,17 +52,13 @@ namespace TinyFx.Data
         /// </summary>
         ~DataReaderWrapper()
         {
-            string msg = "CommandWrapper不应进入析构函数，请检查并释放资源。";
-            if (Command != null && Command.Connection != null)
-            {
-                // 不能让析构函数释放资源，错误!!!
-                msg = string.Format("DataReaderWrapper对象在析构函数中调用Dispose。{0}，连接{1}。CommandText: {2}"
-                    , Command.Transaction != null ? "Transaction对象未Commit或Rollback" : string.Empty
-                    , Command.Connection.State == ConnectionState.Closed ? "已关闭" : "未关闭"
-                    , Command.CommandText);
-                Command.Dispose();
-            }
-            LogUtil.Error(msg);
+            Command?.Dispose();
+            string msg = "CommandWrapper不应进入析构函数，请检查并释放资源。{transaction} connection:{connectionState} commandText:{commandText}";
+            LogUtil.Error(msg
+                , Command?.Transaction != null ? "Transaction对象未Commit或Rollback" : string.Empty
+                , Command?.Connection?.State == ConnectionState.Closed ? "已关闭" : "未关闭"
+                , Command?.CommandText
+                );
         }
 
         /// <summary>
@@ -79,7 +75,7 @@ namespace TinyFx.Data
         /// </summary>
         public void Close()
         {
-            ((IDisposable)this).Dispose();
+            Dispose();
         }
 
         /// <summary>

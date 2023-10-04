@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using TinyFx.Logging;
 using TinyFx.Net;
 using TinyFx.Configuration;
+using System.Xml.Linq;
+using TinyFx.Reflection;
 
 namespace TinyFx.AspNet
 {
@@ -17,49 +19,52 @@ namespace TinyFx.AspNet
     /// </summary>
     public class ApiAccessFilterAttribute : ActionFilterAttribute
     {
-        private ApiAccessFilterElement _element;
-        private bool _allowIntranet;
+        private string _name;
+
         public ApiAccessFilterAttribute(string name = null)
         {
-            var section = ConfigUtil.GetSection<ApiAccessFilterSection>();
-            if (section == null || !section.Filters.TryGetValue(name ?? section.DefaultFilterName, out ApiAccessFilterElement element))
-                throw new Exception($"配置中ApiAccessFilter:Filters:Name不存在。name:{name}");
-            _element = element;
-            _allowIntranet = _element.AllowIpsDic.Contains("intranet");
+            _name = name;
         }
+
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            // 有效过滤
-            if (_element.Enabled)
+            var userIp = AspNetUtil.GetRemoteIpAddress();
+            if (!CheckAllow(userIp))
             {
-                var userIp = AspNetUtil.GetRemoteIpAddress();
-                var isLoopback = IPAddress.IsLoopback(userIp);
-                // 本机 => 放行
-                if (!isLoopback)
-                {
-                    try
-                    {
-                        var ipStr = userIp.MapToIPv4().ToString();
-                        // AllowIps不包含 => 禁止
-                        if (!_element.AllowIpsDic.Contains(ipStr))
-                        {
-                            // 内网访问
-                            if (!_allowIntranet || new IpAddressParser(ipStr).IpMode != IpAddressMode.Intranet)
-                            {
-                                context.Result = new UnauthorizedResult();
-                                LogUtil.Warning($"ApiAccessFilterAttribute禁止访问。name: {_element.Name} ip: {ipStr}");
-                                return;
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        context.Result = new UnauthorizedResult();
-                        return;
-                    }
-                }
+                context.Result = new UnauthorizedResult();
+                LogUtil.Warning("ApiAccessFilterAttribute禁止访问。filterName:{filterName} userIp:{userIp}"
+                    , _name, userIp?.ToString());
+                return;
             }
             await base.OnActionExecutionAsync(context, next);
+        }
+        private bool CheckAllow(IPAddress userIp)
+        {
+            var section = ConfigUtil.GetSection<ApiAccessFilterSection>();
+            if (section == null || !section.Filters.TryGetValue(_name ?? section.DefaultFilterName, out var element))
+                throw new Exception($"配置中ApiAccessFilter:Filters未定义。name:{_name}");
+            // 不限制
+            if (!element.Enabled)
+                return true;
+            // 无IP有问题
+            if (userIp == null)
+                return false;
+            var ipStr = Convert.ToString(userIp);
+            if (string.IsNullOrEmpty(ipStr))
+                return false;
+            // 允许
+            if (element.GetAllowIpDict().Contains(ipStr))
+                return true;
+
+            var ipMode = NetUtil.GetIpMode(ipStr);
+            // 本机 => 放行
+            if (ipMode == IpAddressMode.Local)
+                return true;
+            // 不允许局域网
+            if (!element.EnableIntranet)
+                return false;
+            // 
+            return NetUtil.GetIpMode(ipStr) == IpAddressMode.Intranet;
         }
     }
 }

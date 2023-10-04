@@ -13,7 +13,7 @@ namespace TinyFx.Net
     public class HttpRequestBody
     {
         public HttpMethod Method { get; set; }
-        public Uri RequestUri { get; set; }
+        public string RequestUri { get; set; }
         [JsonIgnore]
         public IDictionary<string, string> RequestParams { get; set; }
         public HttpContent Content { get; set; }
