@@ -35,11 +35,11 @@ namespace TinyFx
             var dict = new Dictionary<string, object>
             {
                 { "ConfigUtil.EnvironmentString", ConfigUtil.EnvironmentString },
-                { "header:Host", HttpContextEx.Request.Headers["Host"].FirstOrDefault() },
-                { "header:X-Forwarded-Proto", HttpContextEx.Request.Headers["X-Forwarded-Proto"].FirstOrDefault() },
-                { "header:Referer", HttpContextEx.Request.Headers["Referer"].FirstOrDefault() },
-                { "header:X-Real_IP", HttpContextEx.Request.Headers["X-Real_IP"].FirstOrDefault() },
-                { "header:X-Forwarded-For", HttpContextEx.Request.Headers["X-Forwarded-For"].FirstOrDefault() },
+                { "header:Host", HttpContextEx.GetHeaderValue("Host") },
+                { "header:X-Forwarded-Proto",HttpContextEx.GetHeaderValue("X-Forwarded-Proto")},
+                { "header:Referer", HttpContextEx.GetHeaderValue("Referer") },
+                { "header:X-Real_IP", HttpContextEx.GetHeaderValue("X-Real_IP") },
+                { "header:X-Forwarded-For", HttpContextEx.GetHeaderValue("X-Forwarded-For") },
                 { "AspNetUtil.GetRequestBaseUrl()", AspNetUtil.GetRequestBaseUrl() },
                 { "AspNetUtil.GetRefererUrl()", AspNetUtil.GetRefererUrl() },
                 { "AspNetUtil.GetRemoteIpString()", AspNetUtil.GetRemoteIpString() },
