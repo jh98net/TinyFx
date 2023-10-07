@@ -20,13 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\TinyFx.AspNet\TinyFx.AspNet.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Apis\v2\" />
     <Folder Include="BLL\Caching\" />
     <Folder Include="BLL\Common\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\TinyFx.AspNet.Hosting\TinyFx.AspNet.Hosting.csproj" />
   </ItemGroup>
 
   <ItemGroup>

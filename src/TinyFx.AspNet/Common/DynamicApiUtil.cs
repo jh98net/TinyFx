@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TinyFx.AspNet.Common
 {
-    internal static class DynamicApiUtil
+    public static class DynamicApiUtil
     {
         private static Dictionary<string, PluginItem> _plugins = new();
         public static bool HasChanged { get; set; }

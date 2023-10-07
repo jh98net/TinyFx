@@ -181,7 +181,7 @@ namespace TinyFx
         public static WebApplication UseInternalMap(this WebApplication app)
         {
             app.MapHealthChecks("/healthz");
-            app.MapGet("/env", () => AspNetUtil.MapEnvPath());
+            app.MapGet("/env", () => AspNetHost.MapEnvPath());
             return app;
         }
 

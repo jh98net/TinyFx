@@ -16,10 +16,6 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TinyFx.Extensions.AutoMapper\TinyFx.Extensions.AutoMapper.csproj" />
-    <ProjectReference Include="..\TinyFx.Extensions.IDGenerator\TinyFx.Extensions.IDGenerator.csproj" />
-    <ProjectReference Include="..\TinyFx.Extensions.RabbitMQ\TinyFx.Extensions.RabbitMQ.csproj" />
-    <ProjectReference Include="..\TinyFx.Extensions.Serilog\TinyFx.Extensions.Serilog.csproj" />
-    <ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
+    <ProjectReference Include="..\TinyFx\TinyFx.csproj" />
   </ItemGroup>
 </Project>

@@ -15,7 +15,7 @@ using TinyFx.Net;
 
 namespace TinyFx.AspNet.Filters
 {
-    internal class ValidateModelFilter : Attribute, IActionFilter
+    public class ValidateModelFilter : Attribute, IActionFilter
     {
         private static ConcurrentDictionary<string, IActionResult> _msgResultDic = new();
 

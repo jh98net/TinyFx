@@ -1,33 +1,15 @@
-﻿using Com.Ctrip.Framework.Apollo;
-using Elasticsearch.Net.Specification.MachineLearningApi;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Logging;
-using Newtonsoft.Json;
-using RabbitMQ.Client;
-using Serilog.Core;
-using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Http;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
 using System.Text;
-using System.Threading.Tasks;
 using TinyFx.Configuration;
-using TinyFx.IO;
 using TinyFx.Logging;
-using TinyFx.Net;
-using static System.Collections.Specialized.BitVector32;
 
 namespace TinyFx.AspNet.RequestLogging
 {
     /// <summary>
     /// 记录配置文件RequestLogging:Urls中的请求日志
     /// </summary>
-    internal class RequestLoggingMiddleware
+    public class RequestLoggingMiddleware
     {
         private readonly RequestDelegate _next;
         private static HashSet<string> _innerUrl = new HashSet<string> 

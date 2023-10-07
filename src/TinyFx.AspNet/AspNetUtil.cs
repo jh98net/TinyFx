@@ -251,7 +251,7 @@ namespace TinyFx.AspNet
         #endregion
 
         #region CORS
-        internal static Action<CorsPolicyBuilder> GetPolicyBuilder(CorsPolicyElement element)
+        public static Action<CorsPolicyBuilder> GetPolicyBuilder(CorsPolicyElement element)
         {
             return new Action<CorsPolicyBuilder>(builder =>
             {
@@ -340,33 +340,6 @@ namespace TinyFx.AspNet
             else
                 LogUtil.Warning("AspNetUtil.VerifyRequestHeaderSign: 没有从HttpHeader中获取值。url:{request.url} headerName:{headerName}", request.Path.ToString(), headerName);
             return false;
-        }
-
-        internal static string MapEnvPath()
-        {
-            var dict = new Dictionary<string, object>
-            {
-                { "ConfigUtil.EnvironmentString", ConfigUtil.EnvironmentString },
-                { "header:Host", HttpContextEx.Request.Headers["Host"].FirstOrDefault() },
-                { "header:X-Forwarded-Proto", HttpContextEx.Request.Headers["X-Forwarded-Proto"].FirstOrDefault() },
-                { "header:Referer", HttpContextEx.Request.Headers["Referer"].FirstOrDefault() },
-                { "header:X-Real_IP", HttpContextEx.Request.Headers["X-Real_IP"].FirstOrDefault() },
-                { "header:X-Forwarded-For", HttpContextEx.Request.Headers["X-Forwarded-For"].FirstOrDefault() },
-                { "AspNetUtil.GetRequestBaseUrl()", AspNetUtil.GetRequestBaseUrl() },
-                { "AspNetUtil.GetRefererUrl()", AspNetUtil.GetRefererUrl() },
-                { "AspNetUtil.GetRemoteIpString()", AspNetUtil.GetRemoteIpString() },
-                { "Process.GetCurrentProcess().Threads.Count", Process.GetCurrentProcess().Threads.Count },
-                { "GCSettings.IsServerGC", GCSettings.IsServerGC },
-                { "header总量", HttpContextEx.Request.Headers.Count },
-            };
-            foreach (var header in HttpContextEx.Request.Headers)
-            {
-                dict.Add($"headers.{header.Key}", header.Value);
-            }
-            ThreadPool.GetAvailableThreads(out var worker, out var completion);
-            dict.Add("ThreadPool.GetAvailableThreads()", $"workerThreads:{worker} completionPortThreads:{completion}");
-
-            return SerializerUtil.SerializeJsonNet(dict);
         }
     }
 }

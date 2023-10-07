@@ -12,7 +12,7 @@ using static System.Collections.Specialized.BitVector32;
 
 namespace TinyFx.AspNet.Auth.Cors
 {
-    internal class RefererMiddleware
+    public class RefererMiddleware
     {
         private readonly RequestDelegate _next;
         public RefererMiddleware(RequestDelegate next)

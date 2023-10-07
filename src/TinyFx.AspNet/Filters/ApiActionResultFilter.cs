@@ -11,7 +11,7 @@ using TinyFx.Net;
 
 namespace TinyFx.AspNet
 {
-    internal class ApiActionResultFilter : Attribute, IActionFilter
+    public class ApiActionResultFilter : Attribute, IActionFilter
     {
         private static ConcurrentDictionary<Type, bool> _ignoreControllerDic = new ConcurrentDictionary<Type, bool>();
         private static ConcurrentDictionary<string, bool> _ignoreActionDic = new ConcurrentDictionary<string, bool>();
