@@ -25,6 +25,12 @@ namespace TinyFx.Extensions.RabbitMQ.Consumers
         /// </summary>
         public abstract int QueueCount { get; }
         /// <summary>
+        /// 是否注册成为单一消费者Single Active Consumer
+        /// true:  同时生成多个consumer并注册到多个queue，同一时间只有一个consumer有效,可以保证消息被顺序执行
+        /// false: 同时生成多个consumer并注册到多个queue，同一时间多个consumer同时有效，可以使消息并发执行
+        /// </summary>
+        protected virtual bool IsRegisterSAC { get; set; } = true;
+        /// <summary>
         /// 是否启用高可用(仅MQ群集使用)
         /// </summary>
         protected virtual bool UseQuorum { get; set; }
@@ -88,7 +94,8 @@ namespace TinyFx.Extensions.RabbitMQ.Consumers
                 }
                 Configuration(x);
                 x.WithTopic($"hash.{QueueIndex}");
-                x.WithSingleActiveConsumer();//单一消费者
+                if(IsRegisterSAC)
+                    x.WithSingleActiveConsumer();//单一消费者
             };
             _subResult = await Bus.PubSub.SubscribeAsync(SubscriptionId, onMessage, configureAction);
             IsRegisted = true;
