@@ -35,7 +35,6 @@ using TinyFx.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 using TinyFx.Extensions.StackExchangeRedis;
-using TinyFx.Extensions.IDGenerator;
 using Serilog;
 using TinyFx.Demos.demo;
 using TinyFx.Common.Nacos;

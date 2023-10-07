@@ -1,14 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Events;
-using Serilog.Extensions.Logging;
-using Serilog.Formatting.Compact;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using TinyFx.Configuration;
 using TinyFx.Extensions.Serilog;
 using TinyFx.Logging;
@@ -37,7 +30,7 @@ namespace TinyFx
                 .Enrich.WithProperty(SerilogUtil.ProjectIdPropertyName, ConfigUtil.Project?.ProjectId ?? "未知程序")
                 .Enrich.WithProperty(SerilogUtil.MachineIPPropertyName, NetUtil.GetLocalIP())
                 //.Enrich.WithProperty(SerilogUtil.IndexNamePropertyName, ConfigUtil.Project?.ProjectId.Replace('.', '_').ToLowerInvariant())
-                //.Enrich.WithTemplateHash()
+                .Enrich.WithTemplateHash()
                 .ReadFrom.Configuration(ConfigUtil.Configuration);
 
             Log.Logger = config.CreateLogger();

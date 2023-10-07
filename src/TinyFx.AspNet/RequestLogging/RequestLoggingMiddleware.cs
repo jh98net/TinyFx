@@ -46,13 +46,14 @@ namespace TinyFx.AspNet.RequestLogging
                 await _next(context); // 继续执行
                 return;
             }
-            Stopwatch stopwatch = null;
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            logger.AddField("Request.StartTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+            logger.AddField("Request.TraceId", context.GetTraceId());
+
             var section = ConfigUtil.GetSection<RequestLoggingSection>();
             if (section != null && section.Enabled)
             {
-                stopwatch = new Stopwatch();
-                stopwatch.Start();
-                logger.AddField("Request.StartTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
                 var urlDict = section.GetUrlDict();
                 if (urlDict.Contains("*") || urlDict.Contains(requestUrl))
                 {
@@ -66,7 +67,6 @@ namespace TinyFx.AspNet.RequestLogging
             await _next(context); // 继续执行
 
             logger.AddField("Request.UserId", context?.User?.Identity?.Name);
-            logger.AddField("Request.TraceId", context.GetTraceId());
             logger.AddField("Request.Url", context.Request.Path.ToString());
             logger.AddField("Request.Method", context.Request.Method);
             if (logger.LogRequestHeaders)

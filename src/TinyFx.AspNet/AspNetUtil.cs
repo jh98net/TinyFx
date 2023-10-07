@@ -342,31 +342,31 @@ namespace TinyFx.AspNet
             return false;
         }
 
-        internal static List<string> MapEnvPath()
+        internal static string MapEnvPath()
         {
-            var ret = new List<string>();
-            ret.Add($"ConfigUtil.EnvironmentString: {ConfigUtil.EnvironmentString}");
-            ret.Add($"header:Host: {HttpContextEx.Request.Headers["Host"].FirstOrDefault()}");
-            ret.Add($"header:X-Forwarded-Proto: {HttpContextEx.Request.Headers["X-Forwarded-Proto"].FirstOrDefault()}");
-            ret.Add($"header:Referer: {HttpContextEx.Request.Headers["Referer"].FirstOrDefault()}");
-            ret.Add($"header:X-Real_IP: {HttpContextEx.Request.Headers["X-Real_IP"].FirstOrDefault()}");
-            ret.Add($"header:X-Forwarded-For: {HttpContextEx.Request.Headers["X-Forwarded-For"].FirstOrDefault()}");
-
-            ret.Add($"AspNetUtil.GetRequestBaseUrl(): {AspNetUtil.GetRequestBaseUrl()}");
-            ret.Add($"AspNetUtil.GetRefererUrl(): {AspNetUtil.GetRefererUrl()}");
-            ret.Add($"AspNetUtil.GetRemoteIpString: {AspNetUtil.GetRemoteIpString()}");
-
-            ThreadPool.GetAvailableThreads(out var worker, out var completion);
-            ret.Add($"ThreadPool.GetAvailableThreads(): workerThreads-{worker} completionPortThreads-{completion} ");
-            ret.Add($"Process.GetCurrentProcess().Threads.Count:{Process.GetCurrentProcess().Threads.Count}");
-            ret.Add($"GCSettings.IsServerGC: {GCSettings.IsServerGC}");
-
-            ret.Add($"header总量：{HttpContextEx.Request.Headers.Count}");
+            var dict = new Dictionary<string, object>
+            {
+                { "ConfigUtil.EnvironmentString", ConfigUtil.EnvironmentString },
+                { "header:Host", HttpContextEx.Request.Headers["Host"].FirstOrDefault() },
+                { "header:X-Forwarded-Proto", HttpContextEx.Request.Headers["X-Forwarded-Proto"].FirstOrDefault() },
+                { "header:Referer", HttpContextEx.Request.Headers["Referer"].FirstOrDefault() },
+                { "header:X-Real_IP", HttpContextEx.Request.Headers["X-Real_IP"].FirstOrDefault() },
+                { "header:X-Forwarded-For", HttpContextEx.Request.Headers["X-Forwarded-For"].FirstOrDefault() },
+                { "AspNetUtil.GetRequestBaseUrl()", AspNetUtil.GetRequestBaseUrl() },
+                { "AspNetUtil.GetRefererUrl()", AspNetUtil.GetRefererUrl() },
+                { "AspNetUtil.GetRemoteIpString()", AspNetUtil.GetRemoteIpString() },
+                { "Process.GetCurrentProcess().Threads.Count", Process.GetCurrentProcess().Threads.Count },
+                { "GCSettings.IsServerGC", GCSettings.IsServerGC },
+                { "header总量", HttpContextEx.Request.Headers.Count },
+            };
             foreach (var header in HttpContextEx.Request.Headers)
             {
-                ret.Add($"{header.Key} : {header.Value}");
+                dict.Add($"headers.{header.Key}", header.Value);
             }
-            return ret;
+            ThreadPool.GetAvailableThreads(out var worker, out var completion);
+            dict.Add("ThreadPool.GetAvailableThreads()", $"workerThreads:{worker} completionPortThreads:{completion}");
+
+            return SerializerUtil.SerializeJsonNet(dict);
         }
     }
 }
