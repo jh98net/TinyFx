@@ -5,6 +5,7 @@ using System.Text;
 using System.Data;
 using System.Reflection;
 using TinyFx.Reflection;
+using System.Collections.Concurrent;
 
 namespace TinyFx.Data.DataMapping
 {
@@ -13,8 +14,7 @@ namespace TinyFx.Data.DataMapping
     /// </summary>
     internal class EntityToDataRowMapping
     {
-        private static readonly Dictionary<Type, EntityToDataRowMapperBuilder> _cache = new Dictionary<Type, EntityToDataRowMapperBuilder>();
-        private static object _locker = new object();
+        private static readonly ConcurrentDictionary<Type, EntityToDataRowMapperBuilder> _cache = new ConcurrentDictionary<Type, EntityToDataRowMapperBuilder>();
 
         /// <summary>
         /// 获得实体类T到DataRow的映射方法
@@ -23,22 +23,9 @@ namespace TinyFx.Data.DataMapping
         /// <returns></returns>
         public static Action<DataRow, T> GetEntityMapper<T>()
         {
-            Action<DataRow, T> ret = null;
             Type type = typeof(T);
-            if (!_cache.ContainsKey(type))
-            {
-                lock (_locker)
-                {
-                    if (!_cache.ContainsKey(type))
-                    {
-                        var mapper = new EntityToDataRowMapperBuilder(type);
-                        _cache.Add(type, mapper);
-                    }
-                }
-            }
-            ret = _cache[type].SetValues<T>;
-
-            return ret;
+            var ret = _cache.GetOrAdd(type, new EntityToDataRowMapperBuilder(type));
+            return ret.SetValues<T>;
         }
     }
 
@@ -46,7 +33,7 @@ namespace TinyFx.Data.DataMapping
     {
         private Type _type;
         // key: 小写属性名 
-        private Dictionary<string, (string propertyName, Func<object, string, object> action)> _mapperCache = new Dictionary<string, (string propertyName, Func<object, string, object> action)>();
+        private ConcurrentDictionary<string, (string propertyName, Func<object, string, object> action)> _mapperCache = new ConcurrentDictionary<string, (string propertyName, Func<object, string, object> action)>();
 
         /// <summary>
         /// 构造函数
@@ -60,7 +47,7 @@ namespace TinyFx.Data.DataMapping
             foreach (var property in properties)
             {
                 var mapper = new Func<object, string, object>(ReflectionUtil.GetPropertyValue);
-                _mapperCache.Add(property.Name.ToLower(), (property.Name, mapper));
+                _mapperCache.TryAdd(property.Name.ToLower(), (property.Name, mapper));
             }
         }
         /// <summary>

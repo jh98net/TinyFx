@@ -87,11 +87,23 @@ namespace TinyFx
 
         /// <summary>
         /// 验证是否是有效Email地址
+        /// gmail规则：可包含(数字字母._-)，但._-不能开头结尾或连续
         /// </summary>
         /// <param name="email">需验证的字符串</param>
         /// <returns></returns>
         public static bool IsEmail(string email) // "^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"
-            => Regex.IsMatch(email, @"^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$");
+        {
+            if (string.IsNullOrEmpty(email))
+                return false;
+            var ret = Regex.IsMatch(email, @"^[a-z0-9A-Z]+[- | a-z0-9A-Z . _]+[a-z0-9A-Z]+@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$");
+            if (ret)
+            {
+                // 不能连续
+                if (email.IndexOf("..") > 0 || email.IndexOf("__") > 0 || email.IndexOf("--") > 0)
+                    return false;
+            }
+            return ret;
+        }
 
         /// <summary>
         /// 验证是否是有效的电话号码
@@ -133,7 +145,7 @@ namespace TinyFx
         /// <returns></returns>
         public static bool IsUrl(string url)
             => Regex.IsMatch(url, @"((http|ftp|https)://)(([a-zA-Z0-9\._-]+\.[a-zA-Z]{2,6})|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))(:[0-9]{1,4})*(/[a-zA-Z0-9\&%_\./-~-]*)?");
-            //=> Regex.IsMatch(url, @"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?");
+        //=> Regex.IsMatch(url, @"http(s)?://([\w-]+\.)+[\w-]+(/[\w- ./?%&=]*)?");
 
         /// <summary>
         /// 验证是否是非负数，包括正数和0
@@ -190,7 +202,7 @@ namespace TinyFx
         /// <returns></returns>
         public static bool IsNotPositiveInteger(string input)
             => Regex.IsMatch(input, @"^((-\d+)|(0+))$");
-        
+
         /// <summary>
         /// 验证是否是有效的身份证号
         /// </summary>

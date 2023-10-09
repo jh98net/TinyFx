@@ -5,6 +5,7 @@ using System.Text;
 using System.Data;
 using System.Reflection;
 using TinyFx.Reflection;
+using System.Collections.Concurrent;
 
 namespace TinyFx.Data.DataMapping
 {
@@ -14,29 +15,12 @@ namespace TinyFx.Data.DataMapping
     /// </summary>
     internal class ReflectionDataMapping
     {
-        private static readonly Dictionary<Type, ReflectionMapperBuilder> _mapCache = new Dictionary<Type, ReflectionMapperBuilder>();
-        private static object _locker = new object();
+        private static readonly ConcurrentDictionary<Type, ReflectionMapperBuilder> _mapCache = new ConcurrentDictionary<Type, ReflectionMapperBuilder>();
         public static Func<IDataReader, T> GetRowMapper<T>()
         {
-            Func<IDataReader, T> ret = null;
             Type type = typeof(T);
-            if (!_mapCache.ContainsKey(type))
-            {
-                lock (_locker)
-                {
-                    if (!_mapCache.ContainsKey(type))
-                    {
-                        ReflectionMapperBuilder builder = new ReflectionMapperBuilder(type);
-                        _mapCache.Add(type, builder);
-                        ret = builder.Build<T>;
-                    }
-                }
-            }
-            else
-            {
-                ret = _mapCache[type].Build<T>;
-            }
-            return ret;
+            var ret = _mapCache.GetOrAdd(type, new ReflectionMapperBuilder(type));
+            return ret.Build<T>;
         }
 
     }
@@ -44,7 +28,7 @@ namespace TinyFx.Data.DataMapping
     {
         private Type _type;
         // key: columnName小写
-        private Dictionary<string, PropertySetter> _columnMapper = new Dictionary<string, PropertySetter>();
+        private ConcurrentDictionary<string, PropertySetter> _columnMapper = new ConcurrentDictionary<string, PropertySetter>();
 
         public ReflectionMapperBuilder(Type t)
         {
@@ -64,7 +48,7 @@ namespace TinyFx.Data.DataMapping
                     Type = property.PropertyType,
                     Name = property.Name
                 };
-                _columnMapper.Add(key, setter);
+                _columnMapper.TryAdd(key, setter);
             }
         }
         public T Build<T>(IDataReader reader)

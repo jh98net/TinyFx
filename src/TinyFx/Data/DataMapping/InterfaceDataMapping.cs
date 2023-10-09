@@ -14,7 +14,6 @@ namespace TinyFx.Data.DataMapping
     internal class InterfaceDataMapping
     {
         private static readonly ConcurrentDictionary<Type, InterfaceMapperBuilder> _builderCache = new ConcurrentDictionary<Type, InterfaceMapperBuilder>();
-        private static readonly HashSet<Type> _unmapCache = new HashSet<Type>();
         /// <summary>
         /// 获取IDataReader映射到实体类的构建方法
         /// </summary>
@@ -22,21 +21,13 @@ namespace TinyFx.Data.DataMapping
         /// <returns></returns>
         public static Func<IDataReader, T> GetRowMapper<T>()
         {
-            Func<IDataReader, T> ret = null;
             Type type = typeof(T);
-            if (_builderCache.ContainsKey(type))
-                return _builderCache[type].Build<T>;
-            if (_unmapCache.Contains(type))
-                return null;
-            if (type.GetInterfaces().Contains(typeof(IRowMapper<T>)))
+            var ret = _builderCache.GetOrAdd(type, (t) =>
             {
-                InterfaceMapperBuilder builder = new InterfaceMapperBuilder(type);
-                _builderCache.TryAdd(type, builder);
-                ret = builder.Build<T>;
-            }
-            else
-                _unmapCache.Add(type);
-            return ret;
+                return t.GetInterfaces().Contains(typeof(IRowMapper<T>))
+                    ? new InterfaceMapperBuilder(type) : null;
+            });
+            return ret != null ? ret.Build<T> : null;
         }
     }
     internal class InterfaceMapperBuilder
