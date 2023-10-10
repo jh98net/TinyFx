@@ -13,12 +13,18 @@ namespace TinyFx
         /// <summary>
         /// 基元类型
         /// </summary>
-        public static readonly HashSet<string> PrimitiveTypes = new HashSet<string>() { Byte, SByte, Int16, UInt16, Int32, UInt32, Int64, UInt64, Single, Double, Boolean, Char, IntPtr, UIntPtr };
+        public static readonly HashSet<string> PrimitiveTypes = new HashSet<string>() 
+        { 
+            Byte, SByte, Int16, UInt16, Int32, UInt32, Int64, UInt64, Single, Double, Boolean, Char, IntPtr, UIntPtr 
+        };
 
         /// <summary>
         /// 简单类型
         /// </summary>
-        public static readonly HashSet<string> SimpleTypes = new HashSet<string>() { Decimal, TimeSpan, DateTime, DateTimeOffset, Guid, String, Bytes };
+        public static readonly HashSet<string> SimpleTypes = new HashSet<string>() 
+        { 
+            Decimal, TimeSpan, DateTime, DateTimeOffset, Guid, String, Bytes 
+        };
 
         #region Primitive Types
         /// <summary>

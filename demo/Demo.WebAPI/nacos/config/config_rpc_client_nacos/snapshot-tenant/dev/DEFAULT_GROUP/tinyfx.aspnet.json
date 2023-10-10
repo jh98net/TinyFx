@@ -98,8 +98,9 @@
         }
     },
     "RabbitMQ": {
-        "DefaultConnectionStringName": "default",
+        "Enabled": true,
         "LogEnabled": true,
+        "DefaultConnectionStringName": "default",
         "ConnectionStrings": {
             "default": {
                 "UseQuorum": false,
@@ -188,6 +189,7 @@
     "RequestLogging": {
         "Enabled": true,
         "LogLevel": "Debug",
+        "CustomeExceptionLevel": "Information",
         "LogRequestHeaders": false,
         "LogRequestBody": true,
         "LogResponseBody": true,

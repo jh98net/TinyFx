@@ -204,5 +204,19 @@ namespace TinyFx.Logging
             if (DefaultLogger != null && DefaultLogger.IsEnabled(LogLevel.Warning))
                 DefaultLogger.LogWarning(exception, message, args);
         }
+
+        /// <summary>
+        /// 获取上下文LogBuilder或者创建
+        /// </summary>
+        /// <returns></returns>
+        public static ILogBuilder GetContextOrCreate()
+        {
+            var context = DIUtil.GetService<ILogBuilder>();
+            if (context != null)
+                return context;
+            var ret = new LogBuilder();
+            ret.IsContextLog = false;
+            return ret;
+        }
     }
 }

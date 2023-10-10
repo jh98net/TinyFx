@@ -5,6 +5,7 @@ using System.Text;
 using TinyFx.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace TinyFx
 {
@@ -45,11 +46,15 @@ namespace TinyFx
         }
 
         private static IServiceProvider _serviceProvider;
-        /// <summary>
-        /// 服务提供程序
-        /// </summary>
-        public static IServiceProvider ServiceProvider
-            => _serviceProvider ??= Services.BuildServiceProvider();
+        private static IServiceProvider GetServiceProvider()
+        {
+            if (_serviceProvider == null)
+                _serviceProvider = Services.BuildServiceProvider();
+            var ihttp = _serviceProvider.GetService<IHttpContextAccessor>();
+            if (ihttp != null && ihttp.HttpContext != null)
+                return ihttp.HttpContext.RequestServices;
+            return _serviceProvider.CreateScope().ServiceProvider;
+        }
 
         /// <summary>
         /// 从System.IServiceProvider获取类型为T的Service
@@ -57,7 +62,7 @@ namespace TinyFx
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public static T GetService<T>()
-            => ServiceProvider.GetService<T>();
+            => GetServiceProvider().GetService<T>();
 
         /// <summary>
         /// 从System.IServiceProvider获取类型为T的Service，类型不存在则抛出异常InvalidOperationException
@@ -65,12 +70,12 @@ namespace TinyFx
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public static T GetRequiredService<T>()
-            => ServiceProvider.GetRequiredService<T>();
+            => GetServiceProvider().GetRequiredService<T>();
 
         public static object GetService(Type type)
-            => ServiceProvider.GetService(type);
+            => GetServiceProvider().GetService(type);
         public static object GetRequiredService(Type type)
-            => ServiceProvider.GetRequiredService(type);
+            => GetServiceProvider().GetRequiredService(type);
 
         #region AddService
         #region AddScoped

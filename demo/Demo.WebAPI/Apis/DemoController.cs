@@ -40,6 +40,15 @@ namespace Demo.WebAPI.Apis
     //[EnableCors()]
     public class DemoController : TinyFxControllerBase
     {
+        public DemoController(TESTA a, TESTB b)
+        {
+            var aHash1 = DIUtil.GetService<TESTA>().GetHashCode();
+            var aHash2 = a.GetHashCode();
+            var bhash1 = b.GetHashCode();
+            var bHash2 = DIUtil.GetService<TESTB>().GetHashCode();
+            if (aHash1 != aHash2)
+            { }
+        }
         [HttpGet]
         [AllowAnonymous]
         public string GetJwtToken()

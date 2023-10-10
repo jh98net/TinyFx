@@ -198,6 +198,27 @@
     "Properties": {}
   },
 
+  // SqlSugar数据库配置 (TinyFx.Configuration.SqlSugarSection)
+  "SqlSugar": {
+    "DbConfigProvider": null, //连接配置提供者
+    "DbRoutingProvider": null, //数据路由提供者
+    "DefaultConnectionStringName": "default",
+    "ConnectionStrings": {
+      "default": {
+        "DbType": "MySql",
+        "ConnectionString": "server=192.168.1.120;port=3306;database=ing;user id=root;password=root;sslmode=Disabled;allowuservariables=True",
+        "SlaveConnectionConfigs": [
+          {
+            "ConnectionString": "",
+            "HitRate": 1
+          }
+        ],
+        "LogEnabled": false,
+        "LogSqlMode": 0, //SQL日志模式0-默认 1-原生 2-无参数化
+        "SlaveEnabled": true //是否使用读写分离
+      }
+    }
+  },
   // 数据库配置 (TinyFx.Data.Configuration.DataSection)
   "Data": {
     "DefaultConnectionStringName": "default", // 默认数据库连接

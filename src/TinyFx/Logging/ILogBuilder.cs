@@ -6,6 +6,7 @@ namespace TinyFx.Logging
     public interface ILogBuilder
     {
         LogLevel Level { get; set; }
+        bool IsContextLog { get; }
         LogLevel CustomeExceptionLevel { get; set; }
         bool LogRequestHeaders { get; set; }
         bool LogRequestBody { get; set; }
@@ -17,11 +18,11 @@ namespace TinyFx.Logging
         ILogBuilder AddException(Exception ex, LogLevel level = LogLevel.Error);
         ILogBuilder AddField(string field, object value);
         ILogBuilder AddMessage(string msg);
-        void Log();
+        void Save();
         ILogBuilder SetLevel(LogLevel level);
         ILogBuilder SetLogRequestHeaders(bool isLog = true);
         ILogBuilder SetLogRequestBody(bool isLog = true);
-        
+
         /// <summary>
         /// 如需记录ResponseBody，必须配置RequestLogging:Urls才能获取
         /// </summary>

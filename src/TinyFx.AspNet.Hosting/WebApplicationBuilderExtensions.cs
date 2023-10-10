@@ -53,7 +53,6 @@ namespace TinyFx
                     opts.Limits.MinRequestBodyDataRate = new MinDataRate(bytesPerSecond, gracePeriod);
                 });
             }
-
             AddAspNetEx(builder.Services, type);
             return builder;
         }
@@ -94,7 +93,11 @@ namespace TinyFx
         }
         public static IServiceCollection AddRequestLoggingEx(this IServiceCollection services)
         {
-            services.AddScoped<ILogBuilder>((_) => new LogBuilder("ASPNET_CONTEXT"));
+            services.AddScoped<ILogBuilder>((_) => { 
+                var ret = new LogBuilder("ASPNET_CONTEXT");
+                ret.IsContextLog = true;
+                return ret;
+            });
             return services;
         }
         public static IServiceCollection AddNacosAspNetEx(this IServiceCollection services)

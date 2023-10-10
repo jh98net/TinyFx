@@ -104,7 +104,7 @@ namespace TinyFx.AspNet.RequestLogging
                     state.Stopwatch.Stop();
                     state.Logger.AddField("Request.ElaspedTime", state.Stopwatch.ElapsedMilliseconds);
                 }
-                state.Logger.Log();
+                state.Logger.Save();
                 return Task.CompletedTask;
             }, rspState);
         }

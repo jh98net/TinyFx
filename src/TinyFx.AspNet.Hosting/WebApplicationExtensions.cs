@@ -28,7 +28,6 @@ namespace TinyFx
         public static WebApplication UseAspNetEx(this WebApplication app)
         {
             app.UseTinyFxEx();
-
             // 中间件顺序
             // https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/middleware/?view=aspnetcore-7.0#middleware-order
             app.UseEnableBufferingEx();
