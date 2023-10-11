@@ -1,6 +1,7 @@
 ﻿<Project>
 	<PropertyGroup>
-		<PackageTags>TinyFx</PackageTags>
+		<PackageTags>tinyfx,sdk</PackageTags>
+		<Description>tinyfx sdk</Description>
 		<Authors>JiangHui</Authors>
 		<Copyright>JiangHui</Copyright>
 		<RepositoryType>Git</RepositoryType>
@@ -8,7 +9,8 @@
 		<PackageProjectUrl>https://github.com/jh98net/TinyFx</PackageProjectUrl>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageIcon>icon.png</PackageIcon>
-		<PackageLicenseFile>LICENSE.TXT</PackageLicenseFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<!--<LangVersion>10</LangVersion>-->
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -36,7 +38,7 @@
 			<Pack>True</Pack>
 			<PackagePath></PackagePath>
 		</None>
-		<None Include="..\..\LICENSE.TXT">
+		<None Include="..\..\LICENSE">
 			<Pack>True</Pack>
 			<PackagePath></PackagePath>
 		</None>
