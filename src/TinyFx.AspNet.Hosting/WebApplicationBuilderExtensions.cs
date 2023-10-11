@@ -93,7 +93,8 @@ namespace TinyFx
         }
         public static IServiceCollection AddRequestLoggingEx(this IServiceCollection services)
         {
-            services.AddScoped<ILogBuilder>((_) => { 
+            services.AddScoped<ILogBuilder>((_) =>
+            {
                 var ret = new LogBuilder("ASPNET_CONTEXT");
                 ret.IsContextLog = true;
                 return ret;
@@ -353,46 +354,21 @@ namespace TinyFx
             var section = ConfigUtil.GetSection<SessionAndCookieSection>();
             if (section != null && (section.UseSession || section.UseCookieIdentity))
             {
-                // check
-                var redisSection = ConfigUtil.GetSection<RedisSection>();
-                if (redisSection == null)
-                    throw new Exception("配置使用cookie时，必须使用RedisSection");
-                var defaultRedisName = string.IsNullOrEmpty(section.ConnectionStringName)
-                    ? redisSection.DefaultConnectionStringName : section.ConnectionStringName;
-                if (!redisSection.ConnectionStrings.TryGetValue(defaultRedisName, out ConnectionStringElement element))
-                    throw new Exception($"配置中Redis:ConnectionStrings:Name 不存在。Name: {defaultRedisName}");
-                if (string.IsNullOrEmpty(element.ConnectionString))
-                    throw new Exception("配置session到redis时，ConnectionString不能为空");
+                var appName = !string.IsNullOrEmpty(section.ApplicationName)
+                    ? section.ApplicationName : ConfigUtil.Project.ProjectId;
 
-                var appName = section.ApplicationName?.Trim()?.ToUpper() ?? ConfigUtil.Project.ProjectId;
-                var timeoutSpan = (section.IdleTimeout == 0)
-                            ? TimeSpan.MaxValue
-                            : TimeSpan.FromMinutes(section.IdleTimeout);
-                // 配置数据保护和应用程序名称
-                services.AddDataProtection()
-                    .SetApplicationName(appName)
-                    .PersistKeysToStackExchangeRedis(RedisUtil.GetRedisByConnectionString(element.ConnectionString)
-                        , "DataProtection-Keys");
-
-
-                // 配置Sesion
-                if (section.UseSession)
+                // 配置数据保护和应用程序名称(分布式session和cookie)
+                var dpb = services.AddDataProtection().SetApplicationName(appName);
+                var redisConnStr = AspNetHost.GetDataProtectionRedisConnectionString(section.RedisConnectionStringName);
+                if (!string.IsNullOrEmpty(redisConnStr))
                 {
-                    services.AddSession(opts =>
-                    {
-                        opts.IdleTimeout = timeoutSpan; //Session过期
-
-                        opts.Cookie.Name = $".{appName}.Session";
-                        opts.Cookie.Path = "/";
-                        if (!string.IsNullOrEmpty(section.Domain))
-                            opts.Cookie.Domain = section.Domain;
-                        opts.Cookie.SameSite = section.SameSiteMode;
-                        opts.Cookie.SecurePolicy = CookieSecurePolicy.Always; // 使用https(SameSiteMode.None必须使用)
-                        opts.Cookie.HttpOnly = true; //禁止js访问
-                        opts.Cookie.IsEssential = true;//绕过GDPR
-                    });
+                    dpb.PersistKeysToStackExchangeRedis(RedisUtil.GetRedisByConnectionString(redisConnStr)
+                        , "DataProtection-Keys");
                 }
-
+                else
+                {
+                    dpb.PersistKeysToFileSystem(new DirectoryInfo(AppContext.BaseDirectory));
+                }
 
                 // 配置Cookie登录
                 if (section.UseCookieIdentity)
@@ -400,25 +376,47 @@ namespace TinyFx
                     services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                         .AddCookie(opts =>
                         {
-                            opts.ExpireTimeSpan = timeoutSpan; //cookie过期
-                            opts.SlidingExpiration = true;
-
-                            opts.Cookie.Name = $".{appName}.Identity";
-                            opts.Cookie.Path = "/";
-                            if (!string.IsNullOrEmpty(section.Domain))
-                                opts.Cookie.Domain = section.Domain;
-                            opts.Cookie.SameSite = section.SameSiteMode;
-                            opts.Cookie.SecurePolicy = CookieSecurePolicy.Always; // 使用https
+                            opts.SlidingExpiration = true; //自动延期
                             opts.Cookie.HttpOnly = true; //禁止js访问
                             opts.Cookie.IsEssential = true;//绕过GDPR
+
+                            opts.Cookie.Name = $".{appName}.Identity";
+                            opts.ExpireTimeSpan = (section.CookieTimeout == 0)
+                                ? TimeSpan.FromDays(3)
+                                : TimeSpan.FromDays(section.CookieTimeout);
+                            opts.Cookie.Path = "/";// 跨基路径共享
+                            if (!string.IsNullOrEmpty(section.Domain))//跨不同子域共享 .xxx.com
+                                opts.Cookie.Domain = section.Domain;
+                            opts.Cookie.SameSite = section.SameSiteMode;
+                            opts.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                         });
                 }
+
+                // 配置Sesion
+                if (section.UseSession)
+                {
+                    services.AddSession(opts =>
+                    {
+                        opts.Cookie.HttpOnly = true; //禁止js访问
+                        opts.Cookie.IsEssential = true;//绕过GDPR
+
+                        opts.Cookie.Name = $".{appName}.Session";
+                        opts.IdleTimeout = (section.SessionTimeout == 0)
+                                    ? TimeSpan.FromMinutes(20)
+                                    : TimeSpan.FromMinutes(section.SessionTimeout);
+                        opts.Cookie.Path = "/";
+                        if (!string.IsNullOrEmpty(section.Domain))
+                            opts.Cookie.Domain = section.Domain;
+                        opts.Cookie.SameSite = section.SameSiteMode;
+                        opts.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                    });
+                }
+
                 LogUtil.Trace("SessionAndRedis 配置启动。session:{session} cookie:{cookie}"
                     , section.UseSession, section.UseCookieIdentity);
             }
             return services;
         }
-
         public static IServiceCollection AddResponseCachingEx(this IServiceCollection services)
         {
             var rcSection = ConfigUtil.GetSection<ResponseCachingSection>();

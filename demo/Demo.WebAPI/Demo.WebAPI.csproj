@@ -26,6 +26,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\TinyFx.AspNet.Hosting\TinyFx.AspNet.Hosting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Properties\launchSettings.json">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
