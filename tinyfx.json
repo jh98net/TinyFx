@@ -133,18 +133,6 @@
           ]
         }
       },
-      "MySQLSink": {
-        "Name": "TinyFxMySQL",
-        "Args": {
-          "enabled": true, //是否开启
-          "restrictedToMinimumLevel": "Error", // 日志级别
-          "connectionString": "default",
-          "tableName": "s_log",
-          "pkType": 1, // 主键类型：0-ObjectId 1-Identity 2-Snowflake
-          "storeTimestampInUtc": "true",
-          "batchSize": 100 //批量提交数
-        }
-      },
       "ELKSink": {
         "Name": "TinyFxELK",
         "Args": {

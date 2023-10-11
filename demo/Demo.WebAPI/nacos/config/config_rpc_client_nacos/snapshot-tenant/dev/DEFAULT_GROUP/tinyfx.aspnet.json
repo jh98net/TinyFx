@@ -1,13 +1,13 @@
 {
     "AppOptions": {
-        "AppId": "xxyy",
+        "AppId": "demo",
         "ServerType": "Normal",
         "ServerUrl": null,
         "UseVerifyClientRequest": false
     },
     "Project": {
         "ProjectId": "demo",
-        "Description": "a-WebAPI",
+        "Description": "demo-WebAPI",
         "ConsoleLogLevel": "Debug",
         "MinThreads": 0,
         "ResponseErrorMessage": true,
@@ -36,18 +36,6 @@
                     "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
                 }
             },
-            "MySQLSink": {
-                "Name": "TinyFxMySQL",
-                "Args": {
-                    "enabled": true,
-                    "restrictedToMinimumLevel": "Error",
-                    "connectionString": "default",
-                    "tableName": "s_log",
-                    "pkType": 1,
-                    "storeTimestampInUtc": "true",
-                    "batchSize": 1
-                }
-            },
             "ELKSink": {
                 "Name": "TinyFxELK",
                 "Args": {
@@ -64,16 +52,36 @@
         "Filter": [],
         "Properties": {}
     },
+    "SqlSugar": {
+        "Enabled": true,
+        "DbConfigProvider": null,
+        "DbRoutingProvider": null,
+        "DefaultConnectionStringName": "default",
+        "ConnectionStrings": {
+            "default": {
+                "DbType": "MySql",
+                "ConnectionString": "server=192.168.1.120;port=3306;database=ing;uid=root;pwd=root;sslmode=Disabled;allowuservariables=True;AllowLoadLocalInfile=true;Pooling=false",
+                "LogEnabled": false,
+                "LogSqlMode": 2,
+                "SlaveEnabled": false
+            },
+            "game": {
+                "DbType": "MySql",
+                "ConnectionString": "server=192.168.1.120;port=3306;database=gdb;uid=root;pwd=root;sslmode=Disabled;allowuservariables=True;AllowLoadLocalInfile=true;Pooling=false",
+                "LogEnabled": false,
+                "LogSqlMode": 2,
+                "SlaveEnabled": false
+            }
+        }
+    },
     "Data": {
         "DefaultConnectionStringName": "default",
-        "InstProvider": "",
         "ConnectionStrings": {
             "default": {
                 "ProviderName": "mysql",
                 "ConnectionString": "server=192.168.1.120;port=3306;database=ing;user id=root;password=root;sslmode=Disabled;allowuservariables=True",
                 "ReadConnectionString": "",
                 "CommandTimeout": "30",
-                "InstProvider": "",
                 "OrmMap": ""
             },
             "game": {
@@ -81,7 +89,6 @@
                 "ConnectionString": "server=192.168.1.120;port=3306;database=gdb;user id=root;password=root;sslmode=Disabled;allowuservariables=True",
                 "ReadConnectionString": "",
                 "CommandTimeout": "30",
-                "InstProvider": "",
                 "OrmMap": ""
             }
         }
@@ -100,9 +107,13 @@
     "RabbitMQ": {
         "Enabled": true,
         "LogEnabled": true,
+        "SACBindDelay": 120,
+        "RedisConnectionStringName": "default",
         "DefaultConnectionStringName": "default",
         "ConnectionStrings": {
             "default": {
+                "UseShortNaming": false,
+                "UseEnvironmentVirtualHost": false,
                 "UseQuorum": false,
                 "ConnectionString": "host=192.168.1.120:5672;username=root;password=root;publisherConfirms=true;timeout=60"
             }
