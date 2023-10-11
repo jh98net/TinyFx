@@ -1,7 +1,6 @@
 ﻿<Project>
 	<PropertyGroup>
 		<PackageTags>tinyfx,sdk</PackageTags>
-		<Description>tinyfx sdk</Description>
 		<Authors>JiangHui</Authors>
 		<Copyright>JiangHui</Copyright>
 		<RepositoryType>Git</RepositoryType>
@@ -10,7 +9,6 @@
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageIcon>icon.png</PackageIcon>
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<!--<LangVersion>10</LangVersion>-->
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
