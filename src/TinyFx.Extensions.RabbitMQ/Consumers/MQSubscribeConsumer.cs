@@ -18,7 +18,7 @@ namespace TinyFx.Extensions.RabbitMQ
     /// </summary>
     /// <typeparam name="TMessage">接收的消息类型</typeparam>
     public abstract class MQSubscribeConsumer<TMessage> : MQConsumerBase
-        where TMessage : IMQMessage, new()
+        where TMessage : class, new()
     {
         /// <summary>
         /// true: 广播模式(断联删除queue) false: 负载模式
@@ -58,17 +58,18 @@ namespace TinyFx.Extensions.RabbitMQ
             {
                 return OnMessage(msg, cancellationToken).ContinueWith(task =>
                 {
+                    var tmpMsg = msg as IMQMessage;
                     if (task.IsCompleted && !task.IsFaulted)
                     {
                         LogUtil.Debug("[MQ] SubscribeConsumer消费成功。{MQConsumerType}{MQMessageType}{MQMessageId}{MQElaspedTime}"
-                            , GetType().FullName, msg.GetType().FullName, msg.MessageId, GetElaspedTime(msg.Timestamp));
+                            , GetType().FullName, msg.GetType().FullName, tmpMsg?.MessageId, GetElaspedTime(tmpMsg?.Timestamp));
                     }
                     else
                     {
                         LogUtil.Error(task.Exception, "[MQ] SubscribeConsumer消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}{MQElaspedTime}"
-                            , GetType().FullName, SerializerUtil.SerializeJson(msg), SubscriptionId, msg.MessageId, GetElaspedTime(msg.Timestamp));
+                            , GetType().FullName, SerializerUtil.SerializeJson(msg), SubscriptionId, tmpMsg?.MessageId, GetElaspedTime(tmpMsg?.Timestamp));
                         // 不要catch，此异常将导致被发送到默认错误代理队列 error queue (broker)
-                        throw new EasyNetQException($"SubscribeConsumer消费异常。ConsumerType:{GetType().FullName} MessageId:{msg.MessageId}");
+                        throw new EasyNetQException($"SubscribeConsumer消费异常。ConsumerType:{GetType().FullName} MessageId:{tmpMsg?.MessageId}");
                     }
                 });
             };
