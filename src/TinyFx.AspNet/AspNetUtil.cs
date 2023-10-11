@@ -219,22 +219,22 @@ namespace TinyFx.AspNet
                 ? (bool)v : ConfigUtil.Project.ResponseErrorDetail;
         }
 
-        public static async Task<string> GetRequestBodyString(Encoding encoding = null)
-        {
-            return await HttpContextEx.Request.GetRawBodyAsync(encoding);
-        }
 
+        internal const string CONTEXT_REQUEST_BODY_STRING = "CONTEXT_REQUEST_BODY_STRING";
         /// <summary>
         /// 获取原始请求正文并转换成字符串
         /// </summary>
         /// <param name="request"></param>
-        /// <param name="encoding"></param>
         /// <returns></returns>
-        public static async Task<string> GetRawBodyAsync(this HttpRequest request, Encoding encoding = null)
+        public static async Task<string> GetRawBodyAsync(this HttpRequest request)
         {
+            if (HttpContextEx.Items.TryGetValue(CONTEXT_REQUEST_BODY_STRING, out var v))
+                return Convert.ToString(v);
+
             request.Body.Seek(0, SeekOrigin.Begin);
             var ret = await IOUtil.GetStringFromPipe(request.BodyReader);
             request.Body.Seek(0, SeekOrigin.Begin);
+            HttpContextEx.Items.Add(CONTEXT_REQUEST_BODY_STRING, ret);
             return ret;
             /*
             string ret = null;

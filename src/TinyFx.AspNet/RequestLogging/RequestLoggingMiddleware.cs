@@ -115,7 +115,7 @@ namespace TinyFx.AspNet.RequestLogging
             {
                 try 
                 {
-                    logger.AddField("Request.Body", await request.GetRawBodyAsync());
+                    logger.AddField("Request.Body", await AspNetUtil.GetRawBodyAsync(request));
                 }
                 catch(Exception ex)
                 {

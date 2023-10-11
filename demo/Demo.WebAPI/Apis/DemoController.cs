@@ -40,29 +40,29 @@ namespace Demo.WebAPI.Apis
     //[EnableCors()]
     public class DemoController : TinyFxControllerBase
     {
-        public DemoController()
+        public DemoController(TESTA a, TESTB b)
         {
+            var ahash1 = DIUtil.GetService<TESTA>().GetHashCode();
+            var ahash2 = a.GetHashCode();
+            var bhash1 = b.GetHashCode();
+            var bHash2 = DIUtil.GetService<TESTB>().GetHashCode();
+            if (ahash1 != ahash2 || bhash1 != bHash2)
+                throw new Exception("DI哈希不同");
         }
         [HttpGet]
         [AllowAnonymous]
         public string GetJwtToken()
         {
-            var logger = AspNetUtil.GetContextLogBuilder();
+            var logger = LogUtil.GetContextLog();
             logger.AddMessage("AAAAAAAAAAAA");
             var uip = AspNetUtil.GetRemoteIpString();
             return JwtUtil.GenerateJwtToken(RandomUtil.NextInt(10), UserRole.User, uip);
         }
-        [HttpGet]
+        [HttpPost]
         [AllowAnonymous]
-        public string t1()
+        public DemoIpo2 PostIpo(DemoIpo ipo)
         {
-            throw new Exception("ASDFASDF234");
-        }
-        [HttpGet]
-        [AllowAnonymous]
-        public void T2()
-        {
-            throw new CustomException("code...", "bbb");
+            return new DemoIpo2 { Id = ipo.Name.Length };
         }
         /*
          #region Base

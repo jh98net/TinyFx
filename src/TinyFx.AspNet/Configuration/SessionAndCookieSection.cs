@@ -14,33 +14,38 @@ namespace TinyFx.Configuration
     {
         public override string SectionName => "SessionAndCookie";
         /// <summary>
-        /// 是否使用session
+        /// 默认ProjectId，如需跨应用共享session或cookie，需设置相同值
         /// </summary>
-        public bool UseSession { get; set; } = false;
+        public string ApplicationName { get; set; }
+        /// <summary>
+        /// redis连接字符串名，对应配置：Redis:ConnectionStrings:Name
+        /// </summary>
+        public string RedisConnectionStringName { get; set; }
+
         /// <summary>
         /// 是否启用Cookie Identity
         /// </summary>
         public bool UseCookieIdentity { get; set; } = true;
         /// <summary>
-        /// 默认ProjectId，如需跨应用共享session或cookie，需设置相同值
+        /// cookie过期时间天
         /// </summary>
-        public string ApplicationName { get; set; }
+        public int CookieTimeout { get; set; } = 3;
         /// <summary>
         /// cookie保存的domain，跨域如: .xxyy.com
         /// </summary>
         public string Domain { get; set; }
         /// <summary>
-        /// redis连接字符串名，对应配置：Redis:ConnectionStrings:Name
+        /// https使用None，其他Unspecified
         /// </summary>
-        public string ConnectionStringName { get; set; }
+        public SameSiteMode SameSiteMode { get; set; } = SameSiteMode.Unspecified;
+
         /// <summary>
-        /// Session和cookie过期时间,单位分钟。0:不过期
+        /// 是否使用session
         /// </summary>
-        public int IdleTimeout { get; set; } = 0;
+        public bool UseSession { get; set; } = false;
         /// <summary>
-        /// 默认Lax:通过浏览器发送同站请求或跨站的部分GET请求时，可以携带Cookie
-        /// Strict:只有通过浏览器发送同站请求时，才会携带Cookie
+        /// session过期(默认20分钟)
         /// </summary>
-        public SameSiteMode SameSiteMode { get; set; } = SameSiteMode.Lax;
+        public int SessionTimeout { get; set; } = 20;
     }
 }

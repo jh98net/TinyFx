@@ -457,13 +457,14 @@
 
   // 启用Session或者Cookie Identity (TinyFx.AspNet.Configuration.SessionAndCookieSection)
   "SessionAndCookie": {
-    "UseSession": false,
-    "UseCookieIdentity": true,
     "ApplicationName": "tinyfx", // 默认ProjectId，如需跨应用共享session或cookie，需设置相同值
-    "Domain": null, // cookie保存的domain，跨域如: .xxyy.com
-    "ConnectionStringName": "default", // redis连接字符串名，对应配置：Redis:ConnectionStrings:Name
-    "IdleTimeout": 180, // Session和Cookie过期时间,单位分钟。0:不过期
-    "SameSiteMode": "None" //None,Lax
+    "RedisConnectionStringName": null, // redis连接字符串名，对应配置：Redis:ConnectionStrings:Name
+    "UseCookieIdentity": true,
+    "CookieTimeout": 3, // cookie过期时间3天
+    "Domain": null, // cookie和session保存的domain，跨域如: .xxyy.com
+    "SameSiteMode": "Unspecified", // https使用None，其他Unspecified
+    "UseSession": false,
+    "SessionTimeout": 20 // Session过期时间,20分钟
   },
 
   // Asp.net core CORS跨域请求配置 (TinyFx.AspNet.Configuration.CorsSection)
