@@ -236,7 +236,7 @@ namespace TinyFx.Data
         /// <param name="tm"></param>
         /// <returns></returns>
         public IEnumerable<T> ExecMulti<T>(DataMappingMode mode, TransactionManager tm)
-            => ExecMulti(DbUtil.GetRowMapper<T>(mode), tm);
+            => ExecMulti(DbHelper.GetRowMapper<T>(mode), tm);
         
         /// <summary>
         /// 执行SQL语句并返回实体对象(T)枚举集合
@@ -245,7 +245,7 @@ namespace TinyFx.Data
         /// <param name="mode"></param>
         /// <returns></returns>
         public IEnumerable<T> ExecMulti<T>(DataMappingMode mode)
-            => ExecMulti(DbUtil.GetRowMapper<T>(mode), null);
+            => ExecMulti(DbHelper.GetRowMapper<T>(mode), null);
         #endregion
 
         #region ExecList
@@ -293,7 +293,7 @@ namespace TinyFx.Data
         /// <param name="tm"></param>
         /// <returns></returns>
         public List<T> ExecList<T>(DataMappingMode mode, TransactionManager tm)
-            => ExecList(DbUtil.GetRowMapper<T>(mode), tm);
+            => ExecList(DbHelper.GetRowMapper<T>(mode), tm);
 
         /// <summary>
         /// 执行SQL语句并返回实体对象(T)列表集合
@@ -302,7 +302,7 @@ namespace TinyFx.Data
         /// <param name="mode"></param>
         /// <returns></returns>
         public List<T> ExecList<T>(DataMappingMode mode)
-            => ExecList(DbUtil.GetRowMapper<T>(mode), null);
+            => ExecList(DbHelper.GetRowMapper<T>(mode), null);
         #endregion
     }
 }

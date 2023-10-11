@@ -52,7 +52,7 @@ namespace TinyFx
                                     else if (config.LogSqlMode == 1)
                                         tmpSql = UtilMethods.GetNativeSql(sql, paras);
 
-                                    var log = LogUtil.GetContextOrCreate();
+                                    var log = LogUtil.GetContextLog();
                                     log.AddMessage($"SQL执行前");
                                     log.AddField("SQL", tmpSql);
                                     if (!log.IsContextLog)
@@ -60,7 +60,7 @@ namespace TinyFx
                                 };
                                 db.Aop.OnLogExecuted = (sql, paras) =>
                                 {
-                                    var log = LogUtil.GetContextOrCreate();
+                                    var log = LogUtil.GetContextLog();
                                     log.AddMessage($"SQL执行时间: {db.Ado.SqlExecutionTime.TotalMilliseconds}ms");
                                     if (!log.IsContextLog)
                                         log.SetFlag("SqlSugar").AddField("SQL", sql).Save();
@@ -74,7 +74,7 @@ namespace TinyFx
                                 else if (config.LogSqlMode == 1)
                                     tmpSql = UtilMethods.GetNativeSql(ex.Sql, (SugarParameter[])ex.Parametres);
 
-                                var log = LogUtil.GetContextOrCreate();
+                                var log = LogUtil.GetContextLog();
                                 log.AddMessage("SQL执行异常");
                                 log.AddField("SQL", tmpSql);
                                 log.AddException(ex);

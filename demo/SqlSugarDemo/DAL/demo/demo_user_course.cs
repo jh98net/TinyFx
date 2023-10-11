@@ -5,7 +5,9 @@ using SqlSugar;
 
 namespace SqlSugarDemo.DAL
 {
-
+    ///<summary>
+    ///用户分类表
+    ///</summary>
     [SugarTable("demo_user_course")]
     public partial class Sdemo_user_courseEO
     {

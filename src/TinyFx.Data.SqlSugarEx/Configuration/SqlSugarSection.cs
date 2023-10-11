@@ -25,7 +25,11 @@ namespace TinyFx.Configuration
             base.Bind(configuration);
             ConnectionStrings = configuration.GetSection("ConnectionStrings")
                 .Get<Dictionary<string, ConnectionElement>>() ?? new();
-            ConnectionStrings.ForEach(x => x.Value.ConfigId = x.Key);
+            ConnectionStrings.ForEach(x =>
+            {
+                x.Value.ConfigId = x.Key;
+                x.Value.LanguageType = LanguageType.Chinese;
+            });
         }
     }
 }

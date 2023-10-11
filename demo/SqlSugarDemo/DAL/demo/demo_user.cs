@@ -5,28 +5,31 @@ using SqlSugar;
 
 namespace SqlSugarDemo.DAL
 {
-
+    ///<summary>
+    ///用户表
+	/// 多行描述！！！
+    ///</summary>
     [SugarTable("demo_user")]
     public partial class Sdemo_userEO
     {
         public Sdemo_userEO()
         {
 
-            this.FBit = true;
-            this.FTinyInt = Convert.ToByte("127");
+            this.FBit = 1;
+            this.FTinyInt = 127;
             this.FTinyInt_Unsigned = 255;
-            this.F_Boolean = Convert.ToByte("1");
-            this.FBool_TinyInt = Convert.ToByte("0");
-            this.FSmallInt = Convert.ToInt16("-32768");
+            this.F_Boolean = true;
+            this.FBool_TinyInt = false;
+            this.FSmallInt = -32768;
             this.FSmallInt_Unsigned = 65535;
-            //this.FMediumInt ="-8388608";
-            this.FInt = Convert.ToInt32("-2147483648");
-            //this.FInt_Unsigned =4294967295;
-            this.FBigInt = Convert.ToInt64("-9223372036854775808");
-            //this.FFloat =Convert.ToDouble("12.3457");
-            //this.FDouble =("123456789.1234567");
+            this.FMediumInt = -8388608;
+            this.FInt = -2147483648;
+            this.FInt_Unsigned = 4294967295;
+            this.FBigInt = -9223372036854775808;
+            this.FFloat = 12.3457f;
+            this.FDouble = 123456789.1234567d;
             this.FTimestamp = DateTime.Now;
-            this.FDecimal = Convert.ToDecimal("123");
+            this.FDecimal = 123m;
 
         }
         /// <summary>
@@ -45,67 +48,69 @@ namespace SqlSugarDemo.DAL
         public string? ClassID { get; set; }
 
         /// <summary>
-        /// Desc:字段1	                     多行1	                     多行2
+        /// Desc:字段1
+        ///                      多行1
+        ///                      多行2
         /// Default:b'1'
         /// Nullable:False
         /// </summary>           
-        public bool FBit { get; set; }
+        public int FBit { get; set; }
 
         /// <summary>
         /// Desc:
         /// Default:
         /// Nullable:True
         /// </summary>           
-        public bool? FBit_Max { get; set; }
+        public int? FBit_Max { get; set; }
 
         /// <summary>
         /// Desc:
         /// Default:127
         /// Nullable:False
         /// </summary>           
-        public byte FTinyInt { get; set; }
+        public int FTinyInt { get; set; }
 
         /// <summary>
         /// Desc:
         /// Default:255
         /// Nullable:True
         /// </summary>           
-        public object FTinyInt_Unsigned { get; set; }
+        public int? FTinyInt_Unsigned { get; set; }
 
         /// <summary>
         /// Desc:
         /// Default:
         /// Nullable:True
         /// </summary>           
-        public byte? FBool { get; set; }
+        public bool? FBool { get; set; }
 
         /// <summary>
         /// Desc:
         /// Default:1
         /// Nullable:False
         /// </summary>           
-        public byte F_Boolean { get; set; }
+        public bool F_Boolean { get; set; }
 
         /// <summary>
         /// Desc:
         /// Default:0
         /// Nullable:True
         /// </summary>           
-        public byte? FBool_TinyInt { get; set; }
+        public bool? FBool_TinyInt { get; set; }
 
         /// <summary>
         /// Desc:
         /// Default:-32768
         /// Nullable:False
         /// </summary>           
-        public short FSmallInt { get; set; }
+        public int FSmallInt { get; set; }
 
         /// <summary>
         /// Desc:
         /// Default:65535
         /// Nullable:True
         /// </summary>           
-        public object FSmallInt_Unsigned { get; set; }
+        public int? FSmallInt_Unsigned { get; set; }
 
         /// <summary>
         /// Desc:
@@ -119,7 +124,7 @@ namespace SqlSugarDemo.DAL
         /// Default:
         /// Nullable:True
         /// </summary>           
-        public object FMediumInt_Unsigned { get; set; }
+        public int? FMediumInt_Unsigned { get; set; }
 
         /// <summary>
         /// Desc:
@@ -133,7 +138,7 @@ namespace SqlSugarDemo.DAL
         /// Default:4294967295
         /// Nullable:True
         /// </summary>           
-        public int? FInt_Unsigned { get; set; }
+        public long? FInt_Unsigned { get; set; }
 
         /// <summary>
         /// Desc:
@@ -154,7 +159,7 @@ namespace SqlSugarDemo.DAL
         /// Default:
         /// Nullable:True
         /// </summary>           
-        public object FBigInt_Unsigned { get; set; }
+        public ulong? FBigInt_Unsigned { get; set; }
 
         /// <summary>
         /// Desc:
@@ -196,7 +201,7 @@ namespace SqlSugarDemo.DAL
         /// Default:
         /// Nullable:True
         /// </summary>           
-        public object F_Double_Precision { get; set; }
+        public double? F_Double_Precision { get; set; }
 
         /// <summary>
         /// Desc:
@@ -217,7 +222,7 @@ namespace SqlSugarDemo.DAL
         /// Default:
         /// Nullable:True
         /// </summary>           
-        public DateTime? FTime { get; set; }
+        public TimeSpan? FTime { get; set; }
 
         /// <summary>
         /// Desc:

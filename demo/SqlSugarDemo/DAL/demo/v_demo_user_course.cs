@@ -5,13 +5,15 @@ using SqlSugar;
 
 namespace SqlSugarDemo.DAL
 {
-
+    ///<summary>
+    ///VIEW
+    ///</summary>
     [SugarTable("v_demo_user_course")]
     public partial class Sv_demo_user_courseEO
     {
            public Sv_demo_user_courseEO(){
 
-            this.TestColumn =Convert.ToString("");
+            this.TestColumn ="";
 
            }
            /// <summary>

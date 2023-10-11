@@ -5,7 +5,10 @@ using SqlSugar;
 
 namespace SqlSugarDemo.DAL
 {
-
+    ///<summary>
+    ///类别
+	/// 这里有很多说明
+    ///</summary>
     [SugarTable("demo_class")]
     public partial class Sdemo_classEO
     {

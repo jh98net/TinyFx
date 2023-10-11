@@ -206,7 +206,13 @@
     "ConnectionStrings": {
       "default": {
         "DbType": "MySql",
-        "ConnectionString": "server=192.168.1.120;port=3306;database=ing;user id=root;password=root;sslmode=Disabled;allowuservariables=True",
+        /*
+        allowuservariables=true:
+        TreatTinyAsBoolean=false: 禁止tinyint转bool
+        AllowLoadLocalInfile=true: bulkCopy需要
+        Pooling=false: 使同一个连接可以多次Open
+        */
+        "ConnectionString": "server=192.168.1.120;port=3306;database=ing;uid=root;pwd=root;sslmode=Disabled;allowuservariables=True;AllowLoadLocalInfile=true;Pooling=false",
         "SlaveConnectionConfigs": [
           {
             "ConnectionString": "",

@@ -5,7 +5,9 @@ using SqlSugar;
 
 namespace SqlSugarDemo.DAL
 {
-
+    ///<summary>
+    ///课程
+    ///</summary>
     [SugarTable("demo_course")]
     public partial class Sdemo_courseEO
     {

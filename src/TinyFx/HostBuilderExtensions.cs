@@ -34,6 +34,12 @@ namespace TinyFx
 
             builder.ConfigureServices((context, services) =>
             {
+                services.AddScoped<ILogBuilder>((sp) => 
+                {
+                    var ret = new LogBuilder("TINYFX_CONTEXT");
+                    ret.IsContextLog = true;
+                    return ret;
+                });
                 services.AddDistributedMemoryCache();
                 services.AddHostedService<LifetimeEventsHostedService>();
                 // DI

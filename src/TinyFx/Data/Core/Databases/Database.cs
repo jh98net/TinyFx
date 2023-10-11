@@ -459,7 +459,7 @@ namespace TinyFx.Data
             {
                 foreach (var value in values)
                 {
-                    if (DbUtil.CheckSqlInjection(Convert.ToString(value)))
+                    if (DbHelper.CheckSqlInjection(Convert.ToString(value)))
                         throw new Exception($"执行ExecSqlFormat时values存在SQL注入风险，请改用其他方法。value: {value}");
                 }
             }

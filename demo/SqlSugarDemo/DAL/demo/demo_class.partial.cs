@@ -5,8 +5,8 @@ using SqlSugar;
 
 namespace SqlSugarDemo.DAL
 {
-
     public partial class Sdemo_classEO
     {
+        public string MyProperty { get; set; }
     }
 }
