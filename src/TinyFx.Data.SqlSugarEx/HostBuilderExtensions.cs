@@ -18,7 +18,7 @@ namespace TinyFx
         public static IHostBuilder UseSqlSugarEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<SqlSugarSection>();
-            if (section != null)
+            if (section != null && section.Enabled)
             {
                 builder.ConfigureServices((context, services) =>
                 {

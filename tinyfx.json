@@ -200,6 +200,7 @@
 
   // SqlSugar数据库配置 (TinyFx.Configuration.SqlSugarSection)
   "SqlSugar": {
+    "Enabled": true,
     "DbConfigProvider": null, //连接配置提供者
     "DbRoutingProvider": null, //数据路由提供者
     "DefaultConnectionStringName": "default",

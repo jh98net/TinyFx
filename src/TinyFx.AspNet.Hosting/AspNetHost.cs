@@ -24,6 +24,7 @@ namespace TinyFx
             // 设置启动Serilog
             builder.Host.UseTinyFx();
             builder.Host.UseSerilogEx();
+            builder.Host.UseSqlSugarEx();
             builder.Host.UseAutoMapperEx();
             builder.Host.UseRedisEx();
             builder.Host.UseRabbitMQEx();

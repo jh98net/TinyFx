@@ -1,18 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\TinyFx.AspNet\TinyFx.AspNet.csproj" />
-    <ProjectReference Include="..\TinyFx.Extensions.AutoMapper\TinyFx.Extensions.AutoMapper.csproj" />
-    <ProjectReference Include="..\TinyFx.Extensions.IDGenerator\TinyFx.Extensions.IDGenerator.csproj" />
-    <ProjectReference Include="..\TinyFx.Extensions.RabbitMQ\TinyFx.Extensions.RabbitMQ.csproj" />
-    <ProjectReference Include="..\TinyFx.Extensions.Serilog\TinyFx.Extensions.Serilog.csproj" />
-    <ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
-  </ItemGroup>
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Description>TinyFx AspNet Hosting启动服务</Description>
+		<Version>3.8.40</Version>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\TinyFx.AspNet\TinyFx.AspNet.csproj" />
+		<ProjectReference Include="..\TinyFx.Data.SqlSugarEx\TinyFx.Data.SqlSugarEx.csproj" />
+		<ProjectReference Include="..\TinyFx.Extensions.AutoMapper\TinyFx.Extensions.AutoMapper.csproj" />
+		<ProjectReference Include="..\TinyFx.Extensions.IDGenerator\TinyFx.Extensions.IDGenerator.csproj" />
+		<ProjectReference Include="..\TinyFx.Extensions.RabbitMQ\TinyFx.Extensions.RabbitMQ.csproj" />
+		<ProjectReference Include="..\TinyFx.Extensions.Serilog\TinyFx.Extensions.Serilog.csproj" />
+		<ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
+	</ItemGroup>
 </Project>

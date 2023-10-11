@@ -8,6 +8,7 @@ namespace TinyFx.Configuration
     public class SqlSugarSection : ConfigSection
     {
         public override string SectionName => "SqlSugar";
+        public bool Enabled { get; set; } = true;
         /// <summary>
         /// 连接配置提供者
         /// </summary>
