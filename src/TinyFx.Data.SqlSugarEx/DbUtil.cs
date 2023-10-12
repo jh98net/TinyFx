@@ -79,12 +79,12 @@ namespace TinyFx.Data.SqlSugarEx
         /// 创建Repository
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="routingData">分库标识</param>
+        /// <param name="routingDbKeys">分库标识</param>
         /// <returns></returns>
-        public static Repository<T> CreateRepository<T>(params object[] routingData)
+        public static Repository<T> CreateRepository<T>(params object[] routingDbKeys)
          where T : class, new()
         {
-            return new Repository<T>(routingData);
+            return new Repository<T>(routingDbKeys);
         }
         #endregion
     }
