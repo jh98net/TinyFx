@@ -18,7 +18,7 @@ namespace TinyFx.Data.SqlSugarEx
         /// <summary>
         /// 全局DB，仅用作事务
         /// </summary>
-        public static SqlSugarScope GlobalDb
+        internal static SqlSugarScope GlobalDb
         {
             get
             {

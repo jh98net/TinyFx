@@ -13,9 +13,10 @@ namespace TinyFx.Data.SqlSugarEx
         /// 路由数据库(根据类型和分库标识)
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="routingData"></param>
+        /// <param name="routingDbKeys"></param>
         /// <returns></returns>
-        string RouteDb<T>(params object[] routingData);
+        string RouteDb<T>(params object[] routingDbKeys);
+
         /// <summary>
         /// 路由表(根据实体类型)
         /// </summary>
@@ -25,7 +26,7 @@ namespace TinyFx.Data.SqlSugarEx
     }
     public class DefaultDbRoutingProvider : IDbRoutingProvider
     {
-        public string RouteDb<T>(params object[] routingData)
+        public string RouteDb<T>(params object[] routingDbKeys)
         {
             return null;
         }
