@@ -74,7 +74,10 @@ namespace TinyFx.Configuration
                 {
                     _isDebugEnv = (Environment == EnvironmentNames.Local
                             || Environment == EnvironmentNames.Development
-                            || Environment == EnvironmentNames.Testing)
+                            || Environment == EnvironmentNames.Testing
+                            || Environment == EnvironmentNames.QA
+                            || Environment == EnvironmentNames.Staging
+                            )
                             && Project.IsDebugEnvironment;
                 }
                 return _isDebugEnv.Value;
