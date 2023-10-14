@@ -29,9 +29,9 @@ namespace TinyFx.Configuration
         /// </summary>
         public LogLevel ConsoleLogLevel { get; set; } = LogLevel.Debug;
         /// <summary>
-        /// 线程池最小线程数
+        /// 线程池最小线程数（一般100-300）
         /// </summary>
-        public int MinThreads { get; set; }
+        public int MinThreads { get; set; } = 100;
         /// <summary>
         /// 是否返回客户端错误信息(自定义异常和未处理异常的message)
         /// </summary>

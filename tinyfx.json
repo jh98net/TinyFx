@@ -77,7 +77,7 @@
     "ProjectId": "demo_app", //项目标识确保唯一
     "Description": "demo项目", //项目描述
     "ConsoleLogLevel": "Debug", //LogUtil.ConsoleLogger的日志级别，如果使用Serilog则无效
-    "MinThreads": 200, // 线程池最小线程数，0-采用默认值
+    "MinThreads": 100, // 线程池最小线程数，0-采用默认值
     "ResponseErrorMessage": true, //是否返回客户端错误信息(自定义异常和未处理异常的message)
     "ResponseErrorDetail": true, //是否返回客户端异常详细信息（exception序列化信息）
     "IsDebugEnvironment": true //否测试环境
