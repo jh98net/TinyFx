@@ -50,26 +50,28 @@ namespace TinyFx.Data.SqlSugarEx
             return query.ToListAsync();
         }
 
-        public Task<TResult> GetMax<TResult>(Expression<Func<T, TResult>> expression, Expression<Func<T, bool>> whereExpression = null)
+        public Task<TResult> GetMaxAsync<TResult>(Expression<Func<T, TResult>> expression, Expression<Func<T, bool>> whereExpression = null)
         {
             var query = Context.Queryable<T>();
             if (whereExpression != null)
                 query.Where(whereExpression);
             return query.MaxAsync(expression);
         }
-        public Task<TResult> GetMin<TResult>(Expression<Func<T, TResult>> expression, Expression<Func<T, bool>> whereExpression = null)
+        public Task<TResult> GetMinAsync<TResult>(Expression<Func<T, TResult>> expression, Expression<Func<T, bool>> whereExpression = null)
         {
             var query = Context.Queryable<T>();
             if (whereExpression != null)
                 query.Where(whereExpression);
             return query.MinAsync(expression);
         }
-        public Task<TResult> GetSum<TResult>(Expression<Func<T, TResult>> expression, Expression<Func<T, bool>> whereExpression = null)
+        public Task<TResult> GetSumAsync<TResult>(Expression<Func<T, TResult>> expression, Expression<Func<T, bool>> whereExpression = null)
         {
             var query = Context.Queryable<T>();
             if (whereExpression != null)
                 query.Where(whereExpression);
             return query.SumAsync(expression);
         }
+    
+
     }
 }

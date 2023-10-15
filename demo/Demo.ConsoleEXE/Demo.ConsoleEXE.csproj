@@ -8,6 +8,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="temp\**" />
+	  <EmbeddedResource Remove="temp\**" />
+	  <None Remove="temp\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\..\src\TinyFx.Data.MySql\TinyFx.Data.MySql.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Extensions.EPPlus\TinyFx.Extensions.EPPlus.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Extensions.IDGenerator\TinyFx.Extensions.IDGenerator.csproj" />
@@ -30,10 +36,6 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<DependentUpon>appsettings.json</DependentUpon>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Folder Include="temp\" />
 	</ItemGroup>
 
 </Project>

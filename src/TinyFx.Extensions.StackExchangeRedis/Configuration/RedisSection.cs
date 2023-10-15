@@ -33,6 +33,12 @@ namespace TinyFx.Configuration
         /// key: namespace value: connectionStringName
         /// </summary>
         public ConcurrentDictionary<string, string> ConnectionStringNamespaces = new ConcurrentDictionary<string, string>();
+
+        /// <summary>
+        /// 发布订阅DLL
+        /// </summary>
+        public List<string> ConsumerAssemblies { get; set; } = new List<string>();
+
         /// <summary>
         /// 配置绑定
         /// </summary>
@@ -56,6 +62,11 @@ namespace TinyFx.Configuration
                     }
                 }
             }
+
+            ConsumerAssemblies.Clear();
+            ConsumerAssemblies = configuration?.GetSection("ConsumerAssemblies")
+                .Get<List<string>>()??new List<string>();
+            
             if (string.IsNullOrEmpty(DefaultConnectionStringName) && ConnectionStrings.Count == 1)
                 DefaultConnectionStringName = ConnectionStrings.First().Key;
         }

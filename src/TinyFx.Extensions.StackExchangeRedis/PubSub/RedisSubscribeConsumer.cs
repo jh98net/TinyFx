@@ -12,11 +12,14 @@ using static StackExchange.Redis.RedisChannel;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
+    public interface IRedisSubscribeConsumer
+    { 
+    }
     /// <summary>
     /// redis发布订阅的消费基类(队列消息将广播执行)
     /// </summary>
     /// <typeparam name="TMessage"></typeparam>
-    public abstract class RedisSubscribeConsumer<TMessage>
+    public abstract class RedisSubscribeConsumer<TMessage>: IRedisSubscribeConsumer
          where TMessage : class
     {
         public virtual string ConnectionStringName { get; }

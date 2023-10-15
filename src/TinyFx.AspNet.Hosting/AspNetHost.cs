@@ -24,11 +24,12 @@ namespace TinyFx
             // 设置启动Serilog
             builder.Host.UseTinyFx();
             builder.Host.UseSerilogEx();
-            builder.Host.UseSqlSugarEx();
             builder.Host.UseAutoMapperEx();
             builder.Host.UseRedisEx();
+            builder.Host.UseSqlSugarEx();
             builder.Host.UseRabbitMQEx();
             builder.Host.UseIDGenerator();
+            builder.Host.UseDbCachingEx();
             return builder;
         }
         internal static string MapEnvPath()

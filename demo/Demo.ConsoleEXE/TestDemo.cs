@@ -47,6 +47,7 @@ using TinyFx.Demos.Patterns.Behavioral;
 using TinyFx.Extensions.RabbitMQ;
 using EasyNetQ.Topology;
 using Renci.SshNet.Messages;
+using System.Linq.Expressions;
 
 namespace TinyFx.Demos
 {
@@ -54,20 +55,15 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var count = 3;
-            for (int idx = 0; idx < 10; idx++)
-            {
-                var item = 0;
-                if (idx < count)
-                {
-                    item = idx + 1;
-                }
-                else
-                {
-                    item = idx % count + 1;
-                }
-                Console.WriteLine(item);
-            }
+            var v = Get<string>();
+            Console.WriteLine(v);
+        }
+        private string Get<T>(params object[] routingDbKeys)
+        {
+            var key = routingDbKeys.Length == 0
+                ? typeof(T).FullName
+                : $"{typeof(T).FullName}|{string.Join('|', routingDbKeys)}";
+            return key;
         }
     }
 }

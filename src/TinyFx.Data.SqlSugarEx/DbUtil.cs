@@ -16,6 +16,12 @@ namespace TinyFx.Data.SqlSugarEx
     {
         #region Db
         /// <summary>
+        /// 默认configId
+        /// </summary>
+        public static string DefaultConfigId
+            => GlobalDb.CurrentConnectionConfig.ConfigId;
+
+        /// <summary>
         /// 全局DB，仅用作事务
         /// </summary>
         internal static SqlSugarScope GlobalDb
@@ -25,7 +31,7 @@ namespace TinyFx.Data.SqlSugarEx
                 return (SqlSugarScope)DIUtil.GetRequiredService<ISqlSugarClient>();
             }
         }
-        
+
         /// <summary>
         /// 获取DB
         /// </summary>

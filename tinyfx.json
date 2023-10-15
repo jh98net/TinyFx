@@ -275,7 +275,8 @@
         "SerializeMode": "json",
         "NamespaceMap": "" // 映射此redis连接的命名空间集合，用;分隔
       }
-    }
+    },
+    "ConsumerAssemblies": [] //用于自动注册消费类
   },
 
   // 消息队列 (TinyFx.Extensions.RabbitMQ.RabbitMQSection)

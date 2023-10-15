@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis;
+using TinyFx.Extensions.StackExchangeRedis.PubSub;
 using TinyFx.Logging;
 
 namespace TinyFx
@@ -36,8 +37,8 @@ namespace TinyFx
                         options.ConfigurationOptions = ConfigurationOptions.Parse(connStr);
                         options.InstanceName = $"{ConfigUtil.Project.ProjectId}:";
                     });
+                    services.AddSingleton((sp)=> new ConsumerContainer(section.ConsumerAssemblies));
                 });
-                
                 //redis 资源释放
                 TinyFxHost.RegisterLifetimeEvent(new RedisHostLifetimeEvent());
             }

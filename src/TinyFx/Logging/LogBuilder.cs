@@ -11,6 +11,12 @@ using TinyFx.Collections;
 
 namespace TinyFx.Logging
 {
+    public class LogBuilder<T> : LogBuilder
+    {
+        public LogBuilder(LogLevel level = LogLevel.Debug)
+            : base(level, typeof(T).Name)
+        { }
+    }
     /// <summary>
     /// 结构化日志构建器
     /// </summary>

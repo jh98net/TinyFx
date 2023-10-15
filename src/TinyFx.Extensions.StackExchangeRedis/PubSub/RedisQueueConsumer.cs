@@ -11,11 +11,14 @@ using static StackExchange.Redis.RedisChannel;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
+    public interface IRedisQueueConsumer
+    { 
+    }
     /// <summary>
     /// redis队列消费基类(队列消息将被阻塞且单一执行)
     /// </summary>
     /// <typeparam name="TMessage"></typeparam>
-    public abstract class RedisQueueConsumer<TMessage>
+    public abstract class RedisQueueConsumer<TMessage>: IRedisQueueConsumer
          where TMessage : class
     {
         public virtual string ConnectionStringName { get; }
