@@ -1,12 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using SqlSugar;
-using System;
-using System.Collections.Generic;
+﻿using SqlSugar;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Logging;
 
@@ -57,8 +50,10 @@ namespace TinyFx.Data.SqlSugarEx
                     var config = provider.GetConfig(configId);
                     if (config == null)
                         throw new Exception($"配置SqlSugar:ConnectionStrings没有找到连接。name:{section.DefaultConnectionStringName} type:{provider.GetType().FullName}");
+                    config.LanguageType = LanguageType.Chinese;
                     GlobalDb.AddConnection(config);
                     ret = GlobalDb.GetConnection(configId);
+                    InitDb(ret, config);
                 }
             }
             return ret;
@@ -72,7 +67,7 @@ namespace TinyFx.Data.SqlSugarEx
         #endregion
 
         #region 事务
-        public static void BeginTran(IsolationLevel level) => GlobalDb.BeginTran(level);
+        public static void BeginTran(IsolationLevel level = IsolationLevel.ReadCommitted) => GlobalDb.BeginTran(level);
         public static void CommitTran() => GlobalDb.CommitTran();
         public static void RollbackTran() => GlobalDb.RollbackTran();
         public static Task BeginTranAsync(IsolationLevel level) => GlobalDb.BeginTranAsync(level);
@@ -93,5 +88,52 @@ namespace TinyFx.Data.SqlSugarEx
             return new Repository<T>(routingDbKeys);
         }
         #endregion
+
+        #region Utils
+        internal static void InitDb(ISqlSugarClient db, ConnectionElement config)
+        {
+            if (config.LogEnabled)
+            {
+                db.Aop.OnLogExecuting = (sql, paras) =>
+                {
+                    var tmpSql = sql;
+                    if (ConfigUtil.IsDebugEnvironment || config.LogSqlMode == 2)
+                        tmpSql = UtilMethods.GetSqlString(config.DbType, sql, paras);
+                    else if (config.LogSqlMode == 1)
+                        tmpSql = UtilMethods.GetNativeSql(sql, paras);
+
+                    var log = LogUtil.GetContextLog();
+                    log.AddMessage($"SQL执行前");
+                    log.AddField("SqlSugar.ConfigId", config.ConfigId);
+                    log.AddField("SqlSugar.SQL", tmpSql);
+                    if (!log.IsContextLog)
+                        log.SetFlag("SqlSugar").Save();
+                };
+                db.Aop.OnLogExecuted = (sql, paras) =>
+                {
+                    var log = LogUtil.GetContextLog();
+                    log.AddMessage($"SQL执行时间: {db.Ado.SqlExecutionTime.TotalMilliseconds}ms");
+                    if (!log.IsContextLog)
+                        log.SetFlag("SqlSugar").Save();
+                };
+            }
+            db.Aop.OnError = (ex) =>
+            {
+                var tmpSql = ex.Sql;
+                if (ConfigUtil.IsDebugEnvironment || config.LogSqlMode == 2)
+                    tmpSql = UtilMethods.GetSqlString(config.DbType, ex.Sql, (SugarParameter[])ex.Parametres);
+                else if (config.LogSqlMode == 1)
+                    tmpSql = UtilMethods.GetNativeSql(ex.Sql, (SugarParameter[])ex.Parametres);
+
+                var log = LogUtil.GetContextLog();
+                log.AddMessage("SQL执行异常");
+                log.AddField("SqlSugar.ConfigId", config.ConfigId);
+                log.AddField("SqlSugar.SQL", tmpSql);
+                log.AddException(ex);
+                if (!log.IsContextLog)
+                    log.SetFlag("SqlSugar").Save();
+            };
+        }
     }
+    #endregion
 }

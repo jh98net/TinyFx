@@ -15,12 +15,18 @@ namespace TinyFx.Data.SqlSugarEx
         {
             var routingProvider = DIUtil.GetRequiredService<IDbRoutingProvider>();
             var configId = routingProvider.RouteDb<T>(routingDbKeys);
-            var db = DbUtil.GetDb(configId).CopyNew();
+            var db = DbUtil.GetDb(configId);
             //
             db.CurrentConnectionConfig.ConfigureExternalServices.SplitTableService
                 = routingProvider.RouteTable<T>();
             base.Context = db;
         }
+
+        public void SetCommandTimeout(int timeoutSeconds)
+        {
+            base.Context.Ado.CommandTimeOut = timeoutSeconds;
+        }
+
         public virtual async Task<List<T>> GetByIdsAsync(List<T> keysList)
         {
             return await Context.Queryable<T>().WhereClassByPrimaryKey(keysList).ToListAsync();

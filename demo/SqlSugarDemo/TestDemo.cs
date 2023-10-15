@@ -12,19 +12,18 @@ namespace SqlSugarDemo
     {
         public override async Task Execute()
         {
-            var mo = DbUtil.CreateRepository<Sdemo_userEO>();
-            var item = mo.GetSingle(x => x.UserID==2);
-            //var mo = DbUtil.CreateRepository<Sdemo_classEO>();
-            //var item = mo.Update(it => new()
-            //{
-            //    Name = ""
-            //}, it => it.Name != null);
-            //mo.Update(it => new() 
-            //{
+            try
+            {
+                DbUtil.BeginTran();
+                var mo1 = DbUtil.CreateRepository<Sdemo_classEO>();
+                var mo2 = DbUtil.CreateRepository<Sv_demo_user_courseEO>();
 
-            //}, it=>it.Name != null);
-
-            Console.WriteLine(item.ClassID);
+                DbUtil.CommitTran();
+            }
+            catch (Exception ex)
+            {
+                DbUtil.RollbackTran();
+            }
         }
     }
 

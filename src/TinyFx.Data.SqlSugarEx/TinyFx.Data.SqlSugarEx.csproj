@@ -7,9 +7,7 @@
     <Version>3.8.46</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SqlSugarCore" Version="5.1.4.110" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\libs\SqlSugar\SqlSugar.csproj" />
     <ProjectReference Include="..\TinyFx\TinyFx.csproj" />
   </ItemGroup>
 </Project>

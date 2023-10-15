@@ -40,47 +40,10 @@ namespace TinyFx
                         var config = provider.GetConfig(section.DefaultConnectionStringName);
                         if (config == null)
                             throw new Exception($"配置SqlSugar:ConnectionStrings没有找到默认连接。name:{section.DefaultConnectionStringName} type:{provider.GetType().FullName}");
+                        config.LanguageType = LanguageType.Chinese;
                         var ret = new SqlSugarScope(config, db =>
                         {
-                            if (config.LogEnabled)
-                            {
-                                db.Aop.OnLogExecuting = (sql, paras) =>
-                                {
-                                    var tmpSql = sql;
-                                    if (ConfigUtil.IsDebugEnvironment || config.LogSqlMode == 2)
-                                        tmpSql = UtilMethods.GetSqlString(config.DbType, sql, paras);
-                                    else if (config.LogSqlMode == 1)
-                                        tmpSql = UtilMethods.GetNativeSql(sql, paras);
-
-                                    var log = LogUtil.GetContextLog();
-                                    log.AddMessage($"SQL执行前");
-                                    log.AddField("SQL", tmpSql);
-                                    if (!log.IsContextLog)
-                                        log.SetFlag("SqlSugar").Save();
-                                };
-                                db.Aop.OnLogExecuted = (sql, paras) =>
-                                {
-                                    var log = LogUtil.GetContextLog();
-                                    log.AddMessage($"SQL执行时间: {db.Ado.SqlExecutionTime.TotalMilliseconds}ms");
-                                    if (!log.IsContextLog)
-                                        log.SetFlag("SqlSugar").AddField("SQL", sql).Save();
-                                };
-                            }
-                            db.Aop.OnError = (ex) =>
-                            {
-                                var tmpSql = ex.Sql;
-                                if (ConfigUtil.IsDebugEnvironment || config.LogSqlMode == 2)
-                                    tmpSql = UtilMethods.GetSqlString(config.DbType, ex.Sql, (SugarParameter[])ex.Parametres);
-                                else if (config.LogSqlMode == 1)
-                                    tmpSql = UtilMethods.GetNativeSql(ex.Sql, (SugarParameter[])ex.Parametres);
-
-                                var log = LogUtil.GetContextLog();
-                                log.AddMessage("SQL执行异常");
-                                log.AddField("SQL", tmpSql);
-                                log.AddException(ex);
-                                if (!log.IsContextLog)
-                                    log.SetFlag("SqlSugar").Save();
-                            };
+                            DbUtil.InitDb(db, config);
                         });
                         if (!config.SlaveEnabled)
                             ret.Ado.IsDisableMasterSlaveSeparation = true;
