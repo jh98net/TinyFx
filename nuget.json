@@ -13,6 +13,7 @@
     "src\\TinyFx.AspNet.Hosting\\TinyFx.AspNet.Hosting.csproj",
     "src\\TinyFx.Data.MySql\\TinyFx.Data.MySql.csproj",
     "src\\TinyFx.Data.SqlSugarEx\\TinyFx.Data.SqlSugarEx.csproj",
+    "src\\TinyFx.DbCaching\\TinyFx.DbCaching.csproj",
     "src\\TinyFx.Extensions.AutoMapper\\TinyFx.Extensions.AutoMapper.csproj",
     "src\\TinyFx.Extensions.CommandLineParser\\TinyFx.Extensions.CommandLineParser.csproj",
     "src\\TinyFx.Extensions.DotNetty\\TinyFx.Extensions.DotNetty.csproj",
