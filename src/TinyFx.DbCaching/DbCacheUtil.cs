@@ -8,7 +8,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using TinyFx.Data.SqlSugarEx;
+using TinyFx.Data.SqlSugar;
 using TinyFx.Extensions.StackExchangeRedis;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Description>TinyFx SqlSugar封装</Description>
+		<Version>3.8.46</Version>
+	</PropertyGroup>
+	<ItemGroup>
+	  <PackageReference Include="SqlSugarCore" Version="5.1.4.110" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\TinyFx\TinyFx.csproj" />
+	</ItemGroup>
+</Project>

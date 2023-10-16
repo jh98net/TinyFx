@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Caching;
-using TinyFx.Data.SqlSugarEx;
+using TinyFx.Data.SqlSugar;
 using TinyFx.Extensions.StackExchangeRedis;
 
 namespace TinyFx.DbCaching

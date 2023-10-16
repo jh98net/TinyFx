@@ -8,7 +8,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TinyFx.AspNet\TinyFx.AspNet.csproj" />
-    <ProjectReference Include="..\TinyFx.Data.SqlSugarEx\TinyFx.Data.SqlSugarEx.csproj" />
     <ProjectReference Include="..\TinyFx.DbCaching\TinyFx.DbCaching.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.AutoMapper\TinyFx.Extensions.AutoMapper.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.IDGenerator\TinyFx.Extensions.IDGenerator.csproj" />
