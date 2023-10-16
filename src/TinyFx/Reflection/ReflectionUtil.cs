@@ -11,6 +11,7 @@ using System.Collections;
 using System.Linq.Expressions;
 using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
+using TinyFx.Logging;
 
 namespace TinyFx.Reflection
 {
@@ -375,6 +376,23 @@ namespace TinyFx.Reflection
         {
             return type.FullName.StartsWith("System.");
             //return (type == typeof(object) || Type.GetTypeCode(type) != TypeCode.Object);
+        }
+
+        public static List<Type> GetAssemblyTypes(string asm, bool ignoreError, string msg = null)
+        {
+            if (!string.IsNullOrEmpty(asm) && asm.EndsWith(".dll"))
+            {
+                var file = asm;
+                if (!File.Exists(file))
+                    file = Path.Combine(AppContext.BaseDirectory, asm);
+                if (File.Exists(file))
+                    return Assembly.LoadFrom(file).GetTypes().ToList();
+            }
+            msg ??= $"加载Assembly获取Types失败。name:{asm}";
+            if (!ignoreError)
+                throw new Exception(msg);
+            LogUtil.Warning(msg);
+            return new List<Type>();
         }
     }
 }

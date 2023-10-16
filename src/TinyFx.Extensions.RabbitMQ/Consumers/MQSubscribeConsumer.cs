@@ -28,6 +28,8 @@ namespace TinyFx.Extensions.RabbitMQ
         /// 是否启用高可用(仅MQ群集使用)
         /// </summary>
         protected virtual bool UseQuorum { get; set; }
+        protected virtual int RetryCount { get; set; } = 2;
+        protected virtual int RetryInterval { get; set; } = 200;
 
         private string _subscriptionId;
         public string SubscriptionId
@@ -54,24 +56,28 @@ namespace TinyFx.Extensions.RabbitMQ
         }
         public override async Task Register()
         {
-            Func<TMessage, CancellationToken, Task> onMessage = (msg, cancellationToken) =>
+            Func<TMessage, CancellationToken, Task> onMessage = async (msg, cancellationToken) =>
             {
-                return OnMessage(msg, cancellationToken).ContinueWith(task =>
+                var tmpMsg = msg as IMQMessage;
+                try
                 {
-                    var tmpMsg = msg as IMQMessage;
-                    if (task.IsCompleted && !task.IsFaulted)
+                    await TinyFxUtil.RetryExecuteAsync(async () =>
+                    {
+                        await OnMessage(msg, cancellationToken);
+                    }, RetryCount, RetryInterval);
+                    if (DIUtil.GetService<RabbitMQSection>()?.LogEnabled ?? false)
                     {
                         LogUtil.Debug("[MQ] SubscribeConsumer消费成功。{MQConsumerType}{MQMessageType}{MQMessageId}{MQElaspedTime}"
                             , GetType().FullName, msg.GetType().FullName, tmpMsg?.MessageId, GetElaspedTime(tmpMsg?.Timestamp));
                     }
-                    else
-                    {
-                        LogUtil.Error(task.Exception, "[MQ] SubscribeConsumer消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}{MQElaspedTime}"
-                            , GetType().FullName, SerializerUtil.SerializeJson(msg), SubscriptionId, tmpMsg?.MessageId, GetElaspedTime(tmpMsg?.Timestamp));
-                        // 不要catch，此异常将导致被发送到默认错误代理队列 error queue (broker)
-                        throw new EasyNetQException($"SubscribeConsumer消费异常。ConsumerType:{GetType().FullName} MessageId:{tmpMsg?.MessageId}");
-                    }
-                });
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.Error(ex, "[MQ] SubscribeConsumer消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}{MQElaspedTime}"
+                        , GetType().FullName, SerializerUtil.SerializeJson(msg), SubscriptionId, tmpMsg?.MessageId, GetElaspedTime(tmpMsg?.Timestamp));
+                    // 不要catch，此异常将导致被发送到默认错误代理队列 error queue (broker)
+                    throw new EasyNetQException($"SubscribeConsumer消费异常。ConsumerType:{GetType().FullName} MessageId:{tmpMsg?.MessageId}");
+                }
             };
             Action<ISubscriptionConfiguration> configureAction = (x) =>
             {

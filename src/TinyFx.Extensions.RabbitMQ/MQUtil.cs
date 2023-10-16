@@ -4,7 +4,6 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text;
 using TinyFx.Configuration;
-using TinyFx.Extensions.RabbitMQ.Consumers;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
 using TinyFx.Net;
@@ -126,8 +125,8 @@ namespace TinyFx.Extensions.RabbitMQ
         }
         #endregion
 
-        #region FuturePublish
-        public static void FuturePublish<TMessage>(TMessage message, TimeSpan delay, Action<IFuturePublishConfiguration> configAction = null, string connectionStringName = null)
+        #region SchedulePublish
+        public static void SchedulePublish<TMessage>(TMessage message, TimeSpan delay, Action<IFuturePublishConfiguration> configAction = null, string connectionStringName = null)
             where TMessage : IMQMessage, new()
         {
             var data = GetSchedulerData(message, configAction, connectionStringName);
@@ -143,7 +142,7 @@ namespace TinyFx.Extensions.RabbitMQ
         /// <param name="configAction"></param>
         /// <param name="connectionStringName"></param>
         /// <returns></returns>
-        public static Task FuturePublishAsync<TMessage>(TMessage message, TimeSpan delay, Action<IFuturePublishConfiguration> configAction = null, string connectionStringName = null)
+        public static Task SchedulePublishAsync<TMessage>(TMessage message, TimeSpan delay, Action<IFuturePublishConfiguration> configAction = null, string connectionStringName = null)
             where TMessage : IMQMessage, new()
         {
             var data = GetSchedulerData(message, configAction, connectionStringName);

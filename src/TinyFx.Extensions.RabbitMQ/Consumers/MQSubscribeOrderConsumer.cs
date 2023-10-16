@@ -4,14 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
 using TinyFx.Text;
 
-namespace TinyFx.Extensions.RabbitMQ.Consumers
+namespace TinyFx.Extensions.RabbitMQ
 {
     /// <summary>
-    /// MQ消息订阅(Publish => Subscribe)模式的顺序执行的Subscribe基类，可支持负载和高可用
+    /// MQ消息订阅(Publish => Subscribe)模式的消费者基类
+    /// 支持
+    /// 的顺序执行的Subscribe基类，可支持负载和高可用
     /// 注意服务实例数量不能小于Queue数量
     /// 用于接收使用MQUtil.Publish方法发布的MQ消息
     /// 继承的子类名建议使用MQSub结尾
@@ -34,6 +37,8 @@ namespace TinyFx.Extensions.RabbitMQ.Consumers
         /// 是否启用高可用(仅MQ群集使用)
         /// </summary>
         protected virtual bool UseQuorum { get; set; }
+        protected virtual int RetryCount { get; set; } = 2;
+        protected virtual int RetryInterval { get; set; } = 200;
 
         private string _subscriptionId;
         public string SubscriptionId
@@ -68,23 +73,27 @@ namespace TinyFx.Extensions.RabbitMQ.Consumers
         public bool IsRegisted { get; private set; }
         public override async Task Register()
         {
-            Func<TMessage, CancellationToken, Task> onMessage = (msg, cancellationToken) =>
+            Func<TMessage, CancellationToken, Task> onMessage = async(msg, cancellationToken) =>
             {
-                return OnMessage(msg, cancellationToken).ContinueWith(task =>
+                try
                 {
-                    if (task.IsCompleted && !task.IsFaulted)
+                    await TinyFxUtil.RetryExecuteAsync(async () =>
+                    {
+                        await OnMessage(msg, cancellationToken);
+                    }, RetryCount, RetryInterval);
+                    if (DIUtil.GetService<RabbitMQSection>()?.LogEnabled ?? false)
                     {
                         LogUtil.Debug("[MQ] MQSubscribeOrderConsumer消费成功。{MQConsumerType}{MQMessageType}{MQMessageId}{MQElaspedTime}"
                             , GetType().FullName, msg.GetType().FullName, msg.MessageId, GetElaspedTime(msg.Timestamp));
                     }
-                    else
-                    {
-                        LogUtil.Error(task.Exception, "[MQ] MQSubscribeOrderConsumer消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}{MQElaspedTime}"
-                            , GetType().FullName, SerializerUtil.SerializeJson(msg), SubscriptionId, msg.MessageId, GetElaspedTime(msg.Timestamp));
-                        // 不要catch，此异常将导致被发送到默认错误代理队列 error queue (broker)
-                        throw new EasyNetQException($"MQSubscribeOrderConsumer消费异常。ConsumerType:{GetType().FullName} MessageId:{msg.MessageId}");
-                    }
-                });
+                }
+                catch (Exception ex)
+                {
+                    LogUtil.Error(ex, "[MQ] MQSubscribeOrderConsumer消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}{MQElaspedTime}"
+                        , GetType().FullName, SerializerUtil.SerializeJson(msg), SubscriptionId, msg.MessageId, GetElaspedTime(msg.Timestamp));
+                    // 不要catch，此异常将导致被发送到默认错误代理队列 error queue (broker)
+                    throw new EasyNetQException($"MQSubscribeOrderConsumer消费异常。ConsumerType:{GetType().FullName} MessageId:{msg.MessageId}");
+                }
             };
             Action<ISubscriptionConfiguration> configureAction = (x) =>
             {
@@ -121,5 +130,17 @@ namespace TinyFx.Extensions.RabbitMQ.Consumers
         void SetQueueIndex(int value);
         bool IsRegisted { get; }
         Task Register();
+    }
+public enum MQSubscribeMode
+    {
+        /// <summary>
+        /// 普通模式: 单一Queue，多个消费者
+        /// </summary>
+        Normal,
+        /// <summary>
+        /// SAC模式: 每个queue同时只有1个消费者
+        /// </summary>
+        SAC,
+
     }
 }

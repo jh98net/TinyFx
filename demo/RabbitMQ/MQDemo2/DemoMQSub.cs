@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Extensions.RabbitMQ;
-using TinyFx.Extensions.RabbitMQ.Consumers;
 
 namespace MQDemo2
 {

@@ -16,7 +16,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
     { 
     }
     /// <summary>
-    /// redis发布订阅的消费基类(队列消息将广播执行)
+    /// redis发布订阅的消费基类(队列消息将多播发送)
     /// </summary>
     /// <typeparam name="TMessage"></typeparam>
     public abstract class RedisSubscribeConsumer<TMessage>: IRedisSubscribeConsumer

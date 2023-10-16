@@ -35,6 +35,10 @@ namespace TinyFx.Configuration
         public ConcurrentDictionary<string, string> ConnectionStringNamespaces = new ConcurrentDictionary<string, string>();
 
         /// <summary>
+        /// 忽略消费类的assembly异常
+        /// </summary>
+        public bool IgnoreAssemblyError { get; set; }
+        /// <summary>
         /// 发布订阅DLL
         /// </summary>
         public List<string> ConsumerAssemblies { get; set; } = new List<string>();

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using TinyFx.Collections;
 using TinyFx.Configuration;
-using TinyFx.Extensions.RabbitMQ.Consumers;
 using TinyFx.Net;
 using TinyFx.Reflection;
 
@@ -63,7 +62,8 @@ namespace TinyFx.Extensions.RabbitMQ
                 return;
             foreach (var asm in section.ConsumerAssemblies)
             {
-                var types = from t in GetAssemblyTypes(asm)
+                var msg = $"加载配置文件RRabbitMQ:ConsumerAssemblies中项失败。name:{asm}";
+                var types = from t in ReflectionUtil.GetAssemblyTypes(asm, section.IgnoreAssemblyError, msg)
                             where t.IsSubclassOfGeneric(typeof(MQSubscribeConsumer<>))
                                 || t.IsSubclassOfGeneric(typeof(MQRespondConsumer<,>))
                                 || t.IsSubclassOfGeneric(typeof(MQReceiveConsumer))
@@ -106,17 +106,6 @@ namespace TinyFx.Extensions.RabbitMQ
                     }
                 }
             }
-        }
-        private static Type[] GetAssemblyTypes(string asm)
-        {
-            if (string.IsNullOrEmpty(asm) || !asm.EndsWith(".dll"))
-                throw new Exception($"配置文件RabbitMQ:ConsumerAssemblies中的项不能为空并且需要以.dll结尾。");
-            var file = asm;
-            if (!File.Exists(file))
-                file = Path.Combine(AppContext.BaseDirectory, asm);
-            if (!File.Exists(file))
-                throw new Exception($"配置文件RabbitMQ:ConsumerAssemblies中{asm}不存在:{file}");
-            return Assembly.LoadFrom(file).GetTypes();
         }
         #endregion
 
