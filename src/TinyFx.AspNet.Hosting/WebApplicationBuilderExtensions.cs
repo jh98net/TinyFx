@@ -35,6 +35,7 @@ using Nacos.V2;
 using Nacos.V2.DependencyInjection;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Hosting;
+using TinyFx.Timer;
 
 namespace TinyFx
 {
@@ -54,6 +55,7 @@ namespace TinyFx
                 });
             }
             AddAspNetEx(builder.Services, type);
+            builder.AddTimer(builder.Configuration, ConfigUtil.Project?.ProjectId);
             return builder;
         }
         private static IServiceCollection AddAspNetEx(this IServiceCollection services, AspNetType type)
@@ -89,7 +91,7 @@ namespace TinyFx
 
                 .AddOptions()                   // IOptions
                 .AddHttpClient()                // IHttpClientFactory
-                .AddHttpContextAccessor();      // IHttpContextAccessor
+                .AddHttpContextAccessor().AddOAuth();      // IHttpContextAccessor
         }
         public static IServiceCollection AddRequestLoggingEx(this IServiceCollection services)
         {
