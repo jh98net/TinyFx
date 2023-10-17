@@ -276,8 +276,7 @@
         "NamespaceMap": "" // 映射此redis连接的命名空间集合，用;分隔
       }
     },
-    "IgnoreAssemblyError": false, // 忽略消费类dll异常
-    "ConsumerAssemblies": [] //用于自动注册消费类
+    "ConsumerAssemblies": [] //用于自动注册消费类,+开头不存在不异常
   },
 
   // 消息队列 (TinyFx.Extensions.RabbitMQ.RabbitMQSection)
@@ -309,15 +308,12 @@
         "ConnectionString": "host=192.168.1.120:5672;username=root;password=root;virtualHost=/;publisherConfirms=true;prefetchcount=50;requestedHeartbeat=60;timeout=10"
       }
     },
-    "IgnoreAssemblyError": false, // 忽略消费类dll异常
-    "ConsumerAssemblies": [] //用于自动注册消费类
+    "ConsumerAssemblies": [] //用于自动注册消费类,+开头不存在不异常
   },
 
   // AutoMapper (TinyFx.Extensions.AutoMapper.AutoMapperSection)
   "AutoMapper": {
-    "Assemblies": [
-      "" // 需要自动注册的dll名称
-    ]
+    "Assemblies": [] // 需要自动注册的dll名称,+开头不存在不异常
   },
 
   //jwt验证 (TinyFx.Security.JwtAuthSection)

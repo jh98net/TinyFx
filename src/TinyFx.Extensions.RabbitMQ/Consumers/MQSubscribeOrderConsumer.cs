@@ -131,7 +131,7 @@ namespace TinyFx.Extensions.RabbitMQ
         bool IsRegisted { get; }
         Task Register();
     }
-public enum MQSubscribeMode
+    public enum MQSubscribeMode
     {
         /// <summary>
         /// 普通模式: 单一Queue，多个消费者

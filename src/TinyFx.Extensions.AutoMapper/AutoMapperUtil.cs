@@ -36,7 +36,8 @@ namespace TinyFx.Extensions.AutoMapper
             foreach (var asm in section.Assemblies)
             {
                 if (string.IsNullOrEmpty(asm)) continue;
-                var file = asm;
+                var ignoreAssemblyError = asm.StartsWith('+');
+                var file = asm.TrimStart('+');
                 if (!File.Exists(file))
                     file = Path.Combine(AppContext.BaseDirectory, asm);
                 if (File.Exists(file))
@@ -44,7 +45,7 @@ namespace TinyFx.Extensions.AutoMapper
                 else
                 {
                     var msg = $"配置文件AutoMapper:Assemblies中不存在。name: {asm}";
-                  if (!section.IgnoreAssemblyError)
+                  if (!ignoreAssemblyError)
                         throw new Exception(msg);
                     LogUtil.Warning(msg);
                 }

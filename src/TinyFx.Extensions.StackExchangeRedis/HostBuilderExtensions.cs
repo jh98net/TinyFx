@@ -37,7 +37,7 @@ namespace TinyFx
                         options.ConfigurationOptions = ConfigurationOptions.Parse(connStr);
                         options.InstanceName = $"{ConfigUtil.Project.ProjectId}:";
                     });
-                    services.AddSingleton((sp)=> new ConsumerContainer(section.ConsumerAssemblies, section.IgnoreAssemblyError));
+                    services.AddSingleton((sp)=> new ConsumerContainer(section.ConsumerAssemblies));
                 });
                 //redis 资源释放
                 TinyFxHost.RegisterLifetimeEvent(new RedisHostLifetimeEvent());

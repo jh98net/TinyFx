@@ -62,8 +62,11 @@ namespace TinyFx.Extensions.RabbitMQ
                 return;
             foreach (var asm in section.ConsumerAssemblies)
             {
+                if (string.IsNullOrEmpty(asm)) continue;
                 var msg = $"加载配置文件RRabbitMQ:ConsumerAssemblies中项失败。name:{asm}";
-                var types = from t in ReflectionUtil.GetAssemblyTypes(asm, section.IgnoreAssemblyError, msg)
+                var ignoreAssemblyError = asm.StartsWith('+');
+                var file = asm.TrimStart('+');
+                var types = from t in ReflectionUtil.GetAssemblyTypes(file, ignoreAssemblyError, msg)
                             where t.IsSubclassOfGeneric(typeof(MQSubscribeConsumer<>))
                                 || t.IsSubclassOfGeneric(typeof(MQRespondConsumer<,>))
                                 || t.IsSubclassOfGeneric(typeof(MQReceiveConsumer))

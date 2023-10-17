@@ -27,10 +27,6 @@ namespace TinyFx.Configuration
         public string DefaultConnectionStringName { get; set; }
         public Dictionary<string, MQConnectionStringElement> ConnectionStrings = new();
         /// <summary>
-        /// 忽略消费类的assembly异常
-        /// </summary>
-        public bool IgnoreAssemblyError { get; set; }
-        /// <summary>
         /// ReceiveConsumer、RespondConsumer、SubscribeConsumer所在的程序集,用于消费注册
         /// </summary>
         public List<string> ConsumerAssemblies { get; set; } = new List<string>();
