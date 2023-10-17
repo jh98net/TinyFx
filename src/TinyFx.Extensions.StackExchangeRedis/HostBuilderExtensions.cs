@@ -40,18 +40,14 @@ namespace TinyFx
                     services.AddSingleton((sp)=> new ConsumerContainer(section.ConsumerAssemblies));
                 });
                 //redis 资源释放
-                TinyFxHost.RegisterLifetimeEvent(new RedisHostLifetimeEvent());
+                TinyFxHost.RegisterOnStopped(()=> 
+                {
+                    RedisUtil.ReleaseAllRedis();
+                    return Task.CompletedTask;
+                });
             }
             LogUtil.Trace("Redis 配置启动");
             return builder;
-        }
-    }
-    public class RedisHostLifetimeEvent : DefaultHostLifetimeEvent
-    {
-        public override Task OnStopped()
-        {
-            RedisUtil.ReleaseAllRedis();
-            return Task.CompletedTask;
         }
     }
 }

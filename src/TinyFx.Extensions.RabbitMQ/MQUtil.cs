@@ -9,6 +9,7 @@ using TinyFx.Logging;
 using TinyFx.Net;
 using TinyFx.Security;
 using TinyFx.Text;
+using static Google.Protobuf.Reflection.FieldOptions.Types;
 
 namespace TinyFx.Extensions.RabbitMQ
 {
@@ -20,7 +21,7 @@ namespace TinyFx.Extensions.RabbitMQ
     {
         internal static MQContainer _container => DIUtil.GetRequiredService<MQContainer>();
         private static ConcurrentDictionary<Type, Attribute> _messageAttrDict = new();
-        internal static ConcurrentDictionary<Type, SubscribeOrderService> _subOrderSvcDict = new();
+        internal static ConcurrentDictionary<Type, SubscribeQueueService> _subQueueSvcDict = new();
 
         #region Methods
         public static IBus GetBus(string connectionStringName = null)
@@ -35,11 +36,6 @@ namespace TinyFx.Extensions.RabbitMQ
         {
             return (T)_messageAttrDict.GetOrAdd(messageType, messageType.GetCustomAttribute<T>());
         }
-        private static SubscribeOrderService GetSubscribeOrderService<TMessage>()
-        {
-            var msgType = typeof(TMessage);
-            return _subOrderSvcDict.GetOrAdd(msgType, new SubscribeOrderService(msgType));
-        }
         #endregion
 
         #region Publish => Subscribe （消费类继承SubscribeConsumer）
@@ -48,13 +44,13 @@ namespace TinyFx.Extensions.RabbitMQ
         /// </summary>
         /// <typeparam name="TMessage"></typeparam>
         /// <param name="message"></param>
-        /// <param name="hashId"></param>
+        /// <param name="routingKey"></param>
         /// <param name="configAction"></param>
         /// <param name="connectionStringName"></param>
-        public static void Publish<TMessage>(TMessage message, string hashId = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
-            where TMessage : IMQMessage, new()
+        public static void Publish<TMessage>(TMessage message, string routingKey = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
+            where TMessage : new()
         {
-            configAction = GetPublishAction<TMessage>(hashId, configAction, connectionStringName).GetTaskResult();
+            configAction = GetPublishAction<TMessage>(routingKey, configAction, connectionStringName).GetTaskResult();
             var data = GetPubSubData(message, configAction, connectionStringName);
             GetBus(data.ConnStrName)
                 .PubSub.Publish(data.Message, data.Action);
@@ -64,27 +60,30 @@ namespace TinyFx.Extensions.RabbitMQ
         /// </summary>
         /// <typeparam name="TMessage"></typeparam>
         /// <param name="message"></param>
-        /// <param name="hashId"></param>
+        /// <param name="routingKey"></param>
         /// <param name="configAction"></param>
         /// <param name="connectionStringName"></param>
         /// <returns></returns>
-        public static async Task PublishAsync<TMessage>(TMessage message, string hashId = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
-            where TMessage : IMQMessage, new()
+        public static async Task PublishAsync<TMessage>(TMessage message, string routingKey = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
+            where TMessage : new()
         {
-            configAction = await GetPublishAction<TMessage>(hashId, configAction, connectionStringName);
+            configAction = await GetPublishAction<TMessage>(routingKey, configAction, connectionStringName);
             var data = GetPubSubData(message, configAction, connectionStringName);
             await GetBus(data.ConnStrName)
                 .PubSub.PublishAsync(data.Message, data.Action);
 
         }
-        private static async Task<Action<IPublishConfiguration>> GetPublishAction<TMessage>(string hashId, Action<IPublishConfiguration> configAction, string connectionStringName)
+        private static async Task<Action<IPublishConfiguration>> GetPublishAction<TMessage>(string routingKey, Action<IPublishConfiguration> configAction, string connectionStringName)
         {
-            if (string.IsNullOrEmpty(hashId))
+            if (string.IsNullOrEmpty(routingKey))
                 return configAction;
-            var queueCount = await GetSubscribeOrderService<TMessage>().GetQueueCount();
-            if (queueCount > 0)
+            var msgType = typeof(TMessage);
+            var queueCount = await _subQueueSvcDict
+                .GetOrAdd(msgType, new SubscribeQueueService(msgType))
+                .GetQueueCount();
+            if (queueCount > 1)
             {
-                var topic = $"hash.{MurmurHash3.Hash32(hashId) % queueCount + 1}";
+                var topic = $"hash.{MurmurHash3.Hash32(routingKey) % queueCount + 1}";
                 configAction = configAction == null
                     ? (c) => { c.WithTopic(topic); }
                 : (c) =>
@@ -93,15 +92,18 @@ namespace TinyFx.Extensions.RabbitMQ
                     c.WithTopic(topic);
                 };
             }
-            else
-                LogUtil.Debug("MQUtil.Publish时，传入hashId时不存在多个queue。{MQMessageType}", typeof(TMessage).FullName);
+            //else
+            //    LogUtil.Debug("MQUtil.Publish时，传入routingKey时不存在多个queue。{MQMessageType}", typeof(TMessage).FullName);
             return configAction;
         }
         private static (TMessage Message, Action<IPublishConfiguration> Action, string ConnStrName) GetPubSubData<TMessage>(TMessage message, Action<IPublishConfiguration> configAction, string connectionStringName = null)
-              where TMessage : IMQMessage, new()
+            where TMessage : new()
         {
-            message.MessageId = ObjectId.NewId();
-            message.Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            if (message is IMessage)
+            {
+                ((IMQMessage)message).MessageId = ObjectId.NewId();
+                ((IMQMessage)message).Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            }
             var attr = GetMessageAttribute<MQPublishMessageAttribute>(message);
             var action = GetPublishConfiguration(attr, configAction);
             var connStrName = connectionStringName ?? attr?.ConnectionStringName;
@@ -127,7 +129,7 @@ namespace TinyFx.Extensions.RabbitMQ
 
         #region SchedulePublish
         public static void SchedulePublish<TMessage>(TMessage message, TimeSpan delay, Action<IFuturePublishConfiguration> configAction = null, string connectionStringName = null)
-            where TMessage : IMQMessage, new()
+            where TMessage : new()
         {
             var data = GetSchedulerData(message, configAction, connectionStringName);
             GetBus(data.ConnStrName)
@@ -143,17 +145,20 @@ namespace TinyFx.Extensions.RabbitMQ
         /// <param name="connectionStringName"></param>
         /// <returns></returns>
         public static Task SchedulePublishAsync<TMessage>(TMessage message, TimeSpan delay, Action<IFuturePublishConfiguration> configAction = null, string connectionStringName = null)
-            where TMessage : IMQMessage, new()
+            where TMessage : new()
         {
             var data = GetSchedulerData(message, configAction, connectionStringName);
             return GetBus(data.ConnStrName)
                 .Scheduler.FuturePublishAsync(data.Message, delay, data.Action);
         }
         private static (TMessage Message, Action<IFuturePublishConfiguration> Action, string ConnStrName) GetSchedulerData<TMessage>(TMessage message, Action<IFuturePublishConfiguration> configAction, string connectionStringName = null)
-              where TMessage : IMQMessage, new()
+            where TMessage : new()
         {
-            message.MessageId = ObjectId.NewId();
-            message.Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            if (message is IMessage)
+            {
+                ((IMQMessage)message).MessageId = ObjectId.NewId();
+                ((IMQMessage)message).Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            }
             var attr = GetMessageAttribute<MQPublishMessageAttribute>(message);
             var action = GetFuturePublishConfiguration(attr, configAction);
             var connStrName = connectionStringName ?? attr?.ConnectionStringName;
@@ -180,7 +185,7 @@ namespace TinyFx.Extensions.RabbitMQ
 
         #region Request => Respond（响应类继承RespondConsumer）
         public static MQResponseResult<TResponse> Request<TMessage, TResponse>(TMessage message, Action<IRequestConfiguration> configAction = null, string connectionStringName = null)
-             where TMessage : IMQMessage, new()
+            where TMessage : new()
         {
             var data = GetRpcData(message, configAction, connectionStringName);
             return GetBus(data.ConnStrName)
@@ -196,17 +201,20 @@ namespace TinyFx.Extensions.RabbitMQ
         /// <param name="connectionStringName"></param>
         /// <returns></returns>
         public static Task<MQResponseResult<TResponse>> RequestAsync<TMessage, TResponse>(TMessage message, Action<IRequestConfiguration> configAction = null, string connectionStringName = null)
-              where TMessage : IMQMessage, new()
+            where TMessage : new()
         {
             var data = GetRpcData(message, configAction, connectionStringName);
             return GetBus(data.ConnStrName)
                 .Rpc.RequestAsync<TMessage, MQResponseResult<TResponse>>(data.Message, data.Action);
         }
         private static (TMessage Message, Action<IRequestConfiguration> Action, string ConnStrName) GetRpcData<TMessage>(TMessage message, Action<IRequestConfiguration> configAction, string connectionStringName = null)
-              where TMessage : IMQMessage, new()
+              where TMessage : new()
         {
-            message.MessageId = ObjectId.NewId();
-            message.Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            if (message is IMessage)
+            {
+                ((IMQMessage)message).MessageId = ObjectId.NewId();
+                ((IMQMessage)message).Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            }
             var attr = GetMessageAttribute<MQRequestMessageAttribute>(message);
             var action = GetRequestConfiguration(attr, configAction);
             var connStrName = connectionStringName ?? attr?.ConnectionStringName;
@@ -240,7 +248,7 @@ namespace TinyFx.Extensions.RabbitMQ
         /// <param name="configAction"></param>
         /// <param name="connectionStringName"></param>
         public static void Send<TMessage>(TMessage message, string queueName = null, Action<ISendConfiguration> configAction = null, string connectionStringName = null)
-              where TMessage : IMQMessage, new()
+            where TMessage : new()
         {
             var data = GetSendReceiveData(message, queueName, configAction, connectionStringName);
             GetBus(data.ConnStrName)
@@ -257,17 +265,20 @@ namespace TinyFx.Extensions.RabbitMQ
         /// <param name="connectionStringName"></param>
         /// <returns></returns>
         public static Task SendAsync<TMessage>(TMessage message, string queueName = null, Action<ISendConfiguration> configAction = null, string connectionStringName = null)
-              where TMessage : IMQMessage, new()
+            where TMessage : new()
         {
             var data = GetSendReceiveData(message, queueName, configAction, connectionStringName);
             return GetBus(data.ConnStrName)
                 .SendReceive.SendAsync(data.Queue, data.Message, data.Action);
         }
         private static (TMessage Message, Action<ISendConfiguration> Action, string ConnStrName, string Queue) GetSendReceiveData<TMessage>(TMessage message, string queueName = null, Action<ISendConfiguration> configAction = null, string connectionStringName = null)
-               where TMessage : IMQMessage, new()
+               where TMessage : new()
         {
-            message.MessageId = ObjectId.NewId();
-            message.Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            if (message is IMessage)
+            {
+                ((IMQMessage)message).MessageId = ObjectId.NewId();
+                ((IMQMessage)message).Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            }
             var attr = GetMessageAttribute<MQSendMessageAttribute>(message);
             var action = GetSendConfiguration(attr, configAction);
             var connStrName = connectionStringName ?? attr?.ConnectionStringName;

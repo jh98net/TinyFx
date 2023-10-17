@@ -9,9 +9,11 @@ using TinyFx.Extensions.RabbitMQ;
 
 namespace MQDemo2
 {
-    public class DemoMQSub1 : MQSubscribeOrderConsumer<SubMsg>
+    public class DemoMQSub1 : MQSubscribeConsumer<SubMsg>
     {
         public override int QueueCount => 4;
+
+        public override MQSubscribeMode SubscribeMode => throw new NotImplementedException();
 
         protected override void Configuration(ISubscriptionConfiguration x)
         {

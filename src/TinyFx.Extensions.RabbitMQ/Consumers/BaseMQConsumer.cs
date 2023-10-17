@@ -9,13 +9,13 @@ using TinyFx.Configuration;
 
 namespace TinyFx.Extensions.RabbitMQ
 {
-    public abstract class MQConsumerBase : IMQConsumer
+    public abstract class BaseMQConsumer : IMQConsumer
     {
         public MQBusData BusData { get; }
         protected IBus Bus => BusData!.Bus;
         protected MQConnectionStringElement ConnectionStringElement => BusData!.Element;
 
-        public MQConsumerBase()
+        public BaseMQConsumer()
         {
             var connStrName = GetConnectionStringName();
             BusData = MQUtil.GetBusData(connStrName);
@@ -25,10 +25,12 @@ namespace TinyFx.Extensions.RabbitMQ
         /// </summary>
         /// <returns></returns>
         protected virtual string GetConnectionStringName() { return null; }
+
         public abstract Task Register();
 
         public virtual void Dispose()
         {
+            Bus?.Dispose();
         }
 
         protected long GetElaspedTime(long? beginTimestamp)
@@ -36,6 +38,7 @@ namespace TinyFx.Extensions.RabbitMQ
     }
     public interface IMQConsumer : IDisposable
     {
+        MQBusData BusData { get; }
         Task Register();
     }
 }

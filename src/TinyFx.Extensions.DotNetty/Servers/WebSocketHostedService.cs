@@ -19,9 +19,6 @@ namespace TinyFx.Extensions.DotNetty
 
         public WebSocketHostedService(IHostApplicationLifetime appLifetime)
         {
-            //appLifetime.ApplicationStopping.Register(async () => {
-            //    await StopAsync(appLifetime.ApplicationStopping);
-            //});
             _server = new WebSocketServer();
             _options = DIUtil.GetRequiredService<ServerOptions>();
             Sessions = DotNettyUtil.Sessions;

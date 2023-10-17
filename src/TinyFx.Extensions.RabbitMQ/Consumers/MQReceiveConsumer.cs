@@ -13,7 +13,7 @@ namespace TinyFx.Extensions.RabbitMQ
     /// 用于接收使用MQUtil.Send方法发出的MQ消息
     /// 继承的子类名建议使用MQRcv结尾
     /// </summary>
-    public abstract class MQReceiveConsumer : MQConsumerBase
+    public abstract class MQReceiveConsumer : BaseMQConsumer
     {
         private IDisposable _dispos;
         /// <summary>

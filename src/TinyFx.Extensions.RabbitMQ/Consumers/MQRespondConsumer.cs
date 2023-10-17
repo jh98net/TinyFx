@@ -19,8 +19,8 @@ namespace TinyFx.Extensions.RabbitMQ
     /// </summary>
     /// <typeparam name="TRequest"></typeparam>
     /// <typeparam name="TResponse"></typeparam>
-    public abstract class MQRespondConsumer<TRequest, TResponse> : MQConsumerBase
-        where TRequest : IMQMessage, new()
+    public abstract class MQRespondConsumer<TRequest, TResponse> : BaseMQConsumer
+        where TRequest : new()
     {
         private IDisposable _dispos;
 
@@ -37,19 +37,20 @@ namespace TinyFx.Extensions.RabbitMQ
             Func<TRequest, CancellationToken, Task<MQResponseResult<TResponse>>> responder = async (request, cancellationToken) =>
             {
                 var ret = new MQResponseResult<TResponse>();
-                ret.MessageId = request.MessageId;
+                var req = request as IMQMessage;
+                ret.MessageId = req?.MessageId;
                 try
                 {
                     ret.Result = await Respond(request, cancellationToken);
                     ret.Success = true;
-                    ret.MessageElasped = GetElaspedTime(request.Timestamp);
+                    ret.MessageElasped = GetElaspedTime(req?.Timestamp);
                     LogUtil.Debug("[MQ] RespondConsumer消费成功。{MQConsumerType}{MQRequestType}{MQMessageId}{MQElaspedTime}"
-                        , GetType().FullName, request.GetType().FullName, request.MessageId, ret.MessageElasped);
+                        , GetType().FullName, request.GetType().FullName, req?.MessageId, ret.MessageElasped);
                 }
                 catch (Exception ex)
                 {
                     ret.Success = false;
-                    ret.MessageElasped = GetElaspedTime(request.Timestamp);
+                    ret.MessageElasped = GetElaspedTime(req?.Timestamp);
                     var exc = ExceptionUtil.GetException<CustomException>(ex);
                     if (exc != null)
                     {
@@ -62,7 +63,7 @@ namespace TinyFx.Extensions.RabbitMQ
                         ret.Message = ex.Message;
                         ret.Exception = ex;
                         LogUtil.Error(ex, "[MQ] RespondConsumer消费异常。{MQConsumerType}{MQRequestBody}{MQMessageId}{MQElaspedTime}"
-                            , GetType().FullName, SerializerUtil.SerializeJson(request), request.MessageId, ret.MessageElasped);
+                            , GetType().FullName, SerializerUtil.SerializeJson(request), req?.MessageId, ret.MessageElasped);
                     }
                 }
                 return ret;
