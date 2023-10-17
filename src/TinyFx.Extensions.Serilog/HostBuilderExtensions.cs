@@ -60,7 +60,7 @@ namespace TinyFx
             LogUtil.Trace("Serilog 配置启动");
             return builder;
         }
-        private static void SetELKSinkIndexFormat(IConfiguration config)
+        private static bool SetELKSinkIndexFormat(IConfiguration config)
         {
             var elk = config["Serilog:WriteTo:ELKSink:Name"];
             if (!string.IsNullOrEmpty(elk))
@@ -71,7 +71,9 @@ namespace TinyFx
                     config["Serilog:WriteTo:ELKSink:Args:indexFormat"] 
                         = $"idx-{ConfigUtil.Project.ProjectId.Replace('.', '_')}-{{0:yyyy.MM.dd}}";
                 }
+                return true;
             }
+            return false;
         }
     }
 }

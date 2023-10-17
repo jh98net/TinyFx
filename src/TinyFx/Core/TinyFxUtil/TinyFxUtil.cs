@@ -22,143 +22,46 @@ namespace TinyFx
     /// </summary>
     public static partial class TinyFxUtil
     {
-
-        #region RetryOnFault
         /// <summary>
-        /// 尝试并等待检查函数返回true
+        /// 尝试执行指定次数
         /// </summary>
-        /// <param name="function"></param>
+        /// <param name="func"></param>
         /// <param name="maxTries"></param>
         /// <param name="interval"></param>
-        /// <returns>true:检查函数返回true，false：在指定次数下没有返回true</returns>
-        public static bool RetryAndWait(Func<bool> function, int maxTries, int interval)
-        {
-            for (int i = 0; i < maxTries; i++)
-            {
-                if (function())
-                    return true;
-                Thread.Sleep(interval);
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// 尝试执行指定次数，如仍然异常则抛出
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="function">执行的方法</param>
-        /// <param name="maxTries">尝试次数</param>
-        /// <param name="interval">尝试执行间隔，毫秒</param>
-        /// <param name="faultCalcback">出现异常时回调方法</param>
         /// <returns></returns>
-        public static T RetryOnFault<T>(Func<T> function, int maxTries, int interval, Action<int, Exception> faultCalcback)
+        public static async Task RetryExecuteAsync(Func<Task> func, int maxTries, int interval)
         {
             for (int i = 0; i < maxTries; i++)
             {
                 try
                 {
-                    return function();
+                    await func();
                 }
-                catch (Exception ex)
+                catch 
                 {
-                    faultCalcback?.Invoke(i, ex);
                     if (i == maxTries - 1)
-                    {
-                        ex.Data.Add("TinyFxUtil.RetryOnFault", $"调用方法{function.Method.Name}并重试{maxTries}次仍错误。");
                         throw;
-                    }
-                    Thread.Sleep(interval);
-                }
-            }
-            return default;
-        }
-        /// <summary>
-        /// 尝试执行指定次数，如仍然异常则抛出
-        /// </summary>
-        /// <param name="action">执行的方法</param>
-        /// <param name="maxTries">尝试次数</param>
-        /// <param name="interval">尝试执行间隔，毫秒</param>
-        /// <param name="faultCalcback">出现异常时回调方法</param>
-        /// <returns></returns>
-        public static void RetryOnFault(Action action, int maxTries, int interval, Action<int, Exception> faultCalcback)
-        {
-            for (int i = 0; i < maxTries; i++)
-            {
-                try
-                {
-                    action();
-                }
-                catch (Exception ex)
-                {
-                    faultCalcback?.Invoke(i, ex);
-                    if (i == maxTries - 1)
-                    {
-                        ex.Data.Add("TinyFxUtil.RetryOnFault", $"调用方法{action.Method.Name}并重试{maxTries}次仍错误。");
-                        throw;
-                    }
-                    Thread.Sleep(interval);
-                }
-            }
-        }
-        /// <summary>
-        /// 尝试执行指定次数，如仍然异常则抛出
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="function">执行的方法</param>
-        /// <param name="maxTries">尝试次数</param>
-        /// <param name="interval">尝试执行间隔，毫秒</param>
-        /// <param name="faultCalcback">出现异常时回调方法</param>
-        /// <returns></returns>
-        public static async Task<T> RetryOnFaultAsync<T>(Func<Task<T>> function, int maxTries, int interval, Action<int, Exception> faultCalcback)
-        {
-            for (int i = 0; i < maxTries; i++)
-            {
-                try
-                {
-                    return await function().ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    faultCalcback?.Invoke(i, ex);
-                    if (i == maxTries - 1)
-                    {
-                        ex.Data.Add("TinyFxUtil.RetryOnFault", $"调用方法{function.Method.Name}并重试{maxTries}次仍错误。");
-                        throw;
-                    }
-                    await Task.Delay(interval);
-                }
-            }
-            return default;
-        }
-
-        /// <summary>
-        /// 尝试执行指定次数，如仍然异常则抛出
-        /// </summary>
-        /// <param name="function">执行的方法</param>
-        /// <param name="maxTries">尝试次数</param>
-        /// <param name="interval">尝试执行间隔，毫秒</param>
-        /// <param name="faultCalcback">出现异常时回调方法</param>
-        public static async Task RetryOnFaultAsync(Func<Task> function, int maxTries, int interval, Action<int, Exception> faultCalcback)
-        {
-            for (int i = 0; i < maxTries; i++)
-            {
-                try
-                {
-                    await function().ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    faultCalcback?.Invoke(i, ex);
-                    if (i == maxTries - 1)
-                    {
-                        ex.Data.Add("TinyFxUtil.RetryOnFault", $"调用方法{function.Method.Name}并重试{maxTries}次仍错误。");
-                        throw;
-                    }
                     await Task.Delay(interval);
                 }
             }
         }
-        #endregion
+        public static async Task<T> RetryExecuteAsync<T>(Func<Task<T>> func, int maxTries, int interval)
+        {
+            for (int i = 0; i < maxTries; i++)
+            {
+                try
+                {
+                    return await func();
+                }
+                catch
+                {
+                    if (i == maxTries - 1)
+                        throw;
+                    await Task.Delay(interval);
+                }
+            }
+            throw new NotImplementedException();
+        }
 
         #region Other
         private static ConcurrentDictionary<Type, bool> _nullableTypeCache = new ConcurrentDictionary<Type, bool>();

@@ -15,15 +15,6 @@ namespace TinyFx
 {
     public static class TinyFxHost
     {
-        internal static List<IHostLifetimeEvent> LifetimeEvents = new();
-        /// <summary>
-        /// 添加应用程序生命周期事件类
-        /// </summary>
-        /// <param name="lifetimeEvent"></param>
-        public static void RegisterLifetimeEvent(IHostLifetimeEvent lifetimeEvent)
-        {
-            LifetimeEvents.Add(lifetimeEvent);
-        }
         /// <summary>
         /// 创建默认Host并UseTinyFx
         /// </summary>
@@ -34,12 +25,15 @@ namespace TinyFx
             return Host.CreateDefaultBuilder(args)
                 .UseTinyFx();
         }
-
+        /// <summary>
+        /// 阻塞运行
+        /// </summary>
+        /// <param name="args"></param>
         public static void Run(string[] args = null)
             => CreateBuilder(args).Build().Run();
 
         /// <summary>
-        /// 运行配置了TinyFx的Host
+        /// 阻塞运行
         /// </summary>
         /// <param name="args"></param>
         /// <returns></returns>
@@ -48,10 +42,41 @@ namespace TinyFx
             return CreateBuilder(args).Build().RunAsync();
         }
 
+        #region IHostApplicationLifetime
         /// <summary>
         /// 应用程序生命周期事件的通知
         /// </summary>
         public static IHostApplicationLifetime ApplicationLifetime
             => DIUtil.GetRequiredService<IHostApplicationLifetime>();
+        internal static List<Func<Task>> OnStartedEvents = new();
+        internal static List<Func<Task>> OnStoppingEvents = new();
+        internal static List<Func<Task>> OnStoppedEvents = new();
+
+        public static void Register(ITinyFxHostEvent @event)
+        {
+            OnStartedEvents.Add(@event.OnStarted);
+            OnStoppingEvents.Add(@event.OnStopping);
+            OnStoppedEvents.Add(@event.OnStopped);
+        }
+
+        public static void RegisterOnStarted(Func<Task> func)
+        {
+            OnStartedEvents.Add(func);
+        }
+        public static void RegisterOnStopping(Func<Task> func)
+        {
+            OnStoppingEvents.Add(func);
+        }
+        public static void RegisterOnStopped(Func<Task> func)
+        {
+            OnStoppedEvents.Add(func);
+        }
+        #endregion
+    }
+    public interface ITinyFxHostEvent
+    {
+        Task OnStarted();
+        Task OnStopping();
+        Task OnStopped();
     }
 }

@@ -41,7 +41,7 @@ namespace TinyFx
                     return ret;
                 });
                 services.AddDistributedMemoryCache();
-                services.AddHostedService<LifetimeEventsHostedService>();
+                services.AddHostedService<TinyFxHostLifetimeHostedService>();
                 // DI
                 DIUtil.SetServices(services);
                 LogUtil.Rebuild();

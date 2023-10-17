@@ -55,15 +55,10 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var v = Get<string>();
-            Console.WriteLine(v);
-        }
-        private string Get<T>(params object[] routingDbKeys)
-        {
-            var key = routingDbKeys.Length == 0
-                ? typeof(T).FullName
-                : $"{typeof(T).FullName}|{string.Join('|', routingDbKeys)}";
-            return key;
+            var t1 = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            await Task.Delay(1000);
+            var t2 = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            Console.WriteLine(t2-t1);
         }
     }
 }

@@ -8,11 +8,16 @@ using TinyFx.Extensions.StackExchangeRedis;
 
 namespace TinyFx.Extensions.RabbitMQ
 {
-    internal class SubscribeOrderService
+    internal class SubscribeQueueService
     {
         private string _connectionStringName { get; }
         private Type _messageType { get; }
-        public SubscribeOrderService(Type messageType)
+        /// <summary>
+        /// QueueCount内存缓存过期时间毫秒。默认5秒
+        /// </summary>
+        public int QueueCountTimeout { get; set; } = 5000;
+
+        public SubscribeQueueService(Type messageType)
         {
             var section = ConfigUtil.GetSection<RabbitMQSection>();
             _connectionStringName = section!.RedisConnectionStringName;
@@ -20,22 +25,24 @@ namespace TinyFx.Extensions.RabbitMQ
         }
 
         #region QueueCount
-        public async Task<int> GetQueueCount()
+        private int _queueCount = 1;
+        private long _lastTimestamp = 0;
+        public async Task<int> GetQueueCount(bool useCache = true)
         {
+            // 缓存
+            if (useCache && DateTime.UtcNow.UtcDateTimeToTimestamp(false) - _lastTimestamp < QueueCountTimeout)
+                return _queueCount;
+
             var redisKey = GetQueueCountRedisKey();
             var client = RedisUtil.CreateStringClient<int>(redisKey, _connectionStringName);
-            return await client.GetOrDefaultAsync(0);
+            _queueCount = await client.GetOrDefaultAsync(1);
+            _lastTimestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            return _queueCount;
         }
         public async Task SetQueueCount(int count)
         {
             var redisKey = GetQueueCountRedisKey();
             var client = RedisUtil.CreateStringClient<int>(redisKey, _connectionStringName);
-            var curr = await client.GetOrDefaultAsync(0);
-            if (curr > 0)
-            {
-                // 取小的
-                count = Math.Min(count, curr);
-            }
             await client.SetAsync(count);
         }
         private string _queueCountRedisKey;
@@ -46,26 +53,18 @@ namespace TinyFx.Extensions.RabbitMQ
         #region QueueIndex
         public async Task<long> GetQueueIndex()
         {
-            var redisKey = GetQueueIndexRedisKey();
+            var redisKey = GetRedisKey("QueueIndex");
             var client = RedisUtil.CreateStringClient<long>(redisKey, _connectionStringName);
             var ret = await client.IncrementAsync(1);
-            if (ret > long.MaxValue - 1000)
-            {
-                await client.SetAsync(0);
-                ret = 0;
-            }
             return ret;
         }
-        private string _queueIndexRedisKey;
-        private string GetQueueIndexRedisKey()
-            => _queueIndexRedisKey ??= GetRedisKey("QueueIndex");
         private string GetRedisKey(string flag)
         {
             var ret = _messageType.FullName;
             var idx = ret.LastIndexOf('.');
             if (idx >= 0)
                 ret = ret.Substring(idx + 1);
-            return $"_MQSubOrders:{ret}:{flag}";
+            return $"_MQSubQueue:{ret}:{flag}";
         }
         #endregion
 

@@ -11,6 +11,8 @@ namespace MQDemo3
 {
     public class DemoMQSub : MQSubscribeConsumer<SubMsg>
     {
+        public override MQSubscribeMode SubscribeMode => throw new NotImplementedException();
+
         protected override void Configuration(ISubscriptionConfiguration x)
         {
         }

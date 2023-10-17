@@ -48,12 +48,13 @@ namespace TinyFx
             app.UseSwaggerEx();
             app.UseInternalMap();
 
-            app.Lifetime.ApplicationStarted.Register(() =>
+            TinyFxHost.RegisterOnStarted(() => 
             {
                 LogUtil.Info("ProjectId: {ProjectId} Environment: {EnvironmentString} URL: {Urls}"
                     , ConfigUtil.Project?.ProjectId
                     , ConfigUtil.EnvironmentString
                     , app.Urls);
+                return Task.CompletedTask;
             });
             app.UseTimer();
             return app;

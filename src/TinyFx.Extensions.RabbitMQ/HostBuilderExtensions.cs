@@ -26,6 +26,7 @@ namespace TinyFx
                     services.AddSingleton(new MQContainer());
                     services.AddHostedService<MQHostedService>();
                 });
+
                 LogUtil.Trace($"RabbitMQ 配置启动");
             }
             return builder;

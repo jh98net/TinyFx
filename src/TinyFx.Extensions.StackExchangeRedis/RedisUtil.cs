@@ -333,6 +333,26 @@ namespace TinyFx.Extensions.StackExchangeRedis
 
         #region Utils
         /// <summary>
+        /// 查询指定redis指定database指定pattern的keys
+        /// </summary>
+        /// <param name="pattern"></param>
+        /// <param name="connectionStringName"></param>
+        /// <param name="database"></param>
+        /// <returns></returns>
+        public static async Task<List<string>> ScanKeysAsync(RedisValue pattern = default, string connectionStringName = null, int database = -1)
+        {
+            var ret = new List<string>();
+            foreach (var endPoint in GetEndPoints(connectionStringName))
+            {
+                var server = GetRedis(connectionStringName).GetServer(endPoint);
+                var keys = server.KeysAsync(database, pattern);
+                await foreach (var key in keys)
+                    ret.Add(key.ToString());
+            }
+            return ret;
+        }
+
+        /// <summary>
         /// 获得服务器节点信息
         /// </summary>
         /// <param name="connectionStringName"></param>

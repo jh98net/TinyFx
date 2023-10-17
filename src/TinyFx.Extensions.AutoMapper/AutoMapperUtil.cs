@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using TinyFx.Configuration;
+using TinyFx.Logging;
 
 namespace TinyFx.Extensions.AutoMapper
 {
@@ -32,17 +33,21 @@ namespace TinyFx.Extensions.AutoMapper
                 return false;
 
             var asms = new List<Assembly>();
-            foreach (var item in section.Assemblies)
+            foreach (var asm in section.Assemblies)
             {
-                if (string.IsNullOrEmpty(item)) continue;
-                if (item.Contains(','))
-                    asms.Add(Assembly.Load(item));
+                if (string.IsNullOrEmpty(asm)) continue;
+                var ignoreAssemblyError = asm.StartsWith('+');
+                var file = asm.TrimStart('+');
+                if (!File.Exists(file))
+                    file = Path.Combine(AppContext.BaseDirectory, asm);
+                if (File.Exists(file))
+                    asms.Add(Assembly.LoadFrom(file));
                 else
                 {
-                    var file = Path.Combine(AppContext.BaseDirectory, item);
-                    if (!File.Exists(file))
-                        throw new Exception($"配置TinyFx:AutoMapper:Assemblies中文件不存在。File: {file}");
-                    asms.Add(Assembly.LoadFrom(file));
+                    var msg = $"配置文件AutoMapper:Assemblies中不存在。name: {asm}";
+                  if (!ignoreAssemblyError)
+                        throw new Exception(msg);
+                    LogUtil.Warning(msg);
                 }
             }
             if (asms.Count == 0)
