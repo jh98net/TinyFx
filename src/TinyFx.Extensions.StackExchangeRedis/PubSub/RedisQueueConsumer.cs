@@ -21,13 +21,6 @@ namespace TinyFx.Extensions.StackExchangeRedis
     public abstract class RedisQueueConsumer<TMessage>: IRedisQueueConsumer
          where TMessage : class
     {
-        public virtual string ConnectionStringName { get; }
-        public virtual PatternMode PatternMode { get; } = PatternMode.Auto;
-        /// <summary>
-        /// 消息是否并发处理
-        /// </summary>
-        public virtual bool IsConcurrentProcess { get; } = true;
-
         private ConnectionMultiplexer _redis;
         private IDatabase _database;
         private ISubscriber _sub;
@@ -35,11 +28,27 @@ namespace TinyFx.Extensions.StackExchangeRedis
         private ChannelMessageQueue _queue;
         private string _queueKey;
 
-        public RedisQueueConsumer()
+        public string ConnectionStringName { get; }
+        public PatternMode PatternMode { get; }
+        /// <summary>
+        /// 消息是否并发处理
+        /// </summary>
+        public virtual bool IsConcurrentProcess { get; } = true;
+        protected virtual string GetConnectionStringName()
         {
             var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
-            ConnectionStringName = attr?.ConnectionStringName;
-            PatternMode = attr?.PatternMode ?? PatternMode.Auto;
+            return attr?.ConnectionStringName;
+        }
+        protected virtual PatternMode GetPatternMode()
+        {
+            var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
+            return attr?.PatternMode?? PatternMode.Auto;
+        }
+
+        public RedisQueueConsumer()
+        {
+            ConnectionStringName = GetConnectionStringName();
+            PatternMode = GetPatternMode();
 
             _redis = RedisUtil.GetRedis(ConnectionStringName);
             _database = _redis.GetDatabase();

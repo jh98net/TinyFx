@@ -10,5 +10,27 @@
         "Namespace": "SqlSugarDemo.DAL"
       }
     ]
-  }
+  },
+  "OrmGen": [
+    {
+      "ConnStrInfo": {
+        "Provider": 7,
+        "ConnectionString": "server=192.168.1.120;port=3306;database=demo;uid=root;pwd=root;sslmode=Disabled;allowuservariables=True;AllowLoadLocalInfile=true;Pooling=false",
+        "DataSource": "192.168.1.120",
+        "Database": "demo",
+        "FileName": null,
+        "UserID": "root",
+        "Password": "root",
+        "ConnectTimeout": 15
+      },
+      "OrmSettings": {
+        "Namespaces": "SqlSugarDemo.DAL",
+        "OutputPath": "TinyFx\\"
+      },
+      "DbInitSettings": {
+        "CreateSqlFile": null,
+        "InitDataFile": null
+      }
+    }
+  ]
 }

@@ -22,23 +22,32 @@ namespace TinyFx.Extensions.StackExchangeRedis
     public abstract class RedisSubscribeConsumer<TMessage>: IRedisSubscribeConsumer
          where TMessage : class
     {
-        public virtual string ConnectionStringName { get; }
-        public virtual PatternMode PatternMode { get; } = PatternMode.Auto;
-        /// <summary>
-        /// 消息是否并发处理
-        /// </summary>
-        public virtual bool IsConcurrentProcess { get; } = true;
-
         private ISubscriber _sub;
         private RedisChannel _channel;
         private ChannelMessageQueue _queue;
 
-        public RedisSubscribeConsumer()
+        public string ConnectionStringName { get; }
+        public PatternMode PatternMode { get; }
+        /// <summary>
+        /// 消息是否并发处理
+        /// </summary>
+        public virtual bool IsConcurrentProcess { get; } = true;
+        protected virtual string GetConnectionStringName()
         {
             var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
-            ConnectionStringName = attr?.ConnectionStringName;
-            PatternMode = attr?.PatternMode ?? PatternMode.Auto;
+            return attr?.ConnectionStringName;
+        }
+        protected virtual PatternMode GetPatternMode()
+        {
+            var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
+            return attr?.PatternMode ?? PatternMode.Auto;
+        }
 
+
+        public RedisSubscribeConsumer()
+        {
+            ConnectionStringName = GetConnectionStringName();
+            PatternMode = GetPatternMode();
 
             _sub = RedisUtil.GetRedis(ConnectionStringName).GetSubscriber();
             _channel = RedisUtil.GetRedisChannel<TMessage>(PatternMode);
