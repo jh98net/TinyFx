@@ -9,6 +9,7 @@ using App.Metrics.ReservoirSampling.Uniform;
 using App.Metrics.Timer;
 using AspectCore.DependencyInjection;
 using AspectCore.DynamicProxy;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace TinyFx.Timer
@@ -42,11 +43,16 @@ namespace TinyFx.Timer
 
             try
             {
+                if (metrics == null)
+                {
+                    metrics = context.ServiceProvider.GetService<IMetrics>();
+                }
 
-                //https://github.com/AppMetrics/AppMetrics/issues/407
+                if (logger == null)
+                {
+                    logger = context.ServiceProvider.GetService<ILogger<TimerInterceptorAttribute>>();
+                }
 
-                //var s= MyProperty.CreateMetricReporter("asdfasf", ILoggerFactory);
-                //var metrics = context.ServiceProvider.GetService(typeof(IMetricsRoot)) as IMetricsRoot;
                 TimerOptions SampleTimer = new TimerOptions
                 {
                     Reservoir = () => new DefaultAlgorithmRReservoir(),
@@ -61,7 +67,6 @@ namespace TinyFx.Timer
                 var methodName = context.ServiceMethod.Name;
                 SampleTimer.Name = className + "." + methodName;
                 //System.Console.WriteLine($"{className}, {methodName}");
-                //log.LogInformation("Asdf");
                 using (metrics.Measure.Timer.Time(SampleTimer))
                 {
                   //  await Task.Delay(1000 * new Random().Next(1, 30));
