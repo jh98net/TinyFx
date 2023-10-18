@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis;
-using TinyFx.Extensions.StackExchangeRedis.PubSub;
 using TinyFx.Logging;
 
 namespace TinyFx

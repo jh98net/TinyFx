@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using TinyFx.Logging;
 using TinyFx.Reflection;
 
-namespace TinyFx.Extensions.StackExchangeRedis.PubSub
+namespace TinyFx.Extensions.StackExchangeRedis
 {
     internal class ConsumerContainer
     {
@@ -29,7 +29,9 @@ namespace TinyFx.Extensions.StackExchangeRedis.PubSub
                             select t;
                 foreach (var type in types)
                 {
-                    _list.Add(ReflectionUtil.CreateInstance(type));
+                    var obj = ReflectionUtil.CreateInstance(type);
+                    ((IRedisConsumer)obj).Register();
+                    _list.Add(obj);
                 }
             }
         }

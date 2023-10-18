@@ -12,45 +12,41 @@ using static StackExchange.Redis.RedisChannel;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
-    public interface IRedisSubscribeConsumer
-    { 
-    }
     /// <summary>
     /// redis发布订阅的消费基类(队列消息将多播发送)
     /// </summary>
     /// <typeparam name="TMessage"></typeparam>
-    public abstract class RedisSubscribeConsumer<TMessage>: IRedisSubscribeConsumer
+    public abstract class RedisSubscribeConsumer<TMessage> : IRedisConsumer, IDisposable
          where TMessage : class
     {
         private ISubscriber _sub;
         private RedisChannel _channel;
         private ChannelMessageQueue _queue;
 
-        public string ConnectionStringName { get; }
-        public PatternMode PatternMode { get; }
+        public virtual string ConnectionStringName { get; set; }
+        /// <summary>
+        /// 模式匹配，如: *
+        /// </summary>
+        public virtual string PatternKey { get; set; }
+        public virtual PatternMode? PatternMode { get; set; }
         /// <summary>
         /// 消息是否并发处理
         /// </summary>
-        public virtual bool IsConcurrentProcess { get; } = true;
-        protected virtual string GetConnectionStringName()
-        {
-            var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
-            return attr?.ConnectionStringName;
-        }
-        protected virtual PatternMode GetPatternMode()
-        {
-            var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
-            return attr?.PatternMode ?? PatternMode.Auto;
-        }
-
+        public virtual bool IsConcurrentProcess { get; set; } = true;
 
         public RedisSubscribeConsumer()
         {
-            ConnectionStringName = GetConnectionStringName();
-            PatternMode = GetPatternMode();
+            var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
+            if (string.IsNullOrEmpty(ConnectionStringName))
+                ConnectionStringName = attr?.ConnectionStringName;
+            if (!PatternMode.HasValue)
+                PatternMode = attr?.PatternMode ?? RedisChannel.PatternMode.Auto;
 
+        }
+        public void Register()
+        {
             _sub = RedisUtil.GetRedis(ConnectionStringName).GetSubscriber();
-            _channel = RedisUtil.GetRedisChannel<TMessage>(PatternMode);
+            _channel = RedisUtil.GetChannel<TMessage>(PatternKey, PatternMode.Value);
             if (IsConcurrentProcess)
             {
                 _sub.Subscribe(_channel, async (c, m) =>
@@ -81,5 +77,10 @@ namespace TinyFx.Extensions.StackExchangeRedis
 
         protected abstract Task OnMessage(TMessage message);
         protected abstract Task OnError(TMessage message, Exception ex);
+
+        public void Dispose()
+        {
+            
+        }
     }
 }
