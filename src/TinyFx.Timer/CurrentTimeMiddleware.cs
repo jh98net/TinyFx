@@ -9,6 +9,7 @@ using App.Metrics.ReservoirSampling.Uniform;
 using App.Metrics.Timer.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -55,9 +56,8 @@ namespace TinyFx.Timer
         {
             try
             {
-                string url = context.Request.GetEncodedUrl();
-                //var sd = this.Options.IgnoredRoutesRegexPatterns;
-                if (PerformMetric(context))
+                var endpoint = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>();
+                if (PerformMetric(context) && endpoint != null)
                 {
 
                     //context.Items[TimerItemsKey] = _requestTimer.NewContext();
@@ -76,7 +76,7 @@ namespace TinyFx.Timer
                     {
                         DurationUnit = TimeUnit.Milliseconds,
                     };
-                    SampleTimer.Name = url;
+                    SampleTimer.Name = endpoint.ControllerName + "Controller." + endpoint.ActionName;
                     using (metrics.Measure.Timer.Time(SampleTimer))
                     {
                         await Next(context);
