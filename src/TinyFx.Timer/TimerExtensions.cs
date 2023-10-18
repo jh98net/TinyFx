@@ -60,7 +60,7 @@ namespace TinyFx.Timer
             builder.Host.UseServiceProviderFactory(new DynamicProxyServiceProviderFactory());
 
             bool isOpenMetrics = Convert.ToBoolean(Configuration["Metirc:AppMetrics:ReportingEnabled"]);
-            if (isOpenMetrics)
+            //if (isOpenMetrics)
             {
 
                 string environmentString = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
@@ -122,7 +122,7 @@ namespace TinyFx.Timer
 
         public static void UseTimer(this WebApplication app)
         {
-            if (Convert.ToBoolean(app.Configuration["Metirc:AppMetrics:ReportingEnabled"]))
+            //if (Convert.ToBoolean(app.Configuration["Metirc:AppMetrics:ReportingEnabled"]))
             {
                 app.UseMiddleware<CurrentTimeMiddleware>();
 
