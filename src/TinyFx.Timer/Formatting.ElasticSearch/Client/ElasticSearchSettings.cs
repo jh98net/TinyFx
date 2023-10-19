@@ -4,7 +4,7 @@
 
 using System;
 
-namespace TinyFx.Timer.Formatting.ElasticSearch.Client
+namespace TinyFx.AppMetric.Formatting.ElasticSearch.Client
 {
     public class ElasticSearchSettings
     {

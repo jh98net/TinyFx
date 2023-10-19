@@ -2,7 +2,7 @@
 // Copyright (c) Allan Hardy. All rights reserved.
 // </copyright>
 
-namespace TinyFx.Timer.Formatting.ElasticSearch.Client
+namespace TinyFx.AppMetric.Formatting.ElasticSearch.Client
 {
     public enum ElasticSearchAuthorizationSchemes
     {

@@ -5,10 +5,10 @@
 using System;
 using App.Metrics.Abstractions.Filtering;
 using App.Metrics.Reporting.Abstractions;
-using TinyFx.Timer.Formatting.ElasticSearch.Client;
+using TinyFx.AppMetric.Formatting.ElasticSearch.Client;
 
 // ReSharper disable CheckNamespace
-namespace TinyFx.Timer.Formatting.ElasticSearch
+namespace TinyFx.AppMetric.Formatting.ElasticSearch
 // ReSharper restore CheckNamespace
 {
     public static class ElasticSearchReporterExtensions

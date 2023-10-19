@@ -15,6 +15,6 @@
     <ProjectReference Include="..\TinyFx.Extensions.Serilog\TinyFx.Extensions.Serilog.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
     <ProjectReference Include="..\TinyFx.OAuth\TinyFx.OAuth.csproj" />
-    <ProjectReference Include="..\TinyFx.Timer\TinyFx.Timer.csproj" />
+    <ProjectReference Include="..\TinyFx.Timer\TinyFx.AppMetric.csproj" />
   </ItemGroup>
 </Project>
