@@ -22,9 +22,6 @@ namespace TinyFx
             {
                 builder.ConfigureServices((context, services) =>
                 {
-                    var container = new OAuthProviderContainer();
-                    container.Init();
-                    services.AddSingleton(container);
                     services.AddSingleton<OAuthService>();
                 });
             }

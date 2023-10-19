@@ -9,7 +9,7 @@ namespace TinyFx.Configuration
         public override string SectionName => "OAuth";
         public string ProvidersProvider { get; set; }
         /// <summary>
-        /// redis连接集合
+        /// OAuth服务提供商
         /// </summary>
         public Dictionary<string, IOAuthProviderElement> Providers { get; set; }
 
