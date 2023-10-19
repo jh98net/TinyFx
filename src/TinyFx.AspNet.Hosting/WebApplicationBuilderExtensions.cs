@@ -55,7 +55,7 @@ namespace TinyFx
                 });
             }
             AddAspNetEx(builder.Services, type);
-            builder.AddTimer(builder.Configuration, ConfigUtil.Project?.ProjectId);
+           // builder.AddTimer(builder.Configuration, ConfigUtil.Project?.ProjectId);
             return builder;
         }
         private static IServiceCollection AddAspNetEx(this IServiceCollection services, AspNetType type)
@@ -91,7 +91,7 @@ namespace TinyFx
 
                 .AddOptions()                   // IOptions
                 .AddHttpClient()                // IHttpClientFactory
-                .AddHttpContextAccessor().AddOAuth();      // IHttpContextAccessor
+                .AddHttpContextAccessor();//.AddOAuth();      // IHttpContextAccessor
         }
         public static IServiceCollection AddRequestLoggingEx(this IServiceCollection services)
         {

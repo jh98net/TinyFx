@@ -9,6 +9,7 @@
   "NugetIndex": 0,
   "Projects": [
     "src\\TinyFx\\TinyFx.csproj",
+    "src\\TinyFx.AppMetric\\TinyFx.AppMetric.csproj",
     "src\\TinyFx.AspNet\\TinyFx.AspNet.csproj",
     "src\\TinyFx.AspNet.Hosting\\TinyFx.AspNet.Hosting.csproj",
     "src\\TinyFx.Data.MySql\\TinyFx.Data.MySql.csproj",
@@ -22,8 +23,7 @@
     "src\\TinyFx.Extensions.RabbitMQ\\TinyFx.Extensions.RabbitMQ.csproj",
     "src\\TinyFx.Extensions.Serilog\\TinyFx.Extensions.Serilog.csproj",
     "src\\TinyFx.Extensions.SshNet\\TinyFx.Extensions.SshNet.csproj",
-    "src\\TinyFx.Extensions.StackExchangeRedis\\TinyFx.Extensions.StackExchangeRedis.csproj",
-    "src\\TinyFx.Timer\\TinyFx.Timer.csproj"
+    "src\\TinyFx.Extensions.StackExchangeRedis\\TinyFx.Extensions.StackExchangeRedis.csproj"
   ],
   "VsixItem": {
     "ProjectPath": null,

@@ -7,6 +7,7 @@
     <Version>3.8.46</Version>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\TinyFx.AppMetric\TinyFx.AppMetric.csproj" />
     <ProjectReference Include="..\TinyFx.AspNet\TinyFx.AspNet.csproj" />
     <ProjectReference Include="..\TinyFx.DbCaching\TinyFx.DbCaching.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.AutoMapper\TinyFx.Extensions.AutoMapper.csproj" />
@@ -15,6 +16,5 @@
     <ProjectReference Include="..\TinyFx.Extensions.Serilog\TinyFx.Extensions.Serilog.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
     <ProjectReference Include="..\TinyFx.OAuth\TinyFx.OAuth.csproj" />
-    <ProjectReference Include="..\TinyFx.Timer\TinyFx.AppMetric.csproj" />
   </ItemGroup>
 </Project>
