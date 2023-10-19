@@ -20,7 +20,7 @@ using TinyFx.AspNet.Auth.Cors;
 using static System.Collections.Specialized.BitVector32;
 using Serilog.Events;
 using TinyFx.AspNet.RequestLogging;
-using TinyFx.Timer;
+using TinyFx.AppMetric;
 
 namespace TinyFx
 {

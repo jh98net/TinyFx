@@ -3,9 +3,9 @@
 // </copyright>
 
 using System;
-using TinyFx.Timer.Formatting.ElasticSearch.Client;
+using TinyFx.AppMetric.Formatting.ElasticSearch.Client;
 
-namespace TinyFx.Timer.Formatting.ElasticSearch
+namespace TinyFx.AppMetric.Formatting.ElasticSearch
 {
     public class HttpPolicy
     {

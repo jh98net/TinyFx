@@ -35,7 +35,7 @@ using Nacos.V2;
 using Nacos.V2.DependencyInjection;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Hosting;
-using TinyFx.Timer;
+using TinyFx.AppMetric;
 
 namespace TinyFx
 {

@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace TinyFx.Timer
+namespace TinyFx.AppMetric
 {
     /// <summary>
     /// 统计耗时 并记录接口访问日志 中间件

@@ -6,10 +6,10 @@ using System;
 using App.Metrics.Abstractions.Reporting;
 
 using App.Metrics.Reporting;
-using TinyFx.Timer.Formatting.ElasticSearch.Client;
-using EsConstants = TinyFx.Timer.Reporting.ElasticSearch.Constants;
+using TinyFx.AppMetric.Formatting.ElasticSearch.Client;
+using EsConstants = TinyFx.AppMetric.Reporting.ElasticSearch.Constants;
 
-namespace TinyFx.Timer.Formatting.ElasticSearch
+namespace TinyFx.AppMetric.Formatting.ElasticSearch
 {
     public class ElasticSearchReporterSettings : IReporterSettings
     {

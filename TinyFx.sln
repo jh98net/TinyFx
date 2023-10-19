@@ -83,13 +83,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSugarDemo", "demo\SqlSug
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.DbCaching", "src\TinyFx.DbCaching\TinyFx.DbCaching.csproj", "{EB08B85E-53D6-4815-8D77-B735156EA168}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyFx.Extensions.Sundial", "src\TinyFx.Extensions.Sundial\TinyFx.Extensions.Sundial.csproj", "{3D858C02-D0AF-46EF-BA3A-8F07B16AD30D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.Extensions.Sundial", "src\TinyFx.Extensions.Sundial\TinyFx.Extensions.Sundial.csproj", "{3D858C02-D0AF-46EF-BA3A-8F07B16AD30D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.Timer", "src\TinyFx.Timer\TinyFx.Timer.csproj", "{4C8222BB-4EA8-449B-99A8-BCDCF6055591}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.AppMetric", "src\TinyFx.Timer\TinyFx.AppMetric.csproj", "{4C8222BB-4EA8-449B-99A8-BCDCF6055591}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.OAuth", "src\TinyFx.OAuth\TinyFx.OAuth.csproj", "{6CBA104D-57C5-4783-A95D-0DE97E646DD3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyFx.Data.SqlSugar", "src\TinyFx.Data.SqlSugar\TinyFx.Data.SqlSugar.csproj", "{2CA1F88E-708A-4B03-A0F4-21DD2D7B678F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.Data.SqlSugar", "src\TinyFx.Data.SqlSugar\TinyFx.Data.SqlSugar.csproj", "{2CA1F88E-708A-4B03-A0F4-21DD2D7B678F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2-Extensions", "2-Extensions", "{38EC6A5A-A374-4BCC-A5C7-2D2CD2D19D91}"
 EndProject

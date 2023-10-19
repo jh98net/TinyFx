@@ -3,7 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Version>1.0.1</Version>
+    <Version>1.0.6</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="App.Metrics" Version="1.2.0" />
@@ -11,6 +11,7 @@
     <PackageReference Include="App.Metrics.Formatters.Json" Version="1.2.0" />
     <PackageReference Include="App.Metrics.Formatters.ElasticSearch" Version="1.1.1" />
     <PackageReference Include="AspectCore.Extensions.DependencyInjection" Version="2.4.0" />
+    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="3.1.6" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
     <FrameworkReference Include="Microsoft.AspNetCore.App">
     </FrameworkReference>
