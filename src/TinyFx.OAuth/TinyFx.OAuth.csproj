@@ -1,13 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>1.0.0</Version>
   </PropertyGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\TinyFx\TinyFx.csproj" />
+    <PackageReference Include="TinyFx" Version="3.8.47" />
   </ItemGroup>
-
 </Project>

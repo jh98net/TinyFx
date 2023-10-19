@@ -9,6 +9,6 @@ namespace TinyFx.OAuth
 {
     public interface IOAuthProvidersProvider
     {
-        Task<Dictionary<string, IOAuthProviderElement>> GetProvidersAsync();
+        Task<Dictionary<string, OAuthProviderElement>> GetProvidersAsync();
     }
 }

@@ -36,7 +36,7 @@ namespace TinyFx.OAuth
         internal static IOAuthProviderElement GetProviderElement(OAuthProviders provider)
         {
             var section = ConfigUtil.GetSection<OAuthSection>();
-            var key = provider.ToString();
+            var key = provider.ToString()+"Config";
             if (!section.Providers.TryGetValue(key, out var ret))
                 throw new Exception($"配置文件OAuth:Providers不存在key: {provider}");
             return ret;

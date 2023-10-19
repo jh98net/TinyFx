@@ -9,7 +9,7 @@ using TinyFx.Net;
 
 namespace TinyFx.OAuth.Providers
 {
-    internal class FacebookProvider : BaseOAuthProvider
+    internal class FaceBookProvider : BaseOAuthProvider
     {
         protected override string OAuthUrl => "https://www.facebook.com/v17.0/dialog/oauth";
 

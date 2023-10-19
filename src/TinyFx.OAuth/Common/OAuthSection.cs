@@ -11,7 +11,7 @@ namespace TinyFx.Configuration
         /// <summary>
         /// OAuth服务提供商
         /// </summary>
-        public Dictionary<string, IOAuthProviderElement> Providers { get; set; }
+        public Dictionary<string, OAuthProviderElement> Providers { get; set; }
 
         public override void Bind(IConfiguration configuration)
         {
@@ -26,7 +26,7 @@ namespace TinyFx.Configuration
             else
             {
                 Providers = configuration
-                    .Get<Dictionary<string, IOAuthProviderElement>>() ?? new();
+                    .Get<Dictionary<string, OAuthProviderElement>>() ?? new();
             }
         }
     }

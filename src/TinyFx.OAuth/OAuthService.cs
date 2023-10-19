@@ -19,7 +19,10 @@ namespace TinyFx.OAuth
             foreach (var item in list.GetList())
             {
                 var type = $"TinyFx.OAuth.Providers.{item.Name}Provider";
-                var obj = ReflectionUtil.CreateInstance(type) as IOAuthProvider;
+                var obj = ReflectionUtil.CreateInstance(Type.GetType(type)) as IOAuthProvider;
+                //var s2 = ReflectionUtil.CreateInstance(type,null);
+
+                //var obj = ReflectionUtil.CreateInstance(type) as IOAuthProvider;
                 if (obj == null)
                     throw new Exception($"创建IOAuthProvider失败: {type}");
                 _dict.TryAdd((OAuthProviders)item.Value, obj);
