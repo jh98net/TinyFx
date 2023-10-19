@@ -9,7 +9,6 @@
   "NugetIndex": 0,
   "Projects": [
     "src\\TinyFx\\TinyFx.csproj",
-    "src\\TinyFx.AppMetric\\TinyFx.AppMetric.csproj",
     "src\\TinyFx.AspNet\\TinyFx.AspNet.csproj",
     "src\\TinyFx.AspNet.Hosting\\TinyFx.AspNet.Hosting.csproj",
     "src\\TinyFx.Data.MySql\\TinyFx.Data.MySql.csproj",
