@@ -7,6 +7,7 @@
     <Version>3.8.46</Version>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\TinyFx.AppMetric\TinyFx.AppMetric.csproj" />
     <ProjectReference Include="..\TinyFx.AspNet\TinyFx.AspNet.csproj" />
     <ProjectReference Include="..\TinyFx.DbCaching\TinyFx.DbCaching.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.AutoMapper\TinyFx.Extensions.AutoMapper.csproj" />

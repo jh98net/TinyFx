@@ -56,7 +56,7 @@ namespace TinyFx
                     , app.Urls);
                 return Task.CompletedTask;
             });
-            app.UseTimer();
+            //app.UseTimer();
             return app;
         }
 
