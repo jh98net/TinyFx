@@ -38,8 +38,10 @@ namespace TinyFx.OAuth.Providers
         public async Task<string> GetOAuthUrl(string redirectUri, string uuid)
         {
             var state = StringUtil.GetGuidString();
-            var value = $"{DateTime.UtcNow.UtcDateTimeToTimestamp(false)}|{uuid}";
-            await _dcache.SetStringAsync(state, value);
+            await _dcache.SetAsync(state, Encoding.UTF8.GetBytes(uuid ?? "default"), new DistributedCacheEntryOptions
+            {
+                SlidingExpiration = TimeSpan.FromSeconds(EXPIRY_SECONDS)
+            });
             var ret = $"{OAuthUrl}?response_type=code%20token&client_id={Config.ClientId}&redirect_uri={redirectUri}&state={state}";
             var append = AppendOAuthUrl();
             if (!string.IsNullOrEmpty(append))
@@ -55,13 +57,10 @@ namespace TinyFx.OAuth.Providers
 
             var value = await _dcache.GetStringAsync(ipo.State);
             await _dcache.RemoveAsync(ipo.State);
-            var keys = value?.Split('|');
-            if (string.IsNullOrEmpty(value)
-                || (TimeSpan.FromMilliseconds(DateTime.UtcNow.UtcDateTimeToTimestamp(false) - keys[0].ToInt64()).TotalSeconds > EXPIRY_SECONDS)
-                || (!string.IsNullOrEmpty(ipo.Uuid) && ipo.Uuid != keys[1]))
+            if (string.IsNullOrEmpty(value) || (!string.IsNullOrEmpty(ipo.Uuid) && value != "default" && ipo.Uuid != value))
             {
                 ret.Success = false;
-                ret.Message = "登录超时";
+                ret.Message = "OAuth请求异常";
                 return ret;
             }
 
