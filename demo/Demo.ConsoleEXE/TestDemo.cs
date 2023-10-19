@@ -48,6 +48,7 @@ using TinyFx.Extensions.RabbitMQ;
 using EasyNetQ.Topology;
 using Renci.SshNet.Messages;
 using System.Linq.Expressions;
+using System.Reflection.Emit;
 
 namespace TinyFx.Demos
 {
@@ -55,10 +56,28 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var t1 = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
-            await Task.Delay(1000);
-            var t2 = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
-            Console.WriteLine(t2-t1);
+            var str = "{\"id\":\"122125719806031296\",\"name\":\"\\u9ad8\\u6d2a\\u9501\",\"picture\":{\"data\":{\"height\":180,\"is_silhouette\":true,\"url\":\"https:\\/\\/scontent-sea1-1.xx.fbcdn.net\\/v\\/t1.30497-1\\/84628273_176159830277856_972693363922829312_n.jpg?stp=dst-jpg_s480x480&_nc_cat=1&ccb=1-7&_nc_sid=810bd0&_nc_ohc=PMtp3IjkGpMAX_Crqc6&_nc_ht=scontent-sea1-1.xx&edm=AP4hL3IEAAAA&oh=00_AfA-Qi7Iu03_LuesYBJuJD3Bv3x9I-KoB4QNXoz6Ct8CMQ&oe=65581099\",\"width\":180}}}";
+            var json = SerializerUtil.DeserializeJsonNet<SuccessRsp>(str);
+            //var json = SerializerUtil.DeserializeJson<SuccessRsp>(str);
+            //var pic = SerializerUtil.DeserializeJson<PictureData>(Convert.ToString(json.picture.data));
+
+        }
+    }
+    class SuccessRsp
+    {
+        public string id { get; set; }
+        public string name { get; set; }
+        public Picture picture { get; set; }
+        public class Picture
+        {
+            public PictureData data { get; set; }
+        }
+        public class PictureData
+        {
+            public int height { get; set; }
+            public int width { get; set; }
+            public bool is_silhouette { get; set; }
+            public string url { get; set; }
         }
     }
 }

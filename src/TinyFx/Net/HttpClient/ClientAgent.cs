@@ -37,6 +37,11 @@ namespace TinyFx.Net
             Url = url?.Trim()?.TrimStart('/');
             return this;
         }
+        public ClientAgent AppendUrl(string url)
+        {
+            Url+= url?.Trim();
+            return this;
+        }
         /// <summary>
         /// 添加key/value数据
         ///     get时拼接url
