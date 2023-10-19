@@ -17,9 +17,10 @@ namespace TinyFx.OAuth
             var list = EnumUtil.GetInfo<OAuthProviders>();
             foreach (var item in list.GetList())
             {
-                var obj = ReflectionUtil.CreateInstance($"TinyFx.OAuth.Providers.{item.Name}Provider") as IOAuthProvider;
+                var type = $"TinyFx.OAuth.Providers.{item.Name}Provider";
+                var obj = ReflectionUtil.CreateInstance(type) as IOAuthProvider;
                 if (obj == null)
-                    throw new Exception();
+                    throw new Exception($"创建IOAuthProvider失败: {type}");
                 _dict.TryAdd((OAuthProviders)item.Value, obj);
             }
         }
@@ -27,7 +28,7 @@ namespace TinyFx.OAuth
         public IOAuthProvider GetProvider(OAuthProviders provider)
         {
             if (!_dict.TryGetValue(provider, out var ret))
-                throw new Exception("");
+                throw new Exception($"IOAuthProvider不存在。provider: {provider}");
             return ret;
         }
     }
