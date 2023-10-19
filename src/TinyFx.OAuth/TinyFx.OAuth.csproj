@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="TinyFx" Version="3.8.46" />
+    <ProjectReference Include="..\TinyFx\TinyFx.csproj" />
   </ItemGroup>
 
 </Project>

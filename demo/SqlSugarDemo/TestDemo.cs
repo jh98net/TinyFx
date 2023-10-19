@@ -12,18 +12,28 @@ namespace SqlSugarDemo
     {
         public override async Task Execute()
         {
-            try
+            var oldEo = new Sdemo_courseEO
             {
-                DbUtil.BeginTran();
-                var mo1 = DbUtil.CreateRepository<Sdemo_classEO>();
-                var mo2 = DbUtil.CreateRepository<Sv_demo_user_courseEO>();
+                Year = 123,
+                CourseID = "abc"
+            };
+            Demo_courseEO newEo = oldEo;
 
-                DbUtil.CommitTran();
-            }
-            catch (Exception ex)
-            {
-                DbUtil.RollbackTran();
-            }
+
+
+
+            //try
+            //{
+            //    DbUtil.BeginTran();
+            //    var mo1 = DbUtil.CreateRepository<Sdemo_classEO>();
+            //    var mo2 = DbUtil.CreateRepository<Sv_demo_user_courseEO>();
+
+            //    DbUtil.CommitTran();
+            //}
+            //catch (Exception ex)
+            //{
+            //    DbUtil.RollbackTran();
+            //}
         }
     }
 

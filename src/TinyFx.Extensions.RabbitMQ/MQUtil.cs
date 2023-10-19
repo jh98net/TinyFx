@@ -99,7 +99,7 @@ namespace TinyFx.Extensions.RabbitMQ
         private static (TMessage Message, Action<IPublishConfiguration> Action, string ConnStrName) GetPubSubData<TMessage>(TMessage message, Action<IPublishConfiguration> configAction, string connectionStringName = null)
             where TMessage : new()
         {
-            if (message is IMessage)
+            if (message is IMQMessage)
             {
                 ((IMQMessage)message).MessageId = ObjectId.NewId();
                 ((IMQMessage)message).Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
@@ -154,7 +154,7 @@ namespace TinyFx.Extensions.RabbitMQ
         private static (TMessage Message, Action<IFuturePublishConfiguration> Action, string ConnStrName) GetSchedulerData<TMessage>(TMessage message, Action<IFuturePublishConfiguration> configAction, string connectionStringName = null)
             where TMessage : new()
         {
-            if (message is IMessage)
+            if (message is IMQMessage)
             {
                 ((IMQMessage)message).MessageId = ObjectId.NewId();
                 ((IMQMessage)message).Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
@@ -210,7 +210,7 @@ namespace TinyFx.Extensions.RabbitMQ
         private static (TMessage Message, Action<IRequestConfiguration> Action, string ConnStrName) GetRpcData<TMessage>(TMessage message, Action<IRequestConfiguration> configAction, string connectionStringName = null)
               where TMessage : new()
         {
-            if (message is IMessage)
+            if (message is IMQMessage)
             {
                 ((IMQMessage)message).MessageId = ObjectId.NewId();
                 ((IMQMessage)message).Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
@@ -274,7 +274,7 @@ namespace TinyFx.Extensions.RabbitMQ
         private static (TMessage Message, Action<ISendConfiguration> Action, string ConnStrName, string Queue) GetSendReceiveData<TMessage>(TMessage message, string queueName = null, Action<ISendConfiguration> configAction = null, string connectionStringName = null)
                where TMessage : new()
         {
-            if (message is IMessage)
+            if (message is IMQMessage)
             {
                 ((IMQMessage)message).MessageId = ObjectId.NewId();
                 ((IMQMessage)message).Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);

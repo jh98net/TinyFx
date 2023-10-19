@@ -15,6 +15,9 @@ using System.Net;
 using static StackExchange.Redis.RedisChannel;
 using TinyFx.Reflection;
 using System.Reflection;
+using Grpc.Core;
+using BloomFilter;
+using BloomFilter.Redis;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
@@ -298,7 +301,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public static async Task PublishAsync<TMessage>(TMessage message)
         {
             var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
-            var channel = GetRedisChannel<TMessage>(attr?.PatternMode ?? PatternMode.Auto);
+            var channel = GetChannel(message, attr?.PatternMode ?? PatternMode.Auto);
             var msg = await GetSerializer(RedisSerializeMode.Json).SerializeAsync(message);
             await GetRedis(attr?.ConnectionStringName)
                 .GetSubscriber()
@@ -313,21 +316,48 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public static async Task PublishQueueAsync<TMessage>(TMessage message)
         {
             var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
-            var channel = GetRedisChannel<TMessage>(attr?.PatternMode ?? PatternMode.Auto);
+            var channel = GetChannel(message, attr?.PatternMode ?? PatternMode.Auto);
             var msg = await GetSerializer(RedisSerializeMode.Json).SerializeAsync(message);
             var redis = GetRedis(attr?.ConnectionStringName);
             var key = GetQueueKey<TMessage>();
             await redis.GetDatabase().ListLeftPushAsync(key, msg, flags: CommandFlags.FireAndForget);
             await redis.GetSubscriber().PublishAsync(channel, string.Empty);
         }
-        internal static RedisChannel GetRedisChannel<TMessage>(PatternMode mode = PatternMode.Auto)
+        internal static string GetBaseChannelName<TMessage>()
+            => $"_PubSub:{typeof(TMessage).FullName}";
+        private static RedisChannel GetChannel<TMessage>(TMessage msg, PatternMode mode = PatternMode.Auto)
         {
-            var channelName = $"_PubSub:{typeof(TMessage).FullName}";
-            return new RedisChannel(channelName, mode);
+            var key = (msg is IRedisPubMessage)
+                ? ((IRedisPubMessage)msg).PatternKey
+                : null;
+            return GetChannel(key, mode);
+        }
+        internal static RedisChannel GetChannel<TMessage>(string key, PatternMode mode = PatternMode.Auto)
+        {
+            var name = GetBaseChannelName<TMessage>();
+            if (!string.IsNullOrEmpty(key))
+                name = $"{name}:{key}";
+            return new RedisChannel(name, mode);
         }
         internal static string GetQueueKey<TMessage>()
         {
             return $"_Queue:{typeof(TMessage).FullName}";
+        }
+        #endregion
+
+        #region BloomFilter
+        /// <summary>
+        /// 布隆过滤器
+        /// </summary>
+        /// <param name="redisKey">业务标识</param>
+        /// <param name="expectedElements">预期总元素数</param>
+        /// <param name="errorRate">错误概率: 0.01代表百分之一</param>
+        /// <returns></returns>
+        public static IBloomFilter CreateBloomFilter(string redisKey, long expectedElements, double errorRate = 0.01)
+        {
+            var key = $"_BloomFilter:{redisKey}";
+            var conn = GetRedis();
+            return FilterRedisBuilder.Build(conn, key, expectedElements, errorRate);
         }
         #endregion
 
