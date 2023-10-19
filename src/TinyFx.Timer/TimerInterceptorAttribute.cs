@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using App.Metrics;
@@ -43,6 +44,7 @@ namespace TinyFx.Timer
 
             try
             {
+
                 if (metrics == null)
                 {
                     metrics = context.ServiceProvider.GetService<IMetrics>();
@@ -61,7 +63,6 @@ namespace TinyFx.Timer
                 };
                 //Console.WriteLine("执行之前");
                 //await next(context);//执行被拦截的方法
-                //SampleTimer.Name = context.ServiceMethod.ReflectedType?.FullName;
                 var className = context.ServiceMethod.ReflectedType?.FullName;
                 //var a1 = context.Implementation.GetType().FullName;
                 var methodName = context.ServiceMethod.Name;
@@ -69,9 +70,10 @@ namespace TinyFx.Timer
                 //System.Console.WriteLine($"{className}, {methodName}");
                 using (metrics.Measure.Timer.Time(SampleTimer))
                 {
-                  //  await Task.Delay(1000 * new Random().Next(1, 30));
+                    //  await Task.Delay(1000 * new Random().Next(1, 30));
                     await next(context); //执行被拦截的方法
                 }
+
             }
             catch (Exception ex)
             {
@@ -81,4 +83,6 @@ namespace TinyFx.Timer
         }
 
     }
+
+    public sealed class DisableGlobalInterceptor : Attribute { }
 }

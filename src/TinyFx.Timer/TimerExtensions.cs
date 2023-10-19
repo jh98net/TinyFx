@@ -21,10 +21,19 @@ namespace TinyFx.Timer
     {
         public static WebApplicationBuilder AddTimer(this WebApplicationBuilder builder, IConfiguration Configuration, string projectId)
         {
-            ElasticSearchSettings elasticSearchSettings = new ElasticSearchSettings(new Uri(Configuration["Serilog:WriteTo:ELKSink:Args:nodeUris"].Split(";")[0]),"", Configuration["Serilog:WriteTo:ELKSink:Args:username"], Configuration["Serilog:WriteTo:ELKSink:Args:password"]);
-            
+            ElasticSearchSettings elasticSearchSettings;
+            string userName = Configuration["Serilog:WriteTo:ELKSink:Args:username"];
+            string passwd = Configuration["Serilog:WriteTo:ELKSink:Args:password"];
+            if(string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(passwd))
+            {
+                elasticSearchSettings = new ElasticSearchSettings(new Uri(Configuration["Serilog:WriteTo:ELKSink:Args:nodeUris"].Split(";")[0]), "appmetricss");
+            }
+            else
+            {
+                elasticSearchSettings = new ElasticSearchSettings(new Uri(Configuration["Serilog:WriteTo:ELKSink:Args:nodeUris"].Split(";")[0]), "appmetricss", userName, passwd);
+            }
             builder.Services.AddTransient<TimerInterceptorAttribute>(provider => new TimerInterceptorAttribute());
-            var predicatesDic = builder.Configuration.GetSection("Metirc:AspNetMetrics:FilterRoute")
+            var predicatesDic = Configuration.GetSection("Metirc:AspNetMetrics:FilterRoute")
                 .Get<Dictionary<string, string[]>>(); //
             if (predicatesDic != null)
             {
@@ -37,7 +46,6 @@ namespace TinyFx.Timer
                             config.Interceptors.AddTyped<TimerInterceptorAttribute>(Predicates.ForService(t));
                         }
                     }
-
                     if (predicatesDic.ContainsKey("ForMethod"))
                     {
                         foreach (string t in predicatesDic["ForMethod"])
@@ -124,6 +132,7 @@ namespace TinyFx.Timer
         {
             //if (Convert.ToBoolean(app.Configuration["Metirc:AppMetrics:ReportingEnabled"]))
             {
+                
                 app.UseMiddleware<CurrentTimeMiddleware>();
 
                 var reportFactory = app.Services.GetRequiredService<IReportFactory>();
