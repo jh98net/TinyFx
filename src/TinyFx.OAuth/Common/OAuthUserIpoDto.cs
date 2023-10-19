@@ -27,6 +27,8 @@ namespace TinyFx.OAuth
         ///  回调后返回的oauth_token
         /// </summary>
         public string AccessToken { get; set; }
+
+        public string Uuid { get; set; }
     }
 
     /// <summary>

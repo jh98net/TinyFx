@@ -13,7 +13,7 @@ namespace TinyFx.OAuth
     public class OAuthService
     {
         private ConcurrentDictionary<OAuthProviders, IOAuthProvider> _dict = new();
-        public OAuthService() 
+        public OAuthService()
         {
             var list = EnumUtil.GetInfo<OAuthProviders>();
             foreach (var item in list.GetList())
@@ -25,9 +25,9 @@ namespace TinyFx.OAuth
                 _dict.TryAdd((OAuthProviders)item.Value, obj);
             }
         }
-        public async Task<string> GetOAuthUrl(OAuthProviders provider, string redirectUri)
+        public async Task<string> GetOAuthUrl(OAuthProviders provider, string redirectUri, string uuid = null)
         {
-            return await GetProvider(provider).GetOAuthUrl(redirectUri);
+            return await GetProvider(provider).GetOAuthUrl(redirectUri, uuid);
         }
         public async Task<ResponseResult<OAuthUserDto>> GetUserInfo(OAuthUserIpo ipo)
         {

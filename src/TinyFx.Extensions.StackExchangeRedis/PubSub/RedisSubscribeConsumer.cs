@@ -70,7 +70,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
             }
             catch (Exception ex)
             {
-                LogUtil.Error(ex, "RedisSubscribeConsumer.OnMessage异常。type:{0}", this.GetType().FullName);
+                LogUtil.Error(ex, $"RedisSubscribeConsumer.OnMessage异常。type:{this.GetType().FullName}");
                 await OnError(msg, ex);
             }
         }

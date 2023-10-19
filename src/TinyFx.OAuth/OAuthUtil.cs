@@ -16,10 +16,11 @@ namespace TinyFx.OAuth
         /// </summary>
         /// <param name="provider"></param>
         /// <param name="redirectUri"></param>
+        /// <param name="uuid"></param>
         /// <returns></returns>
-        public static Task<string> GetOAuthUrl(OAuthProviders provider, string redirectUri)
+        public static Task<string> GetOAuthUrl(OAuthProviders provider, string redirectUri, string uuid = null)
         {
-            return DIUtil.GetRequiredService<OAuthService>().GetOAuthUrl(provider, redirectUri);
+            return DIUtil.GetRequiredService<OAuthService>().GetOAuthUrl(provider, redirectUri, uuid);
         }
 
         /// <summary>

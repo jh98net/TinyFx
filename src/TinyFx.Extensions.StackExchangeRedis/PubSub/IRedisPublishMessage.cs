@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
-    public interface IRedisPubMessage
+    public interface IRedisPublishMessage
     {
         /// <summary>
         /// 模式值

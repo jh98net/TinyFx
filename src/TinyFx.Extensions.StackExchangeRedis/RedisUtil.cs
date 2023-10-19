@@ -327,8 +327,8 @@ namespace TinyFx.Extensions.StackExchangeRedis
             => $"_PubSub:{typeof(TMessage).FullName}";
         private static RedisChannel GetChannel<TMessage>(TMessage msg, PatternMode mode = PatternMode.Auto)
         {
-            var key = (msg is IRedisPubMessage)
-                ? ((IRedisPubMessage)msg).PatternKey
+            var key = (msg is IRedisPublishMessage)
+                ? ((IRedisPublishMessage)msg).PatternKey
                 : null;
             return GetChannel(key, mode);
         }
@@ -351,13 +351,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         /// <param name="redisKey">业务标识</param>
         /// <param name="expectedElements">预期总元素数</param>
-        /// <param name="errorRate">错误概率: 0.01代表百分之一</param>
+        /// <param name="method">哈希算法</param>
         /// <returns></returns>
-        public static IBloomFilter CreateBloomFilter(string redisKey, long expectedElements, double errorRate = 0.01)
+        public static IBloomFilter CreateBloomFilter(string redisKey, long expectedElements, HashMethod method = HashMethod.Murmur3)
         {
             var key = $"_BloomFilter:{redisKey}";
             var conn = GetRedis();
-            return FilterRedisBuilder.Build(conn, key, expectedElements, errorRate);
+            return FilterRedisBuilder.Build(conn, key, expectedElements, method);
         }
         #endregion
 
