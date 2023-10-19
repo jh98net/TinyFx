@@ -399,6 +399,21 @@
     }
   },
 
+  // OAuth验证
+  "OAuth": {
+    "ProvidersProvider": null,
+    "Providers": {
+      "Google": {
+        "ClientId": "",
+        "ClientSecret": ""
+      },
+      "Facebook": {
+        "ClientId": "",
+        "ClientSecret": ""
+      }
+    }
+  },
+
   // DotNetty WebSocket Server (TinyFx.Extensions.DotNetty.Configuration.DotNettySection)
   "DotNetty": {
     "Server": {
