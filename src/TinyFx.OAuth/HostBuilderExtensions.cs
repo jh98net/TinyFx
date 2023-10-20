@@ -1,14 +1,6 @@
-﻿
-using System.Reflection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Nacos.V2.Naming.Dtos;
-using TinyFx;
 using TinyFx.Configuration;
-using TinyFx.Logging;
 using TinyFx.OAuth;
 
 namespace TinyFx

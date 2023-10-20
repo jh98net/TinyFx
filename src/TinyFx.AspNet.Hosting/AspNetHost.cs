@@ -30,6 +30,7 @@ namespace TinyFx
             builder.Host.UseRabbitMQEx();
             builder.Host.UseIDGenerator();
             builder.Host.UseDbCachingEx();
+            builder.Host.UseOAuthEx();
             return builder;
         }
         internal static string MapEnvPath()
