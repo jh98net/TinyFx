@@ -2,7 +2,7 @@
 // Copyright (c) Allan Hardy. All rights reserved.
 // </copyright>
 
-namespace TinyFx.AppMetric.Formatting.ElasticSearch
+namespace TinyFx.Extensions.AppMetric.Formatting.ElasticSearch
 {
     public class LoggingEvents
     {

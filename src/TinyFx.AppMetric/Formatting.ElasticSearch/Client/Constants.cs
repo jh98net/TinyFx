@@ -4,7 +4,7 @@
 
 using System;
 
-namespace TinyFx.AppMetric.Formatting.ElasticSearch.Client
+namespace TinyFx.Extensions.AppMetric.Formatting.ElasticSearch.Client
 {
     internal static class Constants
     {

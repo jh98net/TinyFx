@@ -5,7 +5,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace TinyFx.AppMetric.Reporting.ElasticSearch
+namespace TinyFx.Extensions.AppMetric.Reporting.ElasticSearch
 {
     public class BulkDocumentMetaData
     {

@@ -11,7 +11,7 @@ using App.Metrics.Reporting.Abstractions;
 using App.Metrics.Tagging;
 using Newtonsoft.Json;
 
-namespace TinyFx.AppMetric.Reporting.ElasticSearch
+namespace TinyFx.Extensions.AppMetric.Reporting.ElasticSearch
 {
     public class BulkPayloadBuilder : IMetricPayloadBuilder<BulkPayload>
     {

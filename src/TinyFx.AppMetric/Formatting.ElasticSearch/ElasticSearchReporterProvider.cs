@@ -8,12 +8,12 @@ using App.Metrics.Abstractions.Reporting;
 using App.Metrics.Internal;
 using App.Metrics.Reporting;
 using Microsoft.Extensions.Logging;
-using TinyFx.AppMetric.Formatting.ElasticSearch.Client;
-using TinyFx.AppMetric.Reporting.ElasticSearch;
-using BulkPayload = TinyFx.AppMetric.Reporting.ElasticSearch.BulkPayload;
-using BulkPayloadBuilder = TinyFx.AppMetric.Reporting.ElasticSearch.BulkPayloadBuilder;
+using TinyFx.Extensions.AppMetric.Formatting.ElasticSearch.Client;
+using TinyFx.Extensions.AppMetric.Reporting.ElasticSearch;
+using BulkPayload = TinyFx.Extensions.AppMetric.Reporting.ElasticSearch.BulkPayload;
+using BulkPayloadBuilder = TinyFx.Extensions.AppMetric.Reporting.ElasticSearch.BulkPayloadBuilder;
 
-namespace TinyFx.AppMetric.Formatting.ElasticSearch
+namespace TinyFx.Extensions.AppMetric.Formatting.ElasticSearch
 {
     public class ElasticSearchReporterProvider : IReporterProvider
     {

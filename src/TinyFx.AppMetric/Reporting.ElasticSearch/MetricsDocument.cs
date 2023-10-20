@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace TinyFx.AppMetric.Reporting.ElasticSearch
+namespace TinyFx.Extensions.AppMetric.Reporting.ElasticSearch
 {
     public class MetricsDocument
     {
