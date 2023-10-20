@@ -12,10 +12,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Builder;
-using TinyFx.AppMetric.Formatting.ElasticSearch;
-using TinyFx.AppMetric.Formatting.ElasticSearch.Client;
+using TinyFx.Extensions.AppMetric.Formatting.ElasticSearch;
+using TinyFx.Extensions.AppMetric.Formatting.ElasticSearch.Client;
 
-namespace TinyFx.AppMetric
+namespace TinyFx.Extensions.AppMetric
 {
     public static class TimerExtensions
     {

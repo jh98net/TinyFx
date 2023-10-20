@@ -10,9 +10,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using TinyFx.AppMetric.Reporting.ElasticSearch;
+using TinyFx.Extensions.AppMetric.Reporting.ElasticSearch;
 
-namespace TinyFx.AppMetric.Formatting.ElasticSearch.Client
+namespace TinyFx.Extensions.AppMetric.Formatting.ElasticSearch.Client
 {
     public class ElasticSearchBulkClient
     {

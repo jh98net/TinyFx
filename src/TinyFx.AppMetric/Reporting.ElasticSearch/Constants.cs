@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using App.Metrics.Reporting;
 
-namespace TinyFx.AppMetric.Reporting.ElasticSearch
+namespace TinyFx.Extensions.AppMetric.Reporting.ElasticSearch
 {
     public static class Constants
     {

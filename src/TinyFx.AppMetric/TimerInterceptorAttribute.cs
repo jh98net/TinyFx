@@ -13,7 +13,7 @@ using AspectCore.DynamicProxy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace TinyFx.AppMetric
+namespace TinyFx.Extensions.AppMetric
 {
     public class TimerInterceptorAttribute : AbstractInterceptorAttribute
     {
