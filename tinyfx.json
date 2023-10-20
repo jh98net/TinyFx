@@ -524,6 +524,30 @@
     }
   },
 
+  "Metirc": {
+    "AppMetrics": {
+      "ReportingEnabled": true
+    },
+    "AspNetMetrics": {
+      "IgnoredHttpStatusCodes": [
+        404
+      ],
+      "HealthEndpointEnabled": false,
+      "MetricsEndpointEnabled": true,
+      "MetricsTextEndpointEnabled": true,
+      "PingEndpointEnabled": false,
+      "DefaultTrackingEnabled": false,
+      "OAuth2TrackingEnabled": false,
+      "IgnoredRoutesRegexPatterns": [
+        "/^test/"
+      ],
+      "FilterRoute": {
+        "ForNameSpace": [],
+        "ForService": [],
+        "ForMethod": []
+      }
+    }
+  },
   // #endregion ******** Asp.Net ********
 
   // 无效- 请求限制 (TinyFx.AspNet.Configuration.RequestLimitSection)

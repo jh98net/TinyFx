@@ -14,6 +14,7 @@
     "src\\TinyFx.Data.MySql\\TinyFx.Data.MySql.csproj",
     "src\\TinyFx.Data.SqlSugar\\TinyFx.Data.SqlSugar.csproj",
     "src\\TinyFx.DbCaching\\TinyFx.DbCaching.csproj",
+    "src\\TinyFx.Extensions.AppMetric\\TinyFx.Extensions.AppMetric.csproj",
     "src\\TinyFx.Extensions.AutoMapper\\TinyFx.Extensions.AutoMapper.csproj",
     "src\\TinyFx.Extensions.CommandLineParser\\TinyFx.Extensions.CommandLineParser.csproj",
     "src\\TinyFx.Extensions.DotNetty\\TinyFx.Extensions.DotNetty.csproj",

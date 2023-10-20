@@ -4,12 +4,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>TinyFx AspNet Hosting启动服务</Description>
-    <Version>3.8.47</Version>
+    <Version>3.9.1</Version>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TinyFx.AppMetric\TinyFx.Extensions.AppMetric.csproj" />
     <ProjectReference Include="..\TinyFx.AspNet\TinyFx.AspNet.csproj" />
     <ProjectReference Include="..\TinyFx.DbCaching\TinyFx.DbCaching.csproj" />
+    <ProjectReference Include="..\TinyFx.Extensions.AppMetric\TinyFx.Extensions.AppMetric.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.AutoMapper\TinyFx.Extensions.AutoMapper.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.IDGenerator\TinyFx.Extensions.IDGenerator.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.RabbitMQ\TinyFx.Extensions.RabbitMQ.csproj" />

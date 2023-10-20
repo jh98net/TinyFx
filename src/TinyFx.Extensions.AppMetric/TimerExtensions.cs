@@ -19,7 +19,7 @@ namespace TinyFx.Extensions.AppMetric
 {
     public static class TimerExtensions
     {
-        public static WebApplicationBuilder AddTimer(this WebApplicationBuilder builder, IConfiguration Configuration, string projectId)
+        public static WebApplicationBuilder AddAppMetricEx(this WebApplicationBuilder builder, IConfiguration Configuration, string projectId)
         {
             ElasticSearchSettings elasticSearchSettings;
             string userName = Configuration["Serilog:WriteTo:ELKSink:Args:username"];
@@ -128,7 +128,7 @@ namespace TinyFx.Extensions.AppMetric
             return builder;
         }
 
-        public static void UseTimer(this WebApplication app)
+        public static void UseAppMetric(this WebApplication app)
         {
             //if (Convert.ToBoolean(app.Configuration["Metirc:AppMetrics:ReportingEnabled"]))
             {

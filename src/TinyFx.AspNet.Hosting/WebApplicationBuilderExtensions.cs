@@ -55,7 +55,9 @@ namespace TinyFx
                 });
             }
             AddAspNetEx(builder.Services, type);
-            builder.AddTimer(builder.Configuration, ConfigUtil.Project?.ProjectId);
+            // AppMetric
+            builder.AddAppMetricEx(builder.Configuration, ConfigUtil.Project.ProjectId);
+            
             return builder;
         }
         private static IServiceCollection AddAspNetEx(this IServiceCollection services, AspNetType type)
