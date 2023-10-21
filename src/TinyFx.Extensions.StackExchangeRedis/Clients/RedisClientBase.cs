@@ -75,7 +75,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
             if (_connectionStringCache.TryGetValue(type, out string ret))
                 return ret;
             ret = RedisUtil.GetConfigElement(Options.ConnectionStringName, type).ConnectionString;
-            if (type.Namespace != "TinyFx.Extensions.StackExchangeRedis")
+            if (!type.Namespace.StartsWith("TinyFx.Extensions.StackExchangeRedis"))
                 _connectionStringCache.TryAdd(type, ret);
             return ret;
         }

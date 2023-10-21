@@ -18,6 +18,7 @@ using System.Reflection;
 using Grpc.Core;
 using BloomFilter;
 using BloomFilter.Redis;
+using Google.Protobuf.WellKnownTypes;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
@@ -274,13 +275,14 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// 申请锁，直到等待时间到期。申请到后锁自动延期
         /// </summary>
         /// <param name="lockKey"></param>
-        /// <param name="waitSeconds"></param>
+        /// <param name="waitSeconds">等待申请锁超时时间</param>
+        /// <param name="retryInterval">申请锁间隔</param>
         /// <returns></returns>
-        public static async Task<RedLock> LockWaitAsync(string lockKey, int waitSeconds)
+        public static async Task<RedLock> LockWaitAsync(string lockKey, int waitSeconds, int retryInterval = 500)
         {
-            var retryCount = waitSeconds * 1000 / 500;
-            var retryInterval = TimeSpan.FromMilliseconds(500);
-            return await LockAsync(lockKey, null, retryCount, retryInterval);
+            retryInterval = retryInterval > 0 ? retryInterval : 500;
+            var retryCount = waitSeconds * 1000 / retryInterval;
+            return await LockAsync(lockKey, null, retryCount, TimeSpan.FromMilliseconds(retryInterval));
         }
         public static async Task<RedLock> LockAsync(string lockKey, TimeSpan? expiryTime = null, int retryCount = 0, TimeSpan? retryInterval = null)
         {

@@ -19,11 +19,22 @@ namespace TinyFx.DbCaching
                 foreach (var item in message.Changed)
                 {
                     var key = DbCacheUtil.GetCacheKey(item.ConfigId, item.TableName);
-                    var data = await _dataDCache.GetOrLoadAsync(key);
-                    if (!data.HasValue)
-                        throw new Exception($"DbCacheDataDCache缓存没有值。key:{key}");
+                    string redisValue = null;
+                    // 等3分钟，1秒申请一次
+                    using (var redLock = await RedisUtil.LockWaitAsync($"DbCacheChangeConsumer:{key}", 180, 1000))
+                    {
+                        if (redLock.IsLocked)
+                        {
+                            var data = await _dataDCache.GetOrLoadAsync(key);
+                            if (!data.HasValue)
+                                throw new Exception($"DbCacheDataDCache缓存没有值。key:{key}");
+                            redisValue = data.Value;
+                        }
+                        else
+                            throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
+                    }
                     if (DbCacheUtil.CacheDict.TryGetValue(key, out var value))
-                        list.Add(((IDbCacheMemoryUpdate)value, data.Value));
+                        list.Add(((IDbCacheMemoryUpdate)value, redisValue));
                 }
                 list.ForEach(x => x.cache.BeginUpdate(x.data));
                 list.ForEach(x => x.cache.EndUpdate());
