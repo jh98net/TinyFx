@@ -57,9 +57,14 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var ip = "123.125.255.133";
-            var cid = IP2CountryUtil.GetContryId(ip);
-            Console.WriteLine(cid);
+            var o = new Test { MQMeta = new MQMessageMeta { ErrorAction = "aaa", MessageId = "123" } };
+            var json = SerializerUtil.SerializeJson(o);
+            var a = SerializerUtil.DeserializeJson(json, typeof(Test));
+            MQUtil.Republish(a);
         }
+    }
+    class Test : IMQMessage
+    {
+        public MQMessageMeta MQMeta { get; set; }
     }
 }

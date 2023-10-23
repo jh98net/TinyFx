@@ -51,7 +51,8 @@ namespace TinyFx.Extensions.RabbitMQ
         public static void Publish<TMessage>(TMessage message, string routingKey = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
             where TMessage : new()
         {
-            configAction = GetPublishAction<TMessage>(message, routingKey, configAction, connectionStringName).GetTaskResult();
+            configAction = GetPublishAction<TMessage>(message, routingKey, configAction, connectionStringName, false)
+                .GetTaskResult();
             var data = GetPubSubData(message, configAction, connectionStringName);
             GetBus(data.ConnStrName)
                 .PubSub.Publish(data.Message, data.Action);
@@ -69,16 +70,18 @@ namespace TinyFx.Extensions.RabbitMQ
         public static async Task PublishAsync<TMessage>(TMessage message, string routingKey = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
             where TMessage : new()
         {
-            configAction = await GetPublishAction<TMessage>(message, routingKey, configAction, connectionStringName);
+            configAction = await GetPublishAction<TMessage>(message, routingKey, configAction, connectionStringName, false);
             var data = GetPubSubData(message, configAction, connectionStringName);
             await GetBus(data.ConnStrName)
                 .PubSub.PublishAsync(data.Message, data.Action);
 
         }
-        private static async Task<Action<IPublishConfiguration>> GetPublishAction<TMessage>(TMessage message, string routingKey, Action<IPublishConfiguration> configAction, string connectionStringName)
+        private static async Task<Action<IPublishConfiguration>> GetPublishAction<TMessage>(TMessage message, string routingKey, Action<IPublishConfiguration> configAction, string connectionStringName, bool isRepublish)
         {
             if (message is IMQMessage msg)
             {
+                if (!isRepublish && msg.MQMeta != null)
+                    throw new Exception("MQUtil.Publish时MQMeta必须为null");
                 msg.MQMeta ??= new()
                 {
                     MessageId = ObjectId.NewId(),
@@ -163,12 +166,12 @@ namespace TinyFx.Extensions.RabbitMQ
                 throw new Exception("MQUtil.Republish的Message必须继承自IMQMessage");
             if (msg.MQMeta == null || string.IsNullOrEmpty(msg.MQMeta.MessageId) || string.IsNullOrEmpty(msg.MQMeta.ErrorAction))
                 throw new Exception("MQUtil.Republish时message.MQMeta.MessageId和ErrorAction不能为空");
-            var method = GetGenericMethod(typeof(MQUtil), "Publish", BindingFlags.Static | BindingFlags.Public
+            var method = GetGenericMethod(typeof(MQUtil), "Republish", BindingFlags.Static | BindingFlags.NonPublic
                 , new Type[] { msgType, typeof(string), typeof(Action<IPublishConfiguration>), typeof(string) }
                 , msgType);
             method.Invoke(null, new object[] { message, null, configAction, connectionStringName });
         }
-        static MethodInfo GetGenericMethod(Type targetType, string name, BindingFlags flags, Type[] parameterTypes, params Type[] typeArguments)
+        private static MethodInfo GetGenericMethod(Type targetType, string name, BindingFlags flags, Type[] parameterTypes, params Type[] typeArguments)
         {
             var methods = targetType.GetMethods(flags).Where(m => m.Name == name && m.IsGenericMethod);
             foreach (MethodInfo method in methods)
@@ -185,6 +188,15 @@ namespace TinyFx.Extensions.RabbitMQ
                 return method.MakeGenericMethod(typeArguments);
             }
             return null;
+        }
+        private static void Republish<TMessage>(TMessage message, string routingKey = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
+            where TMessage : new()
+        {
+            configAction = GetPublishAction<TMessage>(message, routingKey, configAction, connectionStringName, true)
+                .GetTaskResult();
+            var data = GetPubSubData(message, configAction, connectionStringName);
+            GetBus(data.ConnStrName)
+                .PubSub.Publish(data.Message, data.Action);
         }
         #endregion
 
