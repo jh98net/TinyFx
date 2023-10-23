@@ -68,7 +68,7 @@ namespace TinyFx.Extensions.AppMetric.Formatting.ElasticSearch.Client
             }
             if (payload.Count()==0)
             {
-                return false;
+                return true;
             }
 
             var writer = new StringWriter();
