@@ -4,10 +4,13 @@ using SqlSugar;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.Metrics;
 using System.Drawing.Text;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Data.SqlSugar;
@@ -112,16 +115,9 @@ namespace TinyFx.DbCaching
         }
         private (string DictKey, string ValueKey) GetKeys(Expression<Func<TEntity>> expr)
         {
-            var body = (MemberInitExpression)expr.Body;
-            var dictKeys = new List<string>(body.Bindings.Count);
-            var valueKeys = new List<string>(body.Bindings.Count);
-            foreach (var binding in body.Bindings)
-            {
-                dictKeys.Add(binding.Member.Name);
-                var constant = (ConstantExpression)((MemberAssignment)binding).Expression;
-                valueKeys.Add(Convert.ToString(constant.Value));
-            }
-            return (string.Join('|', dictKeys), string.Join('|', valueKeys));
+            var visitor = new DbCacheMemoryExpressionVisitor();
+            visitor.Visit(expr);
+            return visitor.GetKeys();
         }
 
         private TEntity GetSingleValue(string dictKey, string valueKey)

@@ -50,6 +50,7 @@ using Renci.SshNet.Messages;
 using System.Linq.Expressions;
 using System.Reflection.Emit;
 using TinyFx.Extensions.IP2Country;
+using Google.Protobuf.WellKnownTypes;
 
 namespace TinyFx.Demos
 {
@@ -57,14 +58,45 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var o = new Test { MQMeta = new MQMessageMeta { ErrorAction = "aaa", MessageId = "123" } };
-            var json = SerializerUtil.SerializeJson(o);
-            var a = SerializerUtil.DeserializeJson(json, typeof(Test));
-            MQUtil.Republish(a);
+            Expression<Func<V_demo_user_courseEO>> expr = () => new V_demo_user_courseEO
+            {
+                ClassID="a",
+                UserID=1
+            };
+            var visitor = new MyExprVisitor();
+            visitor.Visit(expr);
+            var a = visitor.GetKeys();
         }
     }
-    class Test : IMQMessage
+    public class MyExprVisitor : ExpressionVisitor
     {
-        public MQMessageMeta MQMeta { get; set; }
+        private List<string> DictKeys = new();
+        private List<string> ValueKeys = new();
+
+        protected override MemberAssignment VisitMemberAssignment(MemberAssignment node)
+        {
+            DictKeys.Add(node.Member.Name);
+            return base.VisitMemberAssignment(node);
+        }
+
+        protected override Expression VisitConstant(ConstantExpression node)
+        {
+            ValueKeys.Add(Convert.ToString(node.Value));
+            return base.VisitConstant(node);
+        }
+        public (string DictKey, string ValueKey) GetKeys()
+        {
+            return (string.Join('|', DictKeys), string.Join('|', ValueKeys));
+        }
+    }
+
+    public class A
+    {
+        public A()
+        {
+            Name = "bas";
+        }
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 }
