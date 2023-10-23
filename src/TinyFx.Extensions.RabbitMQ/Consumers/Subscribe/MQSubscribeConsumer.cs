@@ -79,7 +79,7 @@ namespace TinyFx.Extensions.RabbitMQ
             IsRegisted = true;
         }
 
-        private string GetSubscriptionId()
+        protected string GetSubscriptionId()
         {
             switch (SubscribeMode)
             {
@@ -128,15 +128,15 @@ namespace TinyFx.Extensions.RabbitMQ
                     if (DIUtil.GetService<RabbitMQSection>()?.LogEnabled ?? false)
                     {
                         LogUtil.Debug("[MQ] SubscribeConsumer消费成功。{MQConsumerType}{MQMessageType}{MQMessageId}{MQElaspedTime}"
-                            , GetType().FullName, msg.GetType().FullName, tmpMsg?.MessageId, GetElaspedTime(tmpMsg?.Timestamp));
+                            , GetType().FullName, MQMessageType.FullName, tmpMsg?.MQMeta?.MessageId, GetElaspedTime(tmpMsg?.MQMeta?.Timestamp));
                     }
                 }
                 catch (Exception ex)
                 {
                     LogUtil.Error(ex, "[MQ] SubscribeConsumer消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}{MQElaspedTime}"
-                        , GetType().FullName, SerializerUtil.SerializeJson(msg), GetSubscriptionId(), tmpMsg?.MessageId, GetElaspedTime(tmpMsg?.Timestamp));
+                        , GetType().FullName, SerializerUtil.SerializeJson(msg), GetSubscriptionId(), tmpMsg?.MQMeta?.MessageId, GetElaspedTime(tmpMsg?.MQMeta?.Timestamp));
                     // 不要catch，此异常将导致被发送到默认错误代理队列 error queue (broker)
-                    throw new EasyNetQException($"SubscribeConsumer消费异常。ConsumerType:{GetType().FullName} MessageId:{tmpMsg?.MessageId}");
+                    throw new EasyNetQException($"SubscribeConsumer消费异常。ConsumerType:{GetType().FullName} MessageId:{tmpMsg?.MQMeta?.MessageId}");
                 }
             };
         }

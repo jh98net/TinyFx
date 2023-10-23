@@ -8,28 +8,38 @@ namespace TinyFx.Extensions.RabbitMQ
 {
     public interface IMQMessage
     {
-        /// <summary>
-        /// 消息唯一ID
-        /// </summary>
-        string MessageId { get; set; }
-        /// <summary>
-        /// 消息发送时间
-        /// </summary>
-        long Timestamp { get; set; }
+        MQMessageMeta MQMeta { get; set; }
+    }
+    public class MQMessageMeta
+    {
         /// <summary>
         /// 消息路由关键值
         /// </summary>
-        string RoutingKey { get; set; }
+        public string RoutingKey { get; set; }
         /// <summary>
-        /// 已成功的消费Action
+        /// 延迟间隔
         /// </summary>
-        List<string> SuccessActions { get; set; }
+        public TimeSpan Delay { get; set; }
+
+        /// <summary>
+        /// 消息唯一ID（自动设置）
+        /// </summary>
+        public string MessageId { get; set; }
+        /// <summary>
+        /// 消息发送时间（自动设置）
+        /// </summary>
+        public long Timestamp { get; set; }
+        /// <summary>
+        /// 异常Action列表
+        /// </summary>
+        public List<string> ErrorActionList { get; set; } = new();
+        /// <summary>
+        /// 当前异常的Action（自动设置）
+        /// </summary>
+        public string ErrorAction { get; set; }
     }
     internal class MQMessageBase : IMQMessage
     {
-        public string MessageId { get; set; }
-        public long Timestamp { get; set; }
-        public string RoutingKey { get; set; }
-        public List<string> SuccessActions { get; set; }
+        public MQMessageMeta MQMeta { get; set; }
     }
 }

@@ -38,19 +38,19 @@ namespace TinyFx.Extensions.RabbitMQ
             {
                 var ret = new MQResponseResult<TResponse>();
                 var req = request as IMQMessage;
-                ret.MessageId = req?.MessageId;
+                ret.MessageId = req?.MQMeta?.MessageId;
                 try
                 {
                     ret.Result = await Respond(request, cancellationToken);
                     ret.Success = true;
-                    ret.MessageElasped = GetElaspedTime(req?.Timestamp);
+                    ret.MessageElasped = GetElaspedTime(req?.MQMeta?.Timestamp);
                     LogUtil.Debug("[MQ] RespondConsumer消费成功。{MQConsumerType}{MQRequestType}{MQMessageId}{MQElaspedTime}"
-                        , GetType().FullName, request.GetType().FullName, req?.MessageId, ret.MessageElasped);
+                        , GetType().FullName, request.GetType().FullName, req?.MQMeta?.MessageId, ret.MessageElasped);
                 }
                 catch (Exception ex)
                 {
                     ret.Success = false;
-                    ret.MessageElasped = GetElaspedTime(req?.Timestamp);
+                    ret.MessageElasped = GetElaspedTime(req?.MQMeta?.Timestamp);
                     var exc = ExceptionUtil.GetException<CustomException>(ex);
                     if (exc != null)
                     {
@@ -63,7 +63,7 @@ namespace TinyFx.Extensions.RabbitMQ
                         ret.Message = ex.Message;
                         ret.Exception = ex;
                         LogUtil.Error(ex, "[MQ] RespondConsumer消费异常。{MQConsumerType}{MQRequestBody}{MQMessageId}{MQElaspedTime}"
-                            , GetType().FullName, SerializerUtil.SerializeJson(request), req?.MessageId, ret.MessageElasped);
+                            , GetType().FullName, SerializerUtil.SerializeJson(request), req?.MQMeta?.MessageId, ret.MessageElasped);
                     }
                 }
                 return ret;

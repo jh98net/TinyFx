@@ -51,16 +51,12 @@ namespace TinyFx.Extensions.RabbitMQ
         public static void Publish<TMessage>(TMessage message, string routingKey = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
             where TMessage : new()
         {
-            configAction = GetPublishAction<TMessage>(message,routingKey, configAction, connectionStringName).GetTaskResult();
+            configAction = GetPublishAction<TMessage>(message, routingKey, configAction, connectionStringName).GetTaskResult();
             var data = GetPubSubData(message, configAction, connectionStringName);
             GetBus(data.ConnStrName)
                 .PubSub.Publish(data.Message, data.Action);
         }
-        public static void Publish<TMessage>(TMessage message, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
-           where TMessage : IMQMessage, new()
-        {
-            Publish(message, null, configAction, connectionStringName);
-        }
+
         /// <summary>
         /// 向MQ发布Publish命令，消费类需要继承SubscribeConsumer进行消费
         /// </summary>
@@ -73,25 +69,25 @@ namespace TinyFx.Extensions.RabbitMQ
         public static async Task PublishAsync<TMessage>(TMessage message, string routingKey = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
             where TMessage : new()
         {
-            configAction = await GetPublishAction<TMessage>(message,routingKey, configAction, connectionStringName);
+            configAction = await GetPublishAction<TMessage>(message, routingKey, configAction, connectionStringName);
             var data = GetPubSubData(message, configAction, connectionStringName);
             await GetBus(data.ConnStrName)
                 .PubSub.PublishAsync(data.Message, data.Action);
 
         }
-        public static async Task PublishAsync<TMessage>(TMessage message, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
-           where TMessage : IMQMessage, new()
-        {
-            await PublishAsync(message, null, configAction, connectionStringName);
-        }
         private static async Task<Action<IPublishConfiguration>> GetPublishAction<TMessage>(TMessage message, string routingKey, Action<IPublishConfiguration> configAction, string connectionStringName)
         {
             if (message is IMQMessage msg)
             {
+                msg.MQMeta ??= new()
+                {
+                    MessageId = ObjectId.NewId(),
+                    Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false)
+                };
                 if (!string.IsNullOrEmpty(routingKey))
-                    msg.RoutingKey = routingKey;
+                    msg.MQMeta.RoutingKey = routingKey;
                 else
-                    routingKey = msg.RoutingKey;
+                    routingKey = msg.MQMeta.RoutingKey;
             }
             if (string.IsNullOrEmpty(routingKey))
             {
@@ -117,13 +113,7 @@ namespace TinyFx.Extensions.RabbitMQ
             return configAction;
         }
         private static (TMessage Message, Action<IPublishConfiguration> Action, string ConnStrName) GetPubSubData<TMessage>(TMessage message, Action<IPublishConfiguration> configAction, string connectionStringName = null)
-            where TMessage : new()
         {
-            if (message is IMQMessage msg)
-            {
-                msg.MessageId = ObjectId.NewId();
-                msg.Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
-            }
             var attr = GetMessageAttribute<MQPublishMessageAttribute>(message);
             var action = GetPublishConfiguration(attr, configAction);
             var connStrName = connectionStringName ?? attr?.ConnectionStringName;
@@ -147,11 +137,62 @@ namespace TinyFx.Extensions.RabbitMQ
         }
         #endregion
 
+        #region Republish
+        /// <summary>
+        /// 重新发布异常的Message
+        /// </summary>
+        /// <param name="messageType"></param>
+        /// <param name="messageJson"></param>
+        /// <param name="connectionStringName"></param>
+        public static void Republish(string messageType, string messageJson, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
+        {
+            var msgType = Type.GetType(messageType);
+            var msg = SerializerUtil.DeserializeJson(messageJson, msgType);
+            Republish(msg, configAction, connectionStringName);
+        }
+        /// <summary>
+        /// 重新发布异常的Message
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="connectionStringName"></param>
+        /// <exception cref="Exception"></exception>
+        public static void Republish(object message, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
+        {
+            var msgType = message.GetType();
+            if (!(message is IMQMessage msg))
+                throw new Exception("MQUtil.Republish的Message必须继承自IMQMessage");
+            if (msg.MQMeta == null || string.IsNullOrEmpty(msg.MQMeta.MessageId) || string.IsNullOrEmpty(msg.MQMeta.ErrorAction))
+                throw new Exception("MQUtil.Republish时message.MQMeta.MessageId和ErrorAction不能为空");
+            var method = GetGenericMethod(typeof(MQUtil), "Publish", BindingFlags.Static | BindingFlags.Public
+                , new Type[] { msgType, typeof(string), typeof(Action<IPublishConfiguration>), typeof(string) }
+                , msgType);
+            method.Invoke(null, new object[] { message, null, configAction, connectionStringName });
+        }
+        static MethodInfo GetGenericMethod(Type targetType, string name, BindingFlags flags, Type[] parameterTypes, params Type[] typeArguments)
+        {
+            var methods = targetType.GetMethods(flags).Where(m => m.Name == name && m.IsGenericMethod);
+            foreach (MethodInfo method in methods)
+            {
+                var parameters = method.GetParameters();
+                if (parameters.Length != parameterTypes.Length)
+                    continue;
+
+                for (var i = 0; i < parameters.Length; i++)
+                {
+                    if (parameters[i].ParameterType != parameterTypes[i])
+                        break;
+                }
+                return method.MakeGenericMethod(typeArguments);
+            }
+            return null;
+        }
+        #endregion
+
         #region SchedulePublish
         public static void SchedulePublish<TMessage>(TMessage message, TimeSpan delay, Action<IFuturePublishConfiguration> configAction = null, string connectionStringName = null)
             where TMessage : new()
         {
-            var data = GetSchedulerData(message, configAction, connectionStringName);
+            var data = GetSchedulerData(message, delay, configAction, connectionStringName);
             GetBus(data.ConnStrName)
                 .Scheduler.FuturePublish(data.Message, message.GetType(), delay, data.Action);
         }
@@ -167,17 +208,21 @@ namespace TinyFx.Extensions.RabbitMQ
         public static Task SchedulePublishAsync<TMessage>(TMessage message, TimeSpan delay, Action<IFuturePublishConfiguration> configAction = null, string connectionStringName = null)
             where TMessage : new()
         {
-            var data = GetSchedulerData(message, configAction, connectionStringName);
+            var data = GetSchedulerData(message, delay, configAction, connectionStringName);
             return GetBus(data.ConnStrName)
                 .Scheduler.FuturePublishAsync(data.Message, delay, data.Action);
         }
-        private static (TMessage Message, Action<IFuturePublishConfiguration> Action, string ConnStrName) GetSchedulerData<TMessage>(TMessage message, Action<IFuturePublishConfiguration> configAction, string connectionStringName = null)
+        private static (TMessage Message, Action<IFuturePublishConfiguration> Action, string ConnStrName) GetSchedulerData<TMessage>(TMessage message, TimeSpan delay, Action<IFuturePublishConfiguration> configAction, string connectionStringName = null)
             where TMessage : new()
         {
             if (message is IMQMessage msg)
             {
-                msg.MessageId = ObjectId.NewId();
-                msg.Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+                msg.MQMeta = new()
+                {
+                    MessageId = ObjectId.NewId(),
+                    Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false),
+                    Delay = delay
+                };
             }
             var attr = GetMessageAttribute<MQPublishMessageAttribute>(message);
             var action = GetFuturePublishConfiguration(attr, configAction);
@@ -232,8 +277,11 @@ namespace TinyFx.Extensions.RabbitMQ
         {
             if (message is IMQMessage msg)
             {
-                msg.MessageId = ObjectId.NewId();
-                msg.Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+                msg.MQMeta = new()
+                {
+                    MessageId = ObjectId.NewId(),
+                    Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false),
+                };
             }
             var attr = GetMessageAttribute<MQRequestMessageAttribute>(message);
             var action = GetRequestConfiguration(attr, configAction);
@@ -296,8 +344,11 @@ namespace TinyFx.Extensions.RabbitMQ
         {
             if (message is IMQMessage msg)
             {
-                msg.MessageId = ObjectId.NewId();
-                msg.Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+                msg.MQMeta = new()
+                {
+                    MessageId = ObjectId.NewId(),
+                    Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false),
+                };
             }
             var attr = GetMessageAttribute<MQSendMessageAttribute>(message);
             var action = GetSendConfiguration(attr, configAction);
@@ -360,7 +411,7 @@ namespace TinyFx.Extensions.RabbitMQ
                     return false;
                 var item = GetMQErrorQueueMessage(result);
                 // 相同message
-                if (item.MQMessage.MessageId == messageId)
+                if (item.MQMessage?.MQMeta?.MessageId == messageId)
                 {
                     await bus.ExchangeDeclarePassiveAsync(item.Exchange);
                     var exchange = new Exchange(item.Exchange);
