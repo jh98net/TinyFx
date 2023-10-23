@@ -68,5 +68,19 @@ namespace TinyFx.DbCaching
         /// </summary>
         /// <returns></returns>
         List<T> GetAllList();
+        /// <summary>
+        /// 自定义单字典缓存，name唯一
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        Dictionary<string, T> GetOrAddCustom(string name, Func<List<T>, Dictionary<string, T>> func);
+        /// <summary>
+        /// 自定义列表字典缓存，name唯一
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        Dictionary<string, List<T>> GetOrAddCustom(string name, Func<List<T>, Dictionary<string, List<T>>> func);
     }
 }

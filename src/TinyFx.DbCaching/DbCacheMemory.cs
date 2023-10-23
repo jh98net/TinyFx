@@ -61,6 +61,37 @@ namespace TinyFx.DbCaching
         }
         public List<T> GetAllList() => DbData;
 
+        /// <summary>
+        /// 自定义单字典缓存，name唯一
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        public Dictionary<string, T> GetOrAddCustom(string name, Func<List<T>, Dictionary<string, T>> func)
+        {
+            WaitForUpdate();
+            var key = $"_CUSTOM_SINGLE_{name}";
+            return SingleDict.GetOrAdd(key, (k) => 
+            {
+                return func(DbData);
+            });
+        }
+        /// <summary>
+        /// 自定义列表字典缓存，name唯一
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        public Dictionary<string, List<T>> GetOrAddCustom(string name, Func<List<T>, Dictionary<string, List<T>>> func)
+        {
+            WaitForUpdate();
+            var key = $"_CUSTOM_LIST_{name}";
+            return ListDict.GetOrAdd(key, (k) =>
+            {
+                return func(DbData);
+            });
+        }
+
         #region Utils
         private async Task<List<T>> GetInitData()
         {
