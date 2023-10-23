@@ -114,7 +114,7 @@ namespace TinyFx.Extensions.RabbitMQ
                     x.WithSingleActiveConsumer();//单一消费者
             };
         }
-        private Func<TMessage, CancellationToken, Task> GetOnMessageFunc()
+        protected virtual Func<TMessage, CancellationToken, Task> GetOnMessageFunc()
         {
             return async (msg, cancellationToken) =>
             {
