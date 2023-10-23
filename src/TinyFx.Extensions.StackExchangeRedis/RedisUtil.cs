@@ -19,6 +19,7 @@ using Grpc.Core;
 using BloomFilter;
 using BloomFilter.Redis;
 using Google.Protobuf.WellKnownTypes;
+using Type = System.Type;
 
 namespace TinyFx.Extensions.StackExchangeRedis
 {
