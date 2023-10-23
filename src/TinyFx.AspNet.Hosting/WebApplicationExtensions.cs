@@ -56,8 +56,6 @@ namespace TinyFx
                     , app.Urls);
                 return Task.CompletedTask;
             });
-            // AppMetric
-            app.UseAppMetric();
             return app;
         }
 
