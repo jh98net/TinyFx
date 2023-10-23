@@ -19,7 +19,7 @@ namespace TinyFx.DbCaching
         protected override async Task<CacheValue<string>> LoadValueWhenRedisNotExistsAsync(string field)
         {
             var ret = new CacheValue<string>();
-            var keys = DbCacheUtil.ParseCacheKey(field);
+            var keys = DbCachingUtil.ParseCacheKey(field);
             var list = await DbUtil.GetDb(keys.ConfigId).Queryable<object>()
                 .AS(keys.TableName).ToListAsync() ?? new List<object>();
             ret.Value = SerializerUtil.SerializeJson(list);

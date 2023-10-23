@@ -37,7 +37,7 @@ namespace TinyFx.DbCaching
                 throw new Exception($"内存缓存类型仅支持有SugarTableAttribute的类。type: {typeof(T).FullName}");
             var routingProvider = DIUtil.GetRequiredService<IDbRoutingProvider>();
             ConfigId = routingProvider.RouteDb<T>(routingDbKeys);
-            CachKey = DbCacheUtil.GetCacheKey(ConfigId, TableAttribute.TableName);
+            CachKey = DbCachingUtil.GetCacheKey(ConfigId, TableAttribute.TableName);
             PrimaryKeys = DbUtil.GetDb(ConfigId).DbMaintenance.GetPrimaries(TableAttribute.TableName);
             DbData = GetInitData().GetTaskResult();
         }

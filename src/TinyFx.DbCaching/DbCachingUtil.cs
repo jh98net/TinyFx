@@ -1,23 +1,16 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using SqlSugar;
-using System;
+﻿using SqlSugar;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using TinyFx.Data.SqlSugar;
 using TinyFx.Extensions.StackExchangeRedis;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace TinyFx.DbCaching
 {
     /// <summary>
     /// 支持通知更新的内存缓存辅助类
     /// </summary>
-    public static class DbCacheUtil
+    public static class DbCachingUtil
     {
         // key: typename|routingDbKeys value: cacheKey
         private static ConcurrentDictionary<string, string> _cachKeyDict = new();
