@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Logging;
 
-namespace TinyFx.Extensions.RabbitMQ.Consumers.Subscribe
+namespace TinyFx.Extensions.RabbitMQ
 {
     public abstract class MQSubActionConsumer<TMessage> : MQSubscribeConsumer<TMessage>
-         where TMessage : class, IMQMessage, new()
+         where TMessage : class, new()
     {
         public override MQSubscribeMode SubscribeMode => MQSubscribeMode.OneQueue;
         private List<MQSubAction> ActionList = new();
@@ -29,11 +29,12 @@ namespace TinyFx.Extensions.RabbitMQ.Consumers.Subscribe
         }
         protected override async Task OnMessage(TMessage message, CancellationToken cancellationToken)
         {
-            var republish = !string.IsNullOrEmpty(message.MQMeta.ErrorAction);
+            var msg = message as IMQMessage;
+            var republish = !string.IsNullOrEmpty(msg?.MQMeta.ErrorAction);
             // 重试
             if (republish) 
             {
-                var item = ActionList.Find(x => x.Name == message.MQMeta.ErrorAction);
+                var item = ActionList.Find(x => x.Name == msg.MQMeta.ErrorAction);
                 if (item == null)
                     return;
                 try
@@ -45,7 +46,7 @@ namespace TinyFx.Extensions.RabbitMQ.Consumers.Subscribe
                     if (DIUtil.GetService<RabbitMQSection>()?.LogEnabled ?? false)
                     {
                         LogUtil.Debug("[MQ] SubscribeConsumer重新消费成功。{MQConsumerType}{MQMessageType}{MQMessageId}"
-                            , GetType().FullName, MQMessageType.FullName, message?.MQMeta?.MessageId);
+                            , GetType().FullName, MQMessageType.FullName, msg?.MQMeta?.MessageId);
                     }
                 }
                 catch (Exception ex)
@@ -57,12 +58,12 @@ namespace TinyFx.Extensions.RabbitMQ.Consumers.Subscribe
                         MessageData = SerializerUtil.SerializeJson(message),
 
                         ProjectId = ConfigUtil.Project.ProjectId,
-                        MessageId = message.MQMeta.MessageId,
+                        MessageId = msg.MQMeta.MessageId,
                         ErrorAction = item.Name,
                         Exception = ex
                     };
                     LogUtil.Error(ex, "[MQ] SubscribeConsumer重新消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}"
-                       , GetType().FullName, SerializerUtil.SerializeJson(message), GetSubscriptionId(), message?.MQMeta?.MessageId);
+                       , GetType().FullName, SerializerUtil.SerializeJson(message), GetSubscriptionId(), msg?.MQMeta?.MessageId);
                     await OnError(err);
                 }
             }
@@ -79,13 +80,16 @@ namespace TinyFx.Extensions.RabbitMQ.Consumers.Subscribe
                         if (DIUtil.GetService<RabbitMQSection>()?.LogEnabled ?? false)
                         {
                             LogUtil.Debug("[MQ] SubscribeConsumer消费成功。{MQConsumerType}{MQMessageType}{MQMessageId}{MQElaspedTime}"
-                                , GetType().FullName, MQMessageType.FullName, message?.MQMeta?.MessageId, GetElaspedTime(message?.MQMeta?.Timestamp));
+                                , GetType().FullName, MQMessageType.FullName, msg?.MQMeta?.MessageId, GetElaspedTime(msg?.MQMeta?.Timestamp));
                         }
                     }
                     catch (Exception ex)
                     {
-                        message.MQMeta.ErrorActionList.Add(item.Name);
-                        message.MQMeta.ErrorAction = item.Name;
+                        if (msg != null)
+                        {
+                            msg.MQMeta.ErrorActionList.Add(item.Name);
+                            msg.MQMeta.ErrorAction = item.Name;
+                        }
                         var err = new MQSubActionError
                         {
                             MessageType = MQMessageType.FullName,
@@ -93,12 +97,12 @@ namespace TinyFx.Extensions.RabbitMQ.Consumers.Subscribe
                             MessageData = SerializerUtil.SerializeJson(message),
 
                             ProjectId = ConfigUtil.Project.ProjectId,
-                            MessageId = message.MQMeta.MessageId,
+                            MessageId = msg?.MQMeta.MessageId,
                             ErrorAction = item.Name,
                             Exception = ex
                         };
                         LogUtil.Error(ex, "[MQ] SubscribeConsumer消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}{MQElaspedTime}"
-                            , GetType().FullName, SerializerUtil.SerializeJson(message), GetSubscriptionId(), message?.MQMeta?.MessageId, GetElaspedTime(message?.MQMeta?.Timestamp));
+                            , GetType().FullName, SerializerUtil.SerializeJson(message), GetSubscriptionId(), msg?.MQMeta?.MessageId, GetElaspedTime(msg?.MQMeta?.Timestamp));
                         await OnError(err);
                     }
                 }
