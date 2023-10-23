@@ -1,0 +1,54 @@
+{
+    "AppOptions": {
+        "AppId": "xxyy",
+        "ServerUrl": "http://192.168.1.121:9009",
+        "UseVerifyClientRequest": true
+    },
+    "OAuth": {
+        "FaceBookConfig": {
+            "ClientId": "1500613440708250",
+            "ClientSecret": "4a4f2c86f00dd771440164076f734ffd"
+        },
+        "GoogleConfig": {
+            "ClientId": "453912735249-j7k3subq64jbntcgn3pjtnpnbkheka74.apps.googleusercontent.com",
+            "ClientSecret": "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"
+        }
+    },
+    "Project": {
+        "ProjectId": "xxyy",
+        "Description": "休闲应用平台-WebAPI"
+    },
+     "Metirc": {
+        "AppMetrics": {
+            "ReportingEnabled": true
+        },
+        "AspNetMetrics": {
+            "IgnoredHttpStatusCodes": [ 404 ],
+            "HealthEndpointEnabled": false,
+            "MetricsEndpointEnabled": true,
+            "MetricsTextEndpointEnabled": true,
+            "PingEndpointEnabled": false,
+            "DefaultTrackingEnabled": false,
+            "OAuth2TrackingEnabled": false,
+            "IgnoredRoutesRegexPatterns": [ "/^test/" ],
+            "FilterRoute": {
+                "ForNameSpace": ["Caching"],
+                "ForService": [ "*DCache", "*Consumer","*Client","*Service","*ClientBase","LoginCacheUtil" ],
+                "ForMethod": ["*SetState"]
+            }
+        }
+    },
+    "RabbitMQ": {
+        "ConsumerAssemblies": [
+            "Xxyy.BLL.dll"
+        ]
+    },
+    "AutoMapper": {
+        "Assemblies": [
+            "Xxyy.BLL.dll"
+        ]
+    },
+    "AspNet": {
+        "PathBase": "/xxyy"
+    }
+}

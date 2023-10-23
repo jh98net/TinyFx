@@ -24,13 +24,18 @@ namespace TinyFx.Extensions.AppMetric
             ElasticSearchSettings elasticSearchSettings;
             string userName = Configuration["Serilog:WriteTo:ELKSink:Args:username"];
             string passwd = Configuration["Serilog:WriteTo:ELKSink:Args:password"];
-            if(string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(passwd))
+            string esUrl = Configuration["Serilog:WriteTo:ELKSink:Args:nodeUris"]?.Split(";")?[0];
+            if (esUrl == null)
             {
-                elasticSearchSettings = new ElasticSearchSettings(new Uri(Configuration["Serilog:WriteTo:ELKSink:Args:nodeUris"].Split(";")[0]), "appmetricss");
+                return builder;
+            }
+            if (string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(passwd))
+            {
+                elasticSearchSettings = new ElasticSearchSettings(new Uri(esUrl), "appmetricss");
             }
             else
             {
-                elasticSearchSettings = new ElasticSearchSettings(new Uri(Configuration["Serilog:WriteTo:ELKSink:Args:nodeUris"].Split(";")[0]), "appmetricss", userName, passwd);
+                elasticSearchSettings = new ElasticSearchSettings(new Uri(esUrl), "appmetricss", userName, passwd);
             }
             builder.Services.AddTransient<TimerInterceptorAttribute>(provider => new TimerInterceptorAttribute());
             var predicatesDic = Configuration.GetSection("Metirc:AspNetMetrics:FilterRoute")
@@ -132,19 +137,26 @@ namespace TinyFx.Extensions.AppMetric
         {
             //if (Convert.ToBoolean(app.Configuration["Metirc:AppMetrics:ReportingEnabled"]))
             {
-                
-                app.UseMiddleware<CurrentTimeMiddleware>();
-
-                var reportFactory = app.Services.GetRequiredService<IReportFactory>();
-
-                var metrics = app.Services.GetRequiredService<IMetrics>();
-                var reporter = reportFactory.CreateReporter();
-
-                app.Lifetime.ApplicationStarted.Register(() =>
+                try
                 {
-                    Task.Run(() => reporter.RunReports(metrics, app.Lifetime.ApplicationStopping),
-                        app.Lifetime.ApplicationStopping);
-                });
+                    app.UseMiddleware<CurrentTimeMiddleware>();
+
+                    var reportFactory = app.Services.GetRequiredService<IReportFactory>();
+
+                    var metrics = app.Services.GetRequiredService<IMetrics>();
+                    var reporter = reportFactory.CreateReporter();
+
+                    app.Lifetime.ApplicationStarted.Register(() =>
+                    {
+                        Task.Run(() => reporter.RunReports(metrics, app.Lifetime.ApplicationStopping),
+                            app.Lifetime.ApplicationStopping);
+                    });
+                }
+                catch
+                {
+                    
+                }
+              
             }
         
         }
