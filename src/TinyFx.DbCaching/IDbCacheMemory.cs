@@ -12,9 +12,9 @@ namespace TinyFx.DbCaching
     /// <summary>
     ///支持通知更新的内存缓存对象
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public interface IDbCacheMemory<T>
-        where T : class, new()
+    /// <typeparam name="TEntity"></typeparam>
+    public interface IDbCacheMemory<TEntity>
+        where TEntity : class, new()
     {
         /// <summary>
         /// 表描述信息
@@ -35,52 +35,61 @@ namespace TinyFx.DbCaching
         /// <summary>
         /// 数据库原始数据
         /// </summary>
-        List<T> DbData { get; }
+        List<TEntity> DbData { get; }
         /// <summary>
         /// 缓存的list
         /// </summary>
-        ConcurrentDictionary<string, Dictionary<string, List<T>>> ListDict { get; }
+        ConcurrentDictionary<string, Dictionary<string, List<TEntity>>> ListDict { get; }
         /// <summary>
         /// 缓存的single
         /// </summary>
-        ConcurrentDictionary<string, Dictionary<string, T>> SingleDict { get; }
+        ConcurrentDictionary<string, Dictionary<string, TEntity>> SingleDict { get; }
+        ConcurrentDictionary<string, object> CustomDict { get; }
 
         /// <summary>
         /// 获取单个缓存项
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        T GetSingle(object id);
+        TEntity GetSingle(object id);
         /// <summary>
         /// 获取单个缓存项
         /// </summary>
         /// <param name="expr"></param>
         /// <returns></returns>
-        T GetSingle(Expression<Func<T>> expr);
+        TEntity GetSingle(Expression<Func<TEntity>> expr);
         /// <summary>
         /// 获取一组缓存项
         /// </summary>
         /// <param name="expr"></param>
         /// <returns></returns>
-        List<T> GetList(Expression<Func<T>> expr);
+        List<TEntity> GetList(Expression<Func<TEntity>> expr);
         /// <summary>
         /// 获取全部缓存项
         /// </summary>
         /// <returns></returns>
-        List<T> GetAllList();
+        List<TEntity> GetAllList();
         /// <summary>
         /// 自定义单字典缓存，name唯一
         /// </summary>
         /// <param name="name"></param>
         /// <param name="func"></param>
         /// <returns></returns>
-        Dictionary<string, T> GetOrAddCustom(string name, Func<List<T>, Dictionary<string, T>> func);
+        Dictionary<string, TEntity> GetOrAddCustom(string name, Func<List<TEntity>, Dictionary<string, TEntity>> func);
         /// <summary>
         /// 自定义列表字典缓存，name唯一
         /// </summary>
         /// <param name="name"></param>
         /// <param name="func"></param>
         /// <returns></returns>
-        Dictionary<string, List<T>> GetOrAddCustom(string name, Func<List<T>, Dictionary<string, List<T>>> func);
+        Dictionary<string, List<TEntity>> GetOrAddCustom(string name, Func<List<TEntity>, Dictionary<string, List<TEntity>>> func);
+        /// <summary>
+        /// 自定义对象缓存，name唯一
+        /// </summary>
+        /// <typeparam name="TCache"></typeparam>
+        /// <param name="name"></param>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        TCache GetOrAddCustom<TCache>(string name, Func<List<TEntity>, TCache> func);
     }
 }
