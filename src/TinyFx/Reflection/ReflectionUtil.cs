@@ -269,7 +269,7 @@ namespace TinyFx.Reflection
             if (!_propertyValueGetterCache.TryGetValue(hashKey, out var memberGetter))
             {
                 var objExpr = Expression.Parameter(entityType, "entity");
-                var bodyExpr = Expression.PropertyOrField(objExpr, propertyName);
+                var bodyExpr = Expression.Convert(Expression.PropertyOrField(objExpr, propertyName), typeof(object));
                 memberGetter = Expression.Lambda<Func<object, object>>(bodyExpr, objExpr).Compile();
                 _propertyValueGetterCache.TryAdd(hashKey, memberGetter);
             }
