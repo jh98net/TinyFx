@@ -1,21 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SqlSugar;
-using System;
+﻿using SqlSugar;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics.Metrics;
-using System.Drawing.Text;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Reflection.Metadata;
 using System.Text;
-using System.Threading.Tasks;
 using TinyFx.Data.SqlSugar;
 using TinyFx.Reflection;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace TinyFx.DbCaching
 {
@@ -115,9 +104,37 @@ namespace TinyFx.DbCaching
         }
         private (string DictKey, string ValueKey) GetKeys(Expression<Func<TEntity>> expr)
         {
-            var visitor = new DbCacheMemoryExpressionVisitor();
-            visitor.Visit(expr);
-            return visitor.GetKeys();
+            //var visitor = new DbCacheMemoryExpressionVisitor();
+            //visitor.Visit(expr);
+            //return visitor.GetKeys();
+            var entityType = typeof(TEntity);          
+            var fieldBuilder = new StringBuilder();
+            var valueBuilder = new StringBuilder();
+            switch (expr.Body.NodeType)
+            {
+                case ExpressionType.MemberInit:
+                    var memberInitExpr = expr.Body as MemberInitExpression;
+                    foreach (var elementExpr in memberInitExpr.Bindings)
+                    {
+                        if (elementExpr.BindingType != MemberBindingType.Assignment)
+                            throw new Exception("暂时不支持除MemberBindingType.Assignment类型外的成员绑定表达式");
+
+                        if (elementExpr is MemberAssignment memberAssignment)
+                        {
+                            if (fieldBuilder.Length > 0)
+                            {
+                                fieldBuilder.Append('|');
+                                valueBuilder.Append('|');
+                            }
+                            var memberValue = this.Evaluate(memberAssignment.Expression);
+                            fieldBuilder.Append(memberAssignment.Member.Name);
+                            valueBuilder.Append(Convert.ToString(memberValue));
+                        }
+                    } 
+                    break;
+                default: throw new NotSupportedException("不支持的表达式");
+            }
+            return (fieldBuilder.ToString(), valueBuilder.ToString());
         }
 
         private TEntity GetSingleValue(string dictKey, string valueKey)
@@ -162,7 +179,7 @@ namespace TinyFx.DbCaching
         #endregion
 
         #region Update
-        private bool _isUpdating = false;
+        private volatile bool _isUpdating = false;
         private void WaitForUpdate()
         {
             if (!_isUpdating) return;
@@ -192,5 +209,11 @@ namespace TinyFx.DbCaching
             }
         }
         #endregion
+
+        private object Evaluate(Expression expr)
+        {
+            var lambdaExpr = Expression.Lambda(expr);
+            return lambdaExpr.Compile().DynamicInvoke();
+        }
     }
 }

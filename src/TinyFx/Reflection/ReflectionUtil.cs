@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Reflection;
-using System.Web;
-using System.Runtime.InteropServices;
-using System.IO;
-using TinyFx.IO;
 using System.Collections;
-using System.Linq.Expressions;
 using System.Collections.Concurrent;
-using System.Text.Json.Serialization;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text;
+using TinyFx.IO;
 using TinyFx.Logging;
 
 namespace TinyFx.Reflection
@@ -69,6 +67,42 @@ namespace TinyFx.Reflection
         /// <returns></returns>
         public static bool IsSimpleType(Type type)
             => SimpleTypeNames.PrimitiveTypes.Contains(type.FullName) || SimpleTypeNames.SimpleTypes.Contains(type.FullName);
+
+        private static Type[] valueTypes = new Type[] {typeof(byte),typeof(sbyte),typeof(short),typeof(ushort),
+            typeof(int),typeof(uint),typeof(long),typeof(ulong),typeof(float),typeof(double),typeof(decimal),
+            typeof(bool),typeof(string),typeof(char),typeof(Guid),typeof(DateTime),typeof(DateTimeOffset),
+            typeof(TimeSpan),typeof(TimeOnly),typeof(DateOnly),typeof(DBNull)};
+        public static bool IsEntityType(this Type type, out Type underlyingType)
+        {
+            underlyingType = type;
+            if (valueTypes.Contains(type) || type.FullName == "System.Data.Linq.Binary")
+                return false;
+            underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+            if (valueTypes.Contains(underlyingType) || underlyingType.FullName == "System.Data.Linq.Binary" || underlyingType.IsEnum)
+                return false;
+            if (type.IsArray)
+            {
+                var elementType = type.GetElementType();
+                return elementType!.IsEntityType(out underlyingType);
+            }
+            if (type.IsGenericType)
+            {
+                if (type.FullName.StartsWith("System.ValueTuple`") && type.GenericTypeArguments.Length == 1)
+                    return false;
+                if (typeof(IEnumerable).IsAssignableFrom(type))
+                {
+                    if (typeof(IDictionary).IsAssignableFrom(type))
+                        return true;
+                    foreach (var elementType in type.GenericTypeArguments)
+                    {
+                        if (elementType.IsEntityType(out underlyingType))
+                            return true;
+                    }
+                    return false;
+                }
+            }
+            return true;
+        }
 
         // .Net简单类型 => JS类型 映射缓存
         private static readonly Dictionary<string, string> _jsTypeMapCache = new Dictionary<string, string>() {
@@ -201,7 +235,8 @@ namespace TinyFx.Reflection
         #endregion
 
         #region GetPropertyValue
-        private static readonly ConcurrentDictionary<PropertyInfo, MethodInfo> _propertyGetterCache = new ConcurrentDictionary<PropertyInfo, MethodInfo>();
+        //private static readonly ConcurrentDictionary<PropertyInfo, MethodInfo> _propertyGetterCache = new ConcurrentDictionary<PropertyInfo, MethodInfo>();
+        private static readonly ConcurrentDictionary<int, Func<object, object>> _propertyValueGetterCache = new();
         /// <summary>
         /// 通过反射获取对象属性值
         /// </summary>
@@ -210,12 +245,14 @@ namespace TinyFx.Reflection
         /// <returns></returns>
         public static object GetPropertyValue(this object obj, PropertyInfo property)
         {
-            if (!_propertyGetterCache.TryGetValue(property, out MethodInfo ret))
-            {
-                ret = property.GetGetMethod();
-                _propertyGetterCache.TryAdd(property, ret);
-            }
-            return ret.Invoke(obj, null);
+            return obj.GetPropertyValue(property.Name);
+
+            //if (!_propertyGetterCache.TryGetValue(property, out MethodInfo ret))
+            //{
+            //    ret = property.GetGetMethod();
+            //    _propertyGetterCache.TryAdd(property, ret);
+            //}
+            //return ret.Invoke(obj, null);
         }
 
         private static readonly ConcurrentDictionary<string, MethodInfo> _propertyNameGetterCache = new ConcurrentDictionary<string, MethodInfo>();
@@ -227,14 +264,25 @@ namespace TinyFx.Reflection
         /// <returns></returns>
         public static object GetPropertyValue(this object obj, string propertyName)
         {
-            var key = $"{obj.GetType().FullName}:{propertyName}";
-            if (!_propertyNameGetterCache.TryGetValue(key, out MethodInfo ret))
+            var entityType = obj.GetType();
+            var hashKey = HashCode.Combine(entityType, propertyName);
+            if (!_propertyValueGetterCache.TryGetValue(hashKey, out var memberGetter))
             {
-                var property = obj.GetType().GetProperty(propertyName);
-                ret = property.GetGetMethod();
-                _propertyNameGetterCache.TryAdd(key, ret);
+                var objExpr = Expression.Parameter(entityType, "entity");
+                var bodyExpr = Expression.PropertyOrField(objExpr, propertyName);
+                memberGetter = Expression.Lambda<Func<object, object>>(bodyExpr, objExpr).Compile();
+                _propertyValueGetterCache.TryAdd(hashKey, memberGetter);
             }
-            return ret.Invoke(obj, null);
+            return memberGetter.Invoke(obj);
+
+            //var key = $"{obj.GetType().FullName}:{propertyName}";
+            //if (!_propertyNameGetterCache.TryGetValue(key, out MethodInfo ret))
+            //{
+            //    var property = obj.GetType().GetProperty(propertyName);
+            //    ret = property.GetGetMethod();
+            //    _propertyNameGetterCache.TryAdd(key, ret);
+            //}
+            //return ret.Invoke(obj, null);
         }
 
         /// <summary>
@@ -258,14 +306,16 @@ namespace TinyFx.Reflection
         /// <param name="value"></param>
         public static void SetPropertyValue(this object obj, PropertyInfo property, object value)
         {
-            if (!_propertySetterCache.TryGetValue(property, out MethodInfo ret))
-            {
-                ret = property.GetSetMethod();
-                _propertySetterCache.TryAdd(property, ret);
-            }
-            ret.Invoke(obj, new object[] { value });
+            obj.SetPropertyValue(property.Name, value);
+            //if (!_propertySetterCache.TryGetValue(property, out MethodInfo ret))
+            //{
+            //    ret = property.GetSetMethod();
+            //    _propertySetterCache.TryAdd(property, ret);
+            //}
+            //ret.Invoke(obj, new object[] { value });
         }
-        private static readonly ConcurrentDictionary<string, MethodInfo> _propertyNameSetterCache = new ConcurrentDictionary<string, MethodInfo>();
+        //private static readonly ConcurrentDictionary<string, MethodInfo> _propertyNameSetterCache = new ConcurrentDictionary<string, MethodInfo>();
+        private static readonly ConcurrentDictionary<int, Action<object, object>> _propertyValueSetterCache = new();
         /// <summary>
         /// 通过反射设置对象属性值
         /// </summary>
@@ -274,14 +324,29 @@ namespace TinyFx.Reflection
         /// <param name="value"></param>
         public static void SetPropertyValue(this object obj, string propertyName, object value)
         {
-            var key = $"{obj.GetType().FullName}:{propertyName}";
-            if (!_propertyNameSetterCache.TryGetValue(key, out MethodInfo ret))
+            var entityType = obj.GetType();
+            var hashKey = HashCode.Combine(entityType, propertyName);
+            if (!_propertyValueSetterCache.TryGetValue(hashKey, out var valueSetter))
             {
-                var property = obj.GetType().GetProperty(propertyName);
-                ret = property.GetSetMethod();
-                _propertyNameSetterCache.TryAdd(key, ret);
+                var objExpr = Expression.Parameter(entityType, "entity");
+                var valueExpr = Expression.Parameter(entityType, "value");
+
+                var propertyInfo = entityType.GetProperty(propertyName);
+                var typedValueExpr = Expression.Convert(valueExpr, propertyInfo.PropertyType);
+                var methodInfo = propertyInfo.GetSetMethod();
+                var bodyExpr = Expression.Call(objExpr, methodInfo, typedValueExpr);
+                valueSetter = Expression.Lambda<Action<object, object>>(bodyExpr, objExpr, valueExpr).Compile();
+                _propertyValueSetterCache.TryAdd(hashKey, valueSetter);
             }
-            ret.Invoke(obj, new object[] { value });
+            valueSetter.Invoke(obj, value);
+            //var key = $"{obj.GetType().FullName}:{propertyName}";
+            //if (!_propertyNameSetterCache.TryGetValue(key, out MethodInfo ret))
+            //{
+            //    var property = obj.GetType().GetProperty(propertyName);
+            //    ret = property.GetSetMethod();
+            //    _propertyNameSetterCache.TryAdd(key, ret);
+            //}
+            //ret.Invoke(obj, new object[] { value });
         }
         #endregion
 
