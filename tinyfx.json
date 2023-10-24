@@ -416,7 +416,7 @@
 
   "IP2Country": {
     "DbIpSource": null, //IP库：https://db-ip.com/db/download/ip-to-country-lite
-    "AllowIps": "" //允许的IP,分割
+    "AllowIps": "" //允许的IP,分割 * 全部允许
   },
 
   // DotNetty WebSocket Server (TinyFx.Extensions.DotNetty.Configuration.DotNettySection)
