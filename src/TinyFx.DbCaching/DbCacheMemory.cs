@@ -179,7 +179,7 @@ namespace TinyFx.DbCaching
         #endregion
 
         #region Update
-        private volatile bool _isUpdating = false;
+        private bool _isUpdating = false;
         private void WaitForUpdate()
         {
             if (!_isUpdating) return;
