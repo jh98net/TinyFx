@@ -268,8 +268,9 @@ namespace TinyFx.Reflection
             var hashKey = HashCode.Combine(entityType, propertyName);
             if (!_propertyValueGetterCache.TryGetValue(hashKey, out var memberGetter))
             {
-                var objExpr = Expression.Parameter(entityType, "entity");
-                var bodyExpr = Expression.Convert(Expression.PropertyOrField(objExpr, propertyName), typeof(object));
+                var objExpr = Expression.Parameter(typeof(object), "entity");
+                var typedObjExpr = Expression.Convert(objExpr, entityType);
+                var bodyExpr = Expression.Convert(Expression.PropertyOrField(typedObjExpr, propertyName), typeof(object));
                 memberGetter = Expression.Lambda<Func<object, object>>(bodyExpr, objExpr).Compile();
                 _propertyValueGetterCache.TryAdd(hashKey, memberGetter);
             }
@@ -328,13 +329,13 @@ namespace TinyFx.Reflection
             var hashKey = HashCode.Combine(entityType, propertyName);
             if (!_propertyValueSetterCache.TryGetValue(hashKey, out var valueSetter))
             {
-                var objExpr = Expression.Parameter(entityType, "entity");
-                var valueExpr = Expression.Parameter(entityType, "value");
-
+                var objExpr = Expression.Parameter(typeof(object), "entity");
+                var valueExpr = Expression.Parameter(typeof(object), "value");
+                var typedObjExpr = Expression.Convert(objExpr, entityType);
                 var propertyInfo = entityType.GetProperty(propertyName);
                 var typedValueExpr = Expression.Convert(valueExpr, propertyInfo.PropertyType);
                 var methodInfo = propertyInfo.GetSetMethod();
-                var bodyExpr = Expression.Call(objExpr, methodInfo, typedValueExpr);
+                var bodyExpr = Expression.Call(typedObjExpr, methodInfo, typedValueExpr);
                 valueSetter = Expression.Lambda<Action<object, object>>(bodyExpr, objExpr, valueExpr).Compile();
                 _propertyValueSetterCache.TryAdd(hashKey, valueSetter);
             }
