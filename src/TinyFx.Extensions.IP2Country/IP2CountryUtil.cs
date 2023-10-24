@@ -74,7 +74,7 @@ namespace TinyFx.Extensions.IP2Country
             if (allowIps != null && allowIps.Any(x => x == ip))
                 return true;
             var section = ConfigUtil.GetSection<IP2CountrySection>();
-            if (section != null && section.AllowIpDict.Contains(ip))
+            if (section != null && (section.AllowIpDict.Contains(ip) || section.AllowIpDict.Contains("*")))
                 return true;
             return GetContryId(ip) == country.ToUpper();
         }
