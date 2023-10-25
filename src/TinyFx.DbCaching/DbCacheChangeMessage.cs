@@ -16,4 +16,9 @@ namespace TinyFx.DbCaching
         public string TableName { get; set; }
         public long RowCount { get; set; }
     }
+    public class DbCacheItem
+    {
+        public string ConfigId { get; set; }
+        public string TableName { get; set; }
+    }
 }

@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using TinyFx.Data.SqlSugar;
 using TinyFx.Extensions.StackExchangeRedis;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace TinyFx.DbCaching
 {
@@ -130,6 +131,21 @@ namespace TinyFx.DbCaching
             return (DbCacheMemory<TEntity>)ret;
         }
 
+        #region 缓存更新
+        /// <summary>
+        /// 数据表是否存在内存缓存对象
+        /// </summary>
+        /// <param name="configId"></param>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        public static async Task<bool> ContainsCacheItem(string configId, string tableName)
+        {
+            return await new DbCacheDataDCache().ContainsCacheItem(configId, tableName);
+        }
+        public static async Task<List<DbCacheItem>> GetAllCacheItem()
+        {
+            return await new DbCacheDataDCache().GetAllCacheItem();
+        }
         /// <summary>
         /// 发布更新通知
         /// </summary>
@@ -153,6 +169,7 @@ namespace TinyFx.DbCaching
             };
             await RedisUtil.PublishAsync(msg);
         }
+        #endregion
 
         internal static string GetCacheKey(string configId, string tableName)
             => $"{configId ?? DbUtil.DefaultConfigId}|{tableName}";
