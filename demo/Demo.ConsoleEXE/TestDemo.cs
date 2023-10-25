@@ -53,99 +53,33 @@ using TinyFx.Extensions.IP2Country;
 using Google.Protobuf.WellKnownTypes;
 using TinyFx.Data.SqlSugar;
 using TinyFx.Reflection;
+using Demo.ConsoleEXE;
+using Demo.ConsoleEXE.DAL;
+using SqlSugar;
+using TinyFx.Demos.Redis;
 
 namespace TinyFx.Demos
 {
-    public static class AAA
-    {
-        public static void Parse(Expression<Func<V_demo_user_courseEO>> expr)
-        {
-            var visitor = new MyExprVisitor();
-            visitor.Visit(expr);
-            var v = visitor.GetKeys();
-            Console.WriteLine(v.DictKey);
-            Console.WriteLine(v.ValueKey);
-        }
-    }
-
-
     internal class TestDemo : DemoBase
     {
         public override async Task Execute()
         {
-            var abc = "bbbb";
-            AAA.Parse(() => new V_demo_user_courseEO
+            var stopwatch = new Stopwatch();
+            var appList = await DbUtil.CreateRepository<Ss_appEO>().GetListAsync();
+            var operList = await DbUtil.CreateRepository<Ss_operator_appEO>().GetListAsync();
+            foreach (var app in appList)
             {
-                UserID = 1,
-                ClassID = "aaaaaa"
-            });
-            AAA.Parse(() => new V_demo_user_courseEO
-            {
-                UserID = 2,
-                ClassID = abc
-            });
-        }
-    }
-    public class MyExprVisitor : ExpressionVisitor
-    {
-        private List<string> DictKeys = new();
-        private List<string> ValueKeys = new();
-
-        protected override MemberAssignment VisitMemberAssignment(MemberAssignment node)
-        {
-            DictKeys.Add(node.Member.Name);
-            return base.VisitMemberAssignment(node);
-        }
-
-        protected override Expression VisitConstant(ConstantExpression node)
-        {
-            if (ReflectionUtil.IsSimpleType(node.Type))
-                ValueKeys.Add(Convert.ToString(node.Value));
-            return base.VisitConstant(node);
-        }
-        protected override Expression VisitMember(MemberExpression node)
-        {
-            var value = GetMemberValue(node);
-            ValueKeys.Add(Convert.ToString(value));
-            return base.VisitMember(node);
-        }
-        private static object GetMemberValue(MemberExpression expression)
-        {
-            if (expression == null)
-                return null;
-            var field = expression.Member as FieldInfo;
-            if (field != null)
-            {
-                var constValue = GetConstantValue(expression.Expression);
-                return field.GetValue(constValue);
+                stopwatch.Reset();
+                stopwatch.Start();
+                var sAppEo = DbCacheUtil.GetApp(app.AppID);
+                var provider = DbCacheUtil.GetProvider(sAppEo.ProviderID);
+                foreach (var oper in operList)
+                {
+                    var operatorApp = DbCacheUtil.GetOperatorApp(oper.OperatorID, app.AppID);
+                }
+                Console.WriteLine($"{stopwatch.ElapsedMilliseconds}");
+                stopwatch.Stop();
             }
-            var property = expression.Member as PropertyInfo;
-            if (property == null)
-                return null;
-            var value = GetMemberValue(expression.Expression as MemberExpression);
-            return property.GetValue(value);
         }
-
-        private static object GetConstantValue(Expression expression)
-        {
-            var constantExpression = expression as ConstantExpression;
-            if (constantExpression == null)
-                return null;
-            return constantExpression.Value;
-        }
-        public (string DictKey, string ValueKey) GetKeys()
-        {
-            return (string.Join('|', DictKeys), string.Join('|', ValueKeys));
-        }
-    }
-
-    public class A
-    {
-        public A()
-        {
-            Name = "bas";
-        }
-        public int Id { get; set; }
-        public string Name { get; set; }
     }
 }

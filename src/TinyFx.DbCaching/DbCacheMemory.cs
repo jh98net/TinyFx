@@ -36,23 +36,78 @@ namespace TinyFx.DbCaching
         }
         #endregion
 
+        public List<TEntity> GetAllList() => DbData;
+       
+        #region GetSingle
         public TEntity GetSingle(object id)
         {
             if (PrimaryKeys?.Count != 1)
                 throw new Exception($"多主键不支持DbCacheMemory<T>.GetById。type:{typeof(TEntity).FullName}");
-            return GetSingleValue(PrimaryKeys[0], Convert.ToString(id));
+            return GetSingleByKey(PrimaryKeys[0], Convert.ToString(id));
         }
         public TEntity GetSingle(Expression<Func<TEntity>> expr)
         {
             var keys = GetKeys(expr);
-            return GetSingleValue(keys.DictKey, keys.ValueKey);
+            return GetSingleByKey(keys.DictKey, keys.ValueKey);
         }
+        public TEntity GetSingle<TResult>(Expression<Func<TEntity, TResult>> expr, TEntity entity)
+        {
+            var keys = GetKeys(null);
+            return GetSingleByKey(keys.DictKey, keys.ValueKey);
+        }
+        public TEntity GetSingleByKey(string dictKey, string valueKey)
+        {
+            WaitForUpdate();
+            var dict = SingleDict.GetOrAdd(dictKey, x =>
+            {
+                var value = new Dictionary<string, TEntity>();
+                DbData.ForEach(entry =>
+                {
+                    var names = dictKey.Split('|');
+                    var vvs = names.Select(n => ReflectionUtil.GetPropertyValue(entry, n));
+                    var vkey = string.Join('|', vvs);
+                    if (value.ContainsKey(vkey))
+                        throw new Exception($"IDbCacheMemory获取单个缓存时不唯一。type:{typeof(TEntity).FullName} dictKey:{dictKey} valueKey:{valueKey}");
+                    value.Add(vkey, entry);
+                });
+                return value;
+            });
+            return dict.TryGetValue(valueKey, out TEntity ret) ? ret : null;
+        }
+        #endregion
+
+        #region GetList
         public List<TEntity> GetList(Expression<Func<TEntity>> expr)
         {
             var keys = GetKeys(expr);
-            return GetListValue(keys.DictKey, keys.ValueKey);
+            return GetListByKey(keys.DictKey, keys.ValueKey);
         }
-        public List<TEntity> GetAllList() => DbData;
+        public List<TEntity> GetList<TResult>(Expression<Func<TEntity, TResult>> expr, TEntity entity)
+        {
+            var keys = GetKeys(null);
+            return GetListByKey(keys.DictKey, keys.ValueKey);
+        }
+        public List<TEntity> GetListByKey(string dictKey, string valueKey)
+        {
+            WaitForUpdate();
+            var dict = ListDict.GetOrAdd(dictKey, x =>
+            {
+                var value = new Dictionary<string, List<TEntity>>();
+                DbData.ForEach(entry =>
+                {
+                    var names = dictKey.Split('|');
+                    var vvs = names.Select(n => ReflectionUtil.GetPropertyValue(entry, n));
+                    var vkey = string.Join('|', vvs);
+                    if (value.ContainsKey(vkey))
+                        value[vkey].Add(entry);
+                    else
+                        value.Add(vkey, new List<TEntity> { entry });
+                });
+                return value;
+            });
+            return dict.TryGetValue(valueKey, out List<TEntity> ret) ? ret : null;
+        }
+        #endregion
 
         /// <summary>
         /// 自定义单字典缓存，name唯一
@@ -107,79 +162,31 @@ namespace TinyFx.DbCaching
             //var visitor = new DbCacheMemoryExpressionVisitor();
             //visitor.Visit(expr);
             //return visitor.GetKeys();
-            var entityType = typeof(TEntity);          
-            var fieldBuilder = new StringBuilder();
-            var valueBuilder = new StringBuilder();
-            switch (expr.Body.NodeType)
-            {
-                case ExpressionType.MemberInit:
-                    var memberInitExpr = expr.Body as MemberInitExpression;
-                    foreach (var elementExpr in memberInitExpr.Bindings)
-                    {
-                        if (elementExpr.BindingType != MemberBindingType.Assignment)
-                            throw new Exception("暂时不支持除MemberBindingType.Assignment类型外的成员绑定表达式");
 
-                        if (elementExpr is MemberAssignment memberAssignment)
-                        {
-                            if (fieldBuilder.Length > 0)
-                            {
-                                fieldBuilder.Append('|');
-                                valueBuilder.Append('|');
-                            }
-                            var memberValue = this.Evaluate(memberAssignment.Expression);
-                            fieldBuilder.Append(memberAssignment.Member.Name);
-                            valueBuilder.Append(Convert.ToString(memberValue));
-                        }
-                    } 
-                    break;
-                default: throw new NotSupportedException("不支持的表达式");
+            if (expr.Body.NodeType != ExpressionType.MemberInit)
+                throw new Exception("暂时不支持除ExpressionType.MemberInit类型外的成员绑定表达式");
+            var memberInitExpr = expr.Body as MemberInitExpression;
+            var fields = new string[memberInitExpr.Bindings.Count];
+            var values = new string[memberInitExpr.Bindings.Count];
+            for (int i = 0; i < fields.Length; i++)
+            {
+                var elementExpr = memberInitExpr.Bindings[i];
+                if (elementExpr.BindingType != MemberBindingType.Assignment)
+                    throw new Exception("暂时不支持除MemberBindingType.Assignment类型外的成员绑定表达式");
+                if (elementExpr is MemberAssignment memberAssignment)
+                {
+                    fields[i] = memberAssignment.Member.Name;
+                    var memberValue = this.Evaluate(memberAssignment.Expression);
+                    values[i] = Convert.ToString(memberValue);
+                }
             }
-            return (fieldBuilder.ToString(), valueBuilder.ToString());
+            return (string.Join('|', fields), string.Join('|', values));
         }
 
-        private TEntity GetSingleValue(string dictKey, string valueKey)
-        {
-            WaitForUpdate();
-            var dict = SingleDict.GetOrAdd(dictKey, x =>
-            {
-                var value = new Dictionary<string, TEntity>();
-                DbData.ForEach(entry =>
-                {
-                    var names = dictKey.Split('|');
-                    var vvs = names.Select(n => ReflectionUtil.GetPropertyValue(entry, n));
-                    var vkey = string.Join('|', vvs);
-                    if (value.ContainsKey(vkey))
-                        throw new Exception($"IDbCacheMemory获取单个缓存时不唯一。type:{typeof(TEntity).FullName} dictKey:{dictKey} valueKey:{valueKey}");
-                    value.Add(vkey, entry);
-                });
-                return value;
-            });
-            return dict.TryGetValue(valueKey, out TEntity ret) ? ret : null;
-        }
-        private List<TEntity> GetListValue(string dictKey, string valueKey)
-        {
-            WaitForUpdate();
-            var dict = ListDict.GetOrAdd(dictKey, x =>
-            {
-                var value = new Dictionary<string, List<TEntity>>();
-                DbData.ForEach(entry =>
-                {
-                    var names = dictKey.Split('|');
-                    var vvs = names.Select(n => ReflectionUtil.GetPropertyValue(entry, n));
-                    var vkey = string.Join('|', vvs);
-                    if (value.ContainsKey(vkey))
-                        value[vkey].Add(entry);
-                    else
-                        value.Add(vkey, new List<TEntity> { entry });
-                });
-                return value;
-            });
-            return dict.TryGetValue(valueKey, out List<TEntity> ret) ? ret : null;
-        }
         #endregion
 
         #region Update
-        private bool _isUpdating = false;
+        private volatile bool _isUpdating = false;
         private void WaitForUpdate()
         {
             if (!_isUpdating) return;

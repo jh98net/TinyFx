@@ -28,7 +28,7 @@ namespace TinyFx.DbCaching
             => GetCache<TEntity>(routingDbKeys).GetSingle(id);
 
         /// <summary>
-        /// 获取单个缓存项
+        /// 获取单个缓存项（性能慢）
         /// </summary>
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
         /// <param name="whereExpr">主键或者唯一索引值的表达式</param>
@@ -38,8 +38,16 @@ namespace TinyFx.DbCaching
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetSingle(whereExpr);
 
+        public static TEntity GetSingle<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity, params object[] routingDbKeys)
+          where TEntity : class, new()
+            => GetCache<TEntity>(routingDbKeys).GetSingle(fieldsExpr, valuesEntity);
+        public static TEntity GetSingleByKey<TEntity>(string fieldsKey, string valuesKey, params object[] routingDbKeys)
+          where TEntity : class, new()
+            => GetCache<TEntity>(routingDbKeys).GetSingleByKey(fieldsKey, valuesKey);
+
+
         /// <summary>
-        /// 获取一组缓存项
+        /// 获取一组缓存项（性能慢）
         /// </summary>
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
         /// <param name="whereExpr">过滤条件值的表达式</param>
@@ -48,6 +56,12 @@ namespace TinyFx.DbCaching
         public static List<TEntity> GetList<TEntity>(Expression<Func<TEntity>> whereExpr, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetList(whereExpr);
+        public static List<TEntity> GetList<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity, params object[] routingDbKeys)
+          where TEntity : class, new()
+            => GetCache<TEntity>(routingDbKeys).GetList(fieldsExpr, valuesEntity);
+        public static List<TEntity> GetListByKey<TEntity>(string fieldsKey, string valuesKey, params object[] routingDbKeys)
+          where TEntity : class, new()
+            => GetCache<TEntity>(routingDbKeys).GetListByKey(fieldsKey, valuesKey);
 
         /// <summary>
         /// 获取所有缓存项

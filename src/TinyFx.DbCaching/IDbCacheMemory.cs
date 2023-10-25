@@ -47,28 +47,35 @@ namespace TinyFx.DbCaching
         ConcurrentDictionary<string, object> CustomDict { get; }
 
         /// <summary>
+        /// 获取全部缓存项
+        /// </summary>
+        /// <returns></returns>
+        List<TEntity> GetAllList();
+        /// <summary>
         /// 获取单个缓存项
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         TEntity GetSingle(object id);
+        TEntity GetSingle(Expression<Func<TEntity>> expr);
         /// <summary>
         /// 获取单个缓存项
         /// </summary>
         /// <param name="expr"></param>
+        /// <param name="entity"></param>
         /// <returns></returns>
-        TEntity GetSingle(Expression<Func<TEntity>> expr);
+        TEntity GetSingle<TResult>(Expression<Func<TEntity, TResult>> expr, TEntity entity);
+        TEntity GetSingleByKey(string dictKey, string valueKey);
+
+        List<TEntity> GetList(Expression<Func<TEntity>> expr);
         /// <summary>
         /// 获取一组缓存项
         /// </summary>
         /// <param name="expr"></param>
+        /// <param name="entity"></param>
         /// <returns></returns>
-        List<TEntity> GetList(Expression<Func<TEntity>> expr);
-        /// <summary>
-        /// 获取全部缓存项
-        /// </summary>
-        /// <returns></returns>
-        List<TEntity> GetAllList();
+        List<TEntity> GetList<TResult>(Expression<Func<TEntity, TResult>> expr, TEntity entity);
+        List<TEntity> GetListByKey(string dictKey, string valueKey);
         /// <summary>
         /// 自定义单字典缓存，name唯一
         /// </summary>

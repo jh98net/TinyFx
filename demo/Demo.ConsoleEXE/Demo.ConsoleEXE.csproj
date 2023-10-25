@@ -16,6 +16,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\TinyFx.Data.MySql\TinyFx.Data.MySql.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Data.SqlSugar\TinyFx.Data.SqlSugar.csproj" />
+		<ProjectReference Include="..\..\src\TinyFx.DbCaching\TinyFx.DbCaching.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Extensions.EPPlus\TinyFx.Extensions.EPPlus.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Extensions.IDGenerator\TinyFx.Extensions.IDGenerator.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Extensions.IP2Country\TinyFx.Extensions.IP2Country.csproj" />
