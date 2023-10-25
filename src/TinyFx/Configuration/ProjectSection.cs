@@ -29,7 +29,7 @@ namespace TinyFx.Configuration
         /// </summary>
         public LogLevel ConsoleLogLevel { get; set; } = LogLevel.Debug;
         /// <summary>
-        /// 线程池最小线程数（一般100-300）
+        /// 线程池最小线程数（建议：每核cpu配置50，如4核可配置200，一般100-200）
         /// </summary>
         public int MinThreads { get; set; } = 100;
         /// <summary>

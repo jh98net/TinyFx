@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx;
@@ -31,7 +32,7 @@ namespace Demo.ConsoleEXE
         }
         public static Ss_providerEO GetProvider(string providerId, bool excOnNull = true, string errorCode = null)
         {
-            var ret = DbCachingUtil.GetSingle<Ss_providerEO>(providerId);
+            var ret = DbCachingUtil.GetSingle<Ss_providerEO>(it => it.ProviderID, providerId);
             if (ret == null)
             {
                 if (excOnNull)
@@ -49,11 +50,12 @@ namespace Demo.ConsoleEXE
         public static Ss_operator_appEO GetOperatorApp(string operatorId, string appId, bool excOnNull = true, string errorCode = null)
         {
             //var ret = DbCachingUtil.GetSingleByKey<Ss_operator_appEO>($"OperatorID|AppID", $"{operatorId}|{appId}");
-            var ret = DbCachingUtil.GetSingle(it => new 
+            var ret = DbCachingUtil.GetSingle<Ss_operator_appEO>(it => new
             {
                 it.OperatorID,
                 it.AppID,
-            }, new Ss_operator_appEO 
+            }
+            , new Ss_operator_appEO
             {
                 OperatorID = operatorId,
                 AppID = appId,

@@ -4,7 +4,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>TinyFx OAuth组件</Description>
-    <Version>3.10.18</Version>
+    <Version>3.10.19</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TinyFx\TinyFx.csproj" />

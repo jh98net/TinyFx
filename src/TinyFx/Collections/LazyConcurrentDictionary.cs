@@ -25,5 +25,11 @@ namespace TinyFx.Collections
             });
             return ret.Value;
         }
+        public bool TryRemove(TKey key)
+        {
+            Lazy<TValue> value;
+            var lazyResult = this._dict.TryRemove(key, out value);
+            return lazyResult;
+        }
     }
 }

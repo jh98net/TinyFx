@@ -33,7 +33,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         #region Constructors
         private static ConcurrentDictionary<string, ConnectionStringElement> _elementDic = new();
         // key: ConfigString
-        private static readonly ConcurrentDictionary<string, ConnectionMultiplexer> _redisDict = new();
+        private static readonly ConcurrentDictionary<string, Lazy<ConnectionMultiplexer>> _redisDict = new();
 
         private static ISerializer _jsonSerializer { get; }
         public static JsonSerializerSettings JsonOptions { get; }
@@ -60,20 +60,24 @@ namespace TinyFx.Extensions.StackExchangeRedis
                 throw new ArgumentNullException("connectionString");
             return _redisDict.GetOrAdd(connectionString, (key) =>
             {
-                return ConnectionMultiplexer.ConnectAsync(connectionString).GetTaskResult(true);
-            });
+                return new Lazy<ConnectionMultiplexer>(() =>
+                {
+                    return ConnectionMultiplexer.Connect(connectionString);
+                });
+            }).Value;
         }
         public static async Task<ConnectionMultiplexer> GetRedisByConnectionStringAsync(string connectionString)
         {
             if (string.IsNullOrEmpty(connectionString))
                 throw new ArgumentNullException("connectionString");
-
-            if (!_redisDict.TryGetValue(connectionString, out var ret))
+            return _redisDict.GetOrAdd(connectionString, (key) => 
             {
-                ret = await ConnectionMultiplexer.ConnectAsync(connectionString);
-                _redisDict.TryAdd(connectionString, ret);
-            }
-            return ret;
+                return new Lazy<ConnectionMultiplexer>(() =>
+                {
+                    return ConnectionMultiplexer.Connect(connectionString);
+                });
+
+            }).Value;
         }
         /// <summary>
         /// 默认Database
@@ -439,7 +443,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
 
         internal static void ReleaseAllRedis()
         {
-            _redisDict.ForEach(x => x.Value.Dispose());
+            _redisDict.ForEach(x => x.Value.Value.Dispose());
         }
         #endregion 
     }

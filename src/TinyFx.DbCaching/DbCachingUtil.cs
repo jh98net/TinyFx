@@ -15,7 +15,6 @@ namespace TinyFx.DbCaching
         // key: typename|routingDbKeys value: cacheKey
         private static ConcurrentDictionary<string, string> _cachKeyDict = new();
         internal static ConcurrentDictionary<string, object> CacheDict = new();
-
         /// <summary>
         /// 获取单个缓存项
         /// </summary>
@@ -36,12 +35,9 @@ namespace TinyFx.DbCaching
         /// <param name="valuesEntity">主键或者唯一索引值的值定义</param>
         /// <param name="routingDbKeys">分库路由数据</param>
         /// <returns></returns>
-        public static TEntity GetSingle<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity, params object[] routingDbKeys)
+        public static TEntity GetSingle<TEntity>(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetSingle(fieldsExpr, valuesEntity);
-        public static TEntity GetSingle<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, object singleValue, params object[] routingDbKeys)
-          where TEntity : class, new()
-            => GetCache<TEntity>(routingDbKeys).GetSingle(fieldsExpr, singleValue);
         public static TEntity GetSingleByKey<TEntity>(string fieldsKey, string valuesKey, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetSingleByKey(fieldsKey, valuesKey);
@@ -56,12 +52,9 @@ namespace TinyFx.DbCaching
         /// <param name="valuesEntity">索引值的值定义</param>
         /// <param name="routingDbKeys">分库路由数据</param>
         /// <returns></returns>
-        public static List<TEntity> GetList<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity, params object[] routingDbKeys)
+        public static List<TEntity> GetList<TEntity>(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetList(fieldsExpr, valuesEntity);
-        public static List<TEntity> GetList<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, object singleValue, params object[] routingDbKeys)
-          where TEntity : class, new()
-            => GetCache<TEntity>(routingDbKeys).GetList(fieldsExpr, singleValue);
         public static List<TEntity> GetListByKey<TEntity>(string fieldsKey, string valuesKey, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetListByKey(fieldsKey, valuesKey);
@@ -118,7 +111,7 @@ namespace TinyFx.DbCaching
         /// <param name="routingDbKeys">分库路由数据</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static IDbCacheMemory<TEntity> GetCache<TEntity>(params object[] routingDbKeys)
+        public static DbCacheMemory<TEntity> GetCache<TEntity>(params object[] routingDbKeys)
           where TEntity : class, new()
         {
             var key = routingDbKeys.Length == 0
@@ -134,7 +127,7 @@ namespace TinyFx.DbCaching
                 return GetCacheKey(configId, attr.TableName);
             });
             var ret = CacheDict.GetOrAdd(cacheKey, (k) => new DbCacheMemory<TEntity>(routingDbKeys));
-            return (IDbCacheMemory<TEntity>)ret;
+            return (DbCacheMemory<TEntity>)ret;
         }
 
         /// <summary>

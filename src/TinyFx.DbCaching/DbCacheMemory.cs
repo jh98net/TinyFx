@@ -9,7 +9,7 @@ using static Grpc.Core.Metadata;
 
 namespace TinyFx.DbCaching
 {
-    internal class DbCacheMemory<TEntity> : IDbCacheMemory<TEntity>, IDbCacheMemoryUpdate
+    public class DbCacheMemory<TEntity> : IDbCacheMemoryUpdate
         where TEntity : class, new()
     {
         #region Properties
@@ -49,36 +49,31 @@ namespace TinyFx.DbCaching
         public TEntity GetSingle(Expression<Func<TEntity>> expr)
         {
             var keys = GetKeys(expr);
-            return GetSingleByKey(keys.DictKey, keys.ValueKey);
+            return GetSingleByKey(keys.FieldsKey, keys.ValuesKey);
         }
-        public TEntity GetSingle<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity)
+        public TEntity GetSingle(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity)
         {
-            var keys = GetKeys(fieldsExpr, valuesEntity, null);
-            return GetSingleByKey(keys.DictKey, keys.ValueKey);
+            var keys = GetKeys(fieldsExpr, valuesEntity);
+            return GetSingleByKey(keys.FieldsKey, keys.ValuesKey);
         }
-        public TEntity GetSingle<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, object singleValue)
-        {
-            var keys = GetKeys(fieldsExpr, null, singleValue);
-            return GetSingleByKey(keys.DictKey, keys.ValueKey);
-        }
-        public TEntity GetSingleByKey(string dictKey, string valueKey)
+        public TEntity GetSingleByKey(string fieldsKey, string valuesKey)
         {
             WaitForUpdate();
-            var dict = SingleDict.GetOrAdd(dictKey, x =>
+            var dict = SingleDict.GetOrAdd(fieldsKey, x =>
             {
                 var value = new Dictionary<string, TEntity>();
                 DbData.ForEach(entry =>
                 {
-                    var names = dictKey.Split('|');
+                    var names = fieldsKey.Split('|');
                     var vvs = names.Select(n => ReflectionUtil.GetPropertyValue(entry, n));
                     var vkey = string.Join('|', vvs);
                     if (value.ContainsKey(vkey))
-                        throw new Exception($"IDbCacheMemory获取单个缓存时不唯一。type:{typeof(TEntity).FullName} dictKey:{dictKey} valueKey:{valueKey}");
+                        throw new Exception($"IDbCacheMemory获取单个缓存时不唯一。type:{typeof(TEntity).FullName} dictKey:{fieldsKey} valueKey:{valuesKey}");
                     value.Add(vkey, entry);
                 });
                 return value;
             });
-            return dict.TryGetValue(valueKey, out TEntity ret) ? ret : null;
+            return dict.TryGetValue(valuesKey, out TEntity ret) ? ret : null;
         }
         #endregion
 
@@ -86,27 +81,22 @@ namespace TinyFx.DbCaching
         public List<TEntity> GetList(Expression<Func<TEntity>> expr)
         {
             var keys = GetKeys(expr);
-            return GetListByKey(keys.DictKey, keys.ValueKey);
+            return GetListByKey(keys.FieldsKey, keys.ValuesKey);
         }
-        public List<TEntity> GetList<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity)
+        public List<TEntity> GetList(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity)
         {
-            var keys = GetKeys(fieldsExpr, valuesEntity, null);
-            return GetListByKey(keys.DictKey, keys.ValueKey);
+            var keys = GetKeys(fieldsExpr, valuesEntity);
+            return GetListByKey(keys.FieldsKey, keys.ValuesKey);
         }
-        public List<TEntity> GetList<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, object singleValue)
-        {
-            var keys = GetKeys(fieldsExpr, null, singleValue);
-            return GetListByKey(keys.DictKey, keys.ValueKey);
-        }
-        public List<TEntity> GetListByKey(string dictKey, string valueKey)
+        public List<TEntity> GetListByKey(string fieldsKey, string valuesKey)
         {
             WaitForUpdate();
-            var dict = ListDict.GetOrAdd(dictKey, x =>
+            var dict = ListDict.GetOrAdd(fieldsKey, x =>
             {
                 var value = new Dictionary<string, List<TEntity>>();
                 DbData.ForEach(entry =>
                 {
-                    var names = dictKey.Split('|');
+                    var names = fieldsKey.Split('|');
                     var vvs = names.Select(n => ReflectionUtil.GetPropertyValue(entry, n));
                     var vkey = string.Join('|', vvs);
                     if (value.ContainsKey(vkey))
@@ -116,7 +106,7 @@ namespace TinyFx.DbCaching
                 });
                 return value;
             });
-            return dict.TryGetValue(valueKey, out List<TEntity> ret) ? ret : null;
+            return dict.TryGetValue(valuesKey, out List<TEntity> ret) ? ret : null;
         }
         #endregion
 
@@ -170,7 +160,7 @@ namespace TinyFx.DbCaching
                 throw new Exception($"DbCacheMemory没有获取缓存之.type:{this.GetType().FullName}");
             return SerializerUtil.DeserializeJson<List<TEntity>>(result.Value);
         }
-        private (string DictKey, string ValueKey) GetKeys(Expression<Func<TEntity>> expr)
+        private (string FieldsKey, string ValuesKey) GetKeys(Expression<Func<TEntity>> expr)
         {
             //var visitor = new DbCacheMemoryExpressionVisitor();
             //visitor.Visit(expr);
@@ -195,33 +185,32 @@ namespace TinyFx.DbCaching
             }
             return (string.Join('|', fields), string.Join('|', values));
         }
-        private (string DictKey, string ValueKey) GetKeys<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity, object singleValue)
+        private (string FieldsKey, string ValuesKey) GetKeys(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity)
         {
-            var expr = fieldsExpr.Body as NewExpression;
-            if (expr == null)
-                throw new Exception("DbCacheMemory仅支持NewExpression表达式");
-            if (singleValue != null)
+            switch (fieldsExpr.Body)
             {
-                if (expr.Arguments.Count > 1)
-                    throw new Exception("DbCacheMemory使用singleValue时表达式参数必须仅为一个");
-                var mem = (MemberExpression)expr.Arguments[0];
-                return (mem.Member.Name, Convert.ToString(singleValue));
+                case NewExpression newExpr:
+                    var fields = new string[newExpr.Arguments.Count];
+                    var values = new string[newExpr.Arguments.Count];
+                    for (var i = 0; i < newExpr.Arguments.Count; i++)
+                    {
+                        var item = newExpr.Arguments[i];
+                        if (item is MemberExpression newMemExpr)
+                        {
+                            fields[i] += newMemExpr.Member.Name;
+                            values[i] += Convert.ToString(ReflectionUtil.GetPropertyValue(valuesEntity, newMemExpr.Member.Name));
+                        }
+                    }
+                    return (string.Join('|', fields), string.Join('|', values));
+                case MemberExpression memExpr:
+                    return (memExpr.Member.Name, Convert.ToString(valuesEntity));
+                    //case UnaryExpression oneExpr:
+                    //    if (!(oneExpr.Operand is MemberExpression memExpr2))
+                    //        throw new Exception("DbCacheMemory使用单列单值获取keys时仅支持UnaryExpression和MemberExpression");
+                    //    return (memExpr2.Member.Name, Convert.ToString(valuesEntity));
             }
-
-            var fields = new string[expr.Arguments.Count];
-            var values = new string[expr.Arguments.Count];
-            for (var i = 0; i < expr.Arguments.Count; i++)
-            {
-                var item = expr.Arguments[i];
-                if (item is MemberExpression mem)
-                {
-                    fields[i] += mem.Member.Name;
-                    values[i] += Convert.ToString(ReflectionUtil.GetPropertyValue(valuesEntity, mem.Member.Name));
-                }
-            }
-            return (string.Join('|', fields), string.Join('|', values));
+            throw new Exception("DbCacheMemory仅支持NewExpression和MemberExpression表达式");
         }
-
         #endregion
 
         #region Update
