@@ -48,12 +48,16 @@ namespace Demo.ConsoleEXE
         }
         public static Ss_operator_appEO GetOperatorApp(string operatorId, string appId, bool excOnNull = true, string errorCode = null)
         {
-            var ret = DbCachingUtil.GetSingleByKey<Ss_operator_appEO>($"OperatorID|AppID", $"{operatorId}|{appId}");
-            //var ret = DbCachingUtil.GetSingle(() => new Ss_operator_appEO
-            //{
-            //    OperatorID = operatorId,
-            //    AppID = appId,
-            //});
+            //var ret = DbCachingUtil.GetSingleByKey<Ss_operator_appEO>($"OperatorID|AppID", $"{operatorId}|{appId}");
+            var ret = DbCachingUtil.GetSingle(it => new 
+            {
+                it.OperatorID,
+                it.AppID,
+            }, new Ss_operator_appEO 
+            {
+                OperatorID = operatorId,
+                AppID = appId,
+            });
             return ret;
         }
     }

@@ -28,16 +28,14 @@ namespace TinyFx.DbCaching
             => GetCache<TEntity>(routingDbKeys).GetSingle(id);
 
         /// <summary>
-        /// 获取单个缓存项（性能慢）
+        /// 获取单个缓存项
         /// </summary>
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
-        /// <param name="whereExpr">主键或者唯一索引值的表达式</param>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="fieldsExpr">主键或者唯一索引值的列定义</param>
+        /// <param name="valuesEntity">主键或者唯一索引值的值定义</param>
         /// <param name="routingDbKeys">分库路由数据</param>
         /// <returns></returns>
-        public static TEntity GetSingle<TEntity>(Expression<Func<TEntity>> whereExpr, params object[] routingDbKeys)
-          where TEntity : class, new()
-            => GetCache<TEntity>(routingDbKeys).GetSingle(whereExpr);
-
         public static TEntity GetSingle<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetSingle(fieldsExpr, valuesEntity);
@@ -47,15 +45,14 @@ namespace TinyFx.DbCaching
 
 
         /// <summary>
-        /// 获取一组缓存项（性能慢）
+        /// 获取单个缓存项
         /// </summary>
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
-        /// <param name="whereExpr">过滤条件值的表达式</param>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="fieldsExpr">索引值的列定义</param>
+        /// <param name="valuesEntity">索引值的值定义</param>
         /// <param name="routingDbKeys">分库路由数据</param>
         /// <returns></returns>
-        public static List<TEntity> GetList<TEntity>(Expression<Func<TEntity>> whereExpr, params object[] routingDbKeys)
-          where TEntity : class, new()
-            => GetCache<TEntity>(routingDbKeys).GetList(whereExpr);
         public static List<TEntity> GetList<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetList(fieldsExpr, valuesEntity);
@@ -130,7 +127,7 @@ namespace TinyFx.DbCaching
                 var configId = routingProvider.RouteDb<TEntity>(routingDbKeys);
                 return GetCacheKey(configId, attr.TableName);
             });
-            var ret = CacheDict.GetOrAdd(cacheKey, new DbCacheMemory<TEntity>(routingDbKeys));
+            var ret = CacheDict.GetOrAdd(cacheKey, (k) => new DbCacheMemory<TEntity>(routingDbKeys));
             return (IDbCacheMemory<TEntity>)ret;
         }
 

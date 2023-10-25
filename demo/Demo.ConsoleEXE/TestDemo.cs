@@ -57,6 +57,7 @@ using Demo.ConsoleEXE;
 using Demo.ConsoleEXE.DAL;
 using SqlSugar;
 using TinyFx.Demos.Redis;
+using TinyFx.DbCaching;
 
 namespace TinyFx.Demos
 {
@@ -69,15 +70,18 @@ namespace TinyFx.Demos
             var operList = await DbUtil.CreateRepository<Ss_operator_appEO>().GetListAsync();
             foreach (var app in appList)
             {
+                var i = 0;
                 stopwatch.Reset();
                 stopwatch.Start();
                 var sAppEo = DbCacheUtil.GetApp(app.AppID);
                 var provider = DbCacheUtil.GetProvider(sAppEo.ProviderID);
                 foreach (var oper in operList)
                 {
-                    var operatorApp = DbCacheUtil.GetOperatorApp(oper.OperatorID, app.AppID);
+                    var item = DbCacheUtil.GetOperatorApp(oper.OperatorID, app.AppID);
+                    if (item == null)
+                        i++;
                 }
-                Console.WriteLine($"{stopwatch.ElapsedMilliseconds}");
+                Console.WriteLine($"{stopwatch.ElapsedMilliseconds} count:{i}");
                 stopwatch.Stop();
             }
         }

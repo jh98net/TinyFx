@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using TinyFx.Data.SqlSugar;
 using TinyFx.Reflection;
+using static Grpc.Core.Metadata;
 
 namespace TinyFx.DbCaching
 {
@@ -50,9 +51,9 @@ namespace TinyFx.DbCaching
             var keys = GetKeys(expr);
             return GetSingleByKey(keys.DictKey, keys.ValueKey);
         }
-        public TEntity GetSingle<TResult>(Expression<Func<TEntity, TResult>> expr, TEntity entity)
+        public TEntity GetSingle<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity)
         {
-            var keys = GetKeys(null);
+            var keys = GetKeys(fieldsExpr, valuesEntity);
             return GetSingleByKey(keys.DictKey, keys.ValueKey);
         }
         public TEntity GetSingleByKey(string dictKey, string valueKey)
@@ -82,9 +83,9 @@ namespace TinyFx.DbCaching
             var keys = GetKeys(expr);
             return GetListByKey(keys.DictKey, keys.ValueKey);
         }
-        public List<TEntity> GetList<TResult>(Expression<Func<TEntity, TResult>> expr, TEntity entity)
+        public List<TEntity> GetList<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity)
         {
-            var keys = GetKeys(null);
+            var keys = GetKeys(fieldsExpr, valuesEntity);
             return GetListByKey(keys.DictKey, keys.ValueKey);
         }
         public List<TEntity> GetListByKey(string dictKey, string valueKey)
@@ -178,6 +179,24 @@ namespace TinyFx.DbCaching
                     fields[i] = memberAssignment.Member.Name;
                     var memberValue = this.Evaluate(memberAssignment.Expression);
                     values[i] = Convert.ToString(memberValue);
+                }
+            }
+            return (string.Join('|', fields), string.Join('|', values));
+        }
+        private (string DictKey, string ValueKey) GetKeys<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity)
+        {
+            var expr = fieldsExpr.Body as NewExpression;
+            if (expr == null)
+                throw new Exception("仅支持NewExpression表达式");
+            var fields = new string[expr.Arguments.Count];
+            var values = new string[expr.Arguments.Count];
+            for (var i = 0; i < expr.Arguments.Count; i++)
+            {
+                var item = expr.Arguments[i];
+                if (item is MemberExpression mem)
+                {
+                    fields[i] += mem.Member.Name;
+                    values[i] += Convert.ToString(ReflectionUtil.GetPropertyValue(valuesEntity, mem.Member.Name));
                 }
             }
             return (string.Join('|', fields), string.Join('|', values));
