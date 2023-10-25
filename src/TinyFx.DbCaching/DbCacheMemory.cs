@@ -28,7 +28,7 @@ namespace TinyFx.DbCaching
         {
             TableAttribute = typeof(TEntity).GetCustomAttribute<SugarTable>();
             if (TableAttribute == null)
-                throw new Exception($"内存缓存类型仅支持有SugarTableAttribute的类。type: {typeof(TEntity).FullName}");
+                throw new Exception($"DbCacheMemory内存缓存类型仅支持有SugarTableAttribute的类。type: {typeof(TEntity).FullName}");
             var routingProvider = DIUtil.GetRequiredService<IDbRoutingProvider>();
             ConfigId = routingProvider.RouteDb<TEntity>(routingDbKeys);
             CachKey = DbCachingUtil.GetCacheKey(ConfigId, TableAttribute.TableName);
@@ -38,7 +38,7 @@ namespace TinyFx.DbCaching
         #endregion
 
         public List<TEntity> GetAllList() => DbData;
-       
+
         #region GetSingle
         public TEntity GetSingle(object id)
         {
@@ -53,7 +53,12 @@ namespace TinyFx.DbCaching
         }
         public TEntity GetSingle<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity)
         {
-            var keys = GetKeys(fieldsExpr, valuesEntity);
+            var keys = GetKeys(fieldsExpr, valuesEntity, null);
+            return GetSingleByKey(keys.DictKey, keys.ValueKey);
+        }
+        public TEntity GetSingle<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, object singleValue)
+        {
+            var keys = GetKeys(fieldsExpr, null, singleValue);
             return GetSingleByKey(keys.DictKey, keys.ValueKey);
         }
         public TEntity GetSingleByKey(string dictKey, string valueKey)
@@ -85,7 +90,12 @@ namespace TinyFx.DbCaching
         }
         public List<TEntity> GetList<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity)
         {
-            var keys = GetKeys(fieldsExpr, valuesEntity);
+            var keys = GetKeys(fieldsExpr, valuesEntity, null);
+            return GetListByKey(keys.DictKey, keys.ValueKey);
+        }
+        public List<TEntity> GetList<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, object singleValue)
+        {
+            var keys = GetKeys(fieldsExpr, null, singleValue);
             return GetListByKey(keys.DictKey, keys.ValueKey);
         }
         public List<TEntity> GetListByKey(string dictKey, string valueKey)
@@ -110,6 +120,7 @@ namespace TinyFx.DbCaching
         }
         #endregion
 
+        #region GetOrAddCustom
         /// <summary>
         /// 自定义单字典缓存，name唯一
         /// </summary>
@@ -149,6 +160,7 @@ namespace TinyFx.DbCaching
                 return func(DbData);
             });
         }
+        #endregion
 
         #region Utils
         private async Task<List<TEntity>> GetInitData()
@@ -165,7 +177,7 @@ namespace TinyFx.DbCaching
             //return visitor.GetKeys();
 
             if (expr.Body.NodeType != ExpressionType.MemberInit)
-                throw new Exception("暂时不支持除ExpressionType.MemberInit类型外的成员绑定表达式");
+                throw new Exception("DbCacheMemory暂时不支持除ExpressionType.MemberInit类型外的成员绑定表达式");
             var memberInitExpr = expr.Body as MemberInitExpression;
             var fields = new string[memberInitExpr.Bindings.Count];
             var values = new string[memberInitExpr.Bindings.Count];
@@ -173,7 +185,7 @@ namespace TinyFx.DbCaching
             {
                 var elementExpr = memberInitExpr.Bindings[i];
                 if (elementExpr.BindingType != MemberBindingType.Assignment)
-                    throw new Exception("暂时不支持除MemberBindingType.Assignment类型外的成员绑定表达式");
+                    throw new Exception("DbCacheMemory暂时不支持除MemberBindingType.Assignment类型外的成员绑定表达式");
                 if (elementExpr is MemberAssignment memberAssignment)
                 {
                     fields[i] = memberAssignment.Member.Name;
@@ -183,11 +195,19 @@ namespace TinyFx.DbCaching
             }
             return (string.Join('|', fields), string.Join('|', values));
         }
-        private (string DictKey, string ValueKey) GetKeys<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity)
+        private (string DictKey, string ValueKey) GetKeys<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity, object singleValue)
         {
             var expr = fieldsExpr.Body as NewExpression;
             if (expr == null)
-                throw new Exception("仅支持NewExpression表达式");
+                throw new Exception("DbCacheMemory仅支持NewExpression表达式");
+            if (singleValue != null)
+            {
+                if (expr.Arguments.Count > 1)
+                    throw new Exception("DbCacheMemory使用singleValue时表达式参数必须仅为一个");
+                var mem = (MemberExpression)expr.Arguments[0];
+                return (mem.Member.Name, Convert.ToString(singleValue));
+            }
+
             var fields = new string[expr.Arguments.Count];
             var values = new string[expr.Arguments.Count];
             for (var i = 0; i < expr.Arguments.Count; i++)

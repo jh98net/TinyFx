@@ -39,6 +39,9 @@ namespace TinyFx.DbCaching
         public static TEntity GetSingle<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetSingle(fieldsExpr, valuesEntity);
+        public static TEntity GetSingle<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, object singleValue, params object[] routingDbKeys)
+          where TEntity : class, new()
+            => GetCache<TEntity>(routingDbKeys).GetSingle(fieldsExpr, singleValue);
         public static TEntity GetSingleByKey<TEntity>(string fieldsKey, string valuesKey, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetSingleByKey(fieldsKey, valuesKey);
@@ -56,6 +59,9 @@ namespace TinyFx.DbCaching
         public static List<TEntity> GetList<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, TEntity valuesEntity, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetList(fieldsExpr, valuesEntity);
+        public static List<TEntity> GetList<TEntity, TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, object singleValue, params object[] routingDbKeys)
+          where TEntity : class, new()
+            => GetCache<TEntity>(routingDbKeys).GetList(fieldsExpr, singleValue);
         public static List<TEntity> GetListByKey<TEntity>(string fieldsKey, string valuesKey, params object[] routingDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(routingDbKeys).GetListByKey(fieldsKey, valuesKey);

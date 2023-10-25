@@ -65,6 +65,7 @@ namespace TinyFx.DbCaching
         /// <param name="entity"></param>
         /// <returns></returns>
         TEntity GetSingle<TResult>(Expression<Func<TEntity, TResult>> expr, TEntity entity);
+        public TEntity GetSingle<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, object singleValue);
         TEntity GetSingleByKey(string dictKey, string valueKey);
 
         List<TEntity> GetList(Expression<Func<TEntity>> expr);
@@ -75,6 +76,7 @@ namespace TinyFx.DbCaching
         /// <param name="entity"></param>
         /// <returns></returns>
         List<TEntity> GetList<TResult>(Expression<Func<TEntity, TResult>> expr, TEntity entity);
+        public List<TEntity> GetList<TResult>(Expression<Func<TEntity, TResult>> fieldsExpr, object singleValue);
         List<TEntity> GetListByKey(string dictKey, string valueKey);
         /// <summary>
         /// 自定义单字典缓存，name唯一
