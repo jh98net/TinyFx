@@ -10,6 +10,7 @@ namespace TinyFx.Extensions.IP2Country
 {
     public class IP2CountrySection : ConfigSection
     {
+        public bool Enabled { get; set; }
         public string DbIpSource { get; set; }
         public string AllowIps { get; set; }
         public HashSet<string> AllowIpDict = new();

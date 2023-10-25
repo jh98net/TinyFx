@@ -67,14 +67,19 @@ namespace TinyFx.Extensions.IP2Country
         {
             if (country.Length != 2)
                 throw new Exception("国家编码仅支持2位大写（ISO 3166-1）");
+
+            var section = ConfigUtil.GetSection<IP2CountrySection>();
+            // 没配置或关闭
+            if (!(section?.Enabled ?? false))
+                return true;
+            // 配置允许
+            if (section.AllowIpDict.Contains(ip) || section.AllowIpDict.Contains("*"))
+                return true;
             // 测试环境 内网环境
             if (ConfigUtil.IsDebugEnvironment || NetUtil.GetIpMode(ip) != IpAddressMode.External)
                 return true;
             // 白名单
             if (allowIps != null && allowIps.Any(x => x == ip))
-                return true;
-            var section = ConfigUtil.GetSection<IP2CountrySection>();
-            if (section != null && (section.AllowIpDict.Contains(ip) || section.AllowIpDict.Contains("*")))
                 return true;
             return GetContryId(ip) == country.ToUpper();
         }
