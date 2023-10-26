@@ -214,7 +214,7 @@ namespace TinyFx.DbCaching
         }
         private (string FieldsKey, string ValuesKey) GetKeys(List<(string field, string value)> items)
         {
-            items = items.OrderBy(x => x.field).ToList();
+            items.Sort();
             return (string.Join('|', items.Select(x => x.field)), string.Join('|', items.Select(x => x.value)));
         }
         #endregion
