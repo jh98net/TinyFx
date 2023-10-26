@@ -12,9 +12,9 @@ TinyFxHost.CreateBuilder()
 var input = string.Empty;
 do
 {
-    var sub1 = new SubConsumer1();
-    var sub2 = new SubConsumer2();
-    var sub3 = new SubConsumer3();
+    var sub1 = new SubConsumer1(); sub1.Register();
+    var sub2 = new SubConsumer2(); sub2.Register();
+    var sub3 = new SubConsumer3(); sub3.Register();
     Console.WriteLine("OK");
     input = Console.ReadLine();
 }

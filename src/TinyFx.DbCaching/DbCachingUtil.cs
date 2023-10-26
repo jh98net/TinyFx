@@ -13,9 +13,10 @@ namespace TinyFx.DbCaching
     /// </summary>
     public static class DbCachingUtil
     {
-        // key: typename|routingDbKeys value: cacheKey
+        // key: typename|routingDbKeys value: configId|tablename
         private static ConcurrentDictionary<string, string> _cachKeyDict = new();
-        internal static ConcurrentDictionary<string, object> CacheDict = new();
+        // key: configId|tableName ===> [ eoTypeName, memory]
+        internal static ConcurrentDictionary<string, ConcurrentDictionary<string, object>> CacheDict = new();
         /// <summary>
         /// 获取单个缓存项
         /// </summary>
@@ -31,7 +32,6 @@ namespace TinyFx.DbCaching
         /// 获取单个缓存项
         /// </summary>
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
-        /// <typeparam name="TResult"></typeparam>
         /// <param name="fieldsExpr">主键或者唯一索引值的列定义</param>
         /// <param name="valuesEntity">主键或者唯一索引值的值定义</param>
         /// <param name="routingDbKeys">分库路由数据</param>
@@ -48,7 +48,6 @@ namespace TinyFx.DbCaching
         /// 获取单个缓存项
         /// </summary>
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
-        /// <typeparam name="TResult"></typeparam>
         /// <param name="fieldsExpr">索引值的列定义</param>
         /// <param name="valuesEntity">索引值的值定义</param>
         /// <param name="routingDbKeys">分库路由数据</param>
@@ -118,7 +117,9 @@ namespace TinyFx.DbCaching
             var key = routingDbKeys.Length == 0
                 ? typeof(TEntity).FullName
                 : $"{typeof(TEntity).FullName}|{string.Join('|', routingDbKeys)}";
-            var cacheKey = _cachKeyDict.GetOrAdd(key, x =>
+
+            // configId|tableName
+            var cacheKey = _cachKeyDict.GetOrAdd(key, k =>
             {
                 var attr = typeof(TEntity).GetCustomAttribute<SugarTable>();
                 if (attr == null)
@@ -127,7 +128,10 @@ namespace TinyFx.DbCaching
                 var configId = routingProvider.RouteDb<TEntity>(routingDbKeys);
                 return GetCacheKey(configId, attr.TableName);
             });
-            var ret = CacheDict.GetOrAdd(cacheKey, (k) => new DbCacheMemory<TEntity>(routingDbKeys));
+            // dict
+            var dict = CacheDict.GetOrAdd(cacheKey, (k) => new ConcurrentDictionary<string, object>());
+            // eoTypeName => memory
+            var ret = dict.GetOrAdd(typeof(TEntity).FullName, (k) => new DbCacheMemory<TEntity>(routingDbKeys));
             return (DbCacheMemory<TEntity>)ret;
         }
 
@@ -149,10 +153,9 @@ namespace TinyFx.DbCaching
         /// <summary>
         /// 发布更新通知
         /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
         /// <param name="items"></param>
         /// <returns></returns>
-        public static async Task PublishUpdate<TEntity>(List<DbCacheChangeItem> items)
+        public static async Task PublishUpdate(List<DbCacheChangeItem> items)
         {
             var dataDCache = new DbCacheDataDCache();
             foreach (var item in items)

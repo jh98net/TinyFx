@@ -24,6 +24,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
                 var ignoreAssemblyError = asm.StartsWith('+');
                 var file = asm.TrimStart('+');
                 var types = from t in ReflectionUtil.GetAssemblyTypes(file, ignoreAssemblyError, msg)
+                                .Where(x => x.GetCustomAttribute<RedisConsumerRegisterIgnoreAttribute>() == null)
                             where t.IsSubclassOfGeneric(typeof(RedisSubscribeConsumer<>))
                                 || t.IsSubclassOfGeneric(typeof(RedisQueueConsumer<>))
                             select t;

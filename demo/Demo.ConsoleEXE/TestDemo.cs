@@ -65,25 +65,31 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var stopwatch = new Stopwatch();
-            var appList = await DbUtil.CreateRepository<Ss_appEO>().GetListAsync();
-            var operList = await DbUtil.CreateRepository<Ss_operator_appEO>().GetListAsync();
-            foreach (var app in appList)
+            var list = new List<DbCacheChangeItem>();
+            list.Add(new DbCacheChangeItem 
             {
-                var i = 0;
-                stopwatch.Reset();
-                stopwatch.Start();
-                var sAppEo = DbCacheUtil.GetApp(app.AppID);
-                var provider = DbCacheUtil.GetProvider(sAppEo.ProviderID);
-                foreach (var oper in operList)
-                {
-                    var item = DbCacheUtil.GetOperatorApp(oper.OperatorID, app.AppID);
-                    if (item == null)
-                        i++;
-                }
-                Console.WriteLine($"{stopwatch.ElapsedMilliseconds} count:{i}");
-                stopwatch.Stop();
-            }
+                TableName ="s_app"
+            });
+            await DbCachingUtil.PublishUpdate(list);
+            //var stopwatch = new Stopwatch();
+            //var appList = await DbUtil.CreateRepository<Ss_appEO>().GetListAsync();
+            //var operList = await DbUtil.CreateRepository<Ss_operator_appEO>().GetListAsync();
+            //foreach (var app in appList)
+            //{
+            //    var i = 0;
+            //    stopwatch.Reset();
+            //    stopwatch.Start();
+            //    var sAppEo = DbCacheUtil.GetApp(app.AppID);
+            //    var provider = DbCacheUtil.GetProvider(sAppEo.ProviderID);
+            //    foreach (var oper in operList)
+            //    {
+            //        var item = DbCacheUtil.GetOperatorApp(oper.OperatorID, app.AppID);
+            //        if (item == null)
+            //            i++;
+            //    }
+            //    Console.WriteLine($"{stopwatch.ElapsedMilliseconds} count:{i}");
+            //    stopwatch.Stop();
+            //}
         }
     }
 }

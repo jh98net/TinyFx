@@ -1,13 +1,18 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.Collections;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
 
 namespace TinyFx.DbCaching
 {
+    [RedisConsumerRegisterIgnore]
     internal class DbCacheChangeConsumer : RedisSubscribeConsumer<DbCacheChangeMessage>
     {
         private DbCacheDataDCache _dataDCache = new();
@@ -33,8 +38,12 @@ namespace TinyFx.DbCaching
                         else
                             throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
                     }
-                    if (DbCachingUtil.CacheDict.TryGetValue(key, out var value))
-                        list.Add(((IDbCacheMemoryUpdate)value, redisValue));
+                    if (DbCachingUtil.CacheDict.TryGetValue(key, out var dict))
+                    {
+                        dict.Values.ForEach(x => {
+                            list.Add(((IDbCacheMemoryUpdate)x, redisValue));
+                        });
+                    }
                 }
                 list.ForEach(x => x.cache.BeginUpdate(x.data));
                 list.ForEach(x => x.cache.EndUpdate());

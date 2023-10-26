@@ -15,7 +15,9 @@ namespace TinyFx
         {
             builder.ConfigureServices((context, services) => 
             {
-                services.AddSingleton(new DbCacheChangeConsumer());
+                var consumer = new DbCacheChangeConsumer();
+                consumer.Register();
+                services.AddSingleton(consumer);
             });
             return builder;
         }

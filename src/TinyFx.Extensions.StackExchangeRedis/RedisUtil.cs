@@ -308,7 +308,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public static async Task PublishAsync<TMessage>(TMessage message)
         {
             var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
-            var channel = GetChannel(message, attr?.PatternMode ?? PatternMode.Auto);
+            var channel = GetPublishChannel(message, attr?.PatternMode ?? PatternMode.Auto);
             var msg = await GetSerializer(RedisSerializeMode.Json).SerializeAsync(message);
             await GetRedis(attr?.ConnectionStringName)
                 .GetSubscriber()
@@ -323,21 +323,19 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public static async Task PublishQueueAsync<TMessage>(TMessage message)
         {
             var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
-            var channel = GetChannel(message, attr?.PatternMode ?? PatternMode.Auto);
+            var channel = GetPublishChannel(message, attr?.PatternMode ?? PatternMode.Auto);
             var msg = await GetSerializer(RedisSerializeMode.Json).SerializeAsync(message);
             var redis = GetRedis(attr?.ConnectionStringName);
             var key = GetQueueKey<TMessage>();
             await redis.GetDatabase().ListLeftPushAsync(key, msg, flags: CommandFlags.FireAndForget);
             await redis.GetSubscriber().PublishAsync(channel, string.Empty);
         }
-        internal static string GetBaseChannelName<TMessage>()
-            => $"_PubSub:{typeof(TMessage).FullName}";
-        private static RedisChannel GetChannel<TMessage>(TMessage msg, PatternMode mode = PatternMode.Auto)
+        private static RedisChannel GetPublishChannel<TMessage>(TMessage msg, PatternMode mode = PatternMode.Auto)
         {
             var key = (msg is IRedisPublishMessage)
                 ? ((IRedisPublishMessage)msg).PatternKey
                 : null;
-            return GetChannel(key, mode);
+            return GetChannel<TMessage>(key, mode);
         }
         internal static RedisChannel GetChannel<TMessage>(string key, PatternMode mode = PatternMode.Auto)
         {
@@ -346,6 +344,8 @@ namespace TinyFx.Extensions.StackExchangeRedis
                 name = $"{name}:{key}";
             return new RedisChannel(name, mode);
         }
+        internal static string GetBaseChannelName<TMessage>()
+            => $"_PubSub:{typeof(TMessage).FullName}";
         internal static string GetQueueKey<TMessage>()
         {
             return $"_Queue:{typeof(TMessage).FullName}";
