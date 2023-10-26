@@ -39,10 +39,7 @@ namespace TinyFx.Extensions.RabbitMQ
                     return;
                 try
                 {
-                    await TinyFxUtil.RetryExecuteAsync(async () =>
-                    {
-                        await item.Action(message, cancellationToken);
-                    }, RetryCount, RetryInterval);
+                    await item.Action(message, cancellationToken);
                     if (DIUtil.GetService<RabbitMQSection>()?.LogEnabled ?? false)
                     {
                         LogUtil.Debug("[MQ] SubscribeConsumer重新消费成功。{MQConsumerType}{MQMessageType}{MQMessageId}"
@@ -73,10 +70,7 @@ namespace TinyFx.Extensions.RabbitMQ
                 {
                     try
                     {
-                        await TinyFxUtil.RetryExecuteAsync(async () =>
-                        {
-                            await item.Action(message, cancellationToken);
-                        }, RetryCount, RetryInterval);
+                        await item.Action(message, cancellationToken);
                         if (DIUtil.GetService<RabbitMQSection>()?.LogEnabled ?? false)
                         {
                             LogUtil.Debug("[MQ] SubscribeConsumer消费成功。{MQConsumerType}{MQMessageType}{MQMessageId}{MQElaspedTime}"

@@ -36,6 +36,7 @@ namespace TinyFx
                 try
                 {
                     await func();
+                    return;
                 }
                 catch 
                 {

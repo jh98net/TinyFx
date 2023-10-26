@@ -43,8 +43,6 @@ namespace TinyFx.Extensions.RabbitMQ
         /// 是否启用高可用(仅MQ群集使用)
         /// </summary>
         protected virtual bool UseQuorum { get; set; }
-        protected virtual int RetryCount { get; set; } = 2;
-        protected virtual int RetryInterval { get; set; } = 200;
 
         public bool IsRegisted { get; private set; }
         private SubscriptionResult? _subResult;
@@ -121,10 +119,7 @@ namespace TinyFx.Extensions.RabbitMQ
                 var tmpMsg = msg as IMQMessage;
                 try
                 {
-                    await TinyFxUtil.RetryExecuteAsync(async () =>
-                    {
-                        await OnMessage(msg, cancellationToken);
-                    }, RetryCount, RetryInterval);
+                    await OnMessage(msg, cancellationToken);
                     if (DIUtil.GetService<RabbitMQSection>()?.LogEnabled ?? false)
                     {
                         LogUtil.Debug("[MQ] SubscribeConsumer消费成功。{MQConsumerType}{MQMessageType}{MQMessageId}{MQElaspedTime}"
