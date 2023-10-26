@@ -65,12 +65,8 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var list = new List<DbCacheChangeItem>();
-            list.Add(new DbCacheChangeItem 
-            {
-                TableName ="s_app"
-            });
-            await DbCachingUtil.PublishUpdate(list);
+            var keys =await DbCachingUtil.GetAllCacheItem();
+            await DbCachingUtil.PublishUpdate(keys.Select(x=>new DbCacheChangeItem { TableName = x.TableName}).ToList());
             //var stopwatch = new Stopwatch();
             //var appList = await DbUtil.CreateRepository<Ss_appEO>().GetListAsync();
             //var operList = await DbUtil.CreateRepository<Ss_operator_appEO>().GetListAsync();
