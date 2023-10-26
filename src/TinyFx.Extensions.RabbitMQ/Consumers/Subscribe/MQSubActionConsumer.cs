@@ -30,7 +30,7 @@ namespace TinyFx.Extensions.RabbitMQ
         protected override async Task OnMessage(TMessage message, CancellationToken cancellationToken)
         {
             var msg = message as IMQMessage;
-            var republish = !string.IsNullOrEmpty(msg?.MQMeta.ErrorAction);
+            var republish = !string.IsNullOrEmpty(msg?.MQMeta?.ErrorAction);
             // 重试
             if (republish) 
             {
@@ -91,7 +91,7 @@ namespace TinyFx.Extensions.RabbitMQ
                             MessageData = SerializerUtil.SerializeJson(message),
 
                             ProjectId = ConfigUtil.Project.ProjectId,
-                            MessageId = msg?.MQMeta.MessageId,
+                            MessageId = msg?.MQMeta?.MessageId,
                             ErrorAction = item.Name,
                             Exception = ex
                         };
