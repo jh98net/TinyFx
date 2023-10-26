@@ -1,4 +1,5 @@
-﻿using SqlSugar;
+﻿using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using SqlSugar;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -169,39 +170,39 @@ namespace TinyFx.DbCaching
             if (expr.Body.NodeType != ExpressionType.MemberInit)
                 throw new Exception("DbCacheMemory暂时不支持除ExpressionType.MemberInit类型外的成员绑定表达式");
             var memberInitExpr = expr.Body as MemberInitExpression;
-            var fields = new string[memberInitExpr.Bindings.Count];
-            var values = new string[memberInitExpr.Bindings.Count];
-            for (int i = 0; i < fields.Length; i++)
+            var items = new List<(string field, string value)>(memberInitExpr.Bindings.Count);
+            for (int i = 0; i < memberInitExpr.Bindings.Count; i++)
             {
                 var elementExpr = memberInitExpr.Bindings[i];
                 if (elementExpr.BindingType != MemberBindingType.Assignment)
                     throw new Exception("DbCacheMemory暂时不支持除MemberBindingType.Assignment类型外的成员绑定表达式");
                 if (elementExpr is MemberAssignment memberAssignment)
                 {
-                    fields[i] = memberAssignment.Member.Name;
                     var memberValue = this.Evaluate(memberAssignment.Expression);
-                    values[i] = Convert.ToString(memberValue);
+                    var field = memberAssignment.Member.Name;
+                    var value = Convert.ToString(memberValue);
+                    items.Add((field, value));
                 }
             }
-            return (string.Join('|', fields), string.Join('|', values));
+            return GetKeys(items);
         }
         private (string FieldsKey, string ValuesKey) GetKeys(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity)
         {
             switch (fieldsExpr.Body)
             {
                 case NewExpression newExpr:
-                    var fields = new string[newExpr.Arguments.Count];
-                    var values = new string[newExpr.Arguments.Count];
+                    var items = new List<(string field, string value)>(newExpr.Arguments.Count);
                     for (var i = 0; i < newExpr.Arguments.Count; i++)
                     {
                         var item = newExpr.Arguments[i];
                         if (item is MemberExpression newMemExpr)
                         {
-                            fields[i] += newMemExpr.Member.Name;
-                            values[i] += Convert.ToString(ReflectionUtil.GetPropertyValue(valuesEntity, newMemExpr.Member.Name));
+                            var field = newMemExpr.Member.Name;
+                            var value = Convert.ToString(ReflectionUtil.GetPropertyValue(valuesEntity, newMemExpr.Member.Name));
+                            items.Add((field, value));
                         }
                     }
-                    return (string.Join('|', fields), string.Join('|', values));
+                    return GetKeys(items);
                 case MemberExpression memExpr:
                     return (memExpr.Member.Name, Convert.ToString(valuesEntity));
                     //case UnaryExpression oneExpr:
@@ -210,6 +211,11 @@ namespace TinyFx.DbCaching
                     //    return (memExpr2.Member.Name, Convert.ToString(valuesEntity));
             }
             throw new Exception("DbCacheMemory仅支持NewExpression和MemberExpression表达式");
+        }
+        private (string FieldsKey, string ValuesKey) GetKeys(List<(string field, string value)> items)
+        {
+            items = items.OrderBy(x => x.field).ToList();
+            return (string.Join('|', items.Select(x => x.field)), string.Join('|', items.Select(x => x.value)));
         }
         #endregion
 
