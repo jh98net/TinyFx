@@ -251,7 +251,7 @@
         password=null Redis服务器密码
         serviceName=null 连接到哨兵主要服务名
         defaultDatabase=1 默认数据库索引, 从 0 到 databases - 1
-        asyncTimeout=syncTimeout 允许异步操作的时间（毫秒）
+        asyncTimeout=5000 允许异步操作的时间默认（毫秒）
         allowAdmin=false  如果是 true，开启一些被认为是有风险的命令
 
         name=null 唯一名称，用来识别Redis里面的连接

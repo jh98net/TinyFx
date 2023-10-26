@@ -1,4 +1,5 @@
 ﻿using SqlSugar;
+using StackExchange.Redis;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,15 +8,27 @@ using System.Security.Cryptography.Pkcs;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Caching;
+using TinyFx.Configuration;
 using TinyFx.Data.SqlSugar;
 using TinyFx.Extensions.StackExchangeRedis;
 
 namespace TinyFx.DbCaching
 {
-    public class DbCacheDataDCache : RedisHashClient<string>
+    internal class DbCacheDataDCache : RedisHashClient<string>
     {
-        public DbCacheDataDCache()
+        private static readonly DbCacheDataDCache _instance = new DbCacheDataDCache();
+        public static DbCacheDataDCache Create() => _instance;
+
+        private const int ASYNC_TIMEOUT = 60000;//1分钟
+        private DbCacheDataDCache()
         {
+            var section = ConfigUtil.GetSection<RedisSection>();
+            var element = section.GetConnectionStringElement();
+            var conn = ConfigurationOptions.Parse(element.ConnectionString);
+            conn.ClientName = "DbCacheDataDCache";
+            conn.AsyncTimeout = ASYNC_TIMEOUT;
+            conn.SyncTimeout = ASYNC_TIMEOUT;
+            Options.ConnectionString = conn.ToString();
             RedisKey = GetGlobalRedisKey();
         }
         protected override async Task<CacheValue<string>> LoadValueWhenRedisNotExistsAsync(string field)

@@ -144,11 +144,11 @@ namespace TinyFx.DbCaching
         /// <returns></returns>
         public static async Task<bool> ContainsCacheItem(string configId, string tableName)
         {
-            return await new DbCacheDataDCache().ContainsCacheItem(configId, tableName);
+            return await DbCacheDataDCache.Create().ContainsCacheItem(configId, tableName);
         }
         public static async Task<List<DbCacheItem>> GetAllCacheItem()
         {
-            return await new DbCacheDataDCache().GetAllCacheItem();
+            return await DbCacheDataDCache.Create().GetAllCacheItem();
         }
         /// <summary>
         /// 发布更新通知
@@ -157,14 +157,13 @@ namespace TinyFx.DbCaching
         /// <returns></returns>
         public static async Task PublishUpdate(List<DbCacheChangeItem> items)
         {
-            var dataDCache = new DbCacheDataDCache();
             foreach (var item in items)
             {
                 var list = await DbUtil.GetDb(item.ConfigId).Queryable<object>()
                     .AS(item.TableName).ToListAsync() ?? new List<object>();
                 var data = SerializerUtil.SerializeJson(list);
                 var key = GetCacheKey(item.ConfigId, item.TableName);
-                await dataDCache.SetAsync(key, data);
+                await DbCacheDataDCache.Create().SetAsync(key, data);
             }
             var msg = new DbCacheChangeMessage
             {

@@ -7,6 +7,7 @@ using TinyFx.Configuration;
 using System.Linq;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Collections;
+using static System.Collections.Specialized.BitVector32;
 
 namespace TinyFx.Configuration
 {
@@ -65,10 +66,26 @@ namespace TinyFx.Configuration
 
             ConsumerAssemblies.Clear();
             ConsumerAssemblies = configuration?.GetSection("ConsumerAssemblies")
-                .Get<List<string>>()??new List<string>();
-            
+                .Get<List<string>>() ?? new List<string>();
+
             if (string.IsNullOrEmpty(DefaultConnectionStringName) && ConnectionStrings.Count == 1)
                 DefaultConnectionStringName = ConnectionStrings.First().Key;
+        }
+
+        public ConnectionStringElement GetConnectionStringElement(string connectionStringName = null, Type type = null)
+        {
+            if (string.IsNullOrEmpty(connectionStringName))
+            {
+                connectionStringName = (type == null)
+                    || !ConnectionStringNamespaces.TryGetValue(type.Namespace, out string name)
+                    ? DefaultConnectionStringName
+                    : name;
+            }
+            if (string.IsNullOrEmpty(connectionStringName) || !ConnectionStrings.TryGetValue(connectionStringName, out var ret))
+                throw new Exception($"Redis配置Redis:ConnectionStrings:Name不存在。Name:{connectionStringName}");
+            if (string.IsNullOrEmpty(ret.ConnectionString))
+                throw new Exception($"Redis配置Redis:ConnectionStrings:ConnectionString不能为空。Name:{ret.Name}");
+            return ret;
         }
     }
 }

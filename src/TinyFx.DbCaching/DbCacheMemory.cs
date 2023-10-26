@@ -156,7 +156,7 @@ namespace TinyFx.DbCaching
         #region Utils
         private async Task<List<TEntity>> GetInitData()
         {
-            var result = await new DbCacheDataDCache().GetOrLoadAsync(CachKey);
+            var result = await DbCacheDataDCache.Create().GetOrLoadAsync(CachKey);
             if (!result.HasValue)
                 throw new Exception($"DbCacheMemory没有获取缓存之.type:{this.GetType().FullName}");
             return SerializerUtil.DeserializeJson<List<TEntity>>(result.Value);

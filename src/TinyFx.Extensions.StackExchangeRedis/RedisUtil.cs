@@ -104,19 +104,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
                 var section = ConfigUtil.GetSection<RedisSection>();
                 if (section == null)
                     throw new Exception($"Redis配置不存在");
-                if (string.IsNullOrEmpty(connectionStringName))
-                {
-                    connectionStringName = (type == null)
-                        || !section.ConnectionStringNamespaces.TryGetValue(type.Namespace, out string name)
-                        ? section.DefaultConnectionStringName
-                        : name;
-                }
-                if (string.IsNullOrEmpty(connectionStringName))
-                    throw new ArgumentNullException("connectionStringName");
-                if (!section.ConnectionStrings.TryGetValue(connectionStringName, out ret))
-                    throw new Exception($"Redis配置Redis:ConnectionStrings:Name不存在。Name:{connectionStringName}");
-                if (string.IsNullOrEmpty(ret.ConnectionString))
-                    throw new Exception($"Redis配置Redis:ConnectionStrings:ConnectionString不能为空。Name:{ret.Name}");
+                ret = section.GetConnectionStringElement(connectionStringName, type);
                 _elementDic.TryAdd(key, ret);
             }
             return ret;

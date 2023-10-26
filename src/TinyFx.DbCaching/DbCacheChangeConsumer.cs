@@ -15,7 +15,6 @@ namespace TinyFx.DbCaching
     [RedisConsumerRegisterIgnore]
     internal class DbCacheChangeConsumer : RedisSubscribeConsumer<DbCacheChangeMessage>
     {
-        private DbCacheDataDCache _dataDCache = new();
         protected override async Task OnMessage(DbCacheChangeMessage message)
         {
             var list = new List<(IDbCacheMemoryUpdate cache, string data)>();
@@ -30,7 +29,7 @@ namespace TinyFx.DbCaching
                     {
                         if (redLock.IsLocked)
                         {
-                            var data = await _dataDCache.GetOrLoadAsync(key);
+                            var data = await DbCacheDataDCache.Create().GetOrLoadAsync(key);
                             if (!data.HasValue)
                                 throw new Exception($"DbCacheDataDCache缓存没有值。key:{key}");
                             redisValue = data.Value;
