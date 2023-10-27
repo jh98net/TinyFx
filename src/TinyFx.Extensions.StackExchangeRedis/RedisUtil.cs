@@ -350,7 +350,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <returns></returns>
         public static IBloomFilter CreateBloomFilter(string redisKey, long expectedElements, HashMethod method = HashMethod.Murmur3)
         {
-            var key = $"_BloomFilter:{redisKey}";
+            var key = $"{RedisPrefixConst.BLOOM_FILTER}:{redisKey}";
             var conn = GetRedis();
             return FilterRedisBuilder.Build(conn, key, expectedElements, method);
         }

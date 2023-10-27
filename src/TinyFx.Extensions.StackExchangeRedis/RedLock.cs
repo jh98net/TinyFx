@@ -39,7 +39,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public RedLock(IDatabase database, string lockKey, TimeSpan? expiry, int retryCount = 0, TimeSpan? retryInterval = null)
         {
             Database = database;
-            LockKey = $"_LOCK:{lockKey}";
+            LockKey = $"{RedisPrefixConst.RED_LOCK}:{lockKey}";
             _token = Guid.NewGuid().ToString();
             Expiry = expiry.HasValue ? expiry.Value : TimeSpan.FromSeconds(2); ;
             RetryCount = retryCount <= 0 ? 6 : retryCount;

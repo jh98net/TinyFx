@@ -19,7 +19,7 @@ namespace TinyFx.DbCaching
         private static readonly DbCacheDataDCache _instance = new DbCacheDataDCache();
         public static DbCacheDataDCache Create() => _instance;
 
-        private const int ASYNC_TIMEOUT = 60000;//1分钟
+        private const int ASYNC_TIMEOUT = 60000;
         private DbCacheDataDCache()
         {
             var section = ConfigUtil.GetSection<RedisSection>();
@@ -29,7 +29,7 @@ namespace TinyFx.DbCaching
             conn.AsyncTimeout = ASYNC_TIMEOUT;
             conn.SyncTimeout = ASYNC_TIMEOUT;
             Options.ConnectionString = conn.ToString();
-            RedisKey = GetGlobalRedisKey();
+            RedisKey = RedisPrefixConst.DB_CACHING_DATA;
         }
         protected override async Task<CacheValue<string>> LoadValueWhenRedisNotExistsAsync(string field)
         {

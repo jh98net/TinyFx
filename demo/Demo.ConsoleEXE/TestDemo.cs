@@ -65,8 +65,7 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var keys =await DbCachingUtil.GetAllCacheItem();
-            await DbCachingUtil.PublishUpdate(keys.Select(x=>new DbCacheChangeItem { TableName = x.TableName}).ToList());
+            var a = GetAppByProviderAppId("pgsoft", "126");
             //var stopwatch = new Stopwatch();
             //var appList = await DbUtil.CreateRepository<Ss_appEO>().GetListAsync();
             //var operList = await DbUtil.CreateRepository<Ss_operator_appEO>().GetListAsync();
@@ -86,6 +85,17 @@ namespace TinyFx.Demos
             //    Console.WriteLine($"{stopwatch.ElapsedMilliseconds} count:{i}");
             //    stopwatch.Stop();
             //}
+        }
+        public static Ss_appEO GetAppByProviderAppId(string providerId, string providerAppId)
+        {
+            var ret = DbCachingUtil.GetSingle<Ss_appEO>(it => new { it.ProviderID, it.ProviderAppId }, new Ss_appEO
+            {
+                ProviderID = providerId,
+                ProviderAppId = providerAppId
+            });
+            if (ret == null)
+                throw new Exception($"AppId不存在: providerId:{providerId} providerAppId:{providerAppId}");
+            return ret;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace TinyFx.Extensions.IDGenerator.Caching
         {
             _section = ConfigUtil.GetSection<IDGeneratorSection>();
             Options.ConnectionStringName = _section.RedisConnectionStringName;
-            RedisKey = $"_IDGenerator:WorkerIds:{workerId}";
+            RedisKey = $"{RedisPrefixConst.ID_GENERATOR}:WorkerIds:{workerId}";
             EXPIRE_MINUTES = ConfigUtil.IsDebugEnvironment
                 ? (int)TimeSpan.FromHours(1).TotalMinutes : _section.RedisExpireMinutes;
         }

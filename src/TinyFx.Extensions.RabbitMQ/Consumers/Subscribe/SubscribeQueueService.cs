@@ -64,7 +64,7 @@ namespace TinyFx.Extensions.RabbitMQ
             var idx = ret.LastIndexOf('.');
             if (idx >= 0)
                 ret = ret.Substring(idx + 1);
-            return $"_MQSubQueue:{ret}:{flag}";
+            return $"{RedisPrefixConst.MQ_SUB_QUEUE}:{ret}:{flag}";
         }
         #endregion
 

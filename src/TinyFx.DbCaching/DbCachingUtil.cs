@@ -157,6 +157,11 @@ namespace TinyFx.DbCaching
         /// <returns></returns>
         public static async Task PublishUpdate(List<DbCacheChangeItem> items)
         {
+            items ??= (await GetAllCacheItem()).Select(x => new DbCacheChangeItem
+            {
+                ConfigId = x.ConfigId,
+                TableName = x.TableName,
+            }).ToList();
             foreach (var item in items)
             {
                 var list = await DbUtil.GetDb(item.ConfigId).Queryable<object>()

@@ -18,7 +18,7 @@ namespace TinyFx.Extensions.IDGenerator.Caching
         public WorkerIdCurrentDCache()
         {
             _section = ConfigUtil.GetSection<IDGeneratorSection>();
-            RedisKey = $"_IDGenerator:WorkerIdNumber";
+            RedisKey = $"{RedisPrefixConst.ID_GENERATOR}:WorkerIdNumber";
             Options.ConnectionStringName = _section.RedisConnectionStringName;
         }
 
