@@ -7,6 +7,7 @@ using TinyFx.Configuration;
 
 namespace TinyFx.Net
 {
+    //TODO: https://github.com/reactiveui/refit
     public static class HttpClientExFactory
     {
         private static ConcurrentDictionary<string, HttpClientEx> _clientDict = new ConcurrentDictionary<string, HttpClientEx>();
