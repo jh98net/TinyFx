@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Events;
 using TinyFx.Configuration;
 using TinyFx.Extensions.Serilog;
 using TinyFx.Logging;
@@ -18,41 +19,24 @@ namespace TinyFx
         /// <returns></returns>
         public static IHostBuilder UseSerilogEx(this IHostBuilder builder)
         {
+            if (builder == null)
+                throw new ArgumentNullException(nameof(builder));
             var section = ConfigUtil.Configuration.GetSection("Serilog");
             if (section == null)
                 return builder;
-            if (builder == null)
-                throw new ArgumentNullException(nameof(builder));
-            SetELKSinkIndexFormat(ConfigUtil.Configuration);
-            var config = new LoggerConfiguration()
-                .Enrich.FromLogContext()
-                .Enrich.WithProperty(SerilogUtil.EnvironmentNamePropertyName, ConfigUtil.EnvironmentString)
-                .Enrich.WithProperty(SerilogUtil.ProjectIdPropertyName, ConfigUtil.Project?.ProjectId ?? "未知程序")
-                .Enrich.WithProperty(SerilogUtil.MachineIPPropertyName, NetUtil.GetLocalIP())
-                //.Enrich.WithProperty(SerilogUtil.IndexNamePropertyName, ConfigUtil.Project?.ProjectId.Replace('.', '_').ToLowerInvariant())
-                .Enrich.WithTemplateHash()
-                .ReadFrom.Configuration(ConfigUtil.Configuration);
 
-            Log.Logger = config.CreateLogger();
-            builder.ConfigureLogging(logger =>
+            builder.UseSerilog((context, services, configuration) => 
             {
-                logger.ClearProviders();
+                SetELKSinkIndexFormat(context.Configuration);
+                configuration.ReadFrom.Configuration(context.Configuration)
+                    .ReadFrom.Services(services)
+                    .Enrich.FromLogContext()
+                    .Enrich.WithProperty(SerilogUtil.EnvironmentNamePropertyName, ConfigUtil.EnvironmentString)
+                    .Enrich.WithProperty(SerilogUtil.ProjectIdPropertyName, ConfigUtil.Project?.ProjectId ?? "未知程序")
+                    .Enrich.WithProperty(SerilogUtil.MachineIPPropertyName, NetUtil.GetLocalIP())
+                    //.Enrich.WithProperty(SerilogUtil.IndexNamePropertyName, ConfigUtil.Project?.ProjectId.Replace('.', '_').ToLowerInvariant())
+                    .Enrich.WithTemplateHash();
             });
-            builder.UseSerilog(logger: Log.Logger, dispose: true);
-
-            /*
-            builder.UseSerilog((context, config) =>
-            {
-                config.ReadFrom.Configuration(context.Configuration)
-                    .Enrich.FromLogContext();
-            });
-            builder.ConfigureServices((services) => {
-                services.AddLogging((loggingBuilder) => {
-                    loggingBuilder.AddSerilog(dispose: true);
-                });
-            });
-            */
-            LogUtil.Rebuild();
 
             // 启动Serilog内部调试
             //Serilog.Debugging.SelfLog.Enable(msg => System.Diagnostics.Debug.WriteLine(msg));

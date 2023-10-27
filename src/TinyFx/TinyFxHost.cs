@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,6 +24,7 @@ namespace TinyFx
         /// <returns></returns>
         public static IHostBuilder CreateBuilder(string[] args = null)
         {
+            LogUtil.CreateBootstrapLogger();
             return Host.CreateDefaultBuilder(args)
                 .UseTinyFx();
         }

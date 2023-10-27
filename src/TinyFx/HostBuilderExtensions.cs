@@ -3,6 +3,7 @@ using Com.Ctrip.Framework.Apollo.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,10 +32,13 @@ namespace TinyFx
                 throw new ArgumentNullException(nameof(builder));
             if (_inited)
                 return builder;
-
+            if (Serilog.Log.Logger == null)
+                LogUtil.CreateBootstrapLogger();
             builder.ConfigureServices((context, services) =>
             {
-                services.AddScoped<ILogBuilder>((sp) => 
+                //Serilog
+                services.AddLogging(builder => builder.AddSerilog(dispose: true));
+                services.AddScoped<ILogBuilder>((sp) =>
                 {
                     var ret = new LogBuilder("TINYFX_CONTEXT");
                     ret.IsContextLog = true;
@@ -44,11 +48,11 @@ namespace TinyFx
                 services.AddHostedService<TinyFxHostLifetimeHostedService>();
                 // DI
                 DIUtil.SetServices(services);
-                LogUtil.Rebuild();
             });
 
             ConfigUtil.Init(builder, envString);
-            builder.ConfigureHostOptions((context,opts) => {
+            builder.ConfigureHostOptions((context, opts) =>
+            {
                 context.HostingEnvironment.EnvironmentName = ConfigUtil.EnvironmentString;
                 context.HostingEnvironment.ApplicationName = ConfigUtil.Project.ProjectId;
                 context.Configuration = ConfigUtil.Configuration;

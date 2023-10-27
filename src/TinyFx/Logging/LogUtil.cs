@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.CompilerServices;
 using TinyFx.Configuration;
+using Serilog.Extensions.Logging;
 
 namespace TinyFx.Logging
 {
@@ -13,46 +14,22 @@ namespace TinyFx.Logging
     /// </summary>
     public static class LogUtil
     {
-        private static LogLevel? _consoleLogLevel = null;
-        /// <summary>
-        /// 设置ConsoleLogger日志级别
-        /// </summary>
-        public static LogLevel ConsoleLogLevel
+        public static Serilog.ILogger CreateBootstrapLogger()
         {
-            get
-            {
-                if (!_consoleLogLevel.HasValue)
-                    _consoleLogLevel = ConfigUtil.Project?.ConsoleLogLevel ?? LogLevel.Trace;
-                return _consoleLogLevel.Value;
-            }
-            set
-            {
-                _consoleLogLevel = value;
-            }
-        }
-
-        private static ILogger _consoleLogger;
-        /// <summary>
-        /// 系统默认的Console日志（未加载Serilog之前）
-        /// </summary>
-        public static ILogger ConsoleLogger
-        {
-            get
-            {
-                if (_consoleLogger == null)
-                {
-                    var factory = LoggerFactory.Create(builder =>
-                    {
-                        builder.AddFilter("Microsoft", LogLevel.Warning)
-                            .AddFilter("System", LogLevel.Warning);
-                        if (ConsoleLogLevel != LogLevel.Trace)
-                            builder.AddFilter(level => level >= ConsoleLogLevel);
-                        builder.AddConsole();
-                    });
-                    _consoleLogger = factory.CreateLogger("ConsoleLogger");
-                }
-                return _consoleLogger;
-            }
+            var config = new Serilog.LoggerConfiguration()
+             .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
+             .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+             .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
+             .MinimumLevel.Debug()
+             .Enrich.FromLogContext();
+            config = Serilog.ConsoleLoggerConfigurationExtensions.Console(config.WriteTo, new Serilog.Formatting.Compact.CompactJsonFormatter());
+            config = Serilog.FileLoggerConfigurationExtensions.File(config.WriteTo
+                , "./logs/ext.log"
+                , restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error
+                , rollingInterval:Serilog.RollingInterval.Day
+                , retainedFileCountLimit: 7);
+            Serilog.Log.Logger = Serilog.LoggerConfigurationExtensions.CreateBootstrapLogger(config);
+            return Serilog.Log.Logger;
         }
 
         private static ILoggerFactory _factory;
@@ -61,12 +38,8 @@ namespace TinyFx.Logging
             get
             {
                 if (_factory == null)
-                    _factory = DIUtil.GetService<ILoggerFactory>();
+                    _factory = DIUtil.GetService<ILoggerFactory>() ?? new SerilogLoggerFactory(Serilog.Log.Logger);
                 return _factory;
-            }
-            set
-            {
-                _factory = value;
             }
         }
 
@@ -80,14 +53,12 @@ namespace TinyFx.Logging
             {
                 if (_defaultLogger == null)
                     _defaultLogger = Factory?.CreateLogger("DefaultLogger");
-                if (_defaultLogger == null)
-                    _defaultLogger = ConsoleLogger;
                 return _defaultLogger;
             }
         }
-        public static void Rebuild()
+        internal static void Rebuild()
         {
-            _factory = null;
+            _factory = DIUtil.GetService<ILoggerFactory>() ?? new SerilogLoggerFactory(Serilog.Log.Logger);
             _defaultLogger = null;
         }
         /// <summary>

@@ -33,8 +33,6 @@ namespace TinyFx.Extensions.CommandLineParser
             ConfigFileName = config.ConfigFile;
             ConfigFile = new MultiConfigFile(config.ConfigFile);
             OptionsUtil.ParseOptions(config);
-            LogUtil.Rebuild();
-            LogUtil.ConsoleLogLevel = config.LogLevel;
             LogUtil.Debug($"[ConfigFile]: {config.ConfigFile} [DebugArgs]: {config.DebugArgs} [DefaultArgs]: {config.DefaultArgs}");
             //
             Parser = new CmdLineParser(config);

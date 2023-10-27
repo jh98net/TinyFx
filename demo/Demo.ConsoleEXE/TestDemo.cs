@@ -36,7 +36,6 @@ using Microsoft.Extensions.Options;
 using System.Text.RegularExpressions;
 using TinyFx.Extensions.StackExchangeRedis;
 using Serilog;
-using TinyFx.Demos.demo;
 using TinyFx.Common.Nacos;
 using EasyNetQ;
 using TinyFx.Text;
@@ -66,25 +65,6 @@ namespace TinyFx.Demos
         public override async Task Execute()
         {
             var a = GetAppByProviderAppId("pgsoft", "126");
-            //var stopwatch = new Stopwatch();
-            //var appList = await DbUtil.CreateRepository<Ss_appEO>().GetListAsync();
-            //var operList = await DbUtil.CreateRepository<Ss_operator_appEO>().GetListAsync();
-            //foreach (var app in appList)
-            //{
-            //    var i = 0;
-            //    stopwatch.Reset();
-            //    stopwatch.Start();
-            //    var sAppEo = DbCacheUtil.GetApp(app.AppID);
-            //    var provider = DbCacheUtil.GetProvider(sAppEo.ProviderID);
-            //    foreach (var oper in operList)
-            //    {
-            //        var item = DbCacheUtil.GetOperatorApp(oper.OperatorID, app.AppID);
-            //        if (item == null)
-            //            i++;
-            //    }
-            //    Console.WriteLine($"{stopwatch.ElapsedMilliseconds} count:{i}");
-            //    stopwatch.Stop();
-            //}
         }
         public static Ss_appEO GetAppByProviderAppId(string providerId, string providerAppId)
         {

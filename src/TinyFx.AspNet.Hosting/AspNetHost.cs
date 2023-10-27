@@ -20,6 +20,7 @@ namespace TinyFx
     {
         public static WebApplicationBuilder CreateBuilder(string[] args = null)
         {
+            LogUtil.CreateBootstrapLogger();
             var builder = WebApplication.CreateBuilder(args);
             // 设置启动Serilog
             builder.Host.UseTinyFx();

@@ -284,7 +284,7 @@
     "Enabled": true,
     "LogEnabled": false,
     "SACBindDelay": 120, //顺序订阅消费者SAC检查延迟时间（秒）默认2分钟
-    "RedisConnectionStringName": null,
+    "RedisConnectionStringName": "default",
     "DefaultConnectionStringName": "default",
     "ConnectionStrings": {
       "default": {

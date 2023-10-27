@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.Logging;
 
 namespace TinyFx
 {
@@ -15,6 +16,7 @@ namespace TinyFx
         public static IHost UseTinyFxEx(this IHost host)
         {
             DIUtil.SetServiceProvider(host.Services);
+            LogUtil.Rebuild();
             return host;
         }
     }
