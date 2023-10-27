@@ -53,6 +53,7 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public string GetJwtToken()
         {
+            LogUtil.Info("TEST!!!!");
             var logger = LogUtil.GetContextLog();
             logger.AddMessage("AAAAAAAAAAAA");
             var uip = AspNetUtil.GetRemoteIpString();

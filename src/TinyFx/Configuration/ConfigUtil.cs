@@ -182,12 +182,17 @@ namespace TinyFx.Configuration
                         });
                     }
                 }
+                Configuration = configBuilder.Build();
                 hostBuilder.ConfigureAppConfiguration((context, builder) =>
                 {
+                    context.Configuration = Configuration;
                     builder = configBuilder;
                 });
             }
-            Configuration = configBuilder.Build();
+            else
+            {
+                Configuration = configBuilder.Build();
+            }
             Configuration.GetReloadToken().RegisterChangeCallback((_) =>
             {
                 LogUtil.Warning("配置更新: {changeTime}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
