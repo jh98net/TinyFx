@@ -334,16 +334,17 @@ namespace TinyFx.Reflection
                 var valueExpr = Expression.Parameter(typeof(object), "value");
                 var typedObjExpr = Expression.Convert(objExpr, entityType);
                 var propertyInfo = entityType.GetProperty(propertyName);
-                Expression typedValueExpr = null;
+                Expression typedValueExpr = valueExpr;
                 MethodInfo methodInfo = null;
 
-                typedValueExpr = Expression.Convert(valueExpr, valueType);
                 bool isNullableType = propertyInfo.PropertyType.IsNullableType(out var underlyingType);
                 if (!underlyingType.IsAssignableFrom(valueType))
                 {
                     methodInfo = typeof(Convert).GetMethod(nameof(Convert.ChangeType), new Type[] { typeof(object), typeof(Type) });
                     typedValueExpr = Expression.Call(methodInfo, typedValueExpr, Expression.Constant(underlyingType));
                 }
+                if (typedValueExpr.Type != underlyingType)
+                    typedValueExpr = Expression.Convert(typedValueExpr, underlyingType);
                 if (isNullableType)
                 {
                     var constructor = propertyInfo.PropertyType.GetConstructor(new Type[] { underlyingType });
