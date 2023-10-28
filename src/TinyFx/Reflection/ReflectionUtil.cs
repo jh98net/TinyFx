@@ -326,28 +326,29 @@ namespace TinyFx.Reflection
         public static void SetPropertyValue(this object obj, string propertyName, object value)
         {
             var entityType = obj.GetType();
-            var hashKey = HashCode.Combine(entityType, propertyName);
+            var valueType = value.GetType();
+            var hashKey = HashCode.Combine(entityType, propertyName, valueType);
             if (!_propertyValueSetterCache.TryGetValue(hashKey, out var valueSetter))
             {
                 var objExpr = Expression.Parameter(typeof(object), "entity");
                 var valueExpr = Expression.Parameter(typeof(object), "value");
                 var typedObjExpr = Expression.Convert(objExpr, entityType);
                 var propertyInfo = entityType.GetProperty(propertyName);
-                var typedValueExpr = Expression.Convert(valueExpr, propertyInfo.PropertyType);
-                var methodInfo = propertyInfo.GetSetMethod();
+                Expression typedValueExpr = null;
+                MethodInfo methodInfo = null;
+                if (valueType != propertyInfo.PropertyType)
+                {
+                    methodInfo = typeof(Convert).GetMethod(nameof(Convert.ChangeType), new Type[] { typeof(object), typeof(Type) });
+                    typedValueExpr = Expression.Call(methodInfo, valueExpr, Expression.Constant(propertyInfo.PropertyType));
+                    typedValueExpr = Expression.Convert(typedValueExpr, propertyInfo.PropertyType);
+                }
+                else typedValueExpr = Expression.Convert(valueExpr, propertyInfo.PropertyType);
+                methodInfo = propertyInfo.GetSetMethod();
                 var bodyExpr = Expression.Call(typedObjExpr, methodInfo, typedValueExpr);
                 valueSetter = Expression.Lambda<Action<object, object>>(bodyExpr, objExpr, valueExpr).Compile();
                 _propertyValueSetterCache.TryAdd(hashKey, valueSetter);
             }
             valueSetter.Invoke(obj, value);
-            //var key = $"{obj.GetType().FullName}:{propertyName}";
-            //if (!_propertyNameSetterCache.TryGetValue(key, out MethodInfo ret))
-            //{
-            //    var property = obj.GetType().GetProperty(propertyName);
-            //    ret = property.GetSetMethod();
-            //    _propertyNameSetterCache.TryAdd(key, ret);
-            //}
-            //ret.Invoke(obj, new object[] { value });
         }
         #endregion
 
