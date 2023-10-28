@@ -336,13 +336,19 @@ namespace TinyFx.Reflection
                 var propertyInfo = entityType.GetProperty(propertyName);
                 Expression typedValueExpr = null;
                 MethodInfo methodInfo = null;
-                if (valueType != propertyInfo.PropertyType)
+
+                typedValueExpr = Expression.Convert(valueExpr, valueType);
+                bool isNullableType = propertyInfo.PropertyType.IsNullableType(out var underlyingType);
+                if (!underlyingType.IsAssignableFrom(valueType))
                 {
                     methodInfo = typeof(Convert).GetMethod(nameof(Convert.ChangeType), new Type[] { typeof(object), typeof(Type) });
-                    typedValueExpr = Expression.Call(methodInfo, valueExpr, Expression.Constant(propertyInfo.PropertyType));
-                    typedValueExpr = Expression.Convert(typedValueExpr, propertyInfo.PropertyType);
+                    typedValueExpr = Expression.Call(methodInfo, typedValueExpr, Expression.Constant(underlyingType));
                 }
-                else typedValueExpr = Expression.Convert(valueExpr, propertyInfo.PropertyType);
+                if (isNullableType)
+                {
+                    var constructor = propertyInfo.PropertyType.GetConstructor(new Type[] { underlyingType });
+                    typedValueExpr = Expression.New(constructor, typedValueExpr);
+                }
                 methodInfo = propertyInfo.GetSetMethod();
                 var bodyExpr = Expression.Call(typedObjExpr, methodInfo, typedValueExpr);
                 valueSetter = Expression.Lambda<Action<object, object>>(bodyExpr, objExpr, valueExpr).Compile();
@@ -460,6 +466,21 @@ namespace TinyFx.Reflection
                 throw new Exception(msg);
             LogUtil.Warning(msg);
             return new List<Type>();
+        }
+        public static bool IsNullableType(this Type type, out Type underlyingType)
+        {
+            if (type.IsValueType)
+            {
+                underlyingType = Nullable.GetUnderlyingType(type);
+                if (underlyingType == null)
+                {
+                    underlyingType = type;
+                    return false;
+                }
+                return true;
+            }
+            underlyingType = type;
+            return false;
         }
     }
 }
