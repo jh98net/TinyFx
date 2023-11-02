@@ -1,5 +1,10 @@
-﻿using Grpc.Core;
+﻿using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
+using Microsoft.AspNetCore.Http.Headers;
+using Microsoft.Extensions.Http;
 using Newtonsoft.Json;
+using Polly;
+using Polly.Extensions.Http;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -7,8 +12,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using TinyFx.Configuration;
@@ -28,88 +35,48 @@ namespace TinyFx.Net
     {
         #region Properties
         internal HttpClientConfig Config { get; }
-        private IHttpClientFactory _clientFactory;
-
-        public string ClientName { get; private set; }
-        public HttpMessageHandler HttpHandler { get; set; }
-        public int Timeout { get; private set; }
-        public string BaseAddress { get; private set; }
-        public List<KeyValueItem> RequestHeaders { get; private set; } = new List<KeyValueItem>();
-
-        /// <summary>
-        /// 请求返回时是否保留RequestBody和ResponseBody信息
-        /// </summary>
-        public bool ReserveBody { get; private set; }
-        public SerializeMode SerializeMode { get; private set; }
-        /// <summary>
-        /// 字符集
-        /// </summary>
-        public virtual Encoding Encoding { get; private set; }
-        public virtual JsonSerializerSettings JsonOptions { get; set; }
+        public string ClientName => Config.Name;
+        public Encoding Encoding => Config.Encoding;
+        public JsonSerializerSettings JsonOptions { get; set; }
+        private SocketsHttpHandler _httpHandler;
+        public HttpClient Client { get; }
+        private string _baseUrl;
 
         internal HttpClientEx(HttpClientConfig config)
         {
+            config.Name ??= "default";
+            config.Encoding ??= Encoding.UTF8;
             Config = config;
-            _clientFactory = DIUtil.GetService<IHttpClientFactory>();
-
-            // HttpClient
-            ClientName = !string.IsNullOrEmpty(config.Name) ? config.Name : "default";
-            if (config.UseCookies)
-                HttpHandler = new SocketsHttpHandler() { UseCookies = true };
-            Timeout = config.Timeout > 1000 ? config.Timeout : 100000;
-            BaseAddress = ParseBaseAddress(config.BaseAddress);
-            config.RequestHeaders?.ForEach(x => RequestHeaders.Add(x));
-
-            // 
-            ReserveBody = Config.ReserveBody;
-            SerializeMode = config.SerializeMode;
-            Encoding = string.IsNullOrEmpty(config.Encoding)
-                ? Encoding.UTF8 : Encoding.GetEncoding(config.Encoding);
             JsonOptions = SerializerUtil.DefaultJsonNetSettings;
-        }
-        #endregion
 
-        #region Utils
-        private string ParseBaseAddress(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return null;
-            return value.EndsWith("/") ? value : $"{value}/";
+            _httpHandler = new SocketsHttpHandler
+            {
+                PooledConnectionLifetime = TimeSpan.FromMinutes(15), // dns
+                UseCookies = config.UseCookies // cookie
+            };
+            // ssl
+            if (config.IgnoreSslValidation)
+            {
+                var sslOptions = new SslClientAuthenticationOptions
+                {
+                    RemoteCertificateValidationCallback = delegate { return true; }
+                };
+                _httpHandler.SslOptions = sslOptions;
+            }
+            // retry
+            var retryPolicy = HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+            var pollyHandler = new PolicyHttpMessageHandler(retryPolicy)
+            {
+                InnerHandler = _httpHandler,
+            };
+            Client = new HttpClient(pollyHandler);
+            Client.Timeout = TimeSpan.FromMilliseconds(config.Timeout);
+            Client.BaseAddress = GetBaseAddress();
+            _baseUrl = Client.BaseAddress.ToString();
+            config.RequestHeaders?.ForEach(x => Client.DefaultRequestHeaders.Add(x.Key, x.Value));
         }
-        public HttpClientEx AddBaseAddress(string baseAddress)
-        {
-            BaseAddress = ParseBaseAddress(baseAddress);
-            return this;
-        }
-        public HttpClientEx AddDefaultRequestHeaders(string key, string value)
-        {
-            RequestHeaders.Add(new KeyValueItem(key, value));
-            return this;
-        }
-        public HttpClientEx SetTimeout(int timeout)
-        {
-            Timeout = timeout;
-            return this;
-        }
-        public HttpClientEx SetReserveBody(bool reserveBody = true)
-        {
-            ReserveBody = reserveBody;
-            return this;
-        }
-
-        public HttpClientEx SetAllowSSLConnect()
-        {
-            if (Config.UseCookies)
-                throw new Exception("HttpClientEx使用cookie,不支持SetAllowSSLConnect");
-            if (HttpHandler == null)
-                HttpHandler = new HttpClientHandler();
-            if (HttpHandler is HttpClientHandler)
-                ((HttpClientHandler)HttpHandler).ServerCertificateCustomValidationCallback = (_, _, _, _) => true;
-            else
-                throw new Exception("HttpClientEx.SetAllowSSLConnect时HttpHandler不是HttpClientHandler");
-            return this;
-        }
-
         #endregion
 
         #region Request
@@ -119,12 +86,12 @@ namespace TinyFx.Net
             ret.RequestUtcTime = DateTime.UtcNow;
             try
             {
-                if (ReserveBody)
+                if (Config.ReserveBody)
                 {
                     ret.Request = new HttpRequestBody()
                     {
                         Method = request.Method,
-                        RequestUri = $"{BaseAddress}{request.RequestUri?.ToString()}",
+                        RequestUri = $"{_baseUrl}{request.RequestUri?.ToString()}",
                         RequestParams = parameters,
                         Content = request.Content,
                         RequestContent = requestContent,
@@ -137,11 +104,11 @@ namespace TinyFx.Net
                 //var task = GetClient().SendAsync(request);
                 //if (!task.Wait(Timeout))
                 //    throw new Exception($"HttpClient请求超时。url: {request.RequestUri} timeout:{Timeout}");
-                using (var response = CreateClient().SendAsync(request).ConfigureAwait(false).GetAwaiter().GetResult())
+                using (var response = Client.SendAsync(request).ConfigureAwait(false).GetAwaiter().GetResult())
                 {
                     ret.Success = response.IsSuccessStatusCode;
                     ret.ResponseUtcTime = DateTime.UtcNow;
-                    if (ReserveBody)
+                    if (Config.ReserveBody)
                     {
                         ret.Response = new HttpResponseBody()
                         {
@@ -155,7 +122,7 @@ namespace TinyFx.Net
                         };
                     }
                     var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                    using (var reader = new StreamReader(stream, Encoding))
+                    using (var reader = new StreamReader(stream, Config.Encoding))
                     {
                         ret.ResultString = await reader.ReadToEndAsync().ConfigureAwait(false);
                         if (ret.Response != null)
@@ -181,13 +148,8 @@ namespace TinyFx.Net
             ret.Response = rsp.Response;
             ret.Exception = rsp.Exception;
             ret.ResultString = rsp.ResultString;
-            if (HttpHandler != null)
-            {
-                if (Config.UseCookies)
-                {
-                    ret.Cookies = ((SocketsHttpHandler)HttpHandler).CookieContainer.GetCookies(new Uri(BaseAddress)).Cast<Cookie>().ToList();
-                }
-            }
+            if (Config.UseCookies)
+                ret.Cookies = _httpHandler.CookieContainer.GetCookies(Client.BaseAddress).Cast<Cookie>().ToList();
             try
             {
                 if (rsp.Success)
@@ -209,13 +171,13 @@ namespace TinyFx.Net
         internal T Deserialize<T>(string result)
         {
             T ret;
-            switch (SerializeMode)
+            switch (Config.SerializeMode)
             {
                 case SerializeMode.Json:
                     ret = SerializerUtil.DeserializeJsonNet<T>(result, JsonOptions);
                     break;
                 case SerializeMode.Xml:
-                    ret = SerializerUtil.DeserializeXml<T>(result, Encoding);
+                    ret = SerializerUtil.DeserializeXml<T>(result, Config.Encoding);
                     break;
                 default:
                     throw new Exception($"目前HttpClient只支持json和xml反序列化。{this.GetType().FullName}");
@@ -225,37 +187,20 @@ namespace TinyFx.Net
         #endregion
 
         #region Utils
+        private Uri GetBaseAddress()
+        {
+            var value = Config.BaseAddress;
+            if (string.IsNullOrEmpty(value))
+                return null;
+            value = value.EndsWith("/") ? value : $"{value}/";
+            return new Uri(value);
+        }
         /// <summary>
         /// 创建HttpClient代理
         /// </summary>
         /// <returns></returns>
         public ClientAgent CreateAgent()
             => new ClientAgent(this);
-        private Uri GetBaseAddress()
-        {
-            if (string.IsNullOrEmpty(BaseAddress))
-                return null;
-            return new Uri(BaseAddress);
-        }
-        protected HttpClient CreateClient()
-        {
-            HttpClient ret = null;
-            if (HttpHandler != null)
-            {
-                ret = new HttpClient(HttpHandler);
-            }
-            else
-            {
-                ret = _clientFactory != null
-                    ? _clientFactory.CreateClient(ClientName)
-                    : new HttpClient();
-            }
-            ret.Timeout = TimeSpan.FromMilliseconds(Timeout);
-            ret.BaseAddress = GetBaseAddress();
-            RequestHeaders.ForEach(x => ret.DefaultRequestHeaders.Add(x.Key, x.Value));
-
-            return ret;
-        }
         public T GetSettingValue<T>(string key)
         {
             if (!Config.Settings.TryGetValue(key, out string ret))

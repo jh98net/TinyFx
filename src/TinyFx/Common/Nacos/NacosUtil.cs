@@ -41,8 +41,12 @@ namespace TinyFx.Common.Nacos
         public static async Task<HttpClientEx> CreateHttpClient(string clientName)
         {
             var serviceUrl = await GetClientServiceUrl(clientName);
-            var ret = HttpClientExFactory.CreateClientEx($"nacos_clients_{clientName}", true, false);
-            ret.AddBaseAddress(serviceUrl);
+            var config = new HttpClientConfig
+            {
+                Name = $"nacos_clients_{clientName}",
+                BaseAddress = serviceUrl
+            };
+            var ret = HttpClientExFactory.CreateClientEx(config);
             return ret;
         }
 

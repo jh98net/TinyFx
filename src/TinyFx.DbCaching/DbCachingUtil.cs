@@ -114,6 +114,11 @@ namespace TinyFx.DbCaching
         public static DbCacheMemory<TEntity> GetCache<TEntity>(params object[] routingDbKeys)
           where TEntity : class, new()
         {
+            return GetNamedCache<TEntity>(null, routingDbKeys);
+        }
+        public static DbCacheMemory<TEntity> GetNamedCache<TEntity>(string cacheName, params object[] routingDbKeys)
+          where TEntity : class, new()
+        {
             var key = routingDbKeys.Length == 0
                 ? typeof(TEntity).FullName
                 : $"{typeof(TEntity).FullName}|{string.Join('|', routingDbKeys)}";
@@ -131,7 +136,8 @@ namespace TinyFx.DbCaching
             // dict
             var dict = CacheDict.GetOrAdd(cacheKey, (k) => new ConcurrentDictionary<string, object>());
             // eoTypeName => memory
-            var ret = dict.GetOrAdd(typeof(TEntity).FullName, (k) => new DbCacheMemory<TEntity>(routingDbKeys));
+            cacheName ??= typeof(TEntity).FullName;
+            var ret = dict.GetOrAdd(cacheName, (k) => new DbCacheMemory<TEntity>(routingDbKeys));
             return (DbCacheMemory<TEntity>)ret;
         }
 

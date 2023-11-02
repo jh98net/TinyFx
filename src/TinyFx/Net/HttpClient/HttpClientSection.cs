@@ -27,7 +27,7 @@ namespace TinyFx.Configuration
             base.Bind(configuration);
             Clients = configuration.GetSection("Clients")
                 .Get<Dictionary<string, HttpClientConfig>>() ?? new();
-            Clients.ForEach(x => 
+            Clients.ForEach(x =>
             {
                 if (string.IsNullOrEmpty(x.Value.Name))
                     x.Value.Name = x.Key;
@@ -62,10 +62,6 @@ namespace TinyFx.Net
     {
         public string Name { get; set; }
         /// <summary>
-        /// 序列化方式
-        /// </summary>
-        public SerializeMode SerializeMode { get; set; } = SerializeMode.Json;
-        /// <summary>
         /// 基地址URL
         /// </summary>
         public string BaseAddress { get; set; }
@@ -79,11 +75,19 @@ namespace TinyFx.Net
         public int Timeout { get; set; } = 30000;
         public bool UseCookies { get; set; } = false;
         /// <summary>
+        /// 是否忽略ssl验证
+        /// </summary>
+        public bool IgnoreSslValidation { get; set; }
+        /// <summary>
         /// 请求返回时是否保留RequestBody和ResponseBody信息
         /// </summary>
         public bool ReserveBody { get; set; } = true;
-        public string Encoding { get; set; }
 
+        public Encoding Encoding { get; set; }
+        /// <summary>
+        /// 序列化方式
+        /// </summary>
+        public SerializeMode SerializeMode { get; set; } = SerializeMode.Json;
         public Dictionary<string, string> Settings;
     }
 }

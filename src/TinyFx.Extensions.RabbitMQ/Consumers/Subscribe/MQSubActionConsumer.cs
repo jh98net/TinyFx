@@ -15,12 +15,13 @@ namespace TinyFx.Extensions.RabbitMQ
     {
         public override MQSubscribeMode SubscribeMode => MQSubscribeMode.OneQueue;
         private List<MQSubAction> ActionList = new();
-        protected void RegisterAction(Func<TMessage, CancellationToken, Task> action, string name = null)
+        protected void RegisterAction(Func<TMessage, CancellationToken, Task> action, string desc = null)
         {
             ActionList.Add(new MQSubAction
             {
                 Action = action,
-                Name = name ?? action.Method.Name
+                MethodName = action.Method.Name,
+                Description = desc
             });
         }
         protected override Func<TMessage, CancellationToken, Task> GetOnMessageFunc()
@@ -32,9 +33,9 @@ namespace TinyFx.Extensions.RabbitMQ
             var msg = message as IMQMessage;
             var republish = !string.IsNullOrEmpty(msg?.MQMeta?.ErrorAction);
             // 重试
-            if (republish) 
+            if (republish)
             {
-                var item = ActionList.Find(x => x.Name == msg.MQMeta.ErrorAction);
+                var item = ActionList.Find(x => x.MethodName == msg.MQMeta.ErrorAction);
                 if (item == null)
                     return;
                 try
@@ -56,7 +57,8 @@ namespace TinyFx.Extensions.RabbitMQ
 
                         ProjectId = ConfigUtil.Project.ProjectId,
                         MessageId = msg.MQMeta.MessageId,
-                        ErrorAction = item.Name,
+                        ErrorAction = item.MethodName,
+                        Description = item.Description,
                         Exception = ex
                     };
                     LogUtil.Error(ex, "[MQ] SubscribeConsumer重新消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}"
@@ -81,8 +83,8 @@ namespace TinyFx.Extensions.RabbitMQ
                     {
                         if (msg != null)
                         {
-                            msg.MQMeta.ErrorActionList.Add(item.Name);
-                            msg.MQMeta.ErrorAction = item.Name;
+                            msg.MQMeta.ErrorActionList.Add(item.MethodName);
+                            msg.MQMeta.ErrorAction = item.MethodName;
                         }
                         var err = new MQSubActionError
                         {
@@ -92,7 +94,8 @@ namespace TinyFx.Extensions.RabbitMQ
 
                             ProjectId = ConfigUtil.Project.ProjectId,
                             MessageId = msg?.MQMeta?.MessageId,
-                            ErrorAction = item.Name,
+                            ErrorAction = item.MethodName,
+                            Description = item.Description,
                             Exception = ex
                         };
                         LogUtil.Error(ex, "[MQ] SubscribeConsumer消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}{MQElaspedTime}"
@@ -105,7 +108,8 @@ namespace TinyFx.Extensions.RabbitMQ
         protected abstract Task OnError(MQSubActionError error);
         public class MQSubAction
         {
-            public string Name { get; set; }
+            public string MethodName { get; set; }
+            public string Description { get; set; }
             public Func<TMessage, CancellationToken, Task> Action { get; set; }
         }
     }
@@ -118,6 +122,7 @@ namespace TinyFx.Extensions.RabbitMQ
 
         public string MessageId { get; set; }
         public string ErrorAction { get; set; }
+        public string Description { get; set; }
         public Exception Exception { get; set; }
         public string ProjectId { get; set; }
     }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.CompilerServices;
 using TinyFx.Configuration;
 using Serilog.Extensions.Logging;
+using Serilog.Exceptions;
 
 namespace TinyFx.Logging
 {
@@ -21,13 +22,14 @@ namespace TinyFx.Logging
              .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
              .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
              .MinimumLevel.Debug()
+             .Enrich.WithExceptionDetails()
              .Enrich.FromLogContext();
             config = Serilog.ConsoleLoggerConfigurationExtensions.Console(config.WriteTo, new Serilog.Formatting.Compact.CompactJsonFormatter());
-            config = Serilog.FileLoggerConfigurationExtensions.File(config.WriteTo
-                , "./logs/ext.log"
-                , restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error
-                , rollingInterval:Serilog.RollingInterval.Day
-                , retainedFileCountLimit: 7);
+            //config = Serilog.FileLoggerConfigurationExtensions.File(config.WriteTo
+            //    , "./logs/ext.log"
+            //    , restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error
+            //    , rollingInterval:Serilog.RollingInterval.Day
+            //    , retainedFileCountLimit: 7);
             Serilog.Log.Logger = Serilog.LoggerConfigurationExtensions.CreateBootstrapLogger(config);
             return Serilog.Log.Logger;
         }

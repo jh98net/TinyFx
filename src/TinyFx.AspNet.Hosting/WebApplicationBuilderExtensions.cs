@@ -198,7 +198,7 @@ namespace TinyFx
         public static IServiceCollection AddCorsEx(this IServiceCollection services)
         {
             var section = ConfigUtil.GetSection<CorsSection>();
-            if (section != null)
+            if (section != null && section.UseCors.Enabled)
             {
                 services.AddCors(opts =>
                 {

@@ -239,16 +239,19 @@ namespace TinyFx.DbCaching
             _isUpdating = true;
             try
             {
+                var oldList = DbData;
                 DbData = _updateList;
                 SingleDict.Clear();
                 ListDict.Clear();
                 CustomDict.Clear();
+                UpdateCallback?.Invoke(oldList, DbData);
             }
             finally
             {
                 _isUpdating = false;
             }
         }
+        public Action<List<TEntity>, List<TEntity>> UpdateCallback;
         #endregion
 
         private object Evaluate(Expression expr)
