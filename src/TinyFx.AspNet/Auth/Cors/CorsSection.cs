@@ -16,7 +16,6 @@ namespace TinyFx.Configuration
 {
     /// <summary>
     /// asp.net core 跨域访问配置
-    /// https://github.com/Mijalski/DynamicCorsPolicy
     /// </summary>
     public class CorsSection : ConfigSection
     {
@@ -26,6 +25,7 @@ namespace TinyFx.Configuration
         /// 是否使用cors中间件
         /// </summary>
         public CorsUseElement UseCors { get; set; }
+        private ICorsPoliciesProvider _policiesProvider;
 
         /// <summary>
         /// 策略集合
@@ -41,10 +41,10 @@ namespace TinyFx.Configuration
             // PolicyProvider
             if (!string.IsNullOrEmpty(UseCors.PoliciesProvider))
             {
-                var provider = ReflectionUtil.CreateInstance(UseCors.PoliciesProvider) as ICorsPoliciesProvider;
-                if (provider == null)
-                    throw new Exception($"配置文件Cors:UseCors:PolicyProvider必须继承ITinyFxCorsPolicyProvider. value:{UseCors.PoliciesProvider}");
-                var policies = provider.GetPoliciesAsync().GetTaskResult(true);
+                _policiesProvider = ReflectionUtil.CreateInstance(UseCors.PoliciesProvider) as ICorsPoliciesProvider;
+                if (_policiesProvider == null)
+                    throw new Exception($"配置文件Cors:UseCors:PolicyProvider必须继承ICorsPoliciesProvider. value:{UseCors.PoliciesProvider}");
+                var policies = _policiesProvider.GetPoliciesAsync().GetTaskResult(true);
                 policies.ForEach(x =>
                 {
                     if (!Policies.TryAdd(x.Name, x))
