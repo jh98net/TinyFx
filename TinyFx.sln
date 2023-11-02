@@ -95,7 +95,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.Extensions.AppMetric
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.Extensions.IP2Country", "src\TinyFx.Extensions.IP2Country\TinyFx.Extensions.IP2Country.csproj", "{A526FED0-4D18-4FFA-BC7B-99D2F0AB725B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyFx.Extensions.Refit", "src\TinyFx.Extensions.Refit\TinyFx.Extensions.Refit.csproj", "{E6239004-7029-438D-9015-6946904A3F62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.Extensions.Refit", "src\TinyFx.Extensions.Refit\TinyFx.Extensions.Refit.csproj", "{E6239004-7029-438D-9015-6946904A3F62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyFx.MessageDriven", "src\TinyFx.MessageDriven\TinyFx.MessageDriven.csproj", "{7005789B-B13B-481B-A478-0C44E079582C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyFx.Core", "src\TinyFx.Core\TinyFx.Core.csproj", "{A59D630D-C275-4847-B663-A8A910F7AC4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -239,6 +243,14 @@ Global
 		{E6239004-7029-438D-9015-6946904A3F62}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E6239004-7029-438D-9015-6946904A3F62}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E6239004-7029-438D-9015-6946904A3F62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7005789B-B13B-481B-A478-0C44E079582C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7005789B-B13B-481B-A478-0C44E079582C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7005789B-B13B-481B-A478-0C44E079582C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7005789B-B13B-481B-A478-0C44E079582C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A59D630D-C275-4847-B663-A8A910F7AC4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A59D630D-C275-4847-B663-A8A910F7AC4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A59D630D-C275-4847-B663-A8A910F7AC4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A59D630D-C275-4847-B663-A8A910F7AC4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -282,6 +294,8 @@ Global
 		{D46A51EC-3494-4E52-AEE6-A77F083E845F} = {38EC6A5A-A374-4BCC-A5C7-2D2CD2D19D91}
 		{A526FED0-4D18-4FFA-BC7B-99D2F0AB725B} = {38EC6A5A-A374-4BCC-A5C7-2D2CD2D19D91}
 		{E6239004-7029-438D-9015-6946904A3F62} = {38EC6A5A-A374-4BCC-A5C7-2D2CD2D19D91}
+		{7005789B-B13B-481B-A478-0C44E079582C} = {1FF166BB-BDA2-4A20-8EE9-209B210B1185}
+		{A59D630D-C275-4847-B663-A8A910F7AC4F} = {1FF166BB-BDA2-4A20-8EE9-209B210B1185}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6FDC92E-FBF2-40CE-9A71-2A4B6A4E6F3E}
