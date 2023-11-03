@@ -119,7 +119,7 @@ namespace TinyFx.DbCaching
         public static DbCacheMemory<TEntity> GetNamedCache<TEntity>(string cacheName, params object[] routingDbKeys)
           where TEntity : class, new()
         {
-            var key = routingDbKeys.Length == 0
+            var key = routingDbKeys == null || routingDbKeys.Length == 0
                 ? typeof(TEntity).FullName
                 : $"{typeof(TEntity).FullName}|{string.Join('|', routingDbKeys)}";
 

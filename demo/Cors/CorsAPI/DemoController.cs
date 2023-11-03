@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using TinyFx;
 using TinyFx.AspNet;
+using TinyFx.DbCaching;
+using TinyFx.Extensions.StackExchangeRedis;
 
 namespace CorsAPI
 {
@@ -12,27 +14,20 @@ namespace CorsAPI
     public class DemoController : TinyFxControllerBase
     {
         [HttpGet]
-        [EnableCors("xxyy")]
+        [EnableCors()]
         public string test()
         {
             return "cors OK";
         }
 
         [HttpGet]
-        public void add(string origin=null)
+        public async Task add()
         {
-            origin ??= "http://localhost:5030";
-            var element = new CorsPolicyElement
+            await DbCachingUtil.PublishUpdate(new List<DbCacheChangeItem> { new DbCacheChangeItem() 
             {
-                Name = "xxyy",
-                Origins = origin
-            };
-
-            //var policy = AspNetUtil.GetPolicyBuilder(element);
-            //DIUtil.Services.Configure<CorsOptions>((opts) => 
-            //{
-            //    opts.AddDefaultPolicy(policy);
-            //});
+                ConfigId="default",
+                TableName="s_operator"
+            } });
         }
     }
 }

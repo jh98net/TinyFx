@@ -40,14 +40,17 @@ namespace TinyFx
         {
             Services = services ?? new ServiceCollection();
         }
+        private static bool _isBuilded = false;
         public static void SetServiceProvider(IServiceProvider provider = null)
         {
+            _isBuilded = true;
             _serviceProvider = provider ?? Services.BuildServiceProvider();
         }
 
         private static IServiceProvider _serviceProvider;
         private static IServiceProvider GetServiceProvider()
         {
+            if (!_isBuilded) return Services.BuildServiceProvider();
             if (_serviceProvider == null)
                 _serviceProvider = Services.BuildServiceProvider();
             var ihttp = _serviceProvider.GetService<IHttpContextAccessor>();

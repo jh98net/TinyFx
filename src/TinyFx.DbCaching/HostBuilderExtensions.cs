@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.Configuration;
 using TinyFx.DbCaching;
 
 namespace TinyFx
@@ -13,12 +14,16 @@ namespace TinyFx
     {
         public static IHostBuilder UseDbCachingEx(this IHostBuilder builder)
         {
-            builder.ConfigureServices((context, services) => 
+            var section = ConfigUtil.GetSection<RedisSection>();
+            if (section != null && section.ConnectionStrings.Count > 0)
             {
-                var consumer = new DbCacheChangeConsumer();
-                consumer.Register();
-                services.AddSingleton(consumer);
-            });
+                builder.ConfigureServices((context, services) =>
+                {
+                    var consumer = new DbCacheChangeConsumer();
+                    consumer.Register();
+                    services.AddSingleton(consumer);
+                });
+            }
             return builder;
         }
     }
