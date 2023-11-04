@@ -99,6 +99,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.MessageDriven", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.Core", "src\TinyFx.Core\TinyFx.Core.csproj", "{A59D630D-C275-4847-B663-A8A910F7AC4F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StartupLibraryDemo", "demo\Cors\StartupLibraryDemo\StartupLibraryDemo.csproj", "{AFCE62D0-1EA6-48CC-953E-C85B5B83EF69}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -245,6 +247,10 @@ Global
 		{A59D630D-C275-4847-B663-A8A910F7AC4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A59D630D-C275-4847-B663-A8A910F7AC4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A59D630D-C275-4847-B663-A8A910F7AC4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFCE62D0-1EA6-48CC-953E-C85B5B83EF69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFCE62D0-1EA6-48CC-953E-C85B5B83EF69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFCE62D0-1EA6-48CC-953E-C85B5B83EF69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFCE62D0-1EA6-48CC-953E-C85B5B83EF69}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -289,6 +295,7 @@ Global
 		{A526FED0-4D18-4FFA-BC7B-99D2F0AB725B} = {38EC6A5A-A374-4BCC-A5C7-2D2CD2D19D91}
 		{7005789B-B13B-481B-A478-0C44E079582C} = {1FF166BB-BDA2-4A20-8EE9-209B210B1185}
 		{A59D630D-C275-4847-B663-A8A910F7AC4F} = {1FF166BB-BDA2-4A20-8EE9-209B210B1185}
+		{AFCE62D0-1EA6-48CC-953E-C85B5B83EF69} = {F954B31A-4909-4B89-AD5B-3BC8E3264820}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6FDC92E-FBF2-40CE-9A71-2A4B6A4E6F3E}

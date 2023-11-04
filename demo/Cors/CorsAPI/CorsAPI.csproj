@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\TinyFx.AspNet.Hosting\TinyFx.AspNet.Hosting.csproj" />
+    <ProjectReference Include="..\StartupLibraryDemo\StartupLibraryDemo.csproj" />
   </ItemGroup>
 
 </Project>
