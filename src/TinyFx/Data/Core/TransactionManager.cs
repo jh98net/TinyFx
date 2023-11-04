@@ -40,9 +40,8 @@ namespace TinyFx.Data
         public TransactionManager(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             IsolationLevel = isolationLevel;
-            _exception = new Exception("TransactionManager对象在析构函数中调用释放，请显示调用Commit()或Rollback()释放资源。");
             var stack = new StackTrace(0, true);
-            _exception.Data.Add("StackTrace", stack.ToString());
+            _exception = new Exception($"TransactionManager对象在析构函数中调用释放，请显示调用Commit()或Rollback()释放资源。StackTrace:{stack.ToString()}");
         }
 
         // key : ConnectionString
