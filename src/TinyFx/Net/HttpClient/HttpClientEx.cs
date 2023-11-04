@@ -74,7 +74,7 @@ namespace TinyFx.Net
             Client = new HttpClient(pollyHandler);
             Client.Timeout = TimeSpan.FromMilliseconds(config.Timeout);
             Client.BaseAddress = GetBaseAddress();
-            _baseUrl = Client.BaseAddress.ToString();
+            _baseUrl = Client.BaseAddress?.ToString();
             config.RequestHeaders?.ForEach(x => Client.DefaultRequestHeaders.Add(x.Key, x.Value));
         }
         #endregion
