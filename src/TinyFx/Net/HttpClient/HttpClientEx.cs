@@ -96,7 +96,7 @@ namespace TinyFx.Net
                         Content = request.Content,
                         RequestContent = requestContent,
                         Headers = request.Headers,
-                        Properties = request.Options,
+                        //Properties = request.Options,
                         Version = request.Version.ToString()
                     };
                 }
