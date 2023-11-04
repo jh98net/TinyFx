@@ -1,14 +1,16 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Text;
+using System.Reflection;
+using System.Web;
+using System.Runtime.InteropServices;
+using System.IO;
 using TinyFx.IO;
+using System.Collections;
+using System.Linq.Expressions;
+using System.Collections.Concurrent;
+using System.Text.Json.Serialization;
 using TinyFx.Logging;
 
 namespace TinyFx.Reflection
@@ -67,42 +69,6 @@ namespace TinyFx.Reflection
         /// <returns></returns>
         public static bool IsSimpleType(Type type)
             => SimpleTypeNames.PrimitiveTypes.Contains(type.FullName) || SimpleTypeNames.SimpleTypes.Contains(type.FullName);
-
-        private static Type[] valueTypes = new Type[] {typeof(byte),typeof(sbyte),typeof(short),typeof(ushort),
-            typeof(int),typeof(uint),typeof(long),typeof(ulong),typeof(float),typeof(double),typeof(decimal),
-            typeof(bool),typeof(string),typeof(char),typeof(Guid),typeof(DateTime),typeof(DateTimeOffset),
-            typeof(TimeSpan),typeof(TimeOnly),typeof(DateOnly),typeof(DBNull)};
-        public static bool IsEntityType(this Type type, out Type underlyingType)
-        {
-            underlyingType = type;
-            if (valueTypes.Contains(type) || type.FullName == "System.Data.Linq.Binary")
-                return false;
-            underlyingType = Nullable.GetUnderlyingType(type) ?? type;
-            if (valueTypes.Contains(underlyingType) || underlyingType.FullName == "System.Data.Linq.Binary" || underlyingType.IsEnum)
-                return false;
-            if (type.IsArray)
-            {
-                var elementType = type.GetElementType();
-                return elementType!.IsEntityType(out underlyingType);
-            }
-            if (type.IsGenericType)
-            {
-                if (type.FullName.StartsWith("System.ValueTuple`") && type.GenericTypeArguments.Length == 1)
-                    return false;
-                if (typeof(IEnumerable).IsAssignableFrom(type))
-                {
-                    if (typeof(IDictionary).IsAssignableFrom(type))
-                        return true;
-                    foreach (var elementType in type.GenericTypeArguments)
-                    {
-                        if (elementType.IsEntityType(out underlyingType))
-                            return true;
-                    }
-                    return false;
-                }
-            }
-            return true;
-        }
 
         // .Net简单类型 => JS类型 映射缓存
         private static readonly Dictionary<string, string> _jsTypeMapCache = new Dictionary<string, string>() {
@@ -235,8 +201,7 @@ namespace TinyFx.Reflection
         #endregion
 
         #region GetPropertyValue
-        //private static readonly ConcurrentDictionary<PropertyInfo, MethodInfo> _propertyGetterCache = new ConcurrentDictionary<PropertyInfo, MethodInfo>();
-        private static readonly ConcurrentDictionary<int, Func<object, object>> _propertyValueGetterCache = new();
+        private static readonly ConcurrentDictionary<PropertyInfo, MethodInfo> _propertyGetterCache = new ConcurrentDictionary<PropertyInfo, MethodInfo>();
         /// <summary>
         /// 通过反射获取对象属性值
         /// </summary>
@@ -245,14 +210,12 @@ namespace TinyFx.Reflection
         /// <returns></returns>
         public static object GetPropertyValue(this object obj, PropertyInfo property)
         {
-            return obj.GetPropertyValue(property.Name);
-
-            //if (!_propertyGetterCache.TryGetValue(property, out MethodInfo ret))
-            //{
-            //    ret = property.GetGetMethod();
-            //    _propertyGetterCache.TryAdd(property, ret);
-            //}
-            //return ret.Invoke(obj, null);
+            if (!_propertyGetterCache.TryGetValue(property, out MethodInfo ret))
+            {
+                ret = property.GetGetMethod();
+                _propertyGetterCache.TryAdd(property, ret);
+            }
+            return ret.Invoke(obj, null);
         }
 
         private static readonly ConcurrentDictionary<string, MethodInfo> _propertyNameGetterCache = new ConcurrentDictionary<string, MethodInfo>();
@@ -264,26 +227,14 @@ namespace TinyFx.Reflection
         /// <returns></returns>
         public static object GetPropertyValue(this object obj, string propertyName)
         {
-            var entityType = obj.GetType();
-            var hashKey = HashCode.Combine(entityType, propertyName);
-            if (!_propertyValueGetterCache.TryGetValue(hashKey, out var memberGetter))
+            var key = $"{obj.GetType().FullName}:{propertyName}";
+            if (!_propertyNameGetterCache.TryGetValue(key, out MethodInfo ret))
             {
-                var objExpr = Expression.Parameter(typeof(object), "entity");
-                var typedObjExpr = Expression.Convert(objExpr, entityType);
-                var bodyExpr = Expression.Convert(Expression.PropertyOrField(typedObjExpr, propertyName), typeof(object));
-                memberGetter = Expression.Lambda<Func<object, object>>(bodyExpr, objExpr).Compile();
-                _propertyValueGetterCache.TryAdd(hashKey, memberGetter);
+                var property = obj.GetType().GetProperty(propertyName);
+                ret = property.GetGetMethod();
+                _propertyNameGetterCache.TryAdd(key, ret);
             }
-            return memberGetter.Invoke(obj);
-
-            //var key = $"{obj.GetType().FullName}:{propertyName}";
-            //if (!_propertyNameGetterCache.TryGetValue(key, out MethodInfo ret))
-            //{
-            //    var property = obj.GetType().GetProperty(propertyName);
-            //    ret = property.GetGetMethod();
-            //    _propertyNameGetterCache.TryAdd(key, ret);
-            //}
-            //return ret.Invoke(obj, null);
+            return ret.Invoke(obj, null);
         }
 
         /// <summary>
@@ -307,16 +258,14 @@ namespace TinyFx.Reflection
         /// <param name="value"></param>
         public static void SetPropertyValue(this object obj, PropertyInfo property, object value)
         {
-            obj.SetPropertyValue(property.Name, value);
-            //if (!_propertySetterCache.TryGetValue(property, out MethodInfo ret))
-            //{
-            //    ret = property.GetSetMethod();
-            //    _propertySetterCache.TryAdd(property, ret);
-            //}
-            //ret.Invoke(obj, new object[] { value });
+            if (!_propertySetterCache.TryGetValue(property, out MethodInfo ret))
+            {
+                ret = property.GetSetMethod();
+                _propertySetterCache.TryAdd(property, ret);
+            }
+            ret.Invoke(obj, new object[] { value });
         }
-        //private static readonly ConcurrentDictionary<string, MethodInfo> _propertyNameSetterCache = new ConcurrentDictionary<string, MethodInfo>();
-        private static readonly ConcurrentDictionary<int, Action<object, object>> _propertyValueSetterCache = new();
+        private static readonly ConcurrentDictionary<string, MethodInfo> _propertyNameSetterCache = new ConcurrentDictionary<string, MethodInfo>();
         /// <summary>
         /// 通过反射设置对象属性值
         /// </summary>
@@ -325,37 +274,14 @@ namespace TinyFx.Reflection
         /// <param name="value"></param>
         public static void SetPropertyValue(this object obj, string propertyName, object value)
         {
-            var entityType = obj.GetType();
-            var valueType = value.GetType();
-            var hashKey = HashCode.Combine(entityType, propertyName, valueType);
-            if (!_propertyValueSetterCache.TryGetValue(hashKey, out var valueSetter))
+            var key = $"{obj.GetType().FullName}:{propertyName}";
+            if (!_propertyNameSetterCache.TryGetValue(key, out MethodInfo ret))
             {
-                var objExpr = Expression.Parameter(typeof(object), "entity");
-                var valueExpr = Expression.Parameter(typeof(object), "value");
-                var typedObjExpr = Expression.Convert(objExpr, entityType);
-                var propertyInfo = entityType.GetProperty(propertyName);
-                Expression typedValueExpr = valueExpr;
-                MethodInfo methodInfo = null;
-
-                bool isNullableType = propertyInfo.PropertyType.IsNullableType(out var underlyingType);
-                if (!underlyingType.IsAssignableFrom(valueType))
-                {
-                    methodInfo = typeof(Convert).GetMethod(nameof(Convert.ChangeType), new Type[] { typeof(object), typeof(Type) });
-                    typedValueExpr = Expression.Call(methodInfo, typedValueExpr, Expression.Constant(underlyingType));
-                }
-                if (typedValueExpr.Type != underlyingType)
-                    typedValueExpr = Expression.Convert(typedValueExpr, underlyingType);
-                if (isNullableType)
-                {
-                    var constructor = propertyInfo.PropertyType.GetConstructor(new Type[] { underlyingType });
-                    typedValueExpr = Expression.New(constructor, typedValueExpr);
-                }
-                methodInfo = propertyInfo.GetSetMethod();
-                var bodyExpr = Expression.Call(typedObjExpr, methodInfo, typedValueExpr);
-                valueSetter = Expression.Lambda<Action<object, object>>(bodyExpr, objExpr, valueExpr).Compile();
-                _propertyValueSetterCache.TryAdd(hashKey, valueSetter);
+                var property = obj.GetType().GetProperty(propertyName);
+                ret = property.GetSetMethod();
+                _propertyNameSetterCache.TryAdd(key, ret);
             }
-            valueSetter.Invoke(obj, value);
+            ret.Invoke(obj, new object[] { value });
         }
         #endregion
 
@@ -467,21 +393,6 @@ namespace TinyFx.Reflection
                 throw new Exception(msg);
             LogUtil.Warning(msg);
             return new List<Type>();
-        }
-        public static bool IsNullableType(this Type type, out Type underlyingType)
-        {
-            if (type.IsValueType)
-            {
-                underlyingType = Nullable.GetUnderlyingType(type);
-                if (underlyingType == null)
-                {
-                    underlyingType = type;
-                    return false;
-                }
-                return true;
-            }
-            underlyingType = type;
-            return false;
         }
     }
 }
