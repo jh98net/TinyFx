@@ -41,12 +41,14 @@ namespace TinyFx.Data
         {
             IsolationLevel = isolationLevel;
             _exception = new Exception("TransactionManager对象在析构函数中调用释放，请显示调用Commit()或Rollback()释放资源。");
-            _exception.Data.Add("StackTrace", Environment.StackTrace);
+            var stack = new StackTrace(0, true);
+            _exception.Data.Add("StackTrace", stack.ToString());
         }
 
         // key : ConnectionString
         private readonly ConcurrentDictionary<string, DbTransaction> _trans = new ConcurrentDictionary<string, DbTransaction>(2, 3);
         private bool _isOpened = false;
+        private object _sync = new();
 
         private IDataInstProvider _instrumentationProvider = null;
         private readonly Exception _exception = null;
@@ -59,17 +61,23 @@ namespace TinyFx.Data
         public DbTransaction GetTransaction(Database database)
         {
             string key = database.ConnectionString;
-            if (!_trans.TryGetValue(key, out DbTransaction ret))
+            if (!_trans.TryGetValue(key, out var ret))
             {
-                DbConnection conn = database.CreateConnection();
-                database.OpenConnection(conn);
-                ret = conn.BeginTransaction(IsolationLevel);
-                _trans.TryAdd(key, ret);
-                _isOpened = true;
-                //只取一个检测程序
-                if (_instrumentationProvider == null)
+                lock (_sync)
                 {
-                    _instrumentationProvider = database.InstProvider;
+                    if (!_trans.TryGetValue(key, out ret))
+                    {
+                        DbConnection conn = database.CreateConnection();
+                        database.OpenConnection(conn);
+                        ret = conn.BeginTransaction(IsolationLevel);
+                        _trans.TryAdd(key, ret);
+                        _isOpened = true;
+                        //只取一个检测程序
+                        if (_instrumentationProvider == null)
+                        {
+                            _instrumentationProvider = database.InstProvider;
+                        }
+                    }
                 }
             }
             return ret;
