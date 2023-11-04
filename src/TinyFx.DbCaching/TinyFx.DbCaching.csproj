@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>TinyFx DbCaching封装</Description>
-    <Version>3.10.35</Version>
+    <Version>3.10.36</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TinyFx.Data.SqlSugar\TinyFx.Data.SqlSugar.csproj" />

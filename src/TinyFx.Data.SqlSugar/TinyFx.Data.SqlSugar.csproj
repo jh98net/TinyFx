@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>TinyFx SqlSugar封装</Description>
-    <Version>3.10.35</Version>
+    <Version>3.10.36</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SqlSugarCore" Version="5.1.4.110" />
