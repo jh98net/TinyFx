@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace TinyFx.MessageDriven;
+namespace TinyFx.Core;
 
 public interface IMessageService
 {
