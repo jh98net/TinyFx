@@ -30,13 +30,10 @@ namespace TinyFx.Extensions.RabbitMQ
         /// </summary>
         public long Timestamp { get; set; }
         /// <summary>
-        /// 异常Action列表
-        /// </summary>
-        public List<string> ErrorActionList { get; set; } = new();
-        /// <summary>
         /// 当前异常的Action（自动设置）
         /// </summary>
         public string ErrorAction { get; set; }
+        public int RepublishCount { get; set; }
     }
     internal class MQMessageBase : IMQMessage
     {

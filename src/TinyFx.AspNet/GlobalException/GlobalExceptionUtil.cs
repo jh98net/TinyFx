@@ -41,7 +41,7 @@ namespace TinyFx.AspNet
                 ret = new ApiResult()
                 {
                     Success = false,
-                    Status = 400,// (int)HttpStatusCode.BadRequest,
+                    Status = context.Response.StatusCode,
                     Code = exc.Code,
                     Result = exc.Result,
                     TraceId = context.GetTraceId(),
@@ -59,7 +59,7 @@ namespace TinyFx.AspNet
                 ret = new ApiResult()
                 {
                     Success = false,
-                    Status = 500,//(int)HttpStatusCode.InternalServerError,
+                    Status = context.Response.StatusCode,
                     Code = AspNetUtil.TryGetUnhandledExceptionCode(out var code)
                         ? code : ResponseCode.G_InternalServerError,
                     Message = (ConfigUtil.Project?.ResponseErrorMessage ?? false)

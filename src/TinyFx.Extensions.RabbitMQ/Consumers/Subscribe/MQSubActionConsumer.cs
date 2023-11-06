@@ -35,6 +35,7 @@ namespace TinyFx.Extensions.RabbitMQ
             // 重试
             if (republish)
             {
+                msg.MQMeta.RepublishCount++;
                 var item = ActionList.Find(x => x.MethodName == msg.MQMeta.ErrorAction);
                 if (item == null)
                     return;
@@ -58,6 +59,7 @@ namespace TinyFx.Extensions.RabbitMQ
                         ProjectId = ConfigUtil.Project.ProjectId,
                         MessageId = msg.MQMeta.MessageId,
                         ErrorAction = item.MethodName,
+                        RepublishCount = msg.MQMeta.RepublishCount,
                         Description = item.Description,
                         Exception = ex
                     };
@@ -83,7 +85,6 @@ namespace TinyFx.Extensions.RabbitMQ
                     {
                         if (msg != null)
                         {
-                            msg.MQMeta.ErrorActionList.Add(item.MethodName);
                             msg.MQMeta.ErrorAction = item.MethodName;
                         }
                         var err = new MQSubActionError
@@ -122,6 +123,8 @@ namespace TinyFx.Extensions.RabbitMQ
 
         public string MessageId { get; set; }
         public string ErrorAction { get; set; }
+        public int RepublishCount { get; set; }
+
         public string Description { get; set; }
         public Exception Exception { get; set; }
         public string ProjectId { get; set; }
