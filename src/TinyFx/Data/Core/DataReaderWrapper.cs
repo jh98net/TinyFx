@@ -86,7 +86,9 @@ namespace TinyFx.Data
         {
             bool ret = Reader.Read();
             if (!ret)
-                GC.SuppressFinalize(this);
+            {
+                Dispose();
+            }
             return ret;
         }
         #endregion

@@ -170,7 +170,7 @@ namespace TinyFx.Data
         /// <param name="reader"></param>
         /// <param name="isClose"></param>
         /// <returns></returns>
-        public static DataTable ToTable(this IDataReader reader, bool isClose = true)
+        public static DataTable ToTable(this IDataReader reader)
         {
             DataTable ret = new DataTable();
             try
@@ -197,8 +197,7 @@ namespace TinyFx.Data
             }
             finally
             {
-                if (isClose)
-                    reader.Close();
+                reader.Close();
             }
             return ret;
         }
