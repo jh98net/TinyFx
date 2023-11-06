@@ -45,17 +45,24 @@ namespace TinyFx
         {
             // Kestrel
             var section = ConfigUtil.GetSection<AspNetSection>();
-            if (section != null && section.RequestBytesPerSecond > 0 && section.RequestPeriodSecond > 0)
+            if (section != null)
             {
                 builder.WebHost.ConfigureKestrel(opts =>
                 {
-                    var bytesPerSecond = section.RequestBytesPerSecond;
-                    var gracePeriod = TimeSpan.FromSeconds(section.RequestPeriodSecond);
-                    opts.Limits.MinRequestBodyDataRate = new MinDataRate(bytesPerSecond, gracePeriod);
+                    if (section.RequestBytesPerSecond > 0 && section.RequestPeriodSecond > 0)
+                    {
+                        var bytesPerSecond = section.RequestBytesPerSecond;
+                        var gracePeriod = TimeSpan.FromSeconds(section.RequestPeriodSecond);
+                        opts.Limits.MinRequestBodyDataRate = new MinDataRate(bytesPerSecond, gracePeriod);
+                    }
+                    else
+                    {
+                        opts.Limits.MinRequestBodyDataRate = null;
+                    }
                 });
             }
             AddAspNetEx(builder.Services, type);
-         
+
             return builder;
         }
         private static IServiceCollection AddAspNetEx(this IServiceCollection services, AspNetType type)
