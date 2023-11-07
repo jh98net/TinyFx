@@ -461,6 +461,7 @@
       "UseSchemaFullName": false //生成接口用到的类型信息时，是否使用带命名空间的全名称，以避免重名异常
     },
     "PathBase": null, // 项目基础路径
+    "HostingStartupAssemblies": [], //启动时host配置assembly，继承ITinyFxHostingStartup
     "DynamicApiAssemblies": [] // 动态加载的API所在的 xxx.dll
   },
 
