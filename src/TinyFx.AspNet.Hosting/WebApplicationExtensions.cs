@@ -21,6 +21,7 @@ using static System.Collections.Specialized.BitVector32;
 using Serilog.Events;
 using TinyFx.AspNet.RequestLogging;
 using TinyFx.Extensions.AppMetric;
+using TinyFx.AspNet.Hosting;
 
 namespace TinyFx
 {
@@ -47,8 +48,10 @@ namespace TinyFx
             app.UseResponseCachingEx(); // 必须放在UseCors之后
             app.UseSwaggerEx();
             app.UseInternalMap();
+            //
+            TinyFxHostingStartupLoader.Instance.Configure(app);
 
-            TinyFxHost.RegisterOnStarted(() => 
+            TinyFxHost.RegisterOnStarted(() =>
             {
                 LogUtil.Info("ProjectId: {ProjectId} Environment: {EnvironmentString} URL: {Urls}"
                     , ConfigUtil.Project?.ProjectId

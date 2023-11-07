@@ -36,6 +36,7 @@ using Nacos.V2.DependencyInjection;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Hosting;
 using TinyFx.Extensions.AppMetric;
+using TinyFx.AspNet.Hosting;
 
 namespace TinyFx
 {
@@ -62,7 +63,8 @@ namespace TinyFx
                 });
             }
             AddAspNetEx(builder.Services, type);
-
+            //
+            TinyFxHostingStartupLoader.Instance.ConfigureServices(builder);
             return builder;
         }
         private static IServiceCollection AddAspNetEx(this IServiceCollection services, AspNetType type)

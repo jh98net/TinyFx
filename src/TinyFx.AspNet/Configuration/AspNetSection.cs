@@ -47,6 +47,10 @@ namespace TinyFx.Configuration
         /// </summary>
         public int RequestBytesPerSecond { get; set; } = 100;
         /// <summary>
+        /// 启动时host配置assembly
+        /// </summary>
+        public List<string> HostingStartupAssemblies { get; set; } = new();
+        /// <summary>
         /// 动态加载的API所在的Assembly列表
         /// </summary>
         public List<string> DynamicApiAssemblies { get; set; } = new();
