@@ -41,6 +41,7 @@ namespace TinyFx
                         if (config == null)
                             throw new Exception($"配置SqlSugar:ConnectionStrings没有找到默认连接。name:{section.DefaultConnectionStringName} type:{provider.GetType().FullName}");
                         config.LanguageType = LanguageType.Chinese;
+                        config.IsAutoCloseConnection = true;
                         var ret = new SqlSugarScope(config, db =>
                         {
                             DbUtil.InitDb(db, config);

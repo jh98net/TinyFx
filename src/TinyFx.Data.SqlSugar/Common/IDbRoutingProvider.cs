@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,6 +24,13 @@ namespace TinyFx.Data.SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         ISplitTableService RouteTable<T>();
+
+        /// <summary>
+        /// 路由所有表名称
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        List<string> RouteTables<T>();
     }
     public class DefaultDbRoutingProvider : IDbRoutingProvider
     {
@@ -34,6 +42,13 @@ namespace TinyFx.Data.SqlSugar
         public ISplitTableService RouteTable<T>()
         {
             return null;
+        }
+
+        public List<string> RouteTables<T>()
+        {
+            var attr = typeof(T).GetCustomAttribute<SugarTable>();
+            if (attr == null) return null;
+            return new List<string> { attr.TableName };
         }
     }
 }

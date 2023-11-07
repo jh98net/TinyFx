@@ -51,6 +51,7 @@ namespace TinyFx.Data.SqlSugar
                     if (config == null)
                         throw new Exception($"配置SqlSugar:ConnectionStrings没有找到连接。name:{section.DefaultConnectionStringName} type:{provider.GetType().FullName}");
                     config.LanguageType = LanguageType.Chinese;
+                    config.IsAutoCloseConnection = true;
                     GlobalDb.AddConnection(config);
                     ret = GlobalDb.GetConnection(configId);
                     InitDb(ret, config);
@@ -58,10 +59,10 @@ namespace TinyFx.Data.SqlSugar
             }
             return ret;
         }
-        public static ISqlSugarClient GetDb<T>(params object[] routingData)
+        public static ISqlSugarClient GetDb<T>(params object[] routingDbKeys)
         {
             var configId = DIUtil.GetRequiredService<IDbRoutingProvider>()
-                .RouteDb<T>(routingData);
+                .RouteDb<T>(routingDbKeys);
             return GetDb(configId);
         }
         #endregion
