@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace TinyFx.Core.Json;
+namespace TinyFx.Core;
 
 public class JsonNullableDateTimeConverter : JsonConverter<DateTime?>
 {
