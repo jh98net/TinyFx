@@ -51,12 +51,16 @@ namespace TinyFx.AspNet.RequestLogging
             logger.AddField("Request.UserId", context?.User?.Identity?.Name);
             logger.AddField("Request.Url", context.Request.Path.ToString());
             logger.AddField("Request.Method", context.Request.Method);
+            logger.AddField("Request.EndTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
             if (logger.LogRequestHeaders)
                 logger.AddField("Request.Headers", context.Request.Headers.ToDictionary(x => x.Key, v => string.Join(";", v.Value.ToList())));
             if (logger.LogRequestBody || logger.Exception != null)
                 await LogRequestBody(context.Request, logger);
 
-            /*
+            stopwatch.Stop();
+            logger.AddField("Request.ElaspedTime", stopwatch.ElapsedMilliseconds);
+            logger.Save();
+            /* 
               if (section != null)
               {
                   var urlDict = section.GetUrlDict();
@@ -89,24 +93,6 @@ namespace TinyFx.AspNet.RequestLogging
                   await _next(context); // 继续执行
               }
               */
-            var rspState = new ResponseCompletedState
-            {
-                Logger = logger,
-                Stopwatch = stopwatch
-            };
-            // 响应完成记录时间和存入日志
-            context.Response.OnCompleted((data) =>
-            {
-                var state = (ResponseCompletedState)data;
-                if (state.Stopwatch != null)
-                {
-                    state.Logger.AddField("Request.EndTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-                    state.Stopwatch.Stop();
-                    state.Logger.AddField("Request.ElaspedTime", state.Stopwatch.ElapsedMilliseconds);
-                }
-                state.Logger.Save();
-                return Task.CompletedTask;
-            }, rspState);
         }
         private static async Task LogRequestBody(HttpRequest request, ILogBuilder logger)
         {

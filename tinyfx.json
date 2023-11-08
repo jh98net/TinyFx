@@ -243,6 +243,7 @@
   // Redis配置 (TinyFx.Extensions.StackExchangeRedis.Configuration.RedisSection)
   "Redis": {
     "DefaultConnectionStringName": "default", // 默认redis连接
+    "UseDbCaching": true, // 是否开启DbCacheChangeConsumer
     "RunNewTaskWhenSync": false, //同步调用时是否使用Task.Run();
     "ConnectionStrings": {
       "default": {
