@@ -9,7 +9,7 @@ namespace TinyFx.AspNet
 {
     public interface ITinyFxHostingStartup
     {
-        void ConfigureServices(WebApplicationBuilder webApplicationBuilder);
-        void Configure(WebApplication webApplication);
+        void ConfigureServices(WebApplicationBuilder builder);
+        void Configure(WebApplication app);
     }
 }
