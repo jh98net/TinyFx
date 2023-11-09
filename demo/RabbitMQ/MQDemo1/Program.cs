@@ -17,8 +17,8 @@ var items = new List<WorkItem>()
     new WorkItem
     {
         Title = "Publish => Subscribe 负载",
-        Action = ()=>{
-            MQUtil.Publish(new SubMsg { Message = $"Publish 负载 {idx}" }, idx.ToString());
+        Action = async()=>{
+            await MQUtil.PublishAsync(new SubMsg { Message = $"Publish 负载 {idx}" }, idx.ToString());
         }
     },
     //new WorkItem

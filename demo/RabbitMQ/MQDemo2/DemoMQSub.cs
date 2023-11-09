@@ -13,7 +13,7 @@ namespace MQDemo2
     {
         public override int QueueCount => 4;
 
-        public override MQSubscribeMode SubscribeMode => throw new NotImplementedException();
+        public override MQSubscribeMode SubscribeMode => MQSubscribeMode.OneQueue;
 
         protected override void Configuration(ISubscriptionConfiguration x)
         {

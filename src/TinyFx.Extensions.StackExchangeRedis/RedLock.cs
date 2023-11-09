@@ -41,10 +41,10 @@ namespace TinyFx.Extensions.StackExchangeRedis
             Database = database;
             LockKey = $"{RedisPrefixConst.RED_LOCK}:{lockKey}";
             _token = Guid.NewGuid().ToString();
-            Expiry = expiry.HasValue ? expiry.Value : TimeSpan.FromSeconds(2); ;
+            Expiry = expiry.HasValue ? expiry.Value : TimeSpan.FromSeconds(3); ;
             RetryCount = retryCount <= 0 ? 6 : retryCount;
             RetryInterval = retryInterval.HasValue ? retryInterval.Value : TimeSpan.FromMilliseconds(500);
-            _timer = new System.Timers.Timer(Expiry.TotalMilliseconds / 2);
+            _timer = new System.Timers.Timer(Expiry.TotalMilliseconds / 3);
         }
 
         public async Task StartAsync()

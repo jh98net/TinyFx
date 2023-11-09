@@ -30,7 +30,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public virtual string PatternKey { get; set; }
         public virtual PatternMode? PatternMode { get; set; }
         /// <summary>
-        /// 消息是否并发处理
+        /// 消息是并发处理
         /// </summary>
         public virtual bool IsConcurrentProcess { get; set; } = true;
 
@@ -45,7 +45,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         }
         public void Register()
         {
-            _sub = RedisUtil.GetRedis(ConnectionStringName).GetSubscriber();
+            _sub = RedisUtil.GetRedis(ConnectionStringName, "PUBSUB").GetSubscriber();
             _channel = RedisUtil.GetChannel<TMessage>(PatternKey, PatternMode.Value);
             if (IsConcurrentProcess)
             {

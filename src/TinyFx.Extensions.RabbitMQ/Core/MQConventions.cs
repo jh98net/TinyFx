@@ -22,7 +22,7 @@ namespace TinyFx.Extensions.RabbitMQ
                 var idx = subId.LastIndexOf('.');
                 if (idx >= 0)
                     subId = subId.Substring(idx + 1);
-                return $"[{msgType.Name}]=>[{projectId}]{subId}";
+                return $"[{msgType.Name}]=>[{projectId}]{subId}-{subId.GetHashCode()}";
             };
         }
     }

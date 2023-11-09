@@ -49,15 +49,16 @@ namespace TinyFx.Extensions.StackExchangeRedis
         #endregion
 
         #region Redis & Database
-        public static ConnectionMultiplexer GetRedis(string connectionStringName = null)
+        public static ConnectionMultiplexer GetRedis(string connectionStringName = null, string flag = null)
         {
             var element = GetConfigElement(connectionStringName);
-            return GetRedisByConnectionString(element.ConnectionString);
+            return GetRedisByConnectionString(element.ConnectionString, flag);
         }
-        public static ConnectionMultiplexer GetRedisByConnectionString(string connectionString)
+        public static ConnectionMultiplexer GetRedisByConnectionString(string connectionString, string flag = null)
         {
             if (string.IsNullOrEmpty(connectionString))
                 throw new ArgumentNullException("connectionString");
+            var key = $"{connectionString}|{flag}";
             return _redisDict.GetOrAdd(connectionString, (key) =>
             {
                 return new Lazy<ConnectionMultiplexer>(() =>
@@ -70,7 +71,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         {
             if (string.IsNullOrEmpty(connectionString))
                 throw new ArgumentNullException("connectionString");
-            return _redisDict.GetOrAdd(connectionString, (key) => 
+            return _redisDict.GetOrAdd(connectionString, (key) =>
             {
                 return new Lazy<ConnectionMultiplexer>(() =>
                 {

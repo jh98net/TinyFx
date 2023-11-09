@@ -64,18 +64,8 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var a = GetAppByProviderAppId("pgsoft", "126");
-        }
-        public static Ss_appEO GetAppByProviderAppId(string providerId, string providerAppId)
-        {
-            var ret = DbCachingUtil.GetSingle<Ss_appEO>(it => new { it.ProviderID, it.ProviderAppId }, new Ss_appEO
-            {
-                ProviderID = providerId,
-                ProviderAppId = providerAppId
-            });
-            if (ret == null)
-                throw new Exception($"AppId不存在: providerId:{providerId} providerAppId:{providerAppId}");
-            return ret;
+            var str = "abcasdf";
+            Console.WriteLine(str.GetHashCode());
         }
     }
 }

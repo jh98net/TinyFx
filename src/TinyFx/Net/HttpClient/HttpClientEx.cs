@@ -132,8 +132,9 @@ namespace TinyFx.Net
             }
             catch (Exception ex)
             {
-                LogUtil.Error(ex, "HttpClientEx.RequestAsync resultString:{resultString}", ret.ResultString);
+                LogUtil.Error(ex, "HttpClientEx.RequestAsync {HttpClient.ResultString}", ret.ResultString);
                 ret.Success = false;
+                ret.ResponseUtcTime = DateTime.UtcNow;
                 ret.Exception = ex;
                 ret.ExceptionString += ex.Message;
             }
@@ -148,6 +149,9 @@ namespace TinyFx.Net
             ret.Response = rsp.Response;
             ret.Exception = rsp.Exception;
             ret.ResultString = rsp.ResultString;
+            ret.ExceptionString = rsp.ExceptionString;
+            ret.RequestUtcTime = rsp.RequestUtcTime;
+            ret.ResponseUtcTime = rsp.ResponseUtcTime;
             if (Config.UseCookies)
                 ret.Cookies = _httpHandler.CookieContainer.GetCookies(Client.BaseAddress).Cast<Cookie>().ToList();
             try
@@ -159,7 +163,7 @@ namespace TinyFx.Net
             }
             catch (Exception ex)
             {
-                LogUtil.Error(ex, "HttpClientEx.RequestAsync时反序列化失败。success:{httpClient.success} resultString:{httpClient.resultString} TSuccess:{httpClient.TSuccess} TError:{httpClient.TError}"
+                LogUtil.Error(ex, "HttpClientEx.RequestAsync时反序列化失败。{HttpClient.Success} {HttpClient.ResultString} TSuccess:{HttpClient.TSuccess} TError:{HttpClient.TError}"
                     , rsp.Success, ret.ResultString, typeof(TSuccess).FullName, typeof(TError).FullName);
                 ret.Success = false;
                 ret.Exception = ex;
