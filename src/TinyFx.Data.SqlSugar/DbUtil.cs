@@ -128,6 +128,7 @@ namespace TinyFx.Data.SqlSugar
                 LogUtil.Error(ex, $"SQL: {tmpSql}");
             };
         }
+        #endregion
     }
-    #endregion
+
 }
