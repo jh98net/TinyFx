@@ -3,9 +3,9 @@ using System.Linq;
 using System.Text;
 using SqlSugar;
 
-namespace SqlSugarDemo.DAL
+namespace SqlSugarDemo
 {
-    public partial class Sdemo_userEO
+    public partial class Ss_data_moveEO
     {
     }
 }

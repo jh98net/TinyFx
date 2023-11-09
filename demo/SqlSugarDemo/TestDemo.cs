@@ -12,28 +12,12 @@ namespace SqlSugarDemo
     {
         public override async Task Execute()
         {
-            var oldEo = new Sdemo_courseEO
-            {
-                Year = 123,
-                CourseID = "abc"
-            };
-            Demo_courseEO newEo = oldEo;
-
-
-
-
-            //try
-            //{
-            //    DbUtil.BeginTran();
-            //    var mo1 = DbUtil.CreateRepository<Sdemo_classEO>();
-            //    var mo2 = DbUtil.CreateRepository<Sv_demo_user_courseEO>();
-
-            //    DbUtil.CommitTran();
-            //}
-            //catch (Exception ex)
-            //{
-            //    DbUtil.RollbackTran();
-            //}
+            //2023-10-17 11:02:06
+            var items = DbUtil.GetDb().Queryable<Ss_data_move_logEO>()
+                .Where(it => it.DataMoveID == 5)
+                .Where("DATE_FORMAT(recdate,'%Y-%m-%d')=DATE_FORMAT(UTC_DATE(),'%Y-%m-%d')")
+                .ToList();
+            Console.WriteLine("");
         }
     }
 

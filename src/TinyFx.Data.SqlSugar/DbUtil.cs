@@ -103,28 +103,20 @@ namespace TinyFx.Data.SqlSugar
                     else if (config.LogSqlMode == 1)
                         tmpSql = UtilMethods.GetNativeSql(sql, paras);
 
-                    var log = LogUtil.GetContextLog();
-                    log.AddMessage($"SQL执行前");
-                    log.AddField("SqlSugar.ConfigId", config.ConfigId);
-                    log.AddField("SqlSugar.SQL", tmpSql);
-                    if (!log.IsContextLog)
-                        log.SetFlag("SqlSugar").Save();
+                    LogUtil.Debug("执行SQL: {SQL}", tmpSql);
                 };
                 db.Aop.OnLogExecuted = (sql, paras) =>
                 {
-                    var log = LogUtil.GetContextLog();
-                    log.AddMessage($"SQL执行时间: {db.Ado.SqlExecutionTime.TotalMilliseconds}ms");
-                    if (!log.IsContextLog)
-                        log.SetFlag("SqlSugar").Save();
+                    //var log = LogUtil.GetContextLog();
+                    //log.AddMessage($"SQL执行时间: {db.Ado.SqlExecutionTime.TotalMilliseconds}ms");
+                    //if (!log.IsContextLog)
+                    //    log.SetFlag("SqlSugar").Save();
                 };
             }
             db.Aop.OnError = (ex) =>
             {
-                var tmpSql = ex.Sql;
-                if (ConfigUtil.IsDebugEnvironment || config.LogSqlMode == 2)
-                    tmpSql = UtilMethods.GetSqlString(config.DbType, ex.Sql, (SugarParameter[])ex.Parametres);
-                else if (config.LogSqlMode == 1)
-                    tmpSql = UtilMethods.GetNativeSql(ex.Sql, (SugarParameter[])ex.Parametres);
+                // 无参数化
+                var tmpSql = UtilMethods.GetSqlString(config.DbType, ex.Sql, (SugarParameter[])ex.Parametres);
 
                 var log = LogUtil.GetContextLog();
                 log.AddMessage("SQL执行异常");
@@ -133,6 +125,7 @@ namespace TinyFx.Data.SqlSugar
                 log.AddException(ex);
                 if (!log.IsContextLog)
                     log.SetFlag("SqlSugar").Save();
+                LogUtil.Error(ex, $"SQL: {tmpSql}");
             };
         }
     }

@@ -24,7 +24,12 @@ namespace TinyFx.Logging
              .MinimumLevel.Debug()
              .Enrich.WithExceptionDetails()
              .Enrich.FromLogContext();
-            config = Serilog.ConsoleLoggerConfigurationExtensions.Console(config.WriteTo, new Serilog.Formatting.Compact.CompactJsonFormatter());
+            // debug
+            config = Serilog.LoggerSinkConfigurationDebugExtensions.Debug(config.WriteTo
+                , outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
+            // console
+            config = Serilog.ConsoleLoggerConfigurationExtensions.Console(config.WriteTo
+                , outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
             //config = Serilog.FileLoggerConfigurationExtensions.File(config.WriteTo
             //    , "./logs/ext.log"
             //    , restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error
@@ -192,6 +197,11 @@ namespace TinyFx.Logging
             var ret = new LogBuilder();
             ret.IsContextLog = false;
             return ret;
+        }
+
+        public static ILogBuilder CreateLogBuilder(LogLevel level = LogLevel.Debug, string flag = null)
+        {
+            return new LogBuilder(level, flag);
         }
     }
 }

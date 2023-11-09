@@ -1,6 +1,6 @@
 {
   "SqlSugar": {
-    "DefaultElement": "demo",
+    "DefaultElement": "ing",
     "Elements": [
       {
         "Name": "demo",
@@ -8,6 +8,17 @@
         "ConnectionString": "server=192.168.1.120;port=3306;database=demo;uid=root;pwd=root;sslmode=Disabled;allowuservariables=True;AllowLoadLocalInfile=true;Pooling=false",
         "OutputPath": "SqlSugar",
         "Namespace": "SqlSugarDemo.DAL",
+        "UseSubPath": false,
+        "UseTinyFx": false,
+        "IsDeletePartial": true
+      },
+      {
+        "Name": "ing",
+        "DatabaseType": 0,
+        "ConnectionString": "server=192.168.1.120;port=3306;database=ing;uid=root;pwd=root;sslmode=Disabled;allowuservariables=True;AllowLoadLocalInfile=true",
+        "OutputPath": "SqlSugar",
+        "Namespace": "SqlSugarDemo",
+        "UseSubPath": false,
         "UseTinyFx": false,
         "IsDeletePartial": false
       }
