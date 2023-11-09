@@ -1,4 +1,5 @@
-﻿using SqlSugarDemo.DAL;
+﻿using SqlSugar;
+using SqlSugarDemo.DAL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +13,10 @@ namespace SqlSugarDemo
     {
         public override async Task Execute()
         {
+            var endDate = DateTime.Now;
             //2023-10-17 11:02:06
-            var items = DbUtil.GetDb().Queryable<Ss_data_move_logEO>()
-                .Where(it => it.DataMoveID == 5)
-                .Where("DATE_FORMAT(recdate,'%Y-%m-%d')=DATE_FORMAT(UTC_DATE(),'%Y-%m-%d')")
-                .ToList();
+            var value = await DbUtil.GetDb().Ado.GetScalarAsync($"SELECT MIN(`RecDate`)"
+                + $" FROM `s_provider_order` WHERE `recdate` < @EndDate", new SugarParameter("@EndDate", endDate));
             Console.WriteLine("");
         }
     }

@@ -14,16 +14,12 @@ namespace TinyFx.Data.SqlSugar
         public static string DefaultConfigId
             => GlobalDb.CurrentConnectionConfig.ConfigId;
 
+        private static SqlSugarScope _globalDb;
         /// <summary>
         /// 全局DB，仅用作事务
         /// </summary>
         internal static SqlSugarScope GlobalDb
-        {
-            get
-            {
-                return (SqlSugarScope)DIUtil.GetRequiredService<ISqlSugarClient>();
-            }
-        }
+            => _globalDb ??= (SqlSugarScope)DIUtil.GetRequiredService<ISqlSugarClient>();
 
         /// <summary>
         /// 获取DB
@@ -36,13 +32,13 @@ namespace TinyFx.Data.SqlSugar
             var section = ConfigUtil.GetSection<SqlSugarSection>();
             if (configId == null || configId == section.DefaultConnectionStringName)
             {
-                ret = GlobalDb.GetConnection(section.DefaultConnectionStringName);
+                ret = GlobalDb.GetConnectionScope(section.DefaultConnectionStringName);
             }
             else
             {
                 if (GlobalDb.IsAnyConnection(configId))
                 {
-                    ret = GlobalDb.GetConnection(configId);
+                    ret = GlobalDb.GetConnectionScope(configId);
                 }
                 else
                 {
@@ -53,7 +49,7 @@ namespace TinyFx.Data.SqlSugar
                     config.LanguageType = LanguageType.Chinese;
                     config.IsAutoCloseConnection = true;
                     GlobalDb.AddConnection(config);
-                    ret = GlobalDb.GetConnection(configId);
+                    ret = GlobalDb.GetConnectionScope(configId);
                     InitDb(ret, config);
                 }
             }
