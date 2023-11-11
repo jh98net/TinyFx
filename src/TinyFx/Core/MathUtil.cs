@@ -23,5 +23,16 @@ namespace TinyFx
             //while (tmps[1][idx] == '0' && idx-- > 0) ;
             //return idx + 1;
         }
+
+        /// <summary>
+        /// 计算分页总数
+        /// </summary>
+        /// <param name="totalCount"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        public static int GetPageCount(int totalCount, int pageSize)
+        {
+            return (totalCount + pageSize - 1) / pageSize;
+        }
     }
 }

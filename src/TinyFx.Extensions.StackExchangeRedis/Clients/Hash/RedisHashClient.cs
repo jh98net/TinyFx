@@ -108,6 +108,10 @@ namespace TinyFx.Extensions.StackExchangeRedis
             await SetSlidingExpirationAsync();
             return ret;
         }
+        public async Task<T> GetOrDefaultAsync(string field, T defaultValue, CommandFlags flags = CommandFlags.None)
+        {
+            return await GetOrDefaultAsync<T>(field, defaultValue, flags);
+        }
         #endregion
     }
 }

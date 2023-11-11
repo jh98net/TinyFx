@@ -64,8 +64,10 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var client = RedisUtil.CreateHashClient<object>("TEST");
-            var value = await client.GetOrDefaultAsync<long>("aa", 0);
+            var count = 10;
+            var size = 3;
+            var page = (count + size-1)/size;
+            Console.WriteLine(page);
         }
     }
 }
