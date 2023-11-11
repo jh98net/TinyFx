@@ -64,8 +64,8 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var str = "abcasdf";
-            Console.WriteLine(str.GetHashCode());
+            var client = RedisUtil.CreateHashClient<object>("TEST");
+            var value = await client.GetOrDefaultAsync<long>("aa", 0);
         }
     }
 }

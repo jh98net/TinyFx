@@ -80,8 +80,13 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <returns></returns>
         public async Task<T> GetOrExceptionAsync(string field, CommandFlags flags = CommandFlags.None)
         {
+            return await GetOrExceptionAsync<T>(field, flags);
+        }
+
+        public async Task<TValue> GetOrExceptionAsync<TValue>(string field, CommandFlags flags = CommandFlags.None)
+        {
             var redisValue = await Database.HashGetAsync(RedisKey, field, flags);
-            if (!TryDeserialize(redisValue, out T ret))
+            if (!TryDeserialize(redisValue, out TValue ret))
                 throw new CacheNotFound($"[Redis Hash]field不存在。RedisKey: {RedisKey} field: {field} type:{GetType().FullName}");
             await SetSlidingExpirationAsync();
             return ret;
@@ -96,10 +101,10 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="defaultValue"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public async Task<T> GetOrDefaultAsync(string field, T defaultValue, CommandFlags flags = CommandFlags.None)
+        public async Task<TValue> GetOrDefaultAsync<TValue>(string field, TValue defaultValue, CommandFlags flags = CommandFlags.None)
         {
             var redisValue = await Database.HashGetAsync(RedisKey, field, flags);
-            var ret = TryDeserialize(redisValue, out T value) ? value : defaultValue;
+            var ret = TryDeserialize(redisValue, out TValue value) ? value : defaultValue;
             await SetSlidingExpirationAsync();
             return ret;
         }
