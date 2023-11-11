@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>TinyFx.Extensions.AppMetric</Description>
-    <Version>3.10.45</Version>
+    <Version>3.11.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="App.Metrics" Version="1.2.0" />
