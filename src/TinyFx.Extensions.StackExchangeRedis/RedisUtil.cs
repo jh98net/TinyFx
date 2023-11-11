@@ -80,11 +80,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
 
             }).Value;
         }
+        private static IDatabase _defaultDatabase;
         /// <summary>
         /// 默认Database
         /// </summary>
         public static IDatabase DefaultDatabase
-            => GetDatabase();
+            => _defaultDatabase ??= GetDatabase();
 
         /// <summary>
         /// 获得基础Redis操作类IDatabase
@@ -249,8 +250,8 @@ namespace TinyFx.Extensions.StackExchangeRedis
 
         #region Lock
         /// <summary>
-        /// 分布式事务锁(锁自动延期)
-        /// using(var redLock = await LockAsync())
+        /// 申请分布式事务锁，直到等待时间到期，申请到锁后锁自动延期
+        /// using(var redLock = await LockAsync(key, 20))
         /// {
         ///     if(redLock.IsLocked) //成功上锁
         ///     { }
@@ -259,29 +260,18 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// }
         /// </summary>
         /// <param name="lockKey">要锁定资源的键值（一般指业务范围）</param>
-        /// <param name="seconds">锁定资源后，如不手动释放，则在过期时间后自动释放锁（注意需确保锁定后的执行完成），单位秒</param>
-        /// <param name="retryCount">重试次数，默认6次</param>
-        /// <param name="retryInterval">重试间隔，默认500</param>
-        /// <returns></returns>
-        public static async Task<RedLock> LockAsync(string lockKey, int seconds, int retryCount = 6, int retryInterval = 500)
-            => await LockAsync(lockKey, TimeSpan.FromSeconds(seconds), retryCount, TimeSpan.FromMilliseconds(retryInterval));
-        /// <summary>
-        /// 申请锁，直到等待时间到期。申请到后锁自动延期
-        /// </summary>
-        /// <param name="lockKey"></param>
         /// <param name="waitSeconds">等待申请锁超时时间</param>
         /// <param name="retryInterval">申请锁间隔</param>
         /// <returns></returns>
-        public static async Task<RedLock> LockWaitAsync(string lockKey, int waitSeconds, int retryInterval = 500)
+        public static async Task<RedLock> LockAsync(string lockKey, int waitSeconds, int retryInterval = 500)
         {
-            retryInterval = retryInterval > 0 ? retryInterval : 500;
-            var retryCount = waitSeconds * 1000 / retryInterval;
-            return await LockAsync(lockKey, null, retryCount, TimeSpan.FromMilliseconds(retryInterval));
+            var waitSpan = TimeSpan.FromSeconds(waitSeconds);
+            var interval = TimeSpan.FromMilliseconds(retryInterval);
+            return await LockAsync(lockKey, waitSpan, interval);
         }
-        public static async Task<RedLock> LockAsync(string lockKey, TimeSpan? expiryTime = null, int retryCount = 0, TimeSpan? retryInterval = null)
-        {
-            var ret = new RedLock(DefaultDatabase, lockKey, expiryTime, retryCount, retryInterval);
-            ret.ClientType = typeof(RedisUtil);
+        public static async Task<RedLock> LockAsync(string lockKey, TimeSpan waitSpan, TimeSpan? retryInterval = null)
+        { 
+            var ret = new RedLock(DefaultDatabase, lockKey, waitSpan, retryInterval);
             await ret.StartAsync();
             return ret;
         }

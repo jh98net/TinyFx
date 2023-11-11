@@ -25,7 +25,7 @@ namespace TinyFx.DbCaching
                     var key = DbCachingUtil.GetCacheKey(item.ConfigId, item.TableName);
                     string redisValue = null;
                     // 等3分钟，1秒申请一次
-                    using (var redLock = await RedisUtil.LockWaitAsync($"DbCacheChangeConsumer:{key}", 180, 1000))
+                    using (var redLock = await RedisUtil.LockAsync($"DbCacheChangeConsumer:{key}", 180))
                     {
                         if (redLock.IsLocked)
                         {

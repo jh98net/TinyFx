@@ -190,7 +190,7 @@
   "SqlSugar": {
     "Enabled": true,
     "DbConfigProvider": null, //连接配置提供者
-    "DbRoutingProvider": null, //数据路由提供者
+    "DbSplitProvider": null, //数据分库分表提供者
     "DefaultConnectionStringName": "default",
     "ConnectionStrings": {
       "default": {

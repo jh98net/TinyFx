@@ -129,8 +129,8 @@ namespace TinyFx.DbCaching
                 var attr = typeof(TEntity).GetCustomAttribute<SugarTable>();
                 if (attr == null)
                     throw new Exception($"内存缓存类型仅支持有SugarTableAttribute的类。type: {typeof(TEntity).FullName}");
-                var routingProvider = DIUtil.GetRequiredService<IDbRoutingProvider>();
-                var configId = routingProvider.RouteDb<TEntity>(routingDbKeys);
+                var routingProvider = DIUtil.GetRequiredService<IDbSplitProvider>();
+                var configId = routingProvider.SplitDb<TEntity>(routingDbKeys);
                 return GetCacheKey(configId, attr.TableName);
             });
             // dict

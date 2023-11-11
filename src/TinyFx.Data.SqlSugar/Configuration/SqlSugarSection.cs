@@ -14,9 +14,9 @@ namespace TinyFx.Configuration
         /// </summary>
         public string DbConfigProvider { get; set; }
         /// <summary>
-        /// 数据路由提供者
+        /// 数据分库分表提供者
         /// </summary>
-        public string DbRoutingProvider { get; set; }
+        public string DbSplitProvider { get; set; }
 
         public string DefaultConnectionStringName { get; set; }
 

@@ -36,7 +36,7 @@ namespace TinyFx.Extensions.IDGenerator.Common
 
         public async Task<int> GetNextWorkId()
         {
-            using (var redlock = await RedisUtil.LockAsync("IDGeneratorWorkerId", 10, 10, 1000))
+            using (var redlock = await RedisUtil.LockAsync("IDGeneratorWorkerId", 20))
             {
                 if (!redlock.IsLocked)
                 {

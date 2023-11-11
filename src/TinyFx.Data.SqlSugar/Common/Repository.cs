@@ -11,15 +11,15 @@ namespace TinyFx.Data.SqlSugar
     public class Repository<T> : SimpleClient<T>
         where T : class, new()
     {
-        public Repository(params object[] routingDbKeys)
+        public Repository(ISqlSugarClient db)
         {
-            var routingProvider = DIUtil.GetRequiredService<IDbRoutingProvider>();
-            var configId = routingProvider.RouteDb<T>(routingDbKeys);
-            var db = DbUtil.GetDb(configId);
-            //
-            db.CurrentConnectionConfig.ConfigureExternalServices.SplitTableService
-                = routingProvider.RouteTable<T>();
             base.Context = db;
+        }
+        public Repository(params object[] splitDbKeys)
+        {
+            var splitProvider = DIUtil.GetRequiredService<IDbSplitProvider>();
+            var configId = splitProvider.SplitDb<T>(splitDbKeys);
+            base.Context = DbUtil.GetDb(configId);
         }
 
         public void SetCommandTimeout(int timeoutSeconds)

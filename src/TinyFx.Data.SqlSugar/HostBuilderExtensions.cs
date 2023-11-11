@@ -23,16 +23,16 @@ namespace TinyFx
                 builder.ConfigureServices((context, services) =>
                 {
                     // IDbConfigProvider
-                    IDbConfigProvider configProvider = !string.IsNullOrEmpty(section.DbConfigProvider)
+                    var configProvider = !string.IsNullOrEmpty(section.DbConfigProvider)
                         ? (IDbConfigProvider)ReflectionUtil.CreateInstance(section.DbConfigProvider)
                         : new DefaultDbConfigProvider();
                     services.AddSingleton(configProvider);
 
-                    // IDbRoutingProvider
-                    IDbRoutingProvider routingProvider = !string.IsNullOrEmpty(section.DbRoutingProvider)
-                        ? (IDbRoutingProvider)ReflectionUtil.CreateInstance(section.DbRoutingProvider)
-                        : new DefaultDbRoutingProvider();
-                    services.AddSingleton(routingProvider);
+                    // IDbSplitProvider
+                    var splitProvider = !string.IsNullOrEmpty(section.DbSplitProvider)
+                        ? (IDbSplitProvider)ReflectionUtil.CreateInstance(section.DbSplitProvider)
+                        : new DefaultSplitProvider();
+                    services.AddSingleton(splitProvider);
 
                     services.AddSingleton<ISqlSugarClient>(sp =>
                     {

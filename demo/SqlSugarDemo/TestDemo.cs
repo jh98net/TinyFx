@@ -13,11 +13,31 @@ namespace SqlSugarDemo
     {
         public override async Task Execute()
         {
-            var endDate = DateTime.Now;
-            //2023-10-17 11:02:06
-            var value = await DbUtil.GetDb().Ado.GetScalarAsync($"SELECT MIN(`RecDate`)"
-                + $" FROM `s_provider_order` WHERE `recdate` < @EndDate", new SugarParameter("@EndDate", endDate));
-            Console.WriteLine("");
+            //DbUtil.GetDb().Updateable<object>().AS("test")
+            //    .SetColumns("name", "bbb").Where("id=1").ExecuteCommand();
+            //DbUtil.GetNewDb("demo").Updateable<object>().AS("demo_class")
+            //    .SetColumns("name", "aaa").Where("classId='A002'").ExecuteCommand();
+            DbUtil.GetDb("demo").Updateable<object>().AS("demo_class")
+                .SetColumns("name", "aaa").Where("classId='A002'").ExecuteCommand();
+            //DbUtil.GetDb("demo").Updateable<object>().AS("demo_class")
+            //    .SetColumns("name", "bbb").Where("classId='A002'").ExecuteCommand();
+
+            DbUtil.GetNewDb("demo").Updateable<object>().AS("demo_class")
+                .SetColumns("name", "bbb").Where("classId='A002'").ExecuteCommand();
+
+            var tm = new DbTransactionManager();
+            try
+            {
+                tm.Begin();
+                tm.GetDb().Updateable<object>().AS("test").SetColumns("name", "ddd").Where("id=1").ExecuteCommand();
+                tm.GetDb("demo").Updateable<object>().AS("demo_class").SetColumns("name", "ddd").Where("classId='A002'").ExecuteCommand();
+                tm.Rollback();
+                //tm.Commit();
+            }
+            catch (Exception ex)
+            {
+                tm.Rollback();
+            }
         }
     }
 

@@ -14,36 +14,28 @@ namespace TinyFx.Extensions.StackExchangeRedis
     public class RedLock : IDisposable
     {
         public IDatabase Database { get; }
-        private System.Timers.Timer _timer;
         /// <summary>
         /// 要锁定资源的键值，针对每一个需要锁定的资源，名称必须唯一，如需要锁定操作用户coin，LockKey="lock_key_user_coin"
         /// </summary>
         public string LockKey { get; }
         private string _token { get; }
 
-        public TimeSpan Expiry { get; }
         public int RetryCount { get; }
-        public TimeSpan RetryInterval { get; set; }
+        public TimeSpan RetryInterval { get; }
 
+        public TimeSpan Expiry { get; }
+        private System.Timers.Timer _timer;
         public bool IsLocked { get; private set; }
 
-        internal Type ClientType { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="database"></param>
-        /// <param name="lockKey"></param>
-        /// <param name="expiry"></param>
-        /// <param name="retryCount"></param>
-        /// <param name="retryInterval"></param>
-        public RedLock(IDatabase database, string lockKey, TimeSpan? expiry, int retryCount = 0, TimeSpan? retryInterval = null)
+        public RedLock(IDatabase database, string lockKey, TimeSpan waitSpan, TimeSpan? retryInterval = null)
         {
             Database = database;
             LockKey = $"{RedisPrefixConst.RED_LOCK}:{lockKey}";
             _token = Guid.NewGuid().ToString();
-            Expiry = expiry.HasValue ? expiry.Value : TimeSpan.FromSeconds(3); ;
-            RetryCount = retryCount <= 0 ? 6 : retryCount;
             RetryInterval = retryInterval.HasValue ? retryInterval.Value : TimeSpan.FromMilliseconds(500);
+            RetryCount = (int)(waitSpan.TotalMilliseconds / RetryInterval.TotalMilliseconds);
+
+            Expiry = TimeSpan.FromSeconds(3); ;
             _timer = new System.Timers.Timer(Expiry.TotalMilliseconds / 3);
         }
 
@@ -55,11 +47,11 @@ namespace TinyFx.Extensions.StackExchangeRedis
             {
                 if (await Database.LockTakeAsync(LockKey, _token, Expiry))
                 {
-                    LogUtil.Debug("RedLock申请锁成功。clientType:{clientType} lockKey:{lockKey} token:{token}", ClientType.Name, LockKey, _token);
+                    LogUtil.Debug("RedLock申请锁成功。lockKey:{lockKey} token:{token}", LockKey, _token);
                     IsLocked = true;
-                    _timer.Elapsed += async (sender, args) =>
+                    _timer.Elapsed += (sender, args) =>
                     {
-                        await Database.LockExtendAsync(LockKey, _token, Expiry);//过期中间，延期
+                        Database.LockExtendAsync(LockKey, _token, Expiry);//过期中间，延期
                     };
                     _timer.Start();
                     return;
@@ -72,19 +64,19 @@ namespace TinyFx.Extensions.StackExchangeRedis
         }
         private void LogLockError()
         {
-            LogUtil.Error("RedLock申请锁失败。clientType:{clientType} lockKey:{lockKey} token:{token}", ClientType.Name, LockKey, _token);
+            LogUtil.Error("RedLock申请锁失败。lockKey:{lockKey} token:{token}",  LockKey, _token);
         }
         /// <summary>
         /// 手动释放锁
         /// </summary>
         public void Release()
         {
+            _disposed = true;
+            GC.SuppressFinalize(this);
             _timer.Stop();
             _timer.Dispose();
             _timer = null;
-            Database.LockRelease(LockKey, _token);
-            GC.SuppressFinalize(this);
-            _disposed = true;
+            Database.LockReleaseAsync(LockKey, _token).ConfigureAwait(false);
         }
         #region IDisposable
         private bool _disposed = false;
@@ -97,7 +89,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         ~RedLock()
         {
             Dispose();
-            LogUtil.Error("RedLock没有Dispose，请使用using调用。clientType:{clientType} lockKey:{lockKey} token:{token}", ClientType.Name, LockKey, _token);
+            LogUtil.Error("RedLock申请锁成功。lockKey:{lockKey} token:{token}", LockKey, _token);
         }
 
         public void Close()
