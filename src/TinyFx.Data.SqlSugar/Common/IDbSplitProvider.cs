@@ -27,7 +27,7 @@ namespace TinyFx.Data.SqlSugar
     }
     public class DefaultSplitProvider : IDbSplitProvider
     {
-        public string SplitDb<T>(params object[] routingDbKeys)
+        public string SplitDb<T>(params object[] splitDbKeys)
         {
             return null;
         }

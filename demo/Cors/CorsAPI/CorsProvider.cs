@@ -27,7 +27,7 @@ namespace CorsAPI
             return ret;
         }
 
-        protected override object[] GetRoutingDbKeys()
+        protected override object[] GetSplitDbKeys()
         {
             return null;
         }

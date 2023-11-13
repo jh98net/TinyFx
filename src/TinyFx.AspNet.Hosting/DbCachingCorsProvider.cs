@@ -33,7 +33,7 @@ namespace TinyFx.AspNet.Hosting
                 }
             }
         }
-        protected abstract object[] GetRoutingDbKeys();
+        protected virtual object[] GetSplitDbKeys() => null;
         protected abstract List<CorsPolicyElement> GetPolicies(List<TEntity> list);
 
         private DbCacheMemory<TEntity> _cache;
@@ -41,7 +41,7 @@ namespace TinyFx.AspNet.Hosting
         {
             if (_cache == null)
             {
-                _cache = DbCachingUtil.GetNamedCache<TEntity>(this.GetType().FullName, GetRoutingDbKeys());
+                _cache = DbCachingUtil.GetNamedCache<TEntity>(this.GetType().FullName, GetSplitDbKeys());
                 _cache.UpdateCallback = UpdateCallback;
             }
             return _cache;
