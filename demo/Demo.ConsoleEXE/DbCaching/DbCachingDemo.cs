@@ -15,7 +15,13 @@ namespace Demo.ConsoleEXE
     {
         public override async Task Execute()
         {
-            await Run2();
+            await Run4();
+            await Run5();
+            await Run6();
+            await Run7();
+            await Run8();
+            await Run9();
+            await Run10();
         }
         private async Task Run2()
         {
@@ -64,6 +70,57 @@ namespace Demo.ConsoleEXE
             {
                 tm.Rollback();
             }
+        }
+        private async Task Run4()
+        {
+            var eo = DbCachingUtil.GetSingle<Ss_providerEO>("own");
+            Console.WriteLine(eo);
+        }
+        private async Task Run5()
+        {
+            var eo = DbCachingUtil.GetSingle<Ss_providerEO>(it => it.ProviderName, "Hub88");
+            Console.WriteLine(eo);
+        }
+        private async Task Run6()
+        {
+            var eo = DbCachingUtil.GetSingle(() => new Ss_providerEO
+            {
+                ProviderName = "自有供应商",
+                UseBonus = false
+            });
+            Console.WriteLine(eo);
+        }
+        private async Task Run7()
+        {
+            var eo = DbCachingUtil.GetSingle<Ss_providerEO>(it => new { it.ProviderName, it.UseBonus }, new Ss_providerEO
+            {
+                ProviderName = "自有供应商",
+                UseBonus = false
+            });
+            Console.WriteLine(eo);
+        }
+        private async Task Run8()
+        {
+            var eo = DbCachingUtil.GetList<Ss_providerEO>(it => it.ProviderType, 2);
+            Console.WriteLine(eo);
+        }
+        private async Task Run9()
+        {
+            var eo = DbCachingUtil.GetList(() => new Ss_providerEO
+            {
+                ProviderType = 2,
+                UseBonus = false
+            });
+            Console.WriteLine(eo);
+        }
+        private async Task Run10()
+        {
+            var eo = DbCachingUtil.GetList<Ss_providerEO>(it => new { it.ProviderType, it.UseBonus }, new Ss_providerEO
+            {
+                ProviderType = 2,
+                UseBonus = false
+            });
+            Console.WriteLine(eo);
         }
     }
 }

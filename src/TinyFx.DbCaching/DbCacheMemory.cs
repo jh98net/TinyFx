@@ -205,10 +205,10 @@ namespace TinyFx.DbCaching
                     return GetKeys(items);
                 case MemberExpression memExpr:
                     return (memExpr.Member.Name, Convert.ToString(valuesEntity));
-                    //case UnaryExpression oneExpr:
-                    //    if (!(oneExpr.Operand is MemberExpression memExpr2))
-                    //        throw new Exception("DbCacheMemory使用单列单值获取keys时仅支持UnaryExpression和MemberExpression");
-                    //    return (memExpr2.Member.Name, Convert.ToString(valuesEntity));
+                case UnaryExpression oneExpr:
+                    if (!(oneExpr.Operand is MemberExpression memExpr2))
+                        throw new Exception("DbCacheMemory使用单列单值获取keys时仅支持UnaryExpression和MemberExpression");
+                    return (memExpr2.Member.Name, Convert.ToString(valuesEntity));
             }
             throw new Exception("DbCacheMemory仅支持NewExpression和MemberExpression表达式");
         }

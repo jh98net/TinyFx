@@ -1,4 +1,5 @@
-﻿using SqlSugar;
+﻿using Dm.parser;
+using SqlSugar;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -39,6 +40,9 @@ namespace TinyFx.DbCaching
         public static TEntity GetSingle<TEntity>(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity, params object[] splitDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(splitDbKeys).GetSingle(fieldsExpr, valuesEntity);
+        public static TEntity GetSingle<TEntity>(Expression<Func<TEntity>> expr, params object[] splitDbKeys)
+          where TEntity : class, new()
+            => GetCache<TEntity>(splitDbKeys).GetSingle(expr);
         public static TEntity GetSingleByKey<TEntity>(string fieldsKey, string valuesKey, params object[] splitDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(splitDbKeys).GetSingleByKey(fieldsKey, valuesKey);
