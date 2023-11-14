@@ -29,8 +29,8 @@ namespace Demo.ConsoleEXE
         private async Task Run1()
         {
             var stopwatch = new Stopwatch();
-            var appList = await DbUtil.CreateRepository<Ss_appEO>().GetListAsync();
-            var operList = await DbUtil.CreateRepository<Ss_operator_appEO>().GetListAsync();
+            var appList = await DbUtil.GetRepository<Ss_appEO>().GetListAsync();
+            var operList = await DbUtil.GetRepository<Ss_operator_appEO>().GetListAsync();
             foreach (var app in appList)
             {
                 var i = 0;
@@ -46,6 +46,23 @@ namespace Demo.ConsoleEXE
                 }
                 Console.WriteLine($"{stopwatch.ElapsedMilliseconds} count:{i}");
                 stopwatch.Stop();
+            }
+        }
+        private async Task Run3()
+        {
+            var a = DbUtil.GetDb<Ssf_promoter_comm_configEO>();
+            var b = DbUtil.GetRepository<Ssf_promoter_comm_configEO>();
+            var tm = new DbTransactionManager();
+            try
+            {
+                tm.Begin();
+                var db = tm.GetDb<Ssf_promoter_comm_configEO>();
+                var repo = tm.GetRepository<Ssf_promoter_comm_configEO>();
+                tm.Commit();
+            }
+            catch (Exception ex)
+            {
+                tm.Rollback();
             }
         }
     }

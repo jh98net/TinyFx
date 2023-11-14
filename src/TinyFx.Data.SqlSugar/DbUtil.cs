@@ -72,7 +72,7 @@ namespace TinyFx.Data.SqlSugar
         /// <typeparam name="T"></typeparam>
         /// <param name="splitDbKeys">分库标识</param>
         /// <returns></returns>
-        public static Repository<T> CreateRepository<T>(params object[] splitDbKeys)
+        public static Repository<T> GetRepository<T>(params object[] splitDbKeys)
          where T : class, new()
         {
             return new Repository<T>(splitDbKeys);

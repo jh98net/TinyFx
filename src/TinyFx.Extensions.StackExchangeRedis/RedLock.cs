@@ -64,25 +64,25 @@ namespace TinyFx.Extensions.StackExchangeRedis
         }
         private void LogLockError()
         {
-            LogUtil.Error("RedLock申请锁失败。lockKey:{lockKey} token:{token}",  LockKey, _token);
+            LogUtil.Error("RedLock申请锁失败。lockKey:{lockKey} token:{token}", LockKey, _token);
         }
+
+        #region IDisposable
         /// <summary>
         /// 手动释放锁
         /// </summary>
         public void Release()
         {
+            if (_disposed) return;
             _disposed = true;
+            Database.LockReleaseAsync(LockKey, _token).ConfigureAwait(false);
             GC.SuppressFinalize(this);
             _timer.Stop();
             _timer.Dispose();
-            _timer = null;
-            Database.LockReleaseAsync(LockKey, _token).ConfigureAwait(false);
         }
-        #region IDisposable
         private bool _disposed = false;
         public void Dispose()
         {
-            if (_disposed) return;
             Release();
         }
 
