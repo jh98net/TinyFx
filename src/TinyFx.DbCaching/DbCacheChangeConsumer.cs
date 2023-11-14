@@ -15,36 +15,35 @@ namespace TinyFx.DbCaching
     [RedisConsumerRegisterIgnore]
     internal class DbCacheChangeConsumer : RedisSubscribeConsumer<DbCacheChangeMessage>
     {
+        public DbCacheChangeConsumer()
+        { 
+        }
         protected override async Task OnMessage(DbCacheChangeMessage message)
         {
-            var list = new List<(IDbCacheMemoryUpdate cache, string data)>();
+            var list = new List<(IDbCacheMemoryUpdate cache, List<string> datas)>();
             try
             {
                 foreach (var item in message.Changed)
                 {
+                    List<string> redisValues = null;
                     var key = DbCachingUtil.GetCacheKey(item.ConfigId, item.TableName);
-                    string redisValue = null;
+                    var dataProvider = new PageDataProvider(item.ConfigId, item.TableName);
                     // 等3分钟，1秒申请一次
                     using (var redLock = await RedisUtil.LockAsync($"DbCacheChangeConsumer:{key}", 180))
                     {
-                        if (redLock.IsLocked)
-                        {
-                            var data = await DbCacheDataDCache.Create().GetOrLoadAsync(key);
-                            if (!data.HasValue)
-                                throw new Exception($"DbCacheDataDCache缓存没有值。key:{key}");
-                            redisValue = data.Value;
-                        }
-                        else
+                        if (!redLock.IsLocked)
                             throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
+                        redisValues = await dataProvider.GetRedisValues();
                     }
                     if (DbCachingUtil.CacheDict.TryGetValue(key, out var dict))
                     {
-                        dict.Values.ForEach(x => {
-                            list.Add(((IDbCacheMemoryUpdate)x, redisValue));
+                        dict.Values.ForEach(x =>
+                        {
+                            list.Add(((IDbCacheMemoryUpdate)x, redisValues));
                         });
                     }
                 }
-                list.ForEach(x => x.cache.BeginUpdate(x.data));
+                list.ForEach(x => x.cache.BeginUpdate(x.datas));
                 list.ForEach(x => x.cache.EndUpdate());
             }
             catch (Exception ex)
@@ -63,7 +62,7 @@ namespace TinyFx.DbCaching
     }
     internal interface IDbCacheMemoryUpdate
     {
-        void BeginUpdate(string data);
+        void BeginUpdate(List<string> datas);
         void EndUpdate();
     }
 }

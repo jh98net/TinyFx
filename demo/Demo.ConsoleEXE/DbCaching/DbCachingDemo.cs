@@ -15,13 +15,20 @@ namespace Demo.ConsoleEXE
     {
         public override async Task Execute()
         {
-            await Run4();
-            await Run5();
-            await Run6();
-            await Run7();
-            await Run8();
-            await Run9();
-            await Run10();
+            var eo = DbCachingUtil.GetSingle(() => new Ss_operator_appEO
+            {
+                AppID = "best_shooter",
+                OperatorID = "own_lobby_bra"
+            });
+            await DbCachingUtil.PublishUpdate(new List<DbCacheItem> 
+            {
+                new DbCacheItem
+                {
+                    ConfigId = null,
+                    TableName="s_operator_app"
+                }
+            });
+            Console.WriteLine(eo.AppID);
         }
         private async Task Run2()
         {

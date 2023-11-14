@@ -168,20 +168,13 @@ namespace TinyFx.DbCaching
         /// </summary>
         /// <param name="items"></param>
         /// <returns></returns>
-        public static async Task PublishUpdate(List<DbCacheChangeItem> items)
+        public static async Task PublishUpdate(List<DbCacheItem> items)
         {
-            items ??= (await GetAllCacheItem()).Select(x => new DbCacheChangeItem
-            {
-                ConfigId = x.ConfigId,
-                TableName = x.TableName,
-            }).ToList();
+            items ??= await GetAllCacheItem();
             foreach (var item in items)
             {
-                var list = await DbUtil.GetDb(item.ConfigId).Queryable<object>()
-                    .AS(item.TableName).ToListAsync() ?? new List<object>();
-                var data = SerializerUtil.SerializeJson(list);
-                var key = GetCacheKey(item.ConfigId, item.TableName);
-                await DbCacheDataDCache.Create().SetAsync(key, data);
+                var dataProvider = new PageDataProvider(item.ConfigId, item.TableName);
+                await dataProvider.SetRedisValues();
             }
             var msg = new DbCacheChangeMessage
             {
@@ -194,14 +187,15 @@ namespace TinyFx.DbCaching
         internal static string GetCacheKey(string configId, string tableName)
             => $"{configId ?? DbUtil.DefaultConfigId}|{tableName}";
 
-        internal static (string ConfigId, string TableName) ParseCacheKey(string value)
+        internal static (string ConfigId, string TableName, int pageIndex) ParseCacheKey(string value)
         {
             var keys = value?.Split('|');
-            if (keys?.Any(x => string.IsNullOrEmpty(x)) ?? true || keys.Length != 2)
+            if (keys == null || keys.Any(k => string.IsNullOrEmpty(k)) || keys.Length < 2)
                 throw new Exception($"DbCacheUtil.ParseCacheKey异常. value: {value}");
             var configId = keys[0];
             var table = keys[1];
-            return (configId, table);
+            var pageIndex = keys.Length == 3 ? Convert.ToInt32(keys[2]) : 0;
+            return (configId, table, pageIndex);
         }
     }
 }

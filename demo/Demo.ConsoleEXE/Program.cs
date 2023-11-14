@@ -16,6 +16,7 @@ namespace TinyFx.Demos
             host.UseRabbitMQEx();
             host.UseIDGenerator();
             host.UseSqlSugarEx();
+            host.UseDbCachingEx();
             host.Build().UseTinyFxEx().StartAsync().Wait();
 
             var demoId = string.Empty;

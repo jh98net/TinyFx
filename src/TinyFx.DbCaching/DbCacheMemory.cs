@@ -16,6 +16,7 @@ namespace TinyFx.DbCaching
         #region Properties
         public SugarTable TableAttribute { get; }
         public string ConfigId { get; }
+        public string TableName { get; }
         public string CachKey { get; }
         public List<string> PrimaryKeys { get; }
         public List<TEntity> DbData { get; private set; }
@@ -32,8 +33,9 @@ namespace TinyFx.DbCaching
                 throw new Exception($"DbCacheMemory内存缓存类型仅支持有SugarTableAttribute的类。type: {typeof(TEntity).FullName}");
             var spliteProvider = DIUtil.GetRequiredService<IDbSplitProvider>();
             ConfigId = spliteProvider.SplitDb<TEntity>(splitDbKeys);
-            CachKey = DbCachingUtil.GetCacheKey(ConfigId, TableAttribute.TableName);
-            PrimaryKeys = DbUtil.GetDb(ConfigId).DbMaintenance.GetPrimaries(TableAttribute.TableName);
+            TableName = TableAttribute.TableName;
+            CachKey = DbCachingUtil.GetCacheKey(ConfigId, TableName);
+            PrimaryKeys = DbUtil.GetDb(ConfigId).DbMaintenance.GetPrimaries(TableName);
             DbData = GetInitData().GetTaskResult();
         }
         #endregion
@@ -156,10 +158,7 @@ namespace TinyFx.DbCaching
         #region Utils
         private async Task<List<TEntity>> GetInitData()
         {
-            var result = await DbCacheDataDCache.Create().GetOrLoadAsync(CachKey);
-            if (!result.HasValue)
-                throw new Exception($"DbCacheMemory没有获取缓存之.type:{this.GetType().FullName}");
-            return SerializerUtil.DeserializeJson<List<TEntity>>(result.Value);
+            return await new PageDataProvider(ConfigId, TableName).GetRedisValues<TEntity>();
         }
         private (string FieldsKey, string ValuesKey) GetKeys(Expression<Func<TEntity>> expr)
         {
@@ -230,9 +229,15 @@ namespace TinyFx.DbCaching
             }
         }
         private List<TEntity> _updateList;
-        public void BeginUpdate(string data)
+        public void BeginUpdate(List<string> datas)
         {
-            _updateList = SerializerUtil.DeserializeJson<List<TEntity>>(data);
+            var ret = new List<TEntity>();
+            foreach (var data in datas)
+            {
+                var items = SerializerUtil.DeserializeJson<List<TEntity>>(data);
+                ret.AddRange(items);
+            }
+            _updateList = ret;
         }
         public void EndUpdate()
         {

@@ -34,25 +34,36 @@ namespace TinyFx.DbCaching
         protected override async Task<CacheValue<string>> LoadValueWhenRedisNotExistsAsync(string field)
         {
             var ret = new CacheValue<string>();
+            // 分页数量
             var keys = DbCachingUtil.ParseCacheKey(field);
-            var list = await DbUtil.GetDb(keys.ConfigId).Queryable<object>()
-                .AS(keys.TableName).ToListAsync() ?? new List<object>();
-            ret.Value = SerializerUtil.SerializeJson(list);
+            var dataProvider = new PageDataProvider(keys.ConfigId, keys.TableName);
+            if (keys.pageIndex == 0)
+            {
+                ret.Value = Convert.ToString(await dataProvider.GetPageCount()); //分页数
+                ret.HasValue = true;
+                return ret;
+            }
+            ret.Value = await dataProvider.GetPageData(keys.pageIndex);
             ret.HasValue = true;
             return ret;
         }
 
         public async Task<List<DbCacheItem>> GetAllCacheItem()
         {
-            return (await GetFieldsAsync()).Select(x =>
+            var ret = new List<DbCacheItem>();
+            foreach (var field in await GetFieldsAsync())
             {
-                var keys = DbCachingUtil.ParseCacheKey(x);
-                return new DbCacheItem
+                var keys = DbCachingUtil.ParseCacheKey(field);
+                if (keys.pageIndex == 0) // 此字段保存的是分页数
                 {
-                    ConfigId = keys.ConfigId,
-                    TableName = keys.TableName,
-                };
-            }).ToList();
+                    ret.Add(new DbCacheItem()
+                    {
+                        ConfigId = keys.ConfigId,
+                        TableName = keys.TableName,
+                    });
+                }
+            }
+            return ret;
         }
 
         /// <summary>
