@@ -74,7 +74,8 @@ namespace TinyFx.DbCaching
         /// <returns></returns>
         public async Task<bool> ContainsCacheItem(string configId, string tableName)
         {
-            return await ExistsAsync(DbCachingUtil.GetCacheKey(configId, tableName));
+            var key = DbCachingUtil.GetCacheKey(configId, tableName);
+            return await ExistsAsync($"{key}|0");
         }
     }
 }

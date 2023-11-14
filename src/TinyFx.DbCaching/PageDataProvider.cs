@@ -39,7 +39,7 @@ namespace TinyFx.DbCaching
             var dcache = DbCacheDataDCache.Create();
             var pageCount = await GetPageCount();
             var key = DbCachingUtil.GetCacheKey(_configId, _tableName);
-            await dcache.SetAsync(key, pageCount.ToString());
+            await dcache.SetAsync($"{key}|0", pageCount.ToString());
             for (int i = 1; i <= pageCount; i++)
             {
                 var list = await GetPageData(i);
@@ -53,7 +53,7 @@ namespace TinyFx.DbCaching
             var ret = new List<string>();
             var dcache = DbCacheDataDCache.Create();
             var key = DbCachingUtil.GetCacheKey(_configId, _tableName);
-            var pageCount = await dcache.GetOrLoadAsync(key);
+            var pageCount = await dcache.GetOrLoadAsync($"{key}|0");
             if (!pageCount.HasValue)
                 throw new Exception($"DbCacheDataDCache缓存没有值。key:{key}");
             for (int i = 1; i <= pageCount.Value.ToInt32(); i++)
