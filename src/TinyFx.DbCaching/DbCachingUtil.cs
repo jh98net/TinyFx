@@ -186,16 +186,5 @@ namespace TinyFx.DbCaching
 
         internal static string GetCacheKey(string configId, string tableName)
             => $"{configId ?? DbUtil.DefaultConfigId}|{tableName}";
-
-        internal static (string ConfigId, string TableName, int pageIndex) ParseCacheKey(string value)
-        {
-            var keys = value?.Split('|');
-            if (keys == null || keys.Any(k => string.IsNullOrEmpty(k)) || keys.Length < 3)
-                throw new Exception($"DbCacheUtil.ParseCacheKey异常. value: {value}");
-            var configId = keys[0];
-            var table = keys[1];
-            var pageIndex = Convert.ToInt32(keys[2]);
-            return (configId, table, pageIndex);
-        }
     }
 }

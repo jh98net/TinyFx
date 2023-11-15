@@ -19,7 +19,7 @@ namespace TinyFx.DbCaching
         private static readonly DbCacheDataDCache _instance = new DbCacheDataDCache();
         public static DbCacheDataDCache Create() => _instance;
 
-        private const int ASYNC_TIMEOUT = 60000;
+        private const int ASYNC_TIMEOUT = 20000;
         private DbCacheDataDCache()
         {
             var section = ConfigUtil.GetSection<RedisSection>();
@@ -35,8 +35,10 @@ namespace TinyFx.DbCaching
         {
             var ret = new CacheValue<string>();
             // 分页数量
-            var keys = DbCachingUtil.ParseCacheKey(field);
+            var keys = ParseCacheKey(field);
             var dataProvider = new PageDataProvider(keys.ConfigId, keys.TableName);
+            if (keys.pageIndex == -1)
+                throw new Exception($"DbCacheDataDCache的field异常,pageIndex不能为-1: {field}");
             if (keys.pageIndex == 0)
             {
                 ret.Value = Convert.ToString(await dataProvider.GetPageCount()); //分页数
@@ -53,7 +55,7 @@ namespace TinyFx.DbCaching
             var ret = new List<DbCacheItem>();
             foreach (var field in await GetFieldsAsync())
             {
-                var keys = DbCachingUtil.ParseCacheKey(field);
+                var keys = ParseCacheKey(field);
                 if (keys.pageIndex == 0) // 此字段保存的是分页数
                 {
                     ret.Add(new DbCacheItem()
@@ -76,6 +78,16 @@ namespace TinyFx.DbCaching
         {
             var key = DbCachingUtil.GetCacheKey(configId, tableName);
             return await ExistsAsync($"{key}|0");
+        }
+        private (string ConfigId, string TableName, int pageIndex) ParseCacheKey(string value)
+        {
+            var keys = value?.Split('|');
+            if (keys == null || keys.Any(k => string.IsNullOrEmpty(k)) || keys.Length < 2)
+                throw new Exception($"DbCacheUtil.ParseCacheKey异常. value: {value}");
+            var configId = keys[0];
+            var table = keys[1];
+            var pageIndex = keys.Length == 3 ? Convert.ToInt32(keys[2]) : -1;
+            return (configId, table, pageIndex);
         }
     }
 }

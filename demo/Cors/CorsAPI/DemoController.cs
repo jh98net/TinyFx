@@ -23,7 +23,7 @@ namespace CorsAPI
         [HttpGet]
         public async Task add()
         {
-            await DbCachingUtil.PublishUpdate(new List<DbCacheChangeItem> { new DbCacheChangeItem() 
+            await DbCachingUtil.PublishUpdate(new List<DbCacheItem> { new DbCacheItem() 
             {
                 ConfigId="default",
                 TableName="s_operator"

@@ -31,7 +31,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         {
             Database = database;
             LockKey = $"{RedisPrefixConst.RED_LOCK}:{lockKey}";
-            _token = Guid.NewGuid().ToString();
+            _token = Guid.NewGuid().ToString("N");
             RetryInterval = retryInterval.HasValue ? retryInterval.Value : TimeSpan.FromMilliseconds(500);
             RetryCount = (int)(waitSpan.TotalMilliseconds / RetryInterval.TotalMilliseconds);
 

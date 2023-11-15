@@ -15,6 +15,7 @@ namespace Demo.ConsoleEXE
     {
         public override async Task Execute()
         {
+            var list = await DbCachingUtil.GetAllCacheItem();
             var eo = DbCachingUtil.GetSingle(() => new Ss_operator_appEO
             {
                 AppID = "best_shooter",
