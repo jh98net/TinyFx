@@ -33,17 +33,19 @@ namespace TinyFx.Data.SqlSugar
         #region Method
         public void Begin()
         {
-            if (_state != 0)
-                throw new Exception("DbTransactionManager执行所有事务前必须先Begin()");
-            _state = 1;
+            SetBeginTran();
             _newDb.BeginTran(IsolationLevel);
         }
         public Task BeginAsync()
         {
+            SetBeginTran();
+            return _newDb.BeginTranAsync(IsolationLevel);
+        }
+        private void SetBeginTran()
+        {
             if (_state != 0)
                 throw new Exception("DbTransactionManager执行所有事务前必须先Begin()");
             _state = 1;
-            return _newDb.BeginTranAsync(IsolationLevel);
         }
 
         public ISqlSugarClient GetDb<T>(params object[] splitDbKeys)
@@ -54,8 +56,8 @@ namespace TinyFx.Data.SqlSugar
         }
         public ISqlSugarClient GetDb(string configId = null)
         {
-            if (_state != 1)
-                throw new Exception("DbTransactionManager必须先Begin()再GetDb()");
+            if (_state != 1 && _state != 2)
+                throw new Exception("DbTransactionManager必须先Begin()再GetDb()或GetRepository()");
             _state = 2;
             // 主库
             if (string.IsNullOrEmpty(configId) || configId == DbUtil.DefaultConfigId)
@@ -121,10 +123,12 @@ namespace TinyFx.Data.SqlSugar
             {
                 case 0:
                     LogUtil.Warning(_exception, "DbTransactionManager被创建但没有使用");
+                    _state = 3;
                     return false;
                 case 1:
                     throw new Exception("DbTransactionManager在Commit或Rollback时，已经Begin()但没有GetDb()执行任何事务");
                 case 2:
+                    _state = 3;
                     return true;
                 default:
                     throw new Exception($"DbTransactionManager在Commit或Rollback时，_state异常: {_state}");
