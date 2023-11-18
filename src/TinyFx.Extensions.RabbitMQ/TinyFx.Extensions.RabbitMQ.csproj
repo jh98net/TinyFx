@@ -7,8 +7,8 @@
     <Version>3.11.9</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="EasyNetQ.DI.Microsoft" Version="7.5.5" />
-    <PackageReference Include="EasyNetQ.Serialization.SystemTextJson" Version="7.5.5" />
+    <PackageReference Include="EasyNetQ.DI.Microsoft" Version="7.6.0" />
+    <PackageReference Include="EasyNetQ.Serialization.SystemTextJson" Version="7.6.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
