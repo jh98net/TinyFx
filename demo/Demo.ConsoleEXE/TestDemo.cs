@@ -64,10 +64,7 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var count = 10;
-            var size = 3;
-            var page = (count + size-1)/size;
-            Console.WriteLine(page);
+
         }
     }
 }
