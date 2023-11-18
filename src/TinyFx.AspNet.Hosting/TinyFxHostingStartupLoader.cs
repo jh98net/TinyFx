@@ -12,10 +12,15 @@ namespace TinyFx.AspNet.Hosting
 {
     public class TinyFxHostingStartupLoader
     {
-        public static TinyFxHostingStartupLoader Instance = new();
-        private List<ITinyFxHostingStartup> _startups = new();
+        private bool _init = false;
+        private List<ITinyFxHostingStartup> _startups;
         public TinyFxHostingStartupLoader()
         {
+            _startups = new();
+        }
+        private void Init()
+        {
+            if(_init) return;
             var section = ConfigUtil.GetSection<AspNetSection>();
             if (section?.HostingStartupAssemblies?.Any() ?? false)
             {
@@ -34,15 +39,18 @@ namespace TinyFx.AspNet.Hosting
                     }
                 }
             }
+            _init = true;
         }
 
         public void ConfigureServices(WebApplicationBuilder webApplicationBuilder)
         {
+            Init();
             _startups.ForEach(x => x.ConfigureServices(webApplicationBuilder));
         }
 
         public void Configure(WebApplication webApplication)
         {
+            Init();
             _startups.ForEach(x => x.Configure(webApplication));
         }
     }

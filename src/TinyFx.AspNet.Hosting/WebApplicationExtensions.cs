@@ -49,7 +49,7 @@ namespace TinyFx
             app.UseSwaggerEx();
             app.UseInternalMap();
             //
-            TinyFxHostingStartupLoader.Instance.Configure(app);
+            new TinyFxHostingStartupLoader().Configure(app);
 
             TinyFxHost.RegisterOnStarted(() =>
             {

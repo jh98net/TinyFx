@@ -64,7 +64,7 @@ namespace TinyFx
             }
             AddAspNetEx(builder.Services, type);
             //
-            TinyFxHostingStartupLoader.Instance.ConfigureServices(builder);
+            new TinyFxHostingStartupLoader().ConfigureServices(builder);
             return builder;
         }
         private static IServiceCollection AddAspNetEx(this IServiceCollection services, AspNetType type)
