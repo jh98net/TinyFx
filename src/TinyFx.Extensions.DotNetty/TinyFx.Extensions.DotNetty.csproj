@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>DotNetty组件</Description>
-    <Version>3.11.10</Version>
+    <Version>3.11.11</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="DotNetty.Codecs.Http" Version="0.7.5" />
