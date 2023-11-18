@@ -3,8 +3,8 @@ using System.Reflection.PortableExecutable;
 using TinyFx;
 using TinyFx.Logging;
 
-var testValue = Environment.GetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES");
-Environment.SetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", $"{testValue};StartupLibraryDemo");
+//var testValue = Environment.GetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES");
+//Environment.SetEnvironmentVariable("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", $"{testValue};StartupLibraryDemo");
 
 var builder = AspNetHost.CreateBuilder(args);
 // Add services to the container.

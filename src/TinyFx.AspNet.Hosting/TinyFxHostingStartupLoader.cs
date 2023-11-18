@@ -10,7 +10,7 @@ using TinyFx.Reflection;
 
 namespace TinyFx.AspNet.Hosting
 {
-    internal class TinyFxHostingStartupLoader
+    public class TinyFxHostingStartupLoader
     {
         public static TinyFxHostingStartupLoader Instance = new();
         private List<ITinyFxHostingStartup> _startups = new();

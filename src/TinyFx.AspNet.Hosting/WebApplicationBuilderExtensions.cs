@@ -42,7 +42,7 @@ namespace TinyFx
 {
     public static class AspNetWebApplicationBuilderExtensions
     {
-        public static WebApplicationBuilder AddAspNetEx(this WebApplicationBuilder builder, AspNetType type)
+        public static WebApplicationBuilder AddAspNetEx(this WebApplicationBuilder builder, AspNetType type = AspNetType.Api)
         {
             // Kestrel
             var section = ConfigUtil.GetSection<AspNetSection>();

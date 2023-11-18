@@ -1,8 +1,27 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text;
+using TinyFx.AspNet;
 
+namespace StartupLibraryDemo
+{
+    public class HostingStartup : ITinyFxHostingStartup
+    {
+
+        public void Configure(WebApplication app)
+        {
+            Console.WriteLine("BBBBBBBBB");
+        }
+
+        public void ConfigureServices(WebApplicationBuilder builder)
+        {
+            builder.Services.AddSingleton(new HttpClient());
+        }
+    }
+}
+/*
 [assembly: HostingStartup(typeof(StartupLibraryDemo.HostingStartup))]
 namespace StartupLibraryDemo
 {
@@ -43,4 +62,6 @@ namespace StartupLibraryDemo
             return _next(context);
         }
     }
+
 }
+*/
