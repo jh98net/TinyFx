@@ -4,7 +4,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>TinyFx 国家IP</Description>
-    <Version>3.11.14</Version>
+    <Version>3.11.15</Version>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="dbip-country-lite-2023-10.csv.gz" />

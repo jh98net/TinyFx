@@ -84,10 +84,10 @@ namespace TinyFx.Extensions.RabbitMQ
                 case MQSubscribeMode.OneQueue:
                     return $"{GetType().FullName}";
                 case MQSubscribeMode.Multicast:
-                    return $"{GetType().FullName}_{ObjectId.NewId()}";
+                    return $"{GetType().FullName}-MC-{StringUtil.GetGuidString()}";
                 case MQSubscribeMode.MultiQueue:
                 case MQSubscribeMode.SAC:
-                    return $"{GetType().FullName}_{QueueIndex}";
+                    return $"{GetType().FullName}-Q{QueueIndex}";
             }
             throw new NotImplementedException();
         }

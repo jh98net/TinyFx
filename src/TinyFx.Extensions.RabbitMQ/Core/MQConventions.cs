@@ -12,17 +12,22 @@ namespace TinyFx.Extensions.RabbitMQ
     {
         public MQConventions(ITypeNameSerializer typeNameSerializer) : base(typeNameSerializer)
         {
-            ExchangeNamingConvention = (msgType) => 
+            ExchangeNamingConvention = (msgType) =>
             {
                 return msgType.Name;
             };
-            QueueNamingConvention = (msgType, subId) => 
+            QueueNamingConvention = (msgType, subId) =>
             {
                 var projectId = ConfigUtil.Project.ProjectId;
+                // 获取subId中.后面的名称
                 var idx = subId.LastIndexOf('.');
-                if (idx >= 0)
-                    subId = subId.Substring(idx + 1);
-                return $"[{msgType.Name}]=>[{projectId}]{subId}-{subId.GetHashCode()}";
+                var subName = idx >= 0
+                    ? subId.Substring(idx + 1)
+                    : subId;
+                // 除了Multicast外后面加hashCode防止重复
+                if (!subName.Contains("-MC-"))
+                    subName += $"-{subId.GetHashCode()}";
+                return $"[{msgType.Name}]=>[{projectId}]{subName}";
             };
         }
     }
