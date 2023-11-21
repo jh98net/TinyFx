@@ -20,7 +20,7 @@ namespace TinyFx.Data.SqlSugar
         /// 默认configId
         /// </summary>
         public static string DefaultConfigId
-            => Db.CurrentConnectionConfig.ConfigId;
+            => Convert.ToString(Db.CurrentConnectionConfig.ConfigId);
         #endregion
 
         #region GetDb
@@ -92,10 +92,10 @@ namespace TinyFx.Data.SqlSugar
             return config;
         }
         private static object _sync = new();
-        private static HashSet<string> _configDbDict = new();
+        private static HashSet<object> _configDbDict = new();
         private static bool TryAddDb(ConnectionElement config)
         {
-            if (config.ConfigId == DefaultConfigId)
+            if (Convert.ToString(config.ConfigId) == DefaultConfigId)
                 return false;
             if (_configDbDict.Contains(config.ConfigId))
                 return false;
