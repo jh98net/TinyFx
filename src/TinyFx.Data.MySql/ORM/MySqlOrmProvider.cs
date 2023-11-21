@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using TinyFx.Data.MySql;
-using MySql.Data.MySqlClient;
 using TinyFx.Data.ORM;
 using TinyFx.Data.Schema;
 using System.Linq;
+using MySql.Data.MySqlClient;
 
 namespace TinyFx.Data.MySql
 {

@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using TinyFx.Data.MySql;
-using MySql.Data.MySqlClient;
 using TinyFx.Data.DataMapping;
 using TinyFx.Data.ORM;
+using MySql.Data.MySqlClient;
 
 namespace TinyFx.Data.MySql
 {

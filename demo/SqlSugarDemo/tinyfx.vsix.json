@@ -38,7 +38,7 @@
       },
       "OrmSettings": {
         "Namespaces": "SqlSugarDemo.DAL",
-        "OutputPath": "TinyFx\\"
+        "OutputPath": "DAL\\"
       },
       "DbInitSettings": {
         "CreateSqlFile": null,

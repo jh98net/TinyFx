@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
-using MySql.Data.MySqlClient;
+
 using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Enrichers;

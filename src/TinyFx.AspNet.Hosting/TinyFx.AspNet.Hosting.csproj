@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>TinyFx AspNet Hosting启动服务</Description>
-    <Version>3.11.16</Version>
+    <Version>3.11.17</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TinyFx.AspNet\TinyFx.AspNet.csproj" />

@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TinyFx.Data.Instrumentation;
-using MySql.Data;
-using MySql.Data.MySqlClient;
 using System.Data.Common;
 using System.Data;
 using System.Text.RegularExpressions;
 using TinyFx.Data.ORM;
 using TinyFx.Data.Schema;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
 
 namespace TinyFx.Data.MySql
 {
