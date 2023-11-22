@@ -101,15 +101,15 @@ namespace TinyFx.AspNet.RequestLogging
             {
                 try 
                 {
-                    logger.AddField("Request.Body", await AspNetUtil.GetRawBodyAsync(request));
+                    logger.AddRequestBody(await AspNetUtil.GetRawBodyAsync(request));
                 }
                 catch(Exception ex)
                 {
-                    logger.AddField("Request.Body", ex.Message);
+                    logger.AddRequestBody(ex.Message);
                 }
             }
             else if (request.Method == "GET")
-                logger.AddField("Request.Body", request.QueryString.Value);
+                logger.AddRequestBody(request.QueryString.Value);
         }
         private static async Task<string> GetResponse(HttpResponse response)
         {

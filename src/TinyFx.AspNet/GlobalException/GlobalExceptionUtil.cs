@@ -24,6 +24,7 @@ namespace TinyFx.AspNet
         public static ApiResult BuildApiResult(Exception ex, ILogBuilder logger, HttpContext context)
         {
             ApiResult ret;
+            logger.AddException(ex);
             // 获取异常链中的 CustomException
             CustomException exc = null;
             if (ex != null&& ex.Message == "Unexpected end of request content.")
@@ -37,7 +38,6 @@ namespace TinyFx.AspNet
 
             if (exc != null)
             {
-                logger.AddException(exc, logger.GetCustomeExceptionLevel());
                 ret = new ApiResult()
                 {
                     Success = false,
@@ -55,7 +55,6 @@ namespace TinyFx.AspNet
             }
             else
             {
-                logger.AddException(ex, Microsoft.Extensions.Logging.LogLevel.Error);
                 ret = new ApiResult()
                 {
                     Success = false,

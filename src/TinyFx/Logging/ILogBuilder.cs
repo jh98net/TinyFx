@@ -15,7 +15,9 @@ namespace TinyFx.Logging
         Exception Exception { get; set; }
         string Flag { get; set; }
 
-        ILogBuilder AddException(Exception ex, LogLevel level = LogLevel.Error);
+        ILogBuilder AddRequestBody(string body);
+        ILogBuilder AddResponseBody(string body);
+        ILogBuilder AddException(Exception ex);
         ILogBuilder AddField(string field, object value);
         ILogBuilder AddMessage(string msg);
         void Save();
@@ -30,6 +32,5 @@ namespace TinyFx.Logging
         /// <returns></returns>
         ILogBuilder SetLogResponseBody(bool isLog = true);
         ILogBuilder SetFlag(string flag);
-        LogLevel GetCustomeExceptionLevel();
     }
 }

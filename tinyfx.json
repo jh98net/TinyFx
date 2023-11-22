@@ -200,8 +200,11 @@
         TreatTinyAsBoolean=false: 禁止tinyint转bool
         AllowLoadLocalInfile=true: bulkCopy需要
         Pooling=false: 使同一个连接可以多次Open
+        ConnectionTimeout 连接timeout
+        MaximumPoolSize 最大连接池
+        ConnectionLifeTime 连接池生命周期
         */
-        "ConnectionString": "server=192.168.1.120;port=3306;database=ing;uid=root;pwd=root;sslmode=Disabled;allowuservariables=True;AllowLoadLocalInfile=true;Pooling=false",
+        "ConnectionString": "server=192.168.1.120;port=3306;database=ing;uid=root;pwd=root;sslmode=Disabled;allowuservariables=True;AllowLoadLocalInfile=true;ConnectionTimeout=120;ConnectionLifeTime=500",
         "SlaveConnectionConfigs": [
           {
             "ConnectionString": "",

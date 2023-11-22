@@ -55,7 +55,7 @@ namespace TinyFx.AspNet
                     if (_useGlobalException)
                     {
                         ApiResult result = new ApiResult(errorCode, errorMessage);
-                        logger.AddException(new CustomException(errorCode, errorMessage), logger.GetCustomeExceptionLevel());
+                        logger.AddException(new CustomException(errorCode, errorMessage));
                         await ResponseApiResult(context, result, logger);
                     }
                     else
@@ -74,12 +74,12 @@ namespace TinyFx.AspNet
             try
             {
                 json = SerializerUtil.SerializeJson(result);
-                logger.AddField("Response.Body", json);
+                logger.AddResponseBody(json);
             }
             catch (Exception ex)
             {
                 logger.AddMessage("ApiResult序列化异常，必须处理!");
-                logger.AddException(ex, LogLevel.Error);
+                logger.AddException(ex);
             }
             context.Response.Clear();
             context.Response.ContentType = "application/json; charset=utf-8";
@@ -87,7 +87,7 @@ namespace TinyFx.AspNet
         }
         private async Task ResponseInternalServerError(HttpContext context, Exception ex, ILogBuilder logger)
         {
-            logger.AddException(ex, LogLevel.Error);
+            logger.AddException(ex);
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "text/plain";
             await context.Response.WriteAsync("发生意外错误: InternalServerError");

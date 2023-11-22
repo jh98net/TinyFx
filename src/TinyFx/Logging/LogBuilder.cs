@@ -66,6 +66,14 @@ namespace TinyFx.Logging
         {
             Flag = flag; return this;
         }
+        public ILogBuilder AddRequestBody(string body)
+        {
+            return AddField("Request.Body", body);
+        }
+        public ILogBuilder AddResponseBody(string body)
+        {
+            return AddField("Response.Body", body);
+        }
         public ILogBuilder AddMessage(string msg)
         {
             if (!string.IsNullOrEmpty(msg))
@@ -77,16 +85,15 @@ namespace TinyFx.Logging
             Fields.Add((field, value));
             return this;
         }
-        public ILogBuilder AddException(Exception ex, LogLevel level = LogLevel.Error)
+        public ILogBuilder AddException(Exception ex)
         {
-            Level = level;
+            var exc = ExceptionUtil.GetException<CustomException>(ex);
+            var level = exc == null ? LogLevel.Error : CustomeExceptionLevel;
+            Level = Level > level ? Level : level;
             Exception = ex;
             return this;
         }
         #endregion
-
-        public LogLevel GetCustomeExceptionLevel()
-            => Level > CustomeExceptionLevel ? Level : CustomeExceptionLevel;
 
         public void Save()
         {

@@ -81,7 +81,7 @@ namespace TinyFx.AspNet
 
             var logger = context.RequestServices?.GetService<ILogBuilder>();
             if (logger != null && logger.LogResponseBody)
-                logger.AddField("Response.Body", SerializerUtil.SerializeJson(ret));
+                logger.AddResponseBody(SerializerUtil.SerializeJson(ret));
             return new ObjectResult(ret);
         }
     }

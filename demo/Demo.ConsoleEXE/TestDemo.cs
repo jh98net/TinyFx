@@ -57,6 +57,7 @@ using Demo.ConsoleEXE.DAL;
 using SqlSugar;
 using TinyFx.Demos.Redis;
 using TinyFx.DbCaching;
+using MySql.Data.MySqlClient;
 
 namespace TinyFx.Demos
 {
@@ -64,7 +65,7 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-
+            var conn = new MySqlConnectionStringBuilder("");
         }
     }
 }
