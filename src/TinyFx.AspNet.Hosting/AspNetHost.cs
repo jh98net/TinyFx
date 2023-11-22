@@ -84,7 +84,7 @@ namespace TinyFx
             return ret.Value.ConnectionString;
         }
 
-        internal static Task<string> MapDumpPath(DumpType dtype = DumpType.Full)
+        internal static Task<string> MapDumpPath(DumpType dtype)
         {
             var processId = DiagnosticsClient.GetPublishedProcesses()
                 .Select(Process.GetProcessById)

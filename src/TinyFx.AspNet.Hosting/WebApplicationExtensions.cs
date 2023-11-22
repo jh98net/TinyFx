@@ -187,7 +187,7 @@ namespace TinyFx
         {
             app.MapHealthChecks("/healthz");
             app.MapGet("/env", () => AspNetHost.MapEnvPath());
-            app.MapGet("/dump", (DumpType? t) => AspNetHost.MapDumpPath(t ?? DumpType.Full));
+            app.MapGet("/dump", (DumpType? t) => AspNetHost.MapDumpPath(t ?? DumpType.WithHeap));
             return app;
         }
 
