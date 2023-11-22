@@ -97,7 +97,7 @@ namespace TinyFx
                 return null;
             if (!Directory.Exists(section.DumpPath))
                 Directory.CreateDirectory(section.DumpPath);
-            var file = Path.Combine(section.DumpPath, $"{ConfigUtil.Project.ProjectId}.{dtype.ToString()}.{DateTime.Now.ToString("yyyyMMddHHmmss")}.dmp");
+            var file = Path.Combine(section.DumpPath, $"{ConfigUtil.Project.ProjectId}.{dtype.ToString()}.{DateTime.Now.ToString("yyyyMMdd-HHmmss")}.dmp");
             var client = new DiagnosticsClient(processId);
             client.WriteDumpAsync(dtype, file, false, CancellationToken.None);
             return Task.FromResult(file);
