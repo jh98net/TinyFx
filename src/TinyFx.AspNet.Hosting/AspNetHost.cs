@@ -13,6 +13,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System.Diagnostics;
 using System.Runtime;
 using TinyFx.AspNet;
+using Microsoft.Diagnostics.NETCore.Client;
+using TinyFx.IO;
+using System.IO;
 
 namespace TinyFx
 {
@@ -36,6 +39,11 @@ namespace TinyFx
         }
         internal static string MapEnvPath()
         {
+            var processInfos = DiagnosticsClient.GetPublishedProcesses()
+                       .Select(Process.GetProcessById)
+                       .Where(process => process != null)
+                       .Select(o => { return $"id:{o.Id} name:{o.ProcessName} threads:{o.Threads.Count}"; })
+                       .ToList();
             var dict = new Dictionary<string, object>
             {
                 { "ConfigUtil.EnvironmentString", ConfigUtil.EnvironmentString },
@@ -47,7 +55,9 @@ namespace TinyFx
                 { "AspNetUtil.GetRequestBaseUrl()", AspNetUtil.GetRequestBaseUrl() },
                 { "AspNetUtil.GetRefererUrl()", AspNetUtil.GetRefererUrl() },
                 { "AspNetUtil.GetRemoteIpString()", AspNetUtil.GetRemoteIpString() },
-                { "Process.GetCurrentProcess().Threads.Count", Process.GetCurrentProcess().Threads.Count },
+                { "AppContext.BaseDirectory", AppContext.BaseDirectory },
+                { "ProcessInfos", processInfos },
+                { "分配的内存总量GC.GetTotalMemory(false)-(gc-heap-size)", GC.GetTotalMemory(false) },
                 { "GCSettings.IsServerGC", GCSettings.IsServerGC },
                 { "header总量", HttpContextEx.Request.Headers.Count },
             };
@@ -60,7 +70,7 @@ namespace TinyFx
 
             return SerializerUtil.SerializeJsonNet(dict);
         }
-        
+
         // ASP.NET Core Identity共享身份验证cookie
         internal static string GetDataProtectionRedisConnectionString(string connectionStringName)
         {
@@ -72,6 +82,25 @@ namespace TinyFx
                 return element.ConnectionString;
             var ret = redisSection.ConnectionStrings.FirstOrDefault();
             return ret.Value.ConnectionString;
+        }
+
+        internal static Task<string> MapDumpPath(DumpType dtype = DumpType.Full)
+        {
+            var processId = DiagnosticsClient.GetPublishedProcesses()
+                .Select(Process.GetProcessById)
+                .Where(process => process != null)
+                .Select(x => x.Id).ToList().FirstOrDefault();
+            if (processId == 0)
+                return null;
+            var section = ConfigUtil.GetSection<AspNetSection>();
+            if (section == null || string.IsNullOrEmpty(section.DumpPath))
+                return null;
+            if (!Directory.Exists(section.DumpPath))
+                Directory.CreateDirectory(section.DumpPath);
+            var file = Path.Combine(section.DumpPath, $"{ConfigUtil.Project.ProjectId}.{dtype.ToString()}.{DateTime.Now.ToString("yyyyMMddHHmmss")}.dmp");
+            var client = new DiagnosticsClient(processId);
+            client.WriteDumpAsync(dtype, file, false, CancellationToken.None);
+            return Task.FromResult(file);
         }
     }
 

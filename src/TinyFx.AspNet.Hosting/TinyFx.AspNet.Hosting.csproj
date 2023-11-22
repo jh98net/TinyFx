@@ -7,6 +7,9 @@
     <Version>3.11.18</Version>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Diagnostics.NETCore.Client" Version="0.2.452401" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\TinyFx.AspNet\TinyFx.AspNet.csproj" />
     <ProjectReference Include="..\TinyFx.DbCaching\TinyFx.DbCaching.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.AppMetric\TinyFx.Extensions.AppMetric.csproj" />

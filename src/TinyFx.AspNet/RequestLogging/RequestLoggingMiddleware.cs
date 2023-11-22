@@ -14,7 +14,7 @@ namespace TinyFx.AspNet.RequestLogging
         private readonly RequestDelegate _next;
         private static HashSet<string> _innerUrl = new HashSet<string> 
         {
-            "/healthz","/env"
+            "/healthz","/env","/dump"
         };
         public RequestLoggingMiddleware(RequestDelegate next)
         {

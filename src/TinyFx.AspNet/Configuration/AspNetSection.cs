@@ -55,6 +55,8 @@ namespace TinyFx.Configuration
         /// </summary>
         public List<string> DynamicApiAssemblies { get; set; } = new();
 
+        public string DumpPath { get; set; } = "./dump";
+
         public override void Bind(IConfiguration configuration)
         {
             base.Bind(configuration);

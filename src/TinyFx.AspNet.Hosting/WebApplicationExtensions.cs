@@ -22,6 +22,7 @@ using Serilog.Events;
 using TinyFx.AspNet.RequestLogging;
 using TinyFx.Extensions.AppMetric;
 using TinyFx.AspNet.Hosting;
+using Microsoft.Diagnostics.NETCore.Client;
 
 namespace TinyFx
 {
@@ -186,6 +187,7 @@ namespace TinyFx
         {
             app.MapHealthChecks("/healthz");
             app.MapGet("/env", () => AspNetHost.MapEnvPath());
+            app.MapGet("/dump", (DumpType t) => AspNetHost.MapDumpPath(t));
             return app;
         }
 
