@@ -1,4 +1,5 @@
 ﻿using EasyNetQ;
+using EasyNetQ.Logging;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
@@ -106,9 +107,9 @@ namespace TinyFx.Extensions.RabbitMQ
                     x.WithQueueType(QueueType.Quorum);
                 }
                 Configuration(x);
-                if(SubscribeMode == MQSubscribeMode.MultiQueue || SubscribeMode == MQSubscribeMode.SAC)
+                if (SubscribeMode == MQSubscribeMode.MultiQueue || SubscribeMode == MQSubscribeMode.SAC)
                     x.WithTopic($"hash.{QueueIndex}");
-                if(SubscribeMode == MQSubscribeMode.SAC)
+                if (SubscribeMode == MQSubscribeMode.SAC)
                     x.WithSingleActiveConsumer();//单一消费者
             };
         }
@@ -122,20 +123,37 @@ namespace TinyFx.Extensions.RabbitMQ
                     await OnMessage(msg, cancellationToken);
                     if (DIUtil.GetService<RabbitMQSection>()?.LogEnabled ?? false)
                     {
-                        LogUtil.Debug("[MQ] SubscribeConsumer消费成功。{MQConsumerType}{MQMessageType}{MQMessageId}{MQElaspedTime}"
-                            , GetType().FullName, MQMessageType.FullName, tmpMsg?.MQMeta?.MessageId, GetElaspedTime(tmpMsg?.MQMeta?.Timestamp));
+                        GetLogger().AddMessage("[MQ] SubscribeConsumer消费成功。")
+                            .AddField("MQMessageId", tmpMsg?.MQMeta?.MessageId)
+                            .AddField("MQMessageBody", SerializerUtil.SerializeJson(msg))
+                            .AddField("MQElaspedTime", GetElaspedTime(tmpMsg?.MQMeta?.Timestamp))
+                            .Save();
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogUtil.Error(ex, "[MQ] SubscribeConsumer消费异常。{MQConsumerType}{MQMessageBody}{MQSubId}{MQMessageId}{MQElaspedTime}"
-                        , GetType().FullName, SerializerUtil.SerializeJson(msg), GetSubscriptionId(), tmpMsg?.MQMeta?.MessageId, GetElaspedTime(tmpMsg?.MQMeta?.Timestamp));
+                    GetLogger().AddMessage("[MQ] SubscribeConsumer消费异常。")
+                        .AddField("MQMessageId", tmpMsg?.MQMeta?.MessageId)
+                        .AddField("MQMessageBody", SerializerUtil.SerializeJson(msg))
+                        .AddField("MQElaspedTime", GetElaspedTime(tmpMsg?.MQMeta?.Timestamp))
+                        .AddException(ex)
+                        .Save();
+
                     // 不要catch，此异常将导致被发送到默认错误代理队列 error queue (broker)
                     throw new EasyNetQException($"SubscribeConsumer消费异常。ConsumerType:{GetType().FullName} MessageId:{tmpMsg?.MQMeta?.MessageId}");
                 }
             };
         }
-
+        protected ILogBuilder GetLogger()
+        {
+            var logger = new LogBuilder()
+              .AddField("MQConsumerType", GetType().FullName)
+              .AddField("MQMessageType", MQMessageType.FullName)
+              .AddField("MQSubscribeMode", SubscribeMode)
+              .AddField("MQQueueCount", QueueCount)
+              .AddField("MQSubId", GetSubscriptionId());
+            return logger;
+        }
         /// <summary>
         /// 收到消息处理函数
         /// </summary>
