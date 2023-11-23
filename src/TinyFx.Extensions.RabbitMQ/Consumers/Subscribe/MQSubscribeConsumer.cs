@@ -151,6 +151,7 @@ namespace TinyFx.Extensions.RabbitMQ
               .AddField("MQMessageType", MQMessageType.FullName)
               .AddField("MQSubscribeMode", SubscribeMode)
               .AddField("MQQueueCount", QueueCount)
+              .AddField("MQQueueIndex", QueueIndex)
               .AddField("MQSubId", GetSubscriptionId());
             return logger;
         }

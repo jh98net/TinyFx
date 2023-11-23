@@ -49,6 +49,9 @@ namespace TinyFx.Extensions.RabbitMQ
                            .AddField("MQMessageBody", SerializerUtil.SerializeJson(msg))
                            .AddField("MQElaspedTime", GetElaspedTime(msg?.MQMeta?.Timestamp))
                            .AddField("MQRepublish", republish)
+                           .AddField("MQRepublishCount", msg.MQMeta.RepublishCount)
+                           .AddField("MQActionName", item.MethodName)
+                           .AddField("MQActionDesc", item.Description)
                            .Save();
                     }
                 }
@@ -59,6 +62,9 @@ namespace TinyFx.Extensions.RabbitMQ
                        .AddField("MQMessageBody", SerializerUtil.SerializeJson(msg))
                        .AddField("MQElaspedTime", GetElaspedTime(msg?.MQMeta?.Timestamp))
                        .AddField("MQRepublish", republish)
+                       .AddField("MQRepublishCount", msg.MQMeta.RepublishCount)
+                       .AddField("MQActionName", item.MethodName)
+                       .AddField("MQActionDesc", item.Description)
                        .AddException(ex)
                        .Save();
                     var err = new MQSubActionError
@@ -91,7 +97,10 @@ namespace TinyFx.Extensions.RabbitMQ
                                .AddField("MQMessageBody", SerializerUtil.SerializeJson(msg))
                                .AddField("MQElaspedTime", GetElaspedTime(msg?.MQMeta?.Timestamp))
                                .AddField("MQRepublish", republish)
-                               .Save();
+                               .AddField("MQRepublishCount", msg.MQMeta.RepublishCount)
+                               .AddField("MQActionName", item.MethodName)
+                               .AddField("MQActionDesc", item.Description)
+                              .Save();
                         }
                     }
                     catch (Exception ex)
@@ -101,6 +110,9 @@ namespace TinyFx.Extensions.RabbitMQ
                            .AddField("MQMessageBody", SerializerUtil.SerializeJson(msg))
                            .AddField("MQElaspedTime", GetElaspedTime(msg?.MQMeta?.Timestamp))
                            .AddField("MQRepublish", republish)
+                           .AddField("MQRepublishCount", msg.MQMeta.RepublishCount)
+                           .AddField("MQActionName", item.MethodName)
+                           .AddField("MQActionDesc", item.Description)
                            .AddException(ex)
                            .Save();
 
