@@ -15,8 +15,9 @@ namespace TinyFx.DbCaching
     [RedisConsumerRegisterIgnore]
     internal class DbCacheChangeConsumer : RedisSubscribeConsumer<DbCacheChangeMessage>
     {
-        public DbCacheChangeConsumer()
-        { 
+        public DbCacheChangeConsumer(string redisConnectionStringName)
+        {
+            ConnectionStringName = redisConnectionStringName;
         }
         protected override async Task OnMessage(DbCacheChangeMessage message)
         {

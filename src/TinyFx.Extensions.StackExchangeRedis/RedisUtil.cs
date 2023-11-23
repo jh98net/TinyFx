@@ -270,7 +270,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
             return await LockAsync(lockKey, waitSpan, interval);
         }
         public static async Task<RedLock> LockAsync(string lockKey, TimeSpan waitSpan, TimeSpan? retryInterval = null)
-        { 
+        {
             var ret = new RedLock(DefaultDatabase, lockKey, waitSpan, retryInterval);
             await ret.StartAsync();
             return ret;
@@ -283,13 +283,14 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         /// <typeparam name="TMessage"></typeparam>
         /// <param name="message"></param>
+        /// <param name="connectionStringName"></param>
         /// <returns></returns>
-        public static async Task PublishAsync<TMessage>(TMessage message)
+        public static async Task PublishAsync<TMessage>(TMessage message, string connectionStringName = null)
         {
             var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
             var channel = GetPublishChannel(message, attr?.PatternMode ?? PatternMode.Auto);
             var msg = await GetSerializer(RedisSerializeMode.Json).SerializeAsync(message);
-            await GetRedis(attr?.ConnectionStringName)
+            await GetRedis(connectionStringName ?? attr?.ConnectionStringName)
                 .GetSubscriber()
                 .PublishAsync(channel, msg);
         }
@@ -298,13 +299,14 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         /// <typeparam name="TMessage"></typeparam>
         /// <param name="message"></param>
+        /// <param name="connectionStringName"></param>
         /// <returns></returns>
-        public static async Task PublishQueueAsync<TMessage>(TMessage message)
+        public static async Task PublishQueueAsync<TMessage>(TMessage message, string connectionStringName = null)
         {
             var attr = typeof(TMessage).GetCustomAttribute<RedisPublishMessageAttribute>();
             var channel = GetPublishChannel(message, attr?.PatternMode ?? PatternMode.Auto);
             var msg = await GetSerializer(RedisSerializeMode.Json).SerializeAsync(message);
-            var redis = GetRedis(attr?.ConnectionStringName);
+            var redis = GetRedis(connectionStringName ?? attr?.ConnectionStringName);
             var key = GetQueueKey<TMessage>();
             await redis.GetDatabase().ListLeftPushAsync(key, msg, flags: CommandFlags.FireAndForget);
             await redis.GetSubscriber().PublishAsync(channel, string.Empty);

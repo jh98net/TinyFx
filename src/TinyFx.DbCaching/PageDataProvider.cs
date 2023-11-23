@@ -14,10 +14,12 @@ namespace TinyFx.DbCaching
         private const int DATA_PAGE_SIZE = 1000;
         private string _configId { get; }
         private string _tableName { get; }
-        public PageDataProvider(string configId, string tableName)
+        private string _connectionStringName { get; }
+        public PageDataProvider(string configId, string tableName, string connectionStringName = null)
         {
             _configId = configId;
             _tableName = tableName;
+            _connectionStringName = connectionStringName;
         }
 
         public async Task<int> GetPageCount()
@@ -36,7 +38,7 @@ namespace TinyFx.DbCaching
 
         public async Task SetRedisValues()
         {
-            var dcache = DbCacheDataDCache.Create();
+            var dcache = DbCacheDataDCache.Create(_connectionStringName);
             var pageCount = await GetPageCount();
             var key = DbCachingUtil.GetCacheKey(_configId, _tableName);
             await dcache.SetAsync($"{key}|0", pageCount.ToString());
@@ -51,7 +53,7 @@ namespace TinyFx.DbCaching
         public async Task<List<string>> GetRedisValues()
         {
             var ret = new List<string>();
-            var dcache = DbCacheDataDCache.Create();
+            var dcache = DbCacheDataDCache.Create(_connectionStringName);
             var key = DbCachingUtil.GetCacheKey(_configId, _tableName);
             var pageCount = await dcache.GetOrLoadAsync($"{key}|0");
             if (!pageCount.HasValue)

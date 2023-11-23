@@ -16,19 +16,31 @@ namespace TinyFx.DbCaching
 {
     internal class DbCacheDataDCache : RedisHashClient<string>
     {
-        private static readonly DbCacheDataDCache _instance = new DbCacheDataDCache();
-        public static DbCacheDataDCache Create() => _instance;
-
-        private const int ASYNC_TIMEOUT = 20000;
-        private DbCacheDataDCache()
+        private static DbCacheDataDCache _instance;
+        public static DbCacheDataDCache Create(string connectionStringName = null)
         {
-            var section = ConfigUtil.GetSection<RedisSection>();
-            var element = section.GetConnectionStringElement();
-            var conn = ConfigurationOptions.Parse(element.ConnectionString);
+            var useConfig = string.IsNullOrEmpty(connectionStringName);
+            if (useConfig && _instance != null) return _instance;
+
+            var redisSection = ConfigUtil.GetSection<RedisSection>();
+            string connString = useConfig
+                ? redisSection.GetConnectionStringElement(ConfigUtil.GetSection<DbCachingSection>()?.RedisConnectionStringName).ConnectionString
+                : redisSection.GetConnectionStringElement(connectionStringName).ConnectionString;
+
+            var conn = ConfigurationOptions.Parse(connString);
             conn.ClientName = "DbCacheDataDCache";
             conn.AsyncTimeout = ASYNC_TIMEOUT;
             conn.SyncTimeout = ASYNC_TIMEOUT;
-            Options.ConnectionString = conn.ToString();
+            var ret = new DbCacheDataDCache(conn.ToString());
+            if(useConfig)
+                _instance = ret;
+            return ret;
+        }
+
+        private const int ASYNC_TIMEOUT = 20000;
+        private DbCacheDataDCache(string connectionString)
+        {
+            Options.ConnectionString = connectionString;
             RedisKey = RedisPrefixConst.DB_CACHING_DATA;
         }
         protected override async Task<CacheValue<string>> LoadValueWhenRedisNotExistsAsync(string field)

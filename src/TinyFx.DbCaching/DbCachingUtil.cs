@@ -16,7 +16,7 @@ namespace TinyFx.DbCaching
     {
         // key: typename|splitDbKeys value: configId|tablename
         private static ConcurrentDictionary<string, string> _cachKeyDict = new();
-        // key: configId|tableName ===> [ eoTypeName, memory]
+        // key: configId|tableName ===> [eoTypeName, memory]
         internal static ConcurrentDictionary<string, ConcurrentDictionary<string, object>> CacheDict = new();
         /// <summary>
         /// 获取单个缓存项
@@ -148,39 +148,41 @@ namespace TinyFx.DbCaching
             return (DbCacheMemory<TEntity>)ret;
         }
 
-        #region 缓存更新
+        #region 缓存更新--后台管理
         /// <summary>
         /// 数据表是否存在内存缓存对象
         /// </summary>
         /// <param name="configId"></param>
         /// <param name="tableName"></param>
+        /// <param name="connectionStringName"></param>
         /// <returns></returns>
-        public static async Task<bool> ContainsCacheItem(string configId, string tableName)
+        public static async Task<bool> ContainsCacheItem(string configId, string tableName, string connectionStringName = null)
         {
-            return await DbCacheDataDCache.Create().ContainsCacheItem(configId, tableName);
+            return await DbCacheDataDCache.Create(connectionStringName).ContainsCacheItem(configId, tableName);
         }
-        public static async Task<List<DbCacheItem>> GetAllCacheItem()
+        public static async Task<List<DbCacheItem>> GetAllCacheItem(string connectionStringName = null)
         {
-            return await DbCacheDataDCache.Create().GetAllCacheItem();
+            return await DbCacheDataDCache.Create(connectionStringName).GetAllCacheItem();
         }
         /// <summary>
         /// 发布更新通知
         /// </summary>
         /// <param name="items"></param>
+        /// <param name="connectionStringName"></param>
         /// <returns></returns>
-        public static async Task PublishUpdate(List<DbCacheItem> items)
+        public static async Task PublishUpdate(List<DbCacheItem> items, string connectionStringName = null)
         {
-            items ??= await GetAllCacheItem();
+            items ??= await GetAllCacheItem(connectionStringName);
             foreach (var item in items)
             {
-                var dataProvider = new PageDataProvider(item.ConfigId, item.TableName);
+                var dataProvider = new PageDataProvider(item.ConfigId, item.TableName, connectionStringName);
                 await dataProvider.SetRedisValues();
             }
             var msg = new DbCacheChangeMessage
             {
                 Changed = items
             };
-            await RedisUtil.PublishAsync(msg);
+            await RedisUtil.PublishAsync(msg, connectionStringName);
         }
         #endregion
 

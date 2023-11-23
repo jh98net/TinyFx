@@ -14,12 +14,12 @@ namespace TinyFx
     {
         public static IHostBuilder UseDbCachingEx(this IHostBuilder builder)
         {
-            var section = ConfigUtil.GetSection<RedisSection>();
-            if (section != null && section.ConnectionStrings.Count > 0 && section.UseDbCaching)
+            var section = ConfigUtil.GetSection<DbCachingSection>();
+            if (section != null && section.Enabled)
             {
                 builder.ConfigureServices((context, services) =>
                 {
-                    var consumer = new DbCacheChangeConsumer();
+                    var consumer = new DbCacheChangeConsumer(section.RedisConnectionStringName);
                     consumer.Register();
                     services.AddSingleton(consumer);
                 });

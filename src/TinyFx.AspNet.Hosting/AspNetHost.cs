@@ -84,6 +84,15 @@ namespace TinyFx
             return ret.Value.ConnectionString;
         }
 
+        /// <summary>
+        /// 崩溃自动dump，环境变量
+        /// COMPlus_DbgEnableMiniDump=1
+        /// DOTNET_DbgMiniDumpType=2
+        /// COMPlus_DbgMiniDumpName=./dumps/crash-%p-%e-%h-%t.dmp
+        /// COMPlus_EnableCrashReport = 1
+        /// </summary>
+        /// <param name="dtype"></param>
+        /// <returns></returns>
         internal static Task<string> MapDumpPath(DumpType dtype)
         {
             var processId = DiagnosticsClient.GetPublishedProcesses()
