@@ -16,20 +16,18 @@ namespace Demo.ConsoleEXE
         public override async Task Execute()
         {
             var list = await DbCachingUtil.GetAllCacheItem();
-            var eo = DbCachingUtil.GetSingle(() => new Ss_operator_appEO
-            {
-                AppID = "best_shooter",
-                OperatorID = "own_lobby_bra"
-            });
+            var eo1 = DbCachingUtil.GetSingle<Ss_providerEO>("own");
             await DbCachingUtil.PublishUpdate(new List<DbCacheItem> 
             {
                 new DbCacheItem
                 {
                     ConfigId = null,
-                    TableName="s_operator_app"
+                    TableName="s_provider"
                 }
             });
-            Console.WriteLine(eo.AppID);
+            await Task.Delay(10000);
+            var eo2 = DbCachingUtil.GetSingle<Ss_providerEO>("own");
+            Console.WriteLine(eo1.ProviderName == eo2.ProviderName);
         }
         private async Task Run2()
         {

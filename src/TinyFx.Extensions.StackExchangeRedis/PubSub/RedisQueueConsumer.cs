@@ -51,7 +51,8 @@ namespace TinyFx.Extensions.StackExchangeRedis
         }
         public void Register()
         {
-            _redis = RedisUtil.GetRedis(ConnectionStringName);
+            _redis = RedisUtil.GetRedis(ConnectionStringName, "PUBSUB");
+            //_redis = RedisUtil.GetRedis(ConnectionStringName);
             _database = _redis.GetDatabase();
             _sub = _redis.GetSubscriber();
             _channel = RedisUtil.GetChannel<TMessage>(PatternKey, PatternMode.Value);

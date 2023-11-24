@@ -20,6 +20,7 @@ namespace TinyFx.DbCaching
         public string CachKey { get; }
         public List<string> PrimaryKeys { get; }
         public List<TEntity> DbData { get; private set; }
+        public int DbDataCount => DbData.Count;
 
         // key: 一对一类型(主键或唯一索引)
         public ConcurrentDictionary<string, Dictionary<string, TEntity>> SingleDict { get; } = new();
@@ -241,20 +242,25 @@ namespace TinyFx.DbCaching
         }
         public void EndUpdate()
         {
+            _isUpdating = true;
+            var oldList = DbData;
             try
             {
-                var oldList = DbData;
                 DbData = _updateList;
                 SingleDict.Clear();
                 ListDict.Clear();
                 CustomDict.Clear();
-                _isUpdating = true;
-                UpdateCallback?.Invoke(oldList, DbData);
             }
             finally
             {
                 _isUpdating = false;
             }
+            try
+            {
+                UpdateCallback?.Invoke(oldList, DbData);
+            }
+            catch
+            { }
         }
         public Action<List<TEntity>, List<TEntity>> UpdateCallback;
         #endregion
@@ -264,5 +270,13 @@ namespace TinyFx.DbCaching
             var lambdaExpr = Expression.Lambda(expr);
             return lambdaExpr.Compile().DynamicInvoke();
         }
+    }
+    internal interface IDbCacheMemoryUpdate
+    {
+        string ConfigId { get; }
+        string TableName { get; }
+        int DbDataCount { get; }
+        void BeginUpdate(List<string> datas);
+        void EndUpdate();
     }
 }

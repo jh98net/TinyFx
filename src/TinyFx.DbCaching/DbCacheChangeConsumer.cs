@@ -1,6 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Newtonsoft.Json.Linq;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,13 +22,14 @@ namespace TinyFx.DbCaching
         }
         protected override async Task OnMessage(DbCacheChangeMessage message)
         {
-            LogUtil.Warning($"DbCacheChangeConsumer: 收到更新内存通知: {string.Join(", ",message.Changed.Select(x=>x.TableName))}");
+            var logger = new LogBuilder(Microsoft.Extensions.Logging.LogLevel.Warning, "内存缓存更新通知消费")
+                .AddField("DbCaching.Message", SerializerUtil.SerializeJson(message));
             var list = new List<(IDbCacheMemoryUpdate cache, List<string> datas)>();
             try
             {
                 foreach (var item in message.Changed)
                 {
-                    LogUtil.Warning($"DbCacheChangeConsumer:开始更新 {item.ConfigId}.{item.TableName}");
+                    logger.AddMessage($"开始更新: {item.ConfigId}.{item.TableName}");
                     List<string> redisValues = null;
                     var key = DbCachingUtil.GetCacheKey(item.ConfigId, item.TableName);
                     var dataProvider = new PageDataProvider(item.ConfigId, item.TableName);
@@ -47,25 +49,22 @@ namespace TinyFx.DbCaching
                     }
                 }
                 list.ForEach(x => x.cache.BeginUpdate(x.datas));
-                list.ForEach(x => x.cache.EndUpdate());
+                list.ForEach(x => 
+                {
+                    x.cache.EndUpdate();
+                    logger.AddMessage($"更新成功: {x.cache.ConfigId}.{x.cache.TableName} count:{x.cache.DbDataCount}");
+                });
             }
             catch (Exception ex)
             {
-                var log = new LogBuilder<DbCacheChangeConsumer>();
-                log.AddMessage("处理内存缓存变更消息时出现异常");
-                log.AddField("DbCacheChangeMessage", SerializerUtil.SerializeJson(message));
-                log.AddException(ex);
-                log.Save();
+                logger.AddMessage("内存缓存更新通知消费异常")
+                    .AddException(ex);
             }
+            logger.Save();
         }
         protected override Task OnError(DbCacheChangeMessage message, Exception ex)
         {
             return Task.CompletedTask;
         }
-    }
-    internal interface IDbCacheMemoryUpdate
-    {
-        void BeginUpdate(List<string> datas);
-        void EndUpdate();
     }
 }

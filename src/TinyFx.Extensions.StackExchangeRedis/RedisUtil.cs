@@ -59,7 +59,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
             if (string.IsNullOrEmpty(connectionString))
                 throw new ArgumentNullException("connectionString");
             var key = $"{connectionString}|{flag}";
-            return _redisDict.GetOrAdd(connectionString, (key) =>
+            return _redisDict.GetOrAdd(key, (k) =>
             {
                 return new Lazy<ConnectionMultiplexer>(() =>
                 {

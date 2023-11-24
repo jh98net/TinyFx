@@ -47,6 +47,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         {
             LogUtil.Info($"RedisSubscribeConsumer注册: {GetType().FullName}");
             _sub = RedisUtil.GetRedis(ConnectionStringName, "PUBSUB").GetSubscriber();
+            //_sub = RedisUtil.GetRedis(ConnectionStringName).GetSubscriber();
             _channel = RedisUtil.GetChannel<TMessage>(PatternKey, PatternMode.Value);
             if (IsConcurrentProcess)
             {
