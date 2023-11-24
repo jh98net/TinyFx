@@ -1,26 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.Configuration;
-using System.IO;
-using System.Collections.Concurrent;
-using TinyFx.Logging;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
-using Microsoft.Extensions.Hosting;
-using Com.Ctrip.Framework.Apollo;
+﻿using Com.Ctrip.Framework.Apollo;
 using Com.Ctrip.Framework.Apollo.Enums;
 using Com.Ctrip.Framework.Apollo.Logging;
-using SevenZip.CommandLineParser;
-using static Org.BouncyCastle.Math.EC.ECCurve;
-using static System.Collections.Specialized.BitVector32;
-using Nacos.AspNetCore.V2;
-using Nacos.V2.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Nacos.Microsoft.Extensions.Configuration;
-using System.IO.Enumeration;
+using Nacos.V2.DependencyInjection;
 using Nacos.V2.Naming.Utils;
-using System.ComponentModel.DataAnnotations;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using TinyFx.Logging;
 
 namespace TinyFx.Configuration
 {
@@ -40,7 +32,7 @@ namespace TinyFx.Configuration
         {
             Sections.Clear();
             _project = null;
-            _isDebugEnv = null;
+            _env = null;
             ConfigChange?.Invoke(null, null);
         }
 
@@ -57,32 +49,37 @@ namespace TinyFx.Configuration
         /// 配置的程序运行环境：Development/Testing/....
         /// </summary>
         public static string EnvironmentString { get; private set; }
+
+        private static EnvironmentNames? _env;
         /// <summary>
         /// 当前程序运行环境
         /// </summary>
-        public static EnvironmentNames Environment { get; private set; } = EnvironmentNames.Unknown;
+        public static EnvironmentNames Environment
+        {
+            get
+            {
+                if (_env != null) return _env.Value;
 
-        private static bool? _isDebugEnv;
+                var ret = EnvironmentNames.Unknown;
+                if (!string.IsNullOrEmpty(Project.Environment))
+                    ret = ParseEnvironmentName(Project.Environment);
+                if (ret == EnvironmentNames.Unknown)
+                    ret = ParseEnvironmentName(EnvironmentString);
+                if (ret == EnvironmentNames.Unknown)
+                    ret = EnvironmentNames.Production;
+                _env = ret;
+                return ret;
+            }
+        }
         /// <summary>
         /// 当前项目是否处于测试环境(Development,Testing)
         /// </summary>
         public static bool IsDebugEnvironment
-        {
-            get
-            {
-                if (!_isDebugEnv.HasValue)
-                {
-                    _isDebugEnv = (Environment == EnvironmentNames.Local
-                            || Environment == EnvironmentNames.Development
-                            || Environment == EnvironmentNames.Testing
-                            || Environment == EnvironmentNames.QA
-                            || Environment == EnvironmentNames.Staging
-                            )
-                            && Project.IsDebugEnvironment;
-                }
-                return _isDebugEnv.Value;
-            }
-        }
+            => Environment != EnvironmentNames.Unknown 
+            && Environment != EnvironmentNames.Production 
+            && Project.IsDebugEnvironment;
+        public static bool IsStagingEnvironment
+            => Environment == EnvironmentNames.Staging;
         #endregion
 
         #region Init
@@ -101,7 +98,6 @@ namespace TinyFx.Configuration
                 EnvironmentString = System.Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
             if (string.IsNullOrEmpty(EnvironmentString))
                 EnvironmentString = "Production";
-            Environment = ParseEnvironmentName(EnvironmentString);
             Sections.Clear();
 
             // configBuilder
@@ -313,29 +309,29 @@ namespace TinyFx.Configuration
         }
         private static Dictionary<string, EnvironmentNames> _envMapDic = new() {
             { "local", EnvironmentNames.Local},
-
+            // dev
             { "dev", EnvironmentNames.Development},
             { "development",EnvironmentNames.Development },
-
+            // sit
             { "testing",EnvironmentNames.Testing },
             { "sit",EnvironmentNames.Testing },
             { "test",EnvironmentNames.Testing },
-
-            { "qa",EnvironmentNames.QA },
+            // fat
             { "fat",EnvironmentNames.QA },
-
+            { "qa",EnvironmentNames.QA },
+            // uat
+            { "uat",EnvironmentNames.Staging },
             { "staging",EnvironmentNames.Staging },
             { "sim",EnvironmentNames.Staging },
-            { "uat",EnvironmentNames.Staging },
-
-            { "prod",EnvironmentNames.Production },
+            // pro
             { "pro",EnvironmentNames.Production },
+            { "prod",EnvironmentNames.Production },
             { "production",EnvironmentNames.Production },
         };
         private static EnvironmentNames ParseEnvironmentName(string envString)
         {
             return _envMapDic.TryGetValue(envString.ToLower(), out var v)
-                ? v : EnvironmentNames.Production;
+                ? v : EnvironmentNames.Unknown;
         }
         private static Env MapApolloEnv(EnvironmentNames env)
         {

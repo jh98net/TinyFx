@@ -44,5 +44,10 @@ namespace TinyFx.Configuration
         /// 是否测试环境
         /// </summary>
         public bool IsDebugEnvironment { get; set; }
+
+        /// <summary>
+        /// 项目环境 EnvironmentNames
+        /// </summary>
+        public string Environment { get; set; }
     }
 }
