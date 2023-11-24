@@ -241,7 +241,6 @@ namespace TinyFx.DbCaching
         }
         public void EndUpdate()
         {
-            _isUpdating = true;
             try
             {
                 var oldList = DbData;
@@ -249,6 +248,7 @@ namespace TinyFx.DbCaching
                 SingleDict.Clear();
                 ListDict.Clear();
                 CustomDict.Clear();
+                _isUpdating = true;
                 UpdateCallback?.Invoke(oldList, DbData);
             }
             finally

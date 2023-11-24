@@ -21,11 +21,13 @@ namespace TinyFx.DbCaching
         }
         protected override async Task OnMessage(DbCacheChangeMessage message)
         {
+            LogUtil.Warning($"DbCacheChangeConsumer: 收到更新内存通知: {string.Join(", ",message.Changed.Select(x=>x.TableName))}");
             var list = new List<(IDbCacheMemoryUpdate cache, List<string> datas)>();
             try
             {
                 foreach (var item in message.Changed)
                 {
+                    LogUtil.Warning($"DbCacheChangeConsumer:开始更新 {item.ConfigId}.{item.TableName}");
                     List<string> redisValues = null;
                     var key = DbCachingUtil.GetCacheKey(item.ConfigId, item.TableName);
                     var dataProvider = new PageDataProvider(item.ConfigId, item.TableName);
