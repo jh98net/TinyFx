@@ -20,7 +20,7 @@ namespace TinyFx.Demos
             host.Build().UseTinyFxEx().StartAsync().Wait();
 
             var demoId = string.Empty;
-            demoId = "DbCachingDemo";
+            demoId = "TestDemo";
 
             var types = from t in Assembly.GetExecutingAssembly().GetTypes()
                         where t.IsSubclassOf(typeof(DemoBase))

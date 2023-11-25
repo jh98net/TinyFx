@@ -65,7 +65,26 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var conn = new MySqlConnectionStringBuilder("");
+            var aaa = NetUtil.GetIpMode("127.0.0.1");
+            //var provider = new WeightRandomProvider<A>();
+            //provider.AddItem(1, new A { Id = 1 });
+            //provider.AddItem(2, new A { Id = 2 });
+            //provider.AddItem(3, new A { Id = 3 });
+            //var result = new int[] { 0, 0, 0 };
+            //for (int i = 0; i < 10000; i++)
+            //{
+            //    var item = provider.Next();
+            //    result[item.Id - 1] = result[item.Id - 1] + 1;
+            //}
+            //foreach (var item in result)
+            //{
+            //    Console.WriteLine((decimal)item/ 10000);
+            //}
         }
+    }
+    class A
+    {
+        public int Id { get; set; }
+        public int Weight { get; set; }
     }
 }

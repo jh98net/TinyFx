@@ -28,43 +28,38 @@ namespace TinyFx.AspNet
 
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            var userIp = AspNetUtil.GetRemoteIpAddress();
+            var userIp = AspNetUtil.GetRemoteIpString();
             if (!CheckAllow(userIp))
             {
                 context.Result = new UnauthorizedResult();
                 LogUtil.Warning("ApiAccessFilterAttribute禁止访问。filterName:{filterName} userIp:{userIp}"
-                    , _name, userIp?.ToString());
+                    , _name, userIp);
                 return;
             }
             await base.OnActionExecutionAsync(context, next);
         }
-        private bool CheckAllow(IPAddress userIp)
+        private bool CheckAllow(string userIp)
         {
+            // 无IP有问题
+            if (userIp == null || string.IsNullOrEmpty(userIp))
+                return false;
+
             var section = ConfigUtil.GetSection<ApiAccessFilterSection>();
             if (section == null || !section.Filters.TryGetValue(_name ?? section.DefaultFilterName, out var element))
                 throw new Exception($"配置中ApiAccessFilter:Filters未定义。name:{_name}");
             // 不限制
             if (!element.Enabled)
                 return true;
-            // 无IP有问题
-            if (userIp == null)
-                return false;
-            var ipStr = Convert.ToString(userIp);
-            if (string.IsNullOrEmpty(ipStr))
-                return false;
             // 允许
-            if (element.GetAllowIpDict().Contains(ipStr))
+            if (element.GetAllowIpDict().Contains(userIp))
                 return true;
 
-            var ipMode = NetUtil.GetIpMode(ipStr);
+            var ipMode = NetUtil.GetIpMode(userIp);
             // 本机 => 放行
-            if (ipMode == IpAddressMode.Local)
+            if (ipMode == IpAddressMode.Local || ipMode == IpAddressMode.Loopback)
                 return true;
-            // 不允许局域网
-            if (!element.EnableIntranet)
-                return false;
-            // 
-            return NetUtil.GetIpMode(ipStr) == IpAddressMode.Intranet;
+            // 局域网
+            return element.EnableIntranet && ipMode == IpAddressMode.Intranet;
         }
     }
 }
