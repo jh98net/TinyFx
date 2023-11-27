@@ -27,9 +27,11 @@ namespace TinyFx.AspNet
             logger.AddException(ex);
             // 获取异常链中的 CustomException
             CustomException exc = null;
+            // TODO: 微软异常临时处理
             if (ex != null&& ex.Message == "Unexpected end of request content.")
             {
-                exc = new CustomException(ResponseCode.G_BadRequest, "客户端中断请求");
+                logger.SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
+                exc = new CustomException(ResponseCode.G_BadRequest, "客户端请求中断");
                 if (AspNetUtil.TryGetUnhandledExceptionCode(out var code))
                     exc.Code = code;
             }
