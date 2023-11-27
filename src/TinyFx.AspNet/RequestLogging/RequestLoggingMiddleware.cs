@@ -32,6 +32,8 @@ namespace TinyFx.AspNet.RequestLogging
             stopwatch.Start();
             logger.AddField("Request.StartTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
             logger.AddField("Request.TraceId", context.GetTraceId());
+            logger.AddField("Request.Url", context.Request.Path.ToString());
+            logger.AddField("Request.Method", context.Request.Method);
 
             var section = ConfigUtil.GetSection<RequestLoggingSection>();
             if (section != null && section.Enabled)
@@ -46,53 +48,21 @@ namespace TinyFx.AspNet.RequestLogging
                     logger.LogResponseBody = section.LogResponseBody;
                 }
             }
+            if (logger.LogRequestHeaders)
+                logger.AddField("Request.Headers", context.Request.Headers.ToDictionary(x => x.Key, v => string.Join(";", v.Value.ToList())));
+            if (logger.LogRequestBody)
+                await LogRequestBody(context.Request, logger);
+
             await _next(context); // 继续执行
 
             logger.AddField("Request.UserId", context?.User?.Identity?.Name);
-            logger.AddField("Request.Url", context.Request.Path.ToString());
-            logger.AddField("Request.Method", context.Request.Method);
             logger.AddField("Request.EndTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-            if (logger.LogRequestHeaders)
-                logger.AddField("Request.Headers", context.Request.Headers.ToDictionary(x => x.Key, v => string.Join(";", v.Value.ToList())));
-            if (logger.LogRequestBody || logger.Exception != null)
+            if (!logger.LogRequestBody && logger.Exception != null)
                 await LogRequestBody(context.Request, logger);
 
             stopwatch.Stop();
             logger.AddField("Request.ElaspedTime", stopwatch.ElapsedMilliseconds);
             logger.Save();
-            /* 
-              if (section != null)
-              {
-                  var urlDict = section.GetUrlDict();
-                  useConfig = urlDict.Contains("*") || urlDict.Contains(context.Request.Path.ToString().ToLower());
-              }
-              if (useConfig)
-              {
-                  logger.Level = section.LogLevel;
-                  logger.LogRequestHeaders = section.LogRequestHeaders;
-                  logger.LogRequestBody = section.LogRequestBody;
-                  logger.LogResponseBody = section.LogResponseBody;
-
-
-                  // response.body
-                  var originalResponseBody = context.Response.Body;
-                  using (var swapStream = new MemoryStream())
-                  {
-                      context.Response.Body = swapStream;
-                      await _next(context); // 继续执行
-
-                      if (logger.LogResponseBody && logger.Exception == null)
-                          logger.AddField("Response.Body", await GetResponse(context.Response));
-                      //data.Add("end.memory", GC.GetTotalAllocatedBytes());
-                      await swapStream.CopyToAsync(originalResponseBody);
-                      context.Response.Body = originalResponseBody;
-                  }
-              }
-              else
-              {
-                  await _next(context); // 继续执行
-              }
-              */
         }
         private static async Task LogRequestBody(HttpRequest request, ILogBuilder logger)
         {
@@ -118,12 +88,6 @@ namespace TinyFx.AspNet.RequestLogging
             var text = await reader.ReadToEndAsync();
             response.Body.Seek(0, SeekOrigin.Begin);
             return text;
-        }
-
-        class ResponseCompletedState
-        {
-            public ILogBuilder Logger { get; set; }
-            public Stopwatch Stopwatch { get; set; }
         }
     }
 }
