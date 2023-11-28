@@ -65,28 +65,6 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var client = HttpClientExFactory.CreateClientEx();
-            var ip = await HttpClientExFactory.CreateClientEx().CreateAgent().AddUrl("http://api.ip.sb/ip").GetStringAsync();
-            //Console.WriteLine(rsp.ResultString);
-            var uo = GetIPFromHtml(rsp.ResultString);
-            Console.WriteLine(uo);
         }
-        public static string GetIPFromHtml(String pageHtml)
-        {
-            //验证ipv4地址
-            string reg = @"(?:(?:(25[0-5])|(2[0-4]\d)|((1\d{2})|([1-9]?\d)))\.){3}(?:(25[0-5])|(2[0-4]\d)|((1\d{2})|([1-9]?\d)))";
-            string ip = "";
-            Match m = Regex.Match(pageHtml, reg);
-            if (m.Success)
-            {
-                ip = m.Value;
-            }
-            return ip;
-        }
-    }
-    class A
-    {
-        public int Id { get; set; }
-        public int Weight { get; set; }
     }
 }
