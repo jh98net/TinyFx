@@ -65,21 +65,23 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var aaa = NetUtil.GetIpMode("127.0.0.1");
-            //var provider = new WeightRandomProvider<A>();
-            //provider.AddItem(1, new A { Id = 1 });
-            //provider.AddItem(2, new A { Id = 2 });
-            //provider.AddItem(3, new A { Id = 3 });
-            //var result = new int[] { 0, 0, 0 };
-            //for (int i = 0; i < 10000; i++)
-            //{
-            //    var item = provider.Next();
-            //    result[item.Id - 1] = result[item.Id - 1] + 1;
-            //}
-            //foreach (var item in result)
-            //{
-            //    Console.WriteLine((decimal)item/ 10000);
-            //}
+            var client = HttpClientExFactory.CreateClientEx();
+            var ip = await HttpClientExFactory.CreateClientEx().CreateAgent().AddUrl("http://api.ip.sb/ip").GetStringAsync();
+            //Console.WriteLine(rsp.ResultString);
+            var uo = GetIPFromHtml(rsp.ResultString);
+            Console.WriteLine(uo);
+        }
+        public static string GetIPFromHtml(String pageHtml)
+        {
+            //验证ipv4地址
+            string reg = @"(?:(?:(25[0-5])|(2[0-4]\d)|((1\d{2})|([1-9]?\d)))\.){3}(?:(25[0-5])|(2[0-4]\d)|((1\d{2})|([1-9]?\d)))";
+            string ip = "";
+            Match m = Regex.Match(pageHtml, reg);
+            if (m.Success)
+            {
+                ip = m.Value;
+            }
+            return ip;
         }
     }
     class A

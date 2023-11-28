@@ -4,6 +4,11 @@
       "NugetKey": "9c922b9d-16f2-3ccf-9a3a-1f15cf72d0fb",
       "NugetSource": "http://192.168.1.120:8081/repository/nuget-hosted",
       "Mode": 2
+    },
+    {
+      "NugetKey": "oy2a3h7grjs3lmzmpc5qsja3ml7ogf2uderhn5cvkljphq",
+      "NugetSource": "https://api.nuget.org/v3/index.json",
+      "Mode": 2
     }
   ],
   "NugetIndex": 0,

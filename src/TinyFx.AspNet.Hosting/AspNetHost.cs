@@ -16,6 +16,7 @@ using TinyFx.AspNet;
 using Microsoft.Diagnostics.NETCore.Client;
 using TinyFx.IO;
 using System.IO;
+using TinyFx.Net;
 
 namespace TinyFx
 {
@@ -37,7 +38,7 @@ namespace TinyFx
             builder.Host.UseOAuthEx();
             return builder;
         }
-        internal static string MapEnvPath()
+        internal static async Task<string> MapEnvPath()
         {
             var processInfos = DiagnosticsClient.GetPublishedProcesses()
                        .Select(Process.GetProcessById)
@@ -59,6 +60,8 @@ namespace TinyFx
                 { "ProcessInfos", processInfos },
                 { "分配的内存总量GC.GetTotalMemory(false)-(gc-heap-size)", GC.GetTotalMemory(false) },
                 { "GCSettings.IsServerGC", GCSettings.IsServerGC },
+                { "本机IP", NetUtil.GetLocalIP() },
+                { "出口IP", await HttpClientExFactory.CreateClientEx().CreateAgent().AddUrl("http://api.ip.sb/ip").GetStringAsync() },
                 { "header总量", HttpContextEx.Request.Headers.Count },
             };
             foreach (var header in HttpContextEx.Request.Headers)
