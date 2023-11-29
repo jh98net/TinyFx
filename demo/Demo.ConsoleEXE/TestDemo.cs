@@ -58,6 +58,7 @@ using SqlSugar;
 using TinyFx.Demos.Redis;
 using TinyFx.DbCaching;
 using MySql.Data.MySqlClient;
+using TinyFx.ShortId;
 
 namespace TinyFx.Demos
 {
@@ -65,6 +66,7 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
+            var id = ShortIdUtil.Generate(15);
         }
     }
 }

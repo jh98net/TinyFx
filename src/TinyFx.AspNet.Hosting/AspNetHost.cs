@@ -48,6 +48,7 @@ namespace TinyFx
             var dict = new Dictionary<string, object>
             {
                 { "ConfigUtil.EnvironmentString", ConfigUtil.EnvironmentString },
+                { "ConfigUtil.Environment", ConfigUtil.Environment },
                 { "header:Host", HttpContextEx.GetHeaderValue("Host") },
                 { "header:X-Forwarded-Proto",HttpContextEx.GetHeaderValue("X-Forwarded-Proto")},
                 { "header:Referer", HttpContextEx.GetHeaderValue("Referer") },
