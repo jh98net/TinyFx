@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>StackExchange.Redis组件</Description>
-    <Version>3.11.28</Version>
+    <Version>3.11.29</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BloomFilter.Redis.NetCore" Version="2.1.1" />

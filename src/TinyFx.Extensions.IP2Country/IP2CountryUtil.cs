@@ -19,31 +19,33 @@ namespace TinyFx.Extensions.IP2Country
     /// </summary>
     public class IP2CountryUtil
     {
-        #region Init
         private const string IP_RESOURCE = "TinyFx.Extensions.IP2Country.dbip-country-lite-2023-10.csv.gz";
-
-        private static readonly IP2CountryResolver Resolver = new IP2CountryResolver
-        (
-            new DbIpCSVStreamSource
-            (
-                Assembly.GetExecutingAssembly().GetManifestResourceStream(IP_RESOURCE)!
-            )
-        );
-        static IP2CountryUtil()
+        private static IP2CountryResolver _resolver = null;
+        private static object _sync = new();
+        private static IP2CountryResolver GetResolver()
         {
-            var section = ConfigUtil.GetSection<IP2CountrySection>();
-            if (!string.IsNullOrEmpty(section?.DbIpSource))
+            if (_resolver == null)
             {
-                Resolver = new IP2CountryResolver(new DbIpCSVFileSource(section.DbIpSource));
-            }
-            else
-            {
-                var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(IP_RESOURCE)!;
-                Resolver = new IP2CountryResolver(new DbIpCSVStreamSource(stream));
-            }
-        }
-        #endregion
+                lock (_sync)
+                {
+                    if (_resolver == null)
+                    {
+                        var section = ConfigUtil.GetSection<IP2CountrySection>();
+                        if (!string.IsNullOrEmpty(section?.DbIpSource))
+                        {
+                            _resolver = new IP2CountryResolver(new DbIpCSVFileSource(section.DbIpSource));
+                        }
+                        else
+                        {
+                            var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(IP_RESOURCE)!;
+                            _resolver = new IP2CountryResolver(new DbIpCSVStreamSource(stream));
+                        }
+                    }
+                }
 
+            }
+            return _resolver;
+        }
         /// <summary>
         /// 根据ip返回国家编码2位大写（ISO 3166-1）
         /// </summary>
@@ -51,7 +53,7 @@ namespace TinyFx.Extensions.IP2Country
         /// <returns></returns>
         public static string GetContryId(string ip)
         {
-            return Resolver.Resolve(ip)?.Country;
+            return GetResolver().Resolve(ip)?.Country;
         }
 
         /// <summary>
