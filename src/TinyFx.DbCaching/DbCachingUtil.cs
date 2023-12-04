@@ -3,8 +3,11 @@ using SqlSugar;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
+using TinyFx.Collections;
 using TinyFx.Data.SqlSugar;
+using TinyFx.Extensions.RabbitMQ;
 using TinyFx.Extensions.StackExchangeRedis;
+using TinyFx.Logging;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace TinyFx.DbCaching
@@ -15,9 +18,11 @@ namespace TinyFx.DbCaching
     public static class DbCachingUtil
     {
         // key: typename|splitDbKeys value: configId|tablename
-        private static ConcurrentDictionary<string, string> _cachKeyDict = new();
+        internal static ConcurrentDictionary<string, string> _cachKeyDict = new();
         // key: configId|tableName ===> [eoTypeName, memory]
         internal static ConcurrentDictionary<string, ConcurrentDictionary<string, object>> CacheDict = new();
+
+        #region GetSingle
         /// <summary>
         /// 获取单个缓存项
         /// </summary>
@@ -46,8 +51,9 @@ namespace TinyFx.DbCaching
         public static TEntity GetSingleByKey<TEntity>(string fieldsKey, string valuesKey, params object[] splitDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(splitDbKeys).GetSingleByKey(fieldsKey, valuesKey);
+        #endregion
 
-
+        #region GetList
         /// <summary>
         /// 获取单个缓存项
         /// </summary>
@@ -75,7 +81,9 @@ namespace TinyFx.DbCaching
         public static List<TEntity> GetAllList<TEntity>(params object[] splitDbKeys)
           where TEntity : class, new()
             => GetCache<TEntity>(splitDbKeys).GetAllList();
+        #endregion
 
+        #region GetOrAddCustom
         /// <summary>
         /// 自定义单字典缓存，name唯一
         /// </summary>
@@ -147,6 +155,7 @@ namespace TinyFx.DbCaching
             var ret = dict.GetOrAdd(cacheName, (k) => new DbCacheMemory<TEntity>(splitDbKeys));
             return (DbCacheMemory<TEntity>)ret;
         }
+        #endregion
 
         #region 缓存更新--后台管理
         /// <summary>
@@ -154,35 +163,42 @@ namespace TinyFx.DbCaching
         /// </summary>
         /// <param name="configId"></param>
         /// <param name="tableName"></param>
-        /// <param name="connectionStringName"></param>
+        /// <param name="redisConnectionStringName"></param>
         /// <returns></returns>
-        public static async Task<bool> ContainsCacheItem(string configId, string tableName, string connectionStringName = null)
+        public static async Task<bool> ContainsCacheItem(string configId, string tableName, string redisConnectionStringName = null)
         {
-            return await DbCacheDataDCache.Create(connectionStringName).ContainsCacheItem(configId, tableName);
+            return await DbCacheDataDCache.Create(redisConnectionStringName).ContainsCacheItem(configId, tableName);
         }
-        public static async Task<List<DbCacheItem>> GetAllCacheItem(string connectionStringName = null)
+        public static async Task<List<DbCacheItem>> GetAllCacheItem(string redisConnectionStringName = null)
         {
-            return await DbCacheDataDCache.Create(connectionStringName).GetAllCacheItem();
+            return await DbCacheDataDCache.Create(redisConnectionStringName).GetAllCacheItem();
         }
         /// <summary>
         /// 发布更新通知
         /// </summary>
-        /// <param name="items"></param>
-        /// <param name="connectionStringName"></param>
+        /// <param name="message"></param>
+        /// <param name="cacheDataUseRedisConnectionStringName">缓存所在的redis</param>
         /// <returns></returns>
-        public static async Task PublishUpdate(List<DbCacheItem> items, string connectionStringName = null)
+        public static async Task PublishUpdate(DbCacheChangeMessage message, string cacheDataUseRedisConnectionStringName = null)
         {
-            items ??= await GetAllCacheItem(connectionStringName);
-            foreach (var item in items)
+            foreach (var item in message.Changed)
             {
-                var dataProvider = new PageDataProvider(item.ConfigId, item.TableName, connectionStringName);
+                var dataProvider = new PageDataProvider(item.ConfigId, item.TableName, cacheDataUseRedisConnectionStringName);
                 await dataProvider.SetRedisValues();
             }
-            var msg = new DbCacheChangeMessage
+            switch (message.PublishMode)
             {
-                Changed = items
-            };
-            await RedisUtil.PublishAsync(msg, connectionStringName);
+                case DbCachingPublishMode.Redis:
+                    await RedisUtil.PublishAsync(message, message.RedisConnectionStringName);
+                    break;
+                case DbCachingPublishMode.MQ:
+                    await MQUtil.PublishAsync(message, null, null, message.MQConnectionStringName);
+                    break;
+                case DbCachingPublishMode.All:
+                    await RedisUtil.PublishAsync(message, message.RedisConnectionStringName);
+                    await MQUtil.PublishAsync(message, null, null, message.MQConnectionStringName);
+                    break;
+            }
         }
         #endregion
 

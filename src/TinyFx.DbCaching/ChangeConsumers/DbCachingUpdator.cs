@@ -1,8 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
-using Newtonsoft.Json.Linq;
-using StackExchange.Redis;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,18 +7,19 @@ using TinyFx.Collections;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
 
-namespace TinyFx.DbCaching
+namespace TinyFx.DbCaching.ChangeConsumers
 {
-    [RedisConsumerRegisterIgnore]
-    internal class DbCacheChangeConsumer : RedisSubscribeConsumer<DbCacheChangeMessage>
+    internal class DbCachingUpdator
     {
-        public DbCacheChangeConsumer(string redisConnectionStringName)
+        private DbCachingPublishMode _mode;
+        public DbCachingUpdator(DbCachingPublishMode mode)
         {
-            ConnectionStringName = redisConnectionStringName;
+            _mode = mode;
         }
-        protected override async Task OnMessage(DbCacheChangeMessage message)
+        public async Task Execute(DbCacheChangeMessage message)
         {
             var logger = new LogBuilder(Microsoft.Extensions.Logging.LogLevel.Warning, "内存缓存更新通知消费")
+                .AddField("DbCaching.PublishMode", _mode.ToString())
                 .AddField("DbCaching.Message", SerializerUtil.SerializeJson(message));
             var list = new List<(IDbCacheMemoryUpdate cache, List<string> datas)>();
             try
@@ -34,7 +31,7 @@ namespace TinyFx.DbCaching
                     var key = DbCachingUtil.GetCacheKey(item.ConfigId, item.TableName);
                     var dataProvider = new PageDataProvider(item.ConfigId, item.TableName);
                     // 等3分钟，1秒申请一次
-                    using (var redLock = await RedisUtil.LockAsync($"DbCacheChangeConsumer:{key}", 180))
+                    using (var redLock = await RedisUtil.LockAsync($"RedisDbCacheChangeConsumer:{key}", 180))
                     {
                         if (!redLock.IsLocked)
                             throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
@@ -49,7 +46,7 @@ namespace TinyFx.DbCaching
                     }
                 }
                 list.ForEach(x => x.cache.BeginUpdate(x.datas));
-                list.ForEach(x => 
+                list.ForEach(x =>
                 {
                     x.cache.EndUpdate();
                     logger.AddMessage($"更新成功: {x.cache.ConfigId}.{x.cache.TableName} count:{x.cache.DbDataCount}");
@@ -61,10 +58,6 @@ namespace TinyFx.DbCaching
                     .AddException(ex);
             }
             logger.Save();
-        }
-        protected override Task OnError(DbCacheChangeMessage message, Exception ex)
-        {
-            return Task.CompletedTask;
         }
     }
 }

@@ -23,8 +23,16 @@ namespace TinyFx.Configuration
             }
         }
 
-        public T Get<T>(string key) where T : new()
+        /// <summary>
+        /// 默认类名
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key">默认typeof(T).Name</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public T Get<T>(string key = null) where T : new()
         {
+            key ??= typeof(T).Name;
             if (!_configsDict.TryGetValue(key, out IConfigurationSection section))
                 throw new Exception($"配置文件中AppConfigs:Key {key} 不存在");
             return section.Get<T>();

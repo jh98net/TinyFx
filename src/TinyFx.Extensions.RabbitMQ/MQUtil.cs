@@ -146,6 +146,7 @@ namespace TinyFx.Extensions.RabbitMQ
         /// </summary>
         /// <param name="messageType"></param>
         /// <param name="messageJson"></param>
+        /// <param name="configAction"></param>
         /// <param name="connectionStringName"></param>
         public static void Republish(string messageType, string messageJson, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
         {
@@ -189,15 +190,15 @@ namespace TinyFx.Extensions.RabbitMQ
             }
             return null;
         }
-        private static void Republish<TMessage>(TMessage message, string routingKey = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
-            where TMessage : new()
-        {
-            configAction = GetPublishAction<TMessage>(message, routingKey, configAction, connectionStringName, true)
-                .GetTaskResult();
-            var data = GetPubSubData(message, configAction, connectionStringName);
-            GetBus(data.ConnStrName)
-                .PubSub.Publish(data.Message, data.Action);
-        }
+        //private static void Republish<TMessage>(TMessage message, string routingKey = null, Action<IPublishConfiguration> configAction = null, string connectionStringName = null)
+        //    where TMessage : new()
+        //{
+        //    configAction = GetPublishAction<TMessage>(message, routingKey, configAction, connectionStringName, true)
+        //        .GetTaskResult();
+        //    var data = GetPubSubData(message, configAction, connectionStringName);
+        //    GetBus(data.ConnStrName)
+        //        .PubSub.Publish(data.Message, data.Action);
+        //}
         #endregion
 
         #region SchedulePublish

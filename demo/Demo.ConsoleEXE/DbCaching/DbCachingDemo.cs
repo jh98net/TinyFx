@@ -17,14 +17,14 @@ namespace Demo.ConsoleEXE
         {
             var list = await DbCachingUtil.GetAllCacheItem();
             var eo1 = DbCachingUtil.GetSingle<Ss_providerEO>("own");
-            await DbCachingUtil.PublishUpdate(new List<DbCacheItem> 
-            {
-                new DbCacheItem
-                {
-                    ConfigId = null,
-                    TableName="s_provider"
-                }
-            });
+            //await DbCachingUtil.PublishUpdate(new List<DbCacheItem> 
+            //{
+            //    new DbCacheItem
+            //    {
+            //        ConfigId = null,
+            //        TableName="s_provider"
+            //    }
+            //});
             await Task.Delay(10000);
             var eo2 = DbCachingUtil.GetSingle<Ss_providerEO>("own");
             Console.WriteLine(eo1.ProviderName == eo2.ProviderName);

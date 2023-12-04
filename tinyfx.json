@@ -218,6 +218,7 @@
       }
     }
   },
+
   // 数据库配置 (TinyFx.Data.Configuration.DataSection)
   "Data": {
     "DefaultConnectionStringName": "default", // 默认数据库连接
@@ -283,12 +284,6 @@
     "ConsumerAssemblies": [] //用于自动注册消费类,+开头不存在不异常
   },
 
-  // 内存缓存(TinyFx.DbCaching.DbCachingSection)
-  "DbCaching": {
-    "Enabled": true,
-    "RedisConnectionStringName": "default"
-  },
-
   // 消息队列 (TinyFx.Extensions.RabbitMQ.RabbitMQSection)
   "RabbitMQ": {
     "Enabled": true,
@@ -319,6 +314,22 @@
       }
     },
     "ConsumerAssemblies": [] //用于自动注册消费类,+开头不存在不异常
+  },
+
+  // 内存自动同步缓存 (TinyFx.DbCaching.DbCachingSection)
+  "DbCaching": {
+    "Enabled": true,
+    "PublishMode": "Redis", // 数据变更通知模式 Redis,MQ
+    "RedisConnectionStringName": "default",
+    "MQConnectionStringName": "default",
+    "RefleshTables": [
+      {
+        "ConfigId": "",
+        "TableName": "",
+        "Interval": 60 //刷新间隔，分钟
+      },
+
+    ]
   },
 
   // AutoMapper (TinyFx.Extensions.AutoMapper.AutoMapperSection)

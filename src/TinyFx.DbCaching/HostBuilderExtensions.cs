@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.DbCaching;
+using TinyFx.DbCaching.ChangeConsumers;
 
 namespace TinyFx
 {
@@ -19,9 +20,23 @@ namespace TinyFx
             {
                 builder.ConfigureServices((context, services) =>
                 {
-                    var consumer = new DbCacheChangeConsumer(section.RedisConnectionStringName);
-                    consumer.Register();
-                    services.AddSingleton(consumer);
+                    switch (section.PublishMode)
+                    {
+                        case DbCachingPublishMode.Redis:
+                            var redisConsumer = new RedisDbCacheChangeConsumer(section.RedisConnectionStringName);
+                            redisConsumer.Register();
+                            services.AddSingleton(redisConsumer);
+                            break;
+                        case DbCachingPublishMode.MQ:
+                            var mqConsumer = new MQDbCacheChangeConsumer(section.MQConnectionStringName);
+                            mqConsumer.Register().ConfigureAwait(false).GetAwaiter().GetResult();
+                            services.AddSingleton(mqConsumer);
+                            break;
+                    }
+                    if (section.RefleshTables?.Count > 0)
+                    {
+                        services.AddHostedService<DbCachingHostedService>();
+                    }
                 });
             }
             return builder;

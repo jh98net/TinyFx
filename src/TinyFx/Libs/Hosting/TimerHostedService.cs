@@ -29,17 +29,17 @@ namespace TinyFx.Hosting
             try
             {
                 IsExecuting = true;
-                LogUtil.Debug("开始执行服务: {typeName}", this.GetType().FullName);
+                LogUtil.Debug("[TimerHostedService]开始执行服务: {typeName}", this.GetType().FullName);
                 ExecuteAsync().Wait();
             }
             catch (Exception ex)
             {
-                LogUtil.Error(ex, "执行异常: {typeName}", this.GetType().FullName);
+                LogUtil.Error(ex, "[TimerHostedService]执行异常: {typeName}", this.GetType().FullName);
             }
             finally
             {
                 IsExecuting = false;
-                LogUtil.Debug("执行结束: {typeName}", this.GetType().FullName);
+                LogUtil.Debug("[TimerHostedService]执行结束: {typeName}", this.GetType().FullName);
             }
         }
 
@@ -52,14 +52,14 @@ namespace TinyFx.Hosting
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            LogUtil.Debug("启动服务: {typeName}", this.GetType().FullName);
+            LogUtil.Debug("[TimerHostedService]启动服务: {typeName}", this.GetType().FullName);
             _timer.Change(TimeSpan.FromSeconds(new Random().Next(10)), Period);
             return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            LogUtil.Debug("停止服务: {typeName}", this.GetType().FullName);
+            LogUtil.Debug("[TimerHostedService]停止Timer服务: {typeName}", this.GetType().FullName);
             _timer?.Change(Timeout.Infinite, 0);
             return Task.CompletedTask;
         }
