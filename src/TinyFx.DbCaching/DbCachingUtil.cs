@@ -18,7 +18,7 @@ namespace TinyFx.DbCaching
     public static class DbCachingUtil
     {
         // key: typename|splitDbKeys value: configId|tablename
-        internal static ConcurrentDictionary<string, string> _cachKeyDict = new();
+        internal static ConcurrentDictionary<string, string> CachKeyDict = new();
         // key: configId|tableName ===> [eoTypeName, memory]
         internal static ConcurrentDictionary<string, ConcurrentDictionary<string, object>> CacheDict = new();
 
@@ -139,7 +139,7 @@ namespace TinyFx.DbCaching
                 : $"{typeof(TEntity).FullName}|{string.Join('|', splitDbKeys)}";
 
             // configId|tableName
-            var cacheKey = _cachKeyDict.GetOrAdd(key, k =>
+            var cacheKey = CachKeyDict.GetOrAdd(key, k =>
             {
                 var attr = typeof(TEntity).GetCustomAttribute<SugarTable>();
                 if (attr == null)

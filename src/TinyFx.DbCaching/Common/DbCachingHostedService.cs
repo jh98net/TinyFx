@@ -28,7 +28,7 @@ namespace TinyFx.DbCaching
                     try
                     {
                         var key = DbCachingUtil.GetCacheKey(table.ConfigId, table.TableName);
-                        if (!DbCachingUtil._cachKeyDict.ContainsKey(key))
+                        if (!DbCachingUtil.CachKeyDict.ContainsKey(key))
                             continue;
                         var nowTs = DateTime.Now.UtcDateTimeToTimestamp(false);
                         if (TimeSpan.FromMilliseconds(nowTs - table.LastExecTime) < TimeSpan.FromMinutes(table.Interval))
@@ -37,11 +37,11 @@ namespace TinyFx.DbCaching
                         var dataProvider = new PageDataProvider(table.ConfigId, table.TableName, section.RedisConnectionStringName);
                         await dataProvider.SetRedisValues();
                         // remove
-                        DbCachingUtil._cachKeyDict.TryRemove(key, out var _);
+                        DbCachingUtil.CachKeyDict.TryRemove(key, out var _);
 
                         table.LastExecTime = nowTs;
                         LogUtil.Debug($"执行DbCachingHostedService: configId:{table.ConfigId} tableName:{table.TableName} exec:{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss")}");
-                        await Task.Delay(TimeSpan.FromSeconds(10));
+                        await Task.Delay(TimeSpan.FromMilliseconds(Random.Shared.Next(10000)));
                     }
                     catch (Exception ex)
                     {
