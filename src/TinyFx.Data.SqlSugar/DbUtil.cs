@@ -10,17 +10,17 @@ namespace TinyFx.Data.SqlSugar
     public static class DbUtil
     {
         #region Properties
-        private static SqlSugarScope _db;
+        private static SqlSugarScope _mainDb;
         /// <summary>
         /// 全局DB，仅用作事务
         /// </summary>
-        internal static SqlSugarScope Db
-            => _db ??= (SqlSugarScope)DIUtil.GetRequiredService<ISqlSugarClient>();
+        internal static SqlSugarScope MainDb
+            => _mainDb ??= (SqlSugarScope)DIUtil.GetRequiredService<ISqlSugarClient>();
         /// <summary>
         /// 默认configId
         /// </summary>
         public static string DefaultConfigId
-            => Convert.ToString(Db.CurrentConnectionConfig.ConfigId);
+            => Convert.ToString(MainDb.CurrentConnectionConfig.ConfigId);
         #endregion
 
         #region GetDb
@@ -40,11 +40,11 @@ namespace TinyFx.Data.SqlSugar
         {
             // 主库
             if (string.IsNullOrEmpty(configId) || configId == DefaultConfigId)
-                return Db.GetConnectionScope(DefaultConfigId);
+                return MainDb.GetConnectionScope(DefaultConfigId);
 
             var config = GetConfig(configId);
             TryAddDb(config);
-            return Db.GetConnectionScope(configId);
+            return MainDb.GetConnectionScope(configId);
         }
 
         public static ISqlSugarClient GetNewDb<T>(params object[] splitDbKeys)
@@ -57,11 +57,11 @@ namespace TinyFx.Data.SqlSugar
         {
             // 主库
             if (string.IsNullOrEmpty(configId) || configId == DefaultConfigId)
-                return Db.GetConnection(DefaultConfigId).CopyNew();
+                return MainDb.GetConnection(DefaultConfigId).CopyNew();
 
             var config = GetConfig(configId);
             TryAddDb(config);
-            return Db.GetConnection(configId).CopyNew();
+            return MainDb.GetConnection(configId).CopyNew();
         }
         #endregion
 
@@ -99,14 +99,14 @@ namespace TinyFx.Data.SqlSugar
                 return false;
             if (_configDbDict.Contains(config.ConfigId))
                 return false;
-            if (!Db.IsAnyConnection(config.ConfigId))
+            if (!MainDb.IsAnyConnection(config.ConfigId))
             {
                 lock (_sync)
                 {
-                    if (!Db.IsAnyConnection(config.ConfigId))
+                    if (!MainDb.IsAnyConnection(config.ConfigId))
                     {
-                        Db.AddConnection(config);
-                        var newDb = Db.GetConnection(config.ConfigId);
+                        MainDb.AddConnection(config);
+                        var newDb = MainDb.GetConnection(config.ConfigId);
                         InitDb(newDb, config);
                         _configDbDict.Add(config.ConfigId);
                         return true;
@@ -126,13 +126,14 @@ namespace TinyFx.Data.SqlSugar
             {
                 db.Aop.OnLogExecuting = (sql, paras) =>
                 {
-                    var tmpSql = sql;
-                    if (ConfigUtil.IsDebugEnvironment || config.LogSqlMode == 2)
-                        tmpSql = UtilMethods.GetSqlString(config.DbType, sql, paras);
-                    else
-                        tmpSql = UtilMethods.GetNativeSql(sql, paras);
-
-                    LogUtil.Debug("执行SQL: {SQL}", tmpSql);
+                    var tmpSql = config.LogSqlMode switch
+                    {
+                        0 => sql,
+                        1 => UtilMethods.GetNativeSql(sql, paras),
+                        2 => UtilMethods.GetSqlString(config.DbType, sql, paras),
+                        _ => throw new Exception($"未知LogSqlMode模式: {config.LogSqlMode}")
+                    };
+                    LogUtil.Log(config.LogLevel, $"执行SQL: {tmpSql}");
                 };
                 db.Aop.OnLogExecuted = (sql, paras) =>
                 {

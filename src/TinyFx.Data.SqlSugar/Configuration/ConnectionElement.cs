@@ -1,4 +1,5 @@
-﻿using SqlSugar;
+﻿using Microsoft.Extensions.Logging;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,11 @@ namespace TinyFx.Data.SqlSugar
 {
     public class ConnectionElement : ConnectionConfig
     {
+        /// <summary>
+        /// 是否开启日志
+        /// </summary>
         public bool LogEnabled { get; set; }
+        public LogLevel LogLevel { get; set; } = LogLevel.Debug;
         /// <summary>
         /// SQL日志模式0-默认 1-原生 2-无参数化
         /// </summary>

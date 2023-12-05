@@ -24,7 +24,7 @@ namespace TinyFx.Data.SqlSugar
         public DbTransactionManager(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             IsolationLevel = isolationLevel;
-            _newDb = DbUtil.Db.CopyNew();
+            _newDb = DbUtil.MainDb.CopyNew();
             var stack = new StackTrace(0, true);
             _exception = new Exception($"DbTransactionManager对象在析构函数中调用释放，请显示调用Commit()或Rollback()释放资源。StackTrace:{stack.ToString()}");
         }
@@ -75,22 +75,22 @@ namespace TinyFx.Data.SqlSugar
         }
         public void Commit()
         {
-            if (!CheckProcess()) return;
+            if (!CheckStateWhenEnd()) return;
             _newDb.CommitTran();
         }
         public Task CommitAsync()
         {
-            if (!CheckProcess()) return Task.CompletedTask;
+            if (!CheckStateWhenEnd()) return Task.CompletedTask;
             return _newDb.CommitTranAsync();
         }
         public void Rollback()
         {
-            if (!CheckProcess()) return;
+            if (!CheckStateWhenEnd()) return;
             _newDb.RollbackTran();
         }
         public Task RollbackAsync()
         {
-            if (!CheckProcess()) return Task.CompletedTask;
+            if (!CheckStateWhenEnd()) return Task.CompletedTask;
             return _newDb.RollbackTranAsync();
         }
         #endregion
@@ -99,7 +99,7 @@ namespace TinyFx.Data.SqlSugar
         private object _sync = new();
         private bool TryAddDb(ConnectionElement config)
         {
-            if (config.ConfigId == DbUtil.DefaultConfigId)
+            if (Convert.ToString(config.ConfigId) == DbUtil.DefaultConfigId)
                 return false;
             if (!_newDb.IsAnyConnection(config.ConfigId))
             {
@@ -116,7 +116,7 @@ namespace TinyFx.Data.SqlSugar
             }
             return false;
         }
-        private bool CheckProcess()
+        private bool CheckStateWhenEnd()
         {
             GC.SuppressFinalize(this);
             switch (_state)
@@ -138,7 +138,7 @@ namespace TinyFx.Data.SqlSugar
         {
             try
             {
-                LogUtil.Error(_exception, "DbTransactionManager析构函数被执行");
+                LogUtil.Error(_exception, "DbTransactionManager析构函数被执行!");
             }
             catch { }
         }
