@@ -13,7 +13,7 @@ namespace TinyFx.Serialization
     {
         public override CustomException Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var ret = new CustomException(ResponseCode.G_BadRequest, "json反序列化Exception");
+            var ret = new CustomException(ResponseCodes.G_BAD_REQUEST, "json反序列化Exception");
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();
             while (reader.Read())
@@ -64,7 +64,7 @@ namespace TinyFx.Serialization
     {
         public override Exception Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var ret = new CustomException(ResponseCode.G_BadRequest, "json反序列化Exception");
+            var ret = new CustomException(ResponseCodes.G_BAD_REQUEST, "json反序列化Exception");
             if (reader.TokenType != JsonTokenType.StartObject)
                 throw new JsonException();
             while (reader.Read())

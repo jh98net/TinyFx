@@ -79,7 +79,7 @@ namespace TinyFx.Extensions.DotNetty
         {
             if (_invalidSessionPacket == null)
             {
-                _invalidSessionPacket = DotNettyUtil.CreateExceptionPacket(ResponseCode.G_ServiceDenyConnect
+                _invalidSessionPacket = DotNettyUtil.CreateExceptionPacket(ResponseCodes.G_REQUEST_RATE_LIMIT
                     , $"疑似空连接，服务器关闭连接！（连接但在规定时间内未登录）");
             }
             return _invalidSessionPacket;

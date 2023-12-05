@@ -53,12 +53,12 @@ namespace TinyFx.AspNet
         {
             if (context.AuthenticateFailure is SecurityTokenExpiredException)
             {
-                context.HttpContext.Items.Add(GlobalExceptionUtil.ERROR_CODE_KEY, ResponseCode.G_JwtTokenExpired);
+                context.HttpContext.Items.Add(GlobalExceptionUtil.ERROR_CODE_KEY, ResponseCodes.G_JWT_TOKEN_EXPIRED);
                 context.HttpContext.Items.Add(GlobalExceptionUtil.ERROR_MESSAGE_KEY, "jwt token过期");
             }
             else
             {
-                context.HttpContext.Items.Add(GlobalExceptionUtil.ERROR_CODE_KEY, ResponseCode.G_JwtTokenInvalid);
+                context.HttpContext.Items.Add(GlobalExceptionUtil.ERROR_CODE_KEY, ResponseCodes.G_JWT_TOKEN_INVALID);
                 context.HttpContext.Items.Add(GlobalExceptionUtil.ERROR_MESSAGE_KEY, "jwt token无效");
             }
             return base.Challenge(context);

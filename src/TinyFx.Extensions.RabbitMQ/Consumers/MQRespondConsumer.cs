@@ -59,7 +59,7 @@ namespace TinyFx.Extensions.RabbitMQ
                     }
                     else
                     {
-                        ret.Code = ResponseCode.G_InternalServerError;
+                        ret.Code = ResponseCodes.G_INTERNAL_SERVER_ERROR;
                         ret.Message = ex.Message;
                         ret.Exception = ex;
                         LogUtil.Error(ex, "[MQ] RespondConsumer消费异常。{MQConsumerType}{MQRequestBody}{MQMessageId}{MQElaspedTime}"

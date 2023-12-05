@@ -37,67 +37,90 @@ namespace TinyFx.Text
         /// 添加字符定义
         /// </summary>
         /// <param name="chr"></param>
-        public void AddChar(char chr)
-            => _charCheck[chr] = IsAllow;
-
-        /// <summary>
-        /// 添加字符集合定义
-        /// </summary>
-        /// <param name="chars">字符集合</param>
-        public void AddChars(IEnumerable<char> chars)
+        public LimitedCharFilter AddChar(char chr)
         {
-            foreach (char chr in chars)
-            {
-                AddChar(chr);
-            }
+            _charCheck[chr] = IsAllow;
+            return this;
         }
 
         /// <summary>
         /// 添加字符集合定义
         /// </summary>
         /// <param name="chars">字符集合</param>
-        public void AddChars(string chars)
-            => AddChars(chars.ToCharArray());
+        public LimitedCharFilter AddChars(IEnumerable<char> chars)
+        {
+            foreach (char chr in chars)
+            {
+                AddChar(chr);
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// 添加字符集合定义
+        /// </summary>
+        /// <param name="chars">字符集合</param>
+        public LimitedCharFilter AddChars(string chars)
+        {
+            AddChars(chars.ToCharArray());
+            return this;
+        }
 
         /// <summary>
         /// 添加数字字符集合定义
         /// </summary>
-        public void AddNumberChars()
-            => AddChars(StringUtil.NumberChars);
+        public LimitedCharFilter AddNumberChars()
+        {
+            AddChars(StringUtil.NumberChars);
+            return this;
+        }
 
         /// <summary>
         /// 添加小写字符集合定义
         /// </summary>
-        public void AddLowerChars()
-            => AddChars(StringUtil.LowerLetterChars);
+        public LimitedCharFilter AddLowerChars()
+        {
+            AddChars(StringUtil.LowerLetterChars);
+            return this;
+        }
 
         /// <summary>
         /// 添加大写字符集合定义
         /// </summary>
-        public void AddUpperChars()
-            => AddChars(StringUtil.UpperLetterChars);
+        public LimitedCharFilter AddUpperChars()
+        {
+            AddChars(StringUtil.UpperLetterChars);
+            return this;
+        }
 
         /// <summary>
         /// 添加字母字符集合定义
         /// </summary>
-        public void AddLetterChars()
-            => AddChars(StringUtil.LetterChars);
+        public LimitedCharFilter AddLetterChars()
+        {
+            AddChars(StringUtil.LetterChars);
+            return this;
+        }
 
         /// <summary>
         /// 添加常用英文标点符号数组
         /// </summary>
-        public void AddCommonPunctuationChars()
-            => AddChars(StringUtil.CommonPunctuation);
+        public LimitedCharFilter AddCommonPunctuationChars()
+        {
+            AddChars(StringUtil.CommonPunctuation);
+            return this;
+        }
 
         /// <summary>
         /// 添加中文字符集合定义
         /// </summary>
-        public void AddChinese()
+        public LimitedCharFilter AddChinese()
         {
             for (int i = 19968; i <= 40869; i++)
             {
                 _charCheck[i] = IsAllow;
             }
+            return this;
         }
         #endregion
 

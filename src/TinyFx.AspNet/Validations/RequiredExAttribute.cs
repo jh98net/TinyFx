@@ -13,7 +13,7 @@ namespace TinyFx.AspNet
         public string Code { get; set; }
         public RequiredExAttribute(string code, string message = null)
         {
-            Code = code ?? ResponseCode.G_BadRequest;
+            Code = code ?? ResponseCodes.G_BAD_REQUEST;
             ErrorMessage = message;
         }
         public override string FormatErrorMessage(string name)

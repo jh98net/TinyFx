@@ -106,7 +106,7 @@ namespace TinyFx.AspNet
             => new ApiResult(code, message, ex, result);
 
         /// <summary>
-        /// 返回ApiResult错误：定义客户端的message。code = G_BadRequest。
+        /// 返回ApiResult错误：定义客户端的message。code = G_BAD_REQUEST。
         /// </summary>
         /// <param name="message"></param>
         /// <param name="ex"></param>
@@ -114,10 +114,10 @@ namespace TinyFx.AspNet
         /// <returns></returns>
         [NonAction]
         public ApiResult Error(string message, Exception ex = null, object result = null)
-            => new ApiResult(ResponseCode.G_BadRequest, message, ex, result);
+            => new ApiResult(ResponseCode.G_BAD_REQUEST, message, ex, result);
 
         /// <summary>
-        /// 返回ApiResult错误：定义与客户端协商的action。code = G_BadRequest。
+        /// 返回ApiResult错误：定义与客户端协商的action。code = G_BAD_REQUEST。
         /// </summary>
         /// <param name="action"></param>
         /// <param name="message"></param>

@@ -8,14 +8,14 @@ namespace TinyFx
 {
     /// <summary>
     /// 自定义业务异常，服务器与客户端约定
-    /// Code 默认 ResponseCode.G_BadRequest
+    /// Code 默认 ResponseCode.G_BAD_REQUEST
     /// </summary>
     public class CustomException : Exception
     {
         /// <summary>
         /// 业务错误代码，WebAPI和Server通用
         /// </summary>
-        public string Code { get; set; } = ResponseCode.G_BadRequest;
+        public string Code { get; set; } = ResponseCodes.G_BAD_REQUEST;
         /// <summary>
         /// 返回给客户端的数据
         /// </summary>
@@ -35,12 +35,12 @@ namespace TinyFx
 
         public CustomException(string message) : base(message)
         {
-            Code = ResponseCode.G_BadRequest;
+            Code = ResponseCodes.G_BAD_REQUEST;
         }
         public CustomException(string code, string message, Exception innerException = null, object result = null)
             : base(message ?? code, innerException)
         {
-            Code = string.IsNullOrEmpty(code) ? ResponseCode.G_BadRequest : code;
+            Code = string.IsNullOrEmpty(code) ? ResponseCodes.G_BAD_REQUEST : code;
             Result = result;
         }
     }

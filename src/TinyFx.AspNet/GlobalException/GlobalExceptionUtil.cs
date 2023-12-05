@@ -31,7 +31,7 @@ namespace TinyFx.AspNet
             if (ex != null&& ex.Message == "Unexpected end of request content.")
             {
                 logger.SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
-                exc = new CustomException(ResponseCode.G_BadRequest, "客户端请求中断");
+                exc = new CustomException(ResponseCodes.G_BAD_REQUEST, "客户端请求中断");
                 if (AspNetUtil.TryGetUnhandledExceptionCode(out var code))
                     exc.Code = code;
             }
@@ -62,7 +62,7 @@ namespace TinyFx.AspNet
                     Success = false,
                     Status = context.Response.StatusCode,
                     Code = AspNetUtil.TryGetUnhandledExceptionCode(out var code)
-                        ? code : ResponseCode.G_InternalServerError,
+                        ? code : ResponseCodes.G_INTERNAL_SERVER_ERROR,
                     Message = (ConfigUtil.Project?.ResponseErrorMessage ?? false)
                         ? ex.Message : null,
                     Result = null,

@@ -14,7 +14,7 @@ namespace TinyFx.AspNet
         public MinLengthExAttribute(int length, string code, string message = null)
             : base(length)
         {
-            Code = code ?? ResponseCode.G_BadRequest;
+            Code = code ?? ResponseCodes.G_BAD_REQUEST;
             ErrorMessage = message;
         }
         public override string FormatErrorMessage(string name)

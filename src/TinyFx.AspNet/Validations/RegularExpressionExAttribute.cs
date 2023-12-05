@@ -14,7 +14,7 @@ namespace TinyFx.AspNet
         public RegularExpressionExAttribute(string pattern, string code, string message = null)
             : base(pattern)
         {
-            Code = code ?? ResponseCode.G_BadRequest;
+            Code = code ?? ResponseCodes.G_BAD_REQUEST;
             ErrorMessage = message;
         }
         public override string FormatErrorMessage(string name)

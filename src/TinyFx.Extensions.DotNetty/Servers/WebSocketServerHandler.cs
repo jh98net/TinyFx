@@ -73,7 +73,7 @@ namespace TinyFx.Extensions.DotNetty
                     isConnReset = ((OperationException)ex).Name == "ECONNRESET";
                 }
             }
-            if (isConnReset) 
+            if (isConnReset)
             {
                 var args = new ChannelClosedArgs
                 {
@@ -214,18 +214,27 @@ namespace TinyFx.Extensions.DotNetty
         private void HandleBinaryWebSocketFrame(BinaryWebSocketFrame binaryWebSocketFrame, IChannelHandlerContext ctx)
         {
             var packet = _serializer.Decode(binaryWebSocketFrame.Content);
-            var session = _sessions.Get(ctx.Channel?.Id);
-            // 因为异步，客户端连接后立刻发送请求，会造成session尚未完成
-            if (session == null) 
+            AppSession session;
+            var waitTime = 0;
+            while (true)
             {
-                ctx.WriteAndFlushAsync(DotNettyUtil.CreateExceptionPacket(ResponseCode.G_ServiceNotReady, $"服务器连接未准备好，请再次尝试连接。请求CommandId: {packet.CommandId}"));
+                session = _sessions.Get(ctx.Channel?.Id);
+                if (session != null || waitTime > _option.ConnectTimeout)
+                    break;
+                Thread.Sleep(1000);
+                waitTime += 1000;
+            }
+            // 因为异步，客户端连接后立刻发送请求，会造成session尚未完成
+            if (session == null)
+            {
+                ctx.WriteAndFlushAsync(DotNettyUtil.CreateExceptionPacket(ResponseCodes.G_SERVER_CONNECT_ERROR, $"服务器连接未准备好，请再次尝试连接。请求CommandId: {packet.CommandId}"));
                 return;
             }
             // User黑名单验证
             if (!IsAllowUser(session))
                 return;
             session.LastAccessTime = DateTime.UtcNow; //更新用户激活状态
-            
+
             // 心跳
             if (packet.CommandId == DotNettyUtil.HeartbeatCommandId)
             {
@@ -298,8 +307,8 @@ namespace TinyFx.Extensions.DotNetty
         {
             if (_limitPacket == null)
             {
-                _limitPacket = DotNettyUtil.CreateExceptionPacket(ResponseCode.G_IpOrUserLimit
-                    , $"用户账户被列入黑名单！"); 
+                _limitPacket = DotNettyUtil.CreateExceptionPacket(ResponseCodes.G_REQUEST_LIMIT
+                    , $"用户账户被列入黑名单！");
             }
             return _limitPacket;
         }
