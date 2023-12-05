@@ -77,7 +77,13 @@ namespace TinyFx.Data.SqlSugar
                 query.Where(whereExpression);
             return query.SumAsync(expression);
         }
-    
 
+        public Task<TResult> GetAvgAsync<TResult>(Expression<Func<T, TResult>> expression, Expression<Func<T, bool>> whereExpression = null)
+        {
+            var query = Context.Queryable<T>();
+            if (whereExpression != null)
+                query.Where(whereExpression);
+            return query.AvgAsync(expression);
+        }
     }
 }
