@@ -1,42 +1,28 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
+using Microsoft.OpenApi.Models;
+using Nacos.AspNetCore.V2;
+using Nacos.V2.DependencyInjection;
+using System.IO.Compression;
 using System.Runtime.Loader;
-using System.Xml.XPath;
-using System.Linq;
-using TinyFx;
 using TinyFx.AspNet;
+using TinyFx.AspNet.Common;
+using TinyFx.AspNet.Filters;
+using TinyFx.AspNet.Hosting;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
 using TinyFx.Security;
-using System.Reflection;
-using System.Runtime.Intrinsics.Arm;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Google.Protobuf.WellKnownTypes;
-using TinyFx.AspNet.Filters;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.HttpOverrides;
-using System.IO.Compression;
-using TinyFx.AspNet.Common;
-using Microsoft.Extensions.Configuration;
-using Nacos.AspNetCore.V2;
-using System.Configuration;
-using Nacos.V2;
-using Nacos.V2.DependencyInjection;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Hosting;
-using TinyFx.Extensions.AppMetric;
-using TinyFx.AspNet.Hosting;
 
 namespace TinyFx
 {
@@ -62,12 +48,12 @@ namespace TinyFx
                     }
                 });
             }
-            AddAspNetEx(builder.Services, type);
+            AddAspNetExDetail(builder.Services, type);
             //
             TinyFxHostingStartupLoader.Instance.ConfigureServices(builder);
             return builder;
         }
-        private static IServiceCollection AddAspNetEx(this IServiceCollection services, AspNetType type)
+        private static IServiceCollection AddAspNetExDetail(this IServiceCollection services, AspNetType type)
         {
             if ((type & AspNetType.Api) != 0)
             {

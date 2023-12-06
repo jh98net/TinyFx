@@ -3,11 +3,7 @@ using MQDemoLib;
 using TinyFx;
 using TinyFx.Extensions.RabbitMQ;
 
-TinyFxHost.CreateBuilder()
-    .UseRedisEx()
-    .UseRabbitMQEx()
-    .Build()
-    .UseTinyFxEx()
+TinyFxHost.CreateHost()
     .Start();
 
 var input = string.Empty;

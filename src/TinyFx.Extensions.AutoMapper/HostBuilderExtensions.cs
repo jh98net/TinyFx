@@ -12,7 +12,7 @@ namespace TinyFx
 {
     public static class AutoMapperHostBuilderExtensions
     {
-        public static IHostBuilder UseAutoMapperEx(this IHostBuilder builder) 
+        public static IHostBuilder AddAutoMapperEx(this IHostBuilder builder) 
         {
             var section = ConfigUtil.GetSection<AutoMapperSection>();
             if (section == null || section.Assemblies == null || section.Assemblies.Count == 0)

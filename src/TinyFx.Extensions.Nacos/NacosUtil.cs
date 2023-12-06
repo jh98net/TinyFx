@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Net;
 
-namespace TinyFx.Common.Nacos
+namespace TinyFx.Extensions.Nacos
 {
     public static class NacosUtil
     {

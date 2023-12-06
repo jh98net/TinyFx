@@ -13,7 +13,7 @@ namespace TinyFx
 {
     public static class DbCachingHostBuilderExtensions
     {
-        public static IHostBuilder UseDbCachingEx(this IHostBuilder builder)
+        public static IHostBuilder AddDbCachingEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<DbCachingSection>();
             if (section != null && section.Enabled)

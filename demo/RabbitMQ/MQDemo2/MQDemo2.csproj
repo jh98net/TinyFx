@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\TinyFx.Extensions.RabbitMQ\TinyFx.Extensions.RabbitMQ.csproj" />
+    <ProjectReference Include="..\..\..\src\TinyFx.Hosting\TinyFx.Hosting.csproj" />
     <ProjectReference Include="..\MQDemoLib\MQDemoLib.csproj" />
   </ItemGroup>
 

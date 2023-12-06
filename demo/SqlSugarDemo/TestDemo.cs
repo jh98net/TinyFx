@@ -13,6 +13,9 @@ namespace SqlSugarDemo
     {
         public override async Task Execute()
         {
+            var a = DbUtil.GetDb("demo").Queryable<Sdemo_classEO>().InSingle("A001");
+            var b = DbUtil.GetDb("demo").Queryable<Sdemo_classEO>().InSingle("A002");
+
             //DbUtil.GetDb().Updateable<object>().AS("test")
             //    .SetColumns("name", "bbb").Where("id=1").ExecuteCommand();
             //DbUtil.GetNewDb("demo").Updateable<object>().AS("demo_class")

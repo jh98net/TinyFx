@@ -7,7 +7,7 @@ namespace TinyFx
 {
     public static class OAuthHostBuilderExtensions
     {
-        public static IHostBuilder UseOAuthEx(this IHostBuilder builder)
+        public static IHostBuilder AddOAuthEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<OAuthSection>();
             if (section != null)

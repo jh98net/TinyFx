@@ -3,10 +3,7 @@ using TinyFx;
 using TinyFx.Collections;
 using TinyFx.Reflection;
 
-var host = TinyFxHost.CreateBuilder(args)
-    .UseSqlSugarEx()
-    .Build()
-    .UseTinyFxEx();
+var host = TinyFxHost.CreateHost();
 await host.StartAsync();
 
 var demoId = string.Empty;

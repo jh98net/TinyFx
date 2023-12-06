@@ -17,7 +17,7 @@ namespace TinyFx
         /// </summary>
         /// <param name="builder"></param>
         /// <returns></returns>
-        public static IHostBuilder UseSerilogEx(this IHostBuilder builder)
+        public static IHostBuilder AddSerilogEx(this IHostBuilder builder)
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));

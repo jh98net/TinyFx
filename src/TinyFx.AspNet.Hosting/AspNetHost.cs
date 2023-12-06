@@ -22,20 +22,20 @@ namespace TinyFx
 {
     public static class AspNetHost
     {
-        public static WebApplicationBuilder CreateBuilder(string[] args = null)
+        public static WebApplicationBuilder CreateBuilder(string envString = null, string[] args = null)
         {
             LogUtil.CreateBootstrapLogger();
             var builder = WebApplication.CreateBuilder(args);
             // 设置启动Serilog
-            builder.Host.UseTinyFx();
-            builder.Host.UseSerilogEx();
-            builder.Host.UseAutoMapperEx();
-            builder.Host.UseRedisEx();
-            builder.Host.UseSqlSugarEx();
-            builder.Host.UseRabbitMQEx();
-            builder.Host.UseIDGenerator();
-            builder.Host.UseDbCachingEx();
-            builder.Host.UseOAuthEx();
+            builder.Host.AddTinyFx(envString)
+                .AddSerilogEx()
+                .AddAutoMapperEx()
+                .AddRedisEx()
+                .AddSqlSugarEx()
+                .AddRabbitMQEx()
+                .AddIDGenerator()
+                .AddDbCachingEx()
+                .AddOAuthEx();
             return builder;
         }
         internal static async Task<string> MapEnvPath()

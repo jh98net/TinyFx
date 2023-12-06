@@ -1,12 +1,8 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
-using Microsoft.AspNetCore.Http.Headers;
-using Microsoft.Extensions.Http;
+﻿using Microsoft.Extensions.Http;
 using Newtonsoft.Json;
 using Polly;
 using Polly.Extensions.Http;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,16 +10,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Text;
-using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using TinyFx.Configuration;
 using TinyFx.Logging;
-using TinyFx.Reflection;
 using TinyFx.Serialization;
-using TinyFx.Text;
-using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace TinyFx.Net
 {

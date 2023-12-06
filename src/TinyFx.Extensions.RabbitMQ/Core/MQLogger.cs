@@ -15,7 +15,7 @@ namespace TinyFx.Extensions.RabbitMQ
         private static bool _enabled;
         static MQLogger()
         {
-            ConfigUtil.ConfigChange += (_, _) =>
+            ConfigUtil.ConfigChanged += (_, _) =>
             {
                 var section = ConfigUtil.GetSection<RabbitMQSection>();
                 _enabled = section != null && section.LogEnabled;

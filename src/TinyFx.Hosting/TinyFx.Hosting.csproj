@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TinyFx.Data.SqlSugar\TinyFx.Data.SqlSugar.csproj" />
+    <ProjectReference Include="..\TinyFx.DbCaching\TinyFx.DbCaching.csproj" />
+    <ProjectReference Include="..\TinyFx.Extensions.AppMetric\TinyFx.Extensions.AppMetric.csproj" />
+    <ProjectReference Include="..\TinyFx.Extensions.AutoMapper\TinyFx.Extensions.AutoMapper.csproj" />
+    <ProjectReference Include="..\TinyFx.Extensions.IDGenerator\TinyFx.Extensions.IDGenerator.csproj" />
+    <ProjectReference Include="..\TinyFx.Extensions.Nacos\TinyFx.Extensions.Nacos.csproj" />
+    <ProjectReference Include="..\TinyFx.Extensions.RabbitMQ\TinyFx.Extensions.RabbitMQ.csproj" />
+    <ProjectReference Include="..\TinyFx.Extensions.Serilog\TinyFx.Extensions.Serilog.csproj" />
+    <ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
+  </ItemGroup>
+
+</Project>

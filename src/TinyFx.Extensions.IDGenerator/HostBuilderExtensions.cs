@@ -16,7 +16,7 @@ namespace TinyFx
 {
     public static class IDGeneratorHostBuilderExtensions
     {
-        public static IHostBuilder UseIDGenerator(this IHostBuilder builder)
+        public static IHostBuilder AddIDGenerator(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<IDGeneratorSection>();
             if (section != null && section.Enabled)

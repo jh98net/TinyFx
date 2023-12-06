@@ -23,7 +23,7 @@ namespace TinyFx.Data.ORM
         private static ConcurrentDictionary<string, ConnectionStringConfig> TypeNameDict = new();
         static DbMOBase()
         {
-            ConfigUtil.ConfigChange += (_, _) =>
+            ConfigUtil.ConfigChanged += (_, _) =>
             {
                 TypeNameDict.Clear();
             };

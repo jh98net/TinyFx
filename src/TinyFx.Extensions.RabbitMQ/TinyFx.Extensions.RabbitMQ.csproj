@@ -12,6 +12,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
-    <ProjectReference Include="..\TinyFx\TinyFx.csproj" />
   </ItemGroup>
 </Project>

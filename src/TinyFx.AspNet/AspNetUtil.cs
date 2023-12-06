@@ -19,7 +19,6 @@ using System.Security.Policy;
 using TinyFx.Configuration;
 using System.Diagnostics;
 using TinyFx.Logging;
-using Nacos;
 using System.Xml.Linq;
 using TinyFx.IO;
 using System.Runtime;

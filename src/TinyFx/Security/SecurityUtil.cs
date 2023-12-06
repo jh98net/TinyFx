@@ -1,19 +1,13 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Org.BouncyCastle.Crypto.Encodings;
+﻿using Org.BouncyCastle.Crypto.Encodings;
 using Org.BouncyCastle.Crypto.Engines;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace TinyFx.Security
 {

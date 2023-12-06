@@ -8,11 +8,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\TinyFx.Data.MySql\TinyFx.Data.MySql.csproj" />
-	  <ProjectReference Include="..\..\src\TinyFx.Data.SqlSugar\TinyFx.Data.SqlSugar.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
@@ -20,6 +15,10 @@
 
 	<ItemGroup>
 	  <Folder Include="SqlSugar\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\TinyFx.Hosting\TinyFx.Hosting.csproj" />
 	</ItemGroup>
 
 </Project>

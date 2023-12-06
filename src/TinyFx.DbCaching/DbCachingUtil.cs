@@ -177,13 +177,12 @@ namespace TinyFx.DbCaching
         /// 发布更新通知
         /// </summary>
         /// <param name="message"></param>
-        /// <param name="cacheDataUseRedisConnectionStringName">缓存所在的redis</param>
         /// <returns></returns>
-        public static async Task PublishUpdate(DbCacheChangeMessage message, string cacheDataUseRedisConnectionStringName = null)
+        public static async Task PublishUpdate(DbCacheChangeMessage message)
         {
             foreach (var item in message.Changed)
             {
-                var dataProvider = new PageDataProvider(item.ConfigId, item.TableName, cacheDataUseRedisConnectionStringName);
+                var dataProvider = new PageDataProvider(item.ConfigId, item.TableName, message.RedisConnectionStringName);
                 await dataProvider.SetRedisValues();
             }
             switch (message.PublishMode)

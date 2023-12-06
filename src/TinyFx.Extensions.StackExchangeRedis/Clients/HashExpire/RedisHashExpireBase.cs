@@ -1,10 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using StackExchange.Redis;
 using TinyFx.Caching;
 
 namespace TinyFx.Extensions.StackExchangeRedis

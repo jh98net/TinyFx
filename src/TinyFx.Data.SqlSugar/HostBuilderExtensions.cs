@@ -15,7 +15,7 @@ namespace TinyFx
 {
     public static class SqlSugarHostBuilderExtensions
     {
-        public static IHostBuilder UseSqlSugarEx(this IHostBuilder builder)
+        public static IHostBuilder AddSqlSugarEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<SqlSugarSection>();
             if (section != null && section.Enabled)

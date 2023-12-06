@@ -4,7 +4,7 @@ using System.Reflection.PortableExecutable;
 using TinyFx;
 using TinyFx.Logging;
 
-var builder = AspNetHost.CreateBuilder(args);
+var builder = AspNetHost.CreateBuilder();
 // Add services to the container.
 builder.AddAspNetEx(AspNetType.Api);
 builder.Host.ConfigureServices(services =>

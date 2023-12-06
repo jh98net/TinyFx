@@ -63,7 +63,7 @@ namespace TinyFx.Logging
                 return _defaultLogger;
             }
         }
-        internal static void Rebuild()
+        public static void Init()
         {
             _factory = DIUtil.GetService<ILoggerFactory>() ?? new SerilogLoggerFactory(Serilog.Log.Logger);
             _defaultLogger = null;

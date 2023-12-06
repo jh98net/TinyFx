@@ -4,10 +4,7 @@ using RedisDemoLib;
 using TinyFx;
 using TinyFx.Extensions.StackExchangeRedis;
 
-TinyFxHost.CreateBuilder()
-    .UseRedisEx()
-    .Build()
-    .Start();
+TinyFxHost.Start();
 
 var input = string.Empty;
 int idx = 0;

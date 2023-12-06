@@ -10,14 +10,7 @@ namespace TinyFx.Demos
     {
         static async Task Main(string[] args)
         {
-            var host = TinyFxHost.CreateBuilder(args);
-            host.UseSerilogEx();
-            host.UseRedisEx();
-            host.UseRabbitMQEx();
-            host.UseIDGenerator();
-            host.UseSqlSugarEx();
-            host.UseDbCachingEx();
-            host.Build().UseTinyFxEx().StartAsync().Wait();
+            TinyFxHost.Start();
 
             var demoId = string.Empty;
             demoId = "TestDemo";

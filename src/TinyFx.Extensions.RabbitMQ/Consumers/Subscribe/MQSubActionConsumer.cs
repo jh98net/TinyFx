@@ -1,12 +1,4 @@
-﻿using EasyNetQ;
-using Google.Protobuf;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TinyFx.Configuration;
-using TinyFx.Logging;
+﻿using TinyFx.Configuration;
 
 namespace TinyFx.Extensions.RabbitMQ
 {

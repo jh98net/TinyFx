@@ -20,30 +20,64 @@ namespace TinyFx
         /// <summary>
         /// 创建默认Host并UseTinyFx
         /// </summary>
+        /// <param name="envString"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static IHostBuilder CreateBuilder(string[] args = null)
+        public static IHostBuilder CreateBuilder(string envString = null, string[] args = null)
         {
             LogUtil.CreateBootstrapLogger();
-            return Host.CreateDefaultBuilder(args)
+            var builder = Host.CreateDefaultBuilder(args)
+                .AddTinyFx(envString)
+                .AddSerilogEx()
+                .AddAutoMapperEx()
+                .AddRedisEx()
+                .AddSqlSugarEx()
+                .AddRabbitMQEx()
+                .AddIDGenerator()
+                .AddDbCachingEx();
+            return builder;
+        }
+
+        public static IHost CreateHost(string envString = null, string[] args = null)
+        {
+            return CreateBuilder(envString, args)
+                .Build()
                 .UseTinyFx();
         }
+
         /// <summary>
-        /// 阻塞运行
+        /// 非阻塞运行
         /// </summary>
+        /// <param name="envString"></param>
         /// <param name="args"></param>
-        public static void Run(string[] args = null)
-            => CreateBuilder(args).Build().Run();
+        public static void Start(string envString = null, string[] args = null)
+            => CreateHost(envString, args).Start();
+
+        /// <summary>
+        /// 非阻塞运行
+        /// </summary>
+        /// <param name="envString"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public static Task StartAsync(string envString = null, string[] args = null)
+            => CreateHost(envString, args).StartAsync();
 
         /// <summary>
         /// 阻塞运行
         /// </summary>
+        /// <param name="envString"></param>
+        /// <param name="args"></param>
+        public static void Run(string envString = null, string[] args = null)
+            => CreateHost(envString, args).Run();
+
+        /// <summary>
+        /// 阻塞运行
+        /// </summary>
+        /// <param name="envString"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public static Task RunAsync(string[] args = null)
-        {
-            return CreateBuilder(args).Build().RunAsync();
-        }
+        public static Task RunAsync(string envString = null, string[] args = null)
+            => CreateHost(envString, args).RunAsync();
 
         #region IHostApplicationLifetime
         /// <summary>

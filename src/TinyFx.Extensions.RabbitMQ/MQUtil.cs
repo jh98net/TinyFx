@@ -1,16 +1,11 @@
 ﻿using EasyNetQ;
 using EasyNetQ.Topology;
-using Microsoft.IdentityModel.Tokens;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text;
-using TinyFx.Configuration;
-using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
-using TinyFx.Net;
 using TinyFx.Security;
 using TinyFx.Text;
-using static Google.Protobuf.Reflection.FieldOptions.Types;
 
 namespace TinyFx.Extensions.RabbitMQ
 {

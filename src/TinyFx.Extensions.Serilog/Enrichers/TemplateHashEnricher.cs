@@ -1,10 +1,5 @@
 ﻿using Serilog.Core;
 using Serilog.Events;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Collections.Concurrent;
-using Google.Protobuf.WellKnownTypes;
 using TinyFx.Security;
 
 namespace Serilog.Enrichers

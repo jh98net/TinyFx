@@ -1,15 +1,4 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
-using Newtonsoft.Json.Linq;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TinyFx.Collections;
-using TinyFx.Extensions.StackExchangeRedis;
-using TinyFx.Logging;
+﻿using TinyFx.Extensions.StackExchangeRedis;
 
 namespace TinyFx.DbCaching.ChangeConsumers
 {

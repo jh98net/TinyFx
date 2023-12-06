@@ -20,7 +20,7 @@ namespace TinyFx
         /// <param name="builder"></param>
         /// <param name="connectionStringName">IDistributedCache使用的连接名称</param>
         /// <returns></returns>
-        public static IHostBuilder UseRedisEx(this IHostBuilder builder, string connectionStringName = null)
+        public static IHostBuilder AddRedisEx(this IHostBuilder builder, string connectionStringName = null)
         {
             var section = ConfigUtil.GetSection<RedisSection>();
             if (section != null && section.ConnectionStrings != null && section.ConnectionStrings.Count > 0)
@@ -36,13 +36,17 @@ namespace TinyFx
                         options.ConfigurationOptions = ConfigurationOptions.Parse(connStr);
                         options.InstanceName = $"{ConfigUtil.Project.ProjectId}:";
                     });
-                    services.AddSingleton(new ConsumerContainer(section.ConsumerAssemblies));
-                });
-                //redis 资源释放
-                TinyFxHost.RegisterOnStopped(()=> 
-                {
-                    RedisUtil.ReleaseAllRedis();
-                    return Task.CompletedTask;
+                    services.AddSingleton(sp =>
+                    {
+                        var ret = new ConsumerContainer(section.ConsumerAssemblies);
+                        //redis 资源释放
+                        var lifetime = sp.GetService<IHostApplicationLifetime>();
+                        lifetime?.ApplicationStopped.Register(() =>
+                        {
+                            RedisUtil.ReleaseAllRedis();
+                        });
+                        return ret;
+                    });
                 });
             }
             LogUtil.Trace("Redis 配置启动");

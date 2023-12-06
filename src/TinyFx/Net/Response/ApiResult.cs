@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,10 +14,6 @@ namespace TinyFx.AspNet
         /// </summary>
         public bool Success { get; set; }
         /// <summary>
-        /// 状态码
-        /// </summary>
-        public int Status { get; set; }
-        /// <summary>
         /// 自定义异常码
         /// </summary>
         public string Code { get; set; }
@@ -27,13 +22,18 @@ namespace TinyFx.AspNet
         /// </summary>
         public string Message { get; set; }
         /// <summary>
-        /// 跟踪ID
-        /// </summary>
-        public string TraceId { get; set; }
-        /// <summary>
         /// 异常
         /// </summary>
         public Exception Exception { get; set; }
+
+        /// <summary>
+        /// 状态码
+        /// </summary>
+        public int Status { get; set; }
+        /// <summary>
+        /// 跟踪ID
+        /// </summary>
+        public string TraceId { get; set; }
     }
     /// <summary>
     /// Api返回的统一结构
@@ -74,11 +74,6 @@ namespace TinyFx.AspNet
             Message = message;
             Exception = ex;
             Result = result;
-        }
-        public static implicit operator ObjectResult(ApiResult value)
-        {
-            var ret = new ObjectResult(value);
-            return ret;
         }
     }
     /// <summary>
@@ -141,11 +136,6 @@ namespace TinyFx.AspNet
                 TraceId = value.TraceId,
                 Result = (T)value.Result
             };
-            return ret;
-        }
-        public static implicit operator ObjectResult(ApiResult<T> value)
-        {
-            var ret = new ObjectResult(value);
             return ret;
         }
     }

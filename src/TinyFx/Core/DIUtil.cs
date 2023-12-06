@@ -1,11 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using TinyFx.Configuration;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Http;
 
 namespace TinyFx
 {
@@ -14,6 +8,7 @@ namespace TinyFx
     /// </summary>
     public static class DIUtil
     {
+        #region IServiceCollection
         private static IServiceCollection _services;
         /// <summary>
         /// DI 服务集合
@@ -36,29 +31,39 @@ namespace TinyFx
         /// DI 初始化
         /// </summary>
         /// <param name="services"></param>
-        internal static void SetServices(IServiceCollection services = null)
+        public static void InitServices(IServiceCollection services = null)
         {
             Services = services ?? new ServiceCollection();
         }
+        #endregion
+
+        #region IServiceProvider
+        private static IServiceProvider _serviceProvider;
+        private static Func<IServiceProvider, IServiceProvider> _httpServiceProviderFunc;
         private static bool _isBuilded = false;
-        public static void SetServiceProvider(IServiceProvider provider = null)
+        public static void InitServiceProvider(IServiceProvider provider, Func<IServiceProvider, IServiceProvider> func)
         {
             _isBuilded = true;
             _serviceProvider = provider ?? Services.BuildServiceProvider();
+            _httpServiceProviderFunc = func;
         }
-
-        private static IServiceProvider _serviceProvider;
         private static IServiceProvider GetServiceProvider()
         {
-            if (!_isBuilded) return Services.BuildServiceProvider();
+            // 启动中
+            if (!_isBuilded) 
+                return Services.BuildServiceProvider();
+            // 运行中
             if (_serviceProvider == null)
                 _serviceProvider = Services.BuildServiceProvider();
-            var ihttp = _serviceProvider.GetService<IHttpContextAccessor>();
-            if (ihttp != null && ihttp.HttpContext != null)
-                return ihttp.HttpContext.RequestServices;
-            return _serviceProvider.CreateScope().ServiceProvider;
-        }
 
+            var ret = _httpServiceProviderFunc?.Invoke(_serviceProvider);
+            if(ret == null)
+                ret = _serviceProvider.CreateScope().ServiceProvider;
+            return ret;
+        }
+        #endregion
+
+        #region GetService
         /// <summary>
         /// 从System.IServiceProvider获取类型为T的Service
         /// </summary>
@@ -79,6 +84,7 @@ namespace TinyFx
             => GetServiceProvider().GetService(type);
         public static object GetRequiredService(Type type)
             => GetServiceProvider().GetRequiredService(type);
+        #endregion
 
         #region AddService
         #region AddScoped

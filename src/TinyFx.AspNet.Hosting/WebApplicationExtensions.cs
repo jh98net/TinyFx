@@ -30,7 +30,13 @@ namespace TinyFx
     {
         public static WebApplication UseAspNetEx(this WebApplication app)
         {
-            app.UseTinyFxEx();
+            app.UseTinyFx(serviceProvider => 
+            {
+                var ihttp = serviceProvider.GetService<IHttpContextAccessor>();
+                return (ihttp != null && ihttp.HttpContext != null)
+                    ? ihttp.HttpContext.RequestServices
+                    : null;
+            });
             // 中间件顺序
             // https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/middleware/?view=aspnetcore-7.0#middleware-order
             app.UseEnableBufferingEx();
