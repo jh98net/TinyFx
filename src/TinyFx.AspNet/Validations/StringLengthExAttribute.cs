@@ -14,7 +14,7 @@ namespace TinyFx.AspNet
         public StringLengthExAttribute(int maximumLength, string code, string message = null)
             : base(maximumLength)
         {
-            Code = code ?? ResponseCodes.G_BAD_REQUEST;
+            Code = code ?? GResponseCodes.G_BAD_REQUEST;
             ErrorMessage = message;
         }
         public override string FormatErrorMessage(string name)

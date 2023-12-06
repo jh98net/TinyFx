@@ -29,7 +29,7 @@ namespace TinyFx.AspNet.Filters
                 return;
             }
             //
-            var code = ResponseCodes.G_BAD_REQUEST;
+            var code = GResponseCodes.G_BAD_REQUEST;
             var msg = errMsg;
             if (!string.IsNullOrEmpty(errMsg))
             {

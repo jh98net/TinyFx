@@ -215,7 +215,7 @@ namespace TinyFx.Extensions.DotNetty
                 ret.Body = new ProtoResponse
                 {
                     Success = false,
-                    Code = ResponseCodes.G_INTERNAL_SERVER_ERROR,
+                    Code = GResponseCodes.G_INTERNAL_SERVER_ERROR,
                     Message = ConfigUtil.Project.ResponseErrorMessage ? ex.Message : null,
                     Exception = ConfigUtil.Project.ResponseErrorDetail ? ex : null
                 };

@@ -227,7 +227,7 @@ namespace TinyFx.Extensions.DotNetty
             // 因为异步，客户端连接后立刻发送请求，会造成session尚未完成
             if (session == null)
             {
-                ctx.WriteAndFlushAsync(DotNettyUtil.CreateExceptionPacket(ResponseCodes.G_SERVER_CONNECT_ERROR, $"服务器连接未准备好，请再次尝试连接。请求CommandId: {packet.CommandId}"));
+                ctx.WriteAndFlushAsync(DotNettyUtil.CreateExceptionPacket(GResponseCodes.G_SERVER_CONNECT_ERROR, $"服务器连接未准备好，请再次尝试连接。请求CommandId: {packet.CommandId}"));
                 return;
             }
             // User黑名单验证
@@ -307,7 +307,7 @@ namespace TinyFx.Extensions.DotNetty
         {
             if (_limitPacket == null)
             {
-                _limitPacket = DotNettyUtil.CreateExceptionPacket(ResponseCodes.G_REQUEST_LIMIT
+                _limitPacket = DotNettyUtil.CreateExceptionPacket(GResponseCodes.G_REQUEST_LIMIT
                     , $"用户账户被列入黑名单！");
             }
             return _limitPacket;

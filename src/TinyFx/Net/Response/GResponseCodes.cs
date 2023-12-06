@@ -10,7 +10,7 @@ namespace TinyFx.Net
     ///     ApiResult.Code
     ///     ProtoResponse.Code
     /// </summary>
-    public class ResponseCodes
+    public class GResponseCodes
     {
         #region 基础
         /// <summary>

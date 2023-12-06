@@ -23,7 +23,7 @@ namespace TinyFx.Extensions.DotNetty
                         ? new ProtoResponse<IResponse>
                         {
                             Success = false,
-                            Code = ResponseCodes.G_UNAUTHORIZED,
+                            Code = GResponseCodes.G_UNAUTHORIZED,
                             Message = ConfigUtil.Project.ResponseErrorMessage ? "未登录用户无法访问" : null
                         }
                         : await Respond(ctx, (IRequest)ctx.Packet.Body);
@@ -49,7 +49,7 @@ namespace TinyFx.Extensions.DotNetty
                         result = new ProtoResponse<IResponse>
                         {
                             Success = false,
-                            Code = ResponseCodes.G_INTERNAL_SERVER_ERROR,
+                            Code = GResponseCodes.G_INTERNAL_SERVER_ERROR,
                             Message = ConfigUtil.Project.ResponseErrorMessage ? ex.Message : null,
                             Exception = ConfigUtil.Project.ResponseErrorDetail ? ex : null
                         };
