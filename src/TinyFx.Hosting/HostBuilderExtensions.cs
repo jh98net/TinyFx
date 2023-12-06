@@ -2,6 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using System;
+using System.Threading;
 using TinyFx.Configuration;
 using TinyFx.Hosting.Common;
 using TinyFx.Logging;
