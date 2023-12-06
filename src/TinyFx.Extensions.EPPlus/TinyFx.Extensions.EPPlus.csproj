@@ -4,7 +4,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>Excel组件</Description>
-    <Version>3.12.2</Version>
+    <Version>3.12.3</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="6.2.8" />
