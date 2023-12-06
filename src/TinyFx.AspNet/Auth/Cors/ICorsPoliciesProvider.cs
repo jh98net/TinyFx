@@ -11,6 +11,7 @@ namespace TinyFx.AspNet
 {
     public interface ICorsPoliciesProvider
     {
-        Task<List<CorsPolicyElement>> GetPoliciesAsync();
+        List<CorsPolicyElement> GetPolicies();
+        void SetAutoRefresh();
     }
 }

@@ -131,6 +131,8 @@ namespace TinyFx
                 app.UseCors();
                 if (section.UseCors.EnabledReferer)
                     app.UseMiddleware<RefererMiddleware>();
+                //
+                section.PoliciesProvider?.SetAutoRefresh();
             }
             return app;
         }

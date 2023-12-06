@@ -195,13 +195,13 @@ namespace TinyFx
             var section = ConfigUtil.GetSection<CorsSection>();
             if (section != null && section.UseCors.Enabled)
             {
+                var policies = section.GetPolicies();
                 services.AddCors(opts =>
                 {
-                    if (section.Policies?.Count > 0)
+                    if (policies?.Count > 0)
                     {
-                        foreach (var item in section.Policies)
+                        foreach (var policy in policies)
                         {
-                            var policy = item.Value;
                             if (policy.Name == section.UseCors?.DefaultPolicy)
                                 opts.AddDefaultPolicy(AspNetUtil.GetPolicyBuilder(policy));
                             else
