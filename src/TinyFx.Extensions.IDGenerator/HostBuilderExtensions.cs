@@ -40,7 +40,7 @@ namespace TinyFx
                         services.AddHostedService<IDGeneratorHostedService>();
                     });
                 }
-                LogUtil.Trace($"IDGenerator 配置启动");
+                LogUtil.Debug($"IDGenerator 配置启动");
             }
             return builder;
         }

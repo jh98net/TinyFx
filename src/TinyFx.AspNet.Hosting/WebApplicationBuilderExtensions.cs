@@ -209,7 +209,7 @@ namespace TinyFx
                         }
                     }
                 });
-                LogUtil.Trace($"Cors 配置启动");
+                LogUtil.Debug($"Cors 配置启动");
             }
             return services;
         }
@@ -301,7 +301,7 @@ namespace TinyFx
                 {
                     services.ConfigureOptions<ConfigureSwaggerOptions>();
                 }
-                LogUtil.Trace($"Swagger 配置启动");
+                LogUtil.Debug($"Swagger 配置启动");
             }
             return services;
         }
@@ -409,7 +409,7 @@ namespace TinyFx
                     });
                 }
 
-                LogUtil.Trace("SessionAndRedis 配置启动。session:{session} cookie:{cookie}"
+                LogUtil.Debug("SessionAndRedis 配置启动。session:{session} cookie:{cookie}"
                     , section.UseSession, section.UseCookieIdentity);
             }
             return services;
@@ -447,7 +447,7 @@ namespace TinyFx
                 {
                     options.Level = CompressionLevel.SmallestSize;
                 });
-                LogUtil.Trace($"ResponseCompression 配置启动");
+                LogUtil.Debug($"ResponseCompression 配置启动");
             }
             return services;
         }

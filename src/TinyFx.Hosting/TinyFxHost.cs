@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx;
 using TinyFx.Configuration;
+using TinyFx.Extensions.Serilog;
 using TinyFx.Logging;
 using TinyFx.Net;
 
@@ -25,7 +26,7 @@ namespace TinyFx
         /// <returns></returns>
         public static IHostBuilder CreateBuilder(string envString = null, string[] args = null)
         {
-            LogUtil.CreateBootstrapLogger();
+            SerilogUtil.CreateBootstrapLogger();
             var builder = Host.CreateDefaultBuilder(args)
                 .AddTinyFx(envString)
                 .AddSerilogEx()

@@ -24,8 +24,11 @@ namespace TinyFx
             var section = ConfigUtil.Configuration.GetSection("Serilog");
             if (section == null)
                 return builder;
-
-            builder.UseSerilog((context, services, configuration) => 
+            builder.ConfigureServices(services =>
+            {
+                services.AddSerilog(dispose: true);
+            });
+            builder.UseSerilog((context, services, configuration) =>
             {
                 SetELKSinkIndexFormat(context.Configuration);
                 configuration.ReadFrom.Configuration(context.Configuration)
@@ -41,7 +44,7 @@ namespace TinyFx
             // 启动Serilog内部调试
             //Serilog.Debugging.SelfLog.Enable(msg => System.Diagnostics.Debug.WriteLine(msg));
             //Serilog.Debugging.SelfLog.Enable(Console.Error);
-            LogUtil.Trace("Serilog 配置启动");
+            LogUtil.Debug("Serilog 配置启动");
             return builder;
         }
         private static bool SetELKSinkIndexFormat(IConfiguration config)
@@ -52,7 +55,7 @@ namespace TinyFx
                 var idx = config["Serilog:WriteTo:ELKSink:Args:indexFormat"];
                 if (string.IsNullOrEmpty(idx))
                 {
-                    config["Serilog:WriteTo:ELKSink:Args:indexFormat"] 
+                    config["Serilog:WriteTo:ELKSink:Args:indexFormat"]
                         = $"idx-{ConfigUtil.Project.ProjectId.Replace('.', '_')}-{{0:yyyy.MM.dd}}";
                 }
                 return true;

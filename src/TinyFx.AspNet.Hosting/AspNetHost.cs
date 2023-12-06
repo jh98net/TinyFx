@@ -17,6 +17,7 @@ using Microsoft.Diagnostics.NETCore.Client;
 using TinyFx.IO;
 using System.IO;
 using TinyFx.Net;
+using TinyFx.Extensions.Serilog;
 
 namespace TinyFx
 {
@@ -24,7 +25,7 @@ namespace TinyFx
     {
         public static WebApplicationBuilder CreateBuilder(string envString = null, string[] args = null)
         {
-            LogUtil.CreateBootstrapLogger();
+            SerilogUtil.CreateBootstrapLogger();
             var builder = WebApplication.CreateBuilder(args);
             // 设置启动Serilog
             builder.Host.AddTinyFx(envString)

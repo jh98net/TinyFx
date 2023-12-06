@@ -19,7 +19,7 @@ namespace TinyFx
                     services.AddHostedService<MQHostedService>();
                 });
 
-                LogUtil.Trace($"RabbitMQ 配置启动");
+                LogUtil.Debug($"RabbitMQ 配置启动");
             }
             return builder;
         }

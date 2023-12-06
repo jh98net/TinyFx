@@ -10,7 +10,8 @@ using TinyFx.Configuration;
 using Serilog;
 using TinyFx.Logging;
 using Serilog.Extensions.Logging;
-using Microsoft.Extensions.Logging;
+using MS = Microsoft.Extensions.Logging;
+using Serilog.Exceptions;
 
 namespace TinyFx.Extensions.Serilog
 {
@@ -23,6 +24,36 @@ namespace TinyFx.Extensions.Serilog
         public const string EnvironmentNamePropertyName = "EnvironmentName";
         public const string MachineIPPropertyName = "MachineIP";
         public const string IndexNamePropertyName = "IndexName";
+
+        public static MS.ILogger CreateBootstrapLogger()
+        {
+            var config = new LoggerConfiguration()
+             .MinimumLevel.Override("System", LogEventLevel.Warning)
+             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+             .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
+             .MinimumLevel.Verbose()
+             .Enrich.WithExceptionDetails()
+             .Enrich.FromLogContext();
+
+            // debug
+            //config = Serilog.LoggerSinkConfigurationDebugExtensions.Debug(config.WriteTo
+            //    , outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}");
+
+            //// console
+            config = ConsoleLoggerConfigurationExtensions.Console(config.WriteTo
+                , outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+                , restrictedToMinimumLevel: LogEventLevel.Verbose);
+
+            config = FileLoggerConfigurationExtensions.File(config.WriteTo
+                , "./logs/ext.log"
+                , restrictedToMinimumLevel: LogEventLevel.Error
+                , rollingInterval: RollingInterval.Day
+                , retainedFileCountLimit: 7);
+            Log.Logger = LoggerConfigurationExtensions.CreateBootstrapLogger(config);
+            LogUtil.DefaultLogger = new LoggerWrapper(Log.Logger, MS.LogLevel.Debug);
+            return LogUtil.DefaultLogger;
+        }
+
         //public const string MachineNamePropertyName = "MachineName";
         //public const string ThreadIdPropertyName = "ThreadId";
         //public const string ThreadNamePropertyName = "ThreadName";

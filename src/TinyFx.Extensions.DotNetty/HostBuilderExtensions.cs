@@ -54,7 +54,7 @@ namespace TinyFx
                 services.AddSingleton(new DefaultServerEventListener());
                 services.AddHostedService<WebSocketHostedService>();
             });
-            LogUtil.Trace($"DotNetty 配置启动");
+            LogUtil.Debug($"DotNetty 配置启动");
             return builder;
         }
         private static CommandContainer GetCommandContainer(ServerOptions options)

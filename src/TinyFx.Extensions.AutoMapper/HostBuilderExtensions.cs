@@ -41,7 +41,7 @@ namespace TinyFx
                 //    return mapperConfiguration.CreateMapper();
                 //});
             });
-            LogUtil.Trace($"AutoMapper 配置启动");
+            LogUtil.Debug($"AutoMapper 配置启动");
             return builder;
         }
     }

@@ -5,6 +5,7 @@ using Serilog;
 using System;
 using System.Threading;
 using TinyFx.Configuration;
+using TinyFx.Extensions.Serilog;
 using TinyFx.Hosting.Common;
 using TinyFx.Logging;
 
@@ -23,7 +24,7 @@ namespace TinyFx
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
             if (Serilog.Log.Logger == null)
-                LogUtil.CreateBootstrapLogger();
+                SerilogUtil.CreateBootstrapLogger();
             
             //
             builder.ConfigureServices((context, services) =>
@@ -55,7 +56,7 @@ namespace TinyFx
             if (ConfigUtil.Project.MinThreads > 0)
                 ThreadPool.SetMinThreads(ConfigUtil.Project.MinThreads, ConfigUtil.Project.MinThreads);
 
-            LogUtil.Trace("TinyFx 配置完成");
+            LogUtil.Debug("TinyFx 配置完成");
             return builder;
         }
     }
