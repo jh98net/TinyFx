@@ -30,8 +30,8 @@ namespace TinyFx
             });
             builder.UseSerilog((context, services, configuration) =>
             {
-                SetELKSinkIndexFormat(context.Configuration);
-                configuration.ReadFrom.Configuration(context.Configuration)
+                SetELKSinkIndexFormat(ConfigUtil.Configuration);
+                configuration.ReadFrom.Configuration(ConfigUtil.Configuration)
                     .ReadFrom.Services(services)
                     .Enrich.FromLogContext()
                     .Enrich.WithProperty(SerilogUtil.EnvironmentNamePropertyName, ConfigUtil.EnvironmentString)
