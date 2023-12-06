@@ -26,10 +26,12 @@
     "src\\TinyFx.Extensions.EPPlus\\TinyFx.Extensions.EPPlus.csproj",
     "src\\TinyFx.Extensions.IDGenerator\\TinyFx.Extensions.IDGenerator.csproj",
     "src\\TinyFx.Extensions.IP2Country\\TinyFx.Extensions.IP2Country.csproj",
+    "src\\TinyFx.Extensions.Nacos\\TinyFx.Extensions.Nacos.csproj",
     "src\\TinyFx.Extensions.RabbitMQ\\TinyFx.Extensions.RabbitMQ.csproj",
     "src\\TinyFx.Extensions.Serilog\\TinyFx.Extensions.Serilog.csproj",
     "src\\TinyFx.Extensions.SshNet\\TinyFx.Extensions.SshNet.csproj",
     "src\\TinyFx.Extensions.StackExchangeRedis\\TinyFx.Extensions.StackExchangeRedis.csproj",
+    "src\\TinyFx.Hosting\\TinyFx.Hosting.csproj",
     "src\\TinyFx.OAuth\\TinyFx.OAuth.csproj"
   ],
   "VsixItem": {

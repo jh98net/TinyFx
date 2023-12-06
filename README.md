@@ -17,4 +17,5 @@ TinyFx.Extensions.StackExchangeRedis
 TinyFx.Extensions.EPPlus => mysql
 TinyFx.Extensions.RabbitMQ ==> redis
 TinyFx.Extensions.IDGenerator ==> redis
+
 TinyFx.DbCaching ==> sqlsugar redis mq

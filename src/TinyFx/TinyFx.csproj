@@ -3,7 +3,7 @@
     <TargetFrameworks>net6.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Description>TinyFx 基础组件</Description>
+    <Description>TinyFx Hosting</Description>
     <Version>3.11.32</Version>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
