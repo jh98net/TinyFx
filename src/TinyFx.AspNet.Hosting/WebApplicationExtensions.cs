@@ -30,13 +30,6 @@ namespace TinyFx
     {
         public static WebApplication UseAspNetEx(this WebApplication app)
         {
-            app.UseTinyFx(serviceProvider => 
-            {
-                var ihttp = serviceProvider?.GetService<IHttpContextAccessor>();
-                return (ihttp != null && ihttp.HttpContext != null)
-                    ? ihttp.HttpContext.RequestServices
-                    : null;
-            });
             // 中间件顺序
             // https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/middleware/?view=aspnetcore-7.0#middleware-order
             app.UseEnableBufferingEx();
@@ -60,6 +53,13 @@ namespace TinyFx
 
             TinyFxHost.RegisterOnStarted(() =>
             {
+                app.UseTinyFx(serviceProvider =>
+                {
+                    var ihttp = serviceProvider?.GetService<IHttpContextAccessor>();
+                    return (ihttp != null && ihttp.HttpContext != null)
+                        ? ihttp.HttpContext.RequestServices
+                        : null;
+                });
                 LogUtil.Info("ProjectId: {ProjectId} Environment: {EnvironmentString} URL: {Urls}"
                     , ConfigUtil.Project?.ProjectId
                     , ConfigUtil.EnvironmentString
