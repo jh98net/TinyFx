@@ -32,7 +32,7 @@ namespace TinyFx
         {
             app.UseTinyFx(serviceProvider => 
             {
-                var ihttp = serviceProvider.GetService<IHttpContextAccessor>();
+                var ihttp = serviceProvider?.GetService<IHttpContextAccessor>();
                 return (ihttp != null && ihttp.HttpContext != null)
                     ? ihttp.HttpContext.RequestServices
                     : null;
