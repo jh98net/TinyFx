@@ -97,27 +97,16 @@ namespace TinyFx.Data.SqlSugar
             config.IsAutoCloseConnection = true;
             return config;
         }
-        private static object _sync = new();
-        private static HashSet<object> _configDbDict = new();
         private static bool TryAddDb(ConnectionElement config)
         {
             if (Convert.ToString(config.ConfigId) == DefaultConfigId)
                 return false;
-            if (_configDbDict.Contains(config.ConfigId))
-                return false;
             if (!MainDb.IsAnyConnection(config.ConfigId))
             {
-                lock (_sync)
-                {
-                    if (!MainDb.IsAnyConnection(config.ConfigId))
-                    {
-                        MainDb.AddConnection(config);
-                        var newDb = MainDb.GetConnection(config.ConfigId);
-                        InitDb(newDb, config);
-                        _configDbDict.Add(config.ConfigId);
-                        return true;
-                    }
-                }
+                MainDb.AddConnection(config);
+                var currDb = MainDb.GetConnection(config.ConfigId);
+                InitDb(currDb, config);
+                return true;
             }
             return false;
         }
