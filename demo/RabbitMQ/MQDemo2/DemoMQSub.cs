@@ -1,4 +1,5 @@
 ﻿using EasyNetQ;
+using Microsoft.Extensions.Logging;
 using MQDemoLib;
 using System;
 using System.Collections.Generic;
@@ -6,11 +7,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Extensions.RabbitMQ;
+using TinyFx.Logging;
 
 namespace MQDemo2
 {
     public class DemoMQSub1 : MQSubscribeConsumer<SubMsg>
     {
+        private ILogger<DemoMQSub1> _logger;
+        public DemoMQSub1()
+        {
+            _logger = LogUtil.CreateLogger<DemoMQSub1>();
+            _logger = LogUtil.CreateLogger<DemoMQSub1>();
+        }
         public override int QueueCount => 4;
 
         public override MQSubscribeMode SubscribeMode => MQSubscribeMode.OneQueue;

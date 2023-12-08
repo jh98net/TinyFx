@@ -39,7 +39,7 @@ namespace TinyFx
                     .Enrich.WithProperty(SerilogUtil.MachineIPPropertyName, NetUtil.GetLocalIP())
                     //.Enrich.WithProperty(SerilogUtil.IndexNamePropertyName, ConfigUtil.Project?.ProjectId.Replace('.', '_').ToLowerInvariant())
                     .Enrich.WithTemplateHash();
-            });
+            }, true);
 
             // 启动Serilog内部调试
             //Serilog.Debugging.SelfLog.Enable(msg => System.Diagnostics.Debug.WriteLine(msg));
