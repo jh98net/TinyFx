@@ -26,22 +26,8 @@ namespace TinyFx
                     services.TryAddSingleton(AutoMapperUtil.Configuration);
                     services.TryAddSingleton(AutoMapperUtil.Mapper);
                 }
-
-                //services.TryAddSingleton<MapperConfigurationExpression>();
-                //services.TryAddSingleton(serviceProvider =>
-                //{
-                //    var mapperConfigurationExpression = serviceProvider.GetRequiredService<MapperConfigurationExpression>();
-                //    var instance = new MapperConfiguration(mapperConfigurationExpression);
-                //    instance.AssertConfigurationIsValid();
-                //    return instance;
-                //});
-                //services.TryAddSingleton(serviceProvider =>
-                //{
-                //    var mapperConfiguration = serviceProvider.GetRequiredService<MapperConfiguration>();
-                //    return mapperConfiguration.CreateMapper();
-                //});
             });
-            LogUtil.Debug($"AutoMapper 配置启动");
+            LogUtil.Info($"AutoMapper 配置启动");
             return builder;
         }
     }

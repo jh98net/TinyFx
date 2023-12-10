@@ -56,7 +56,7 @@ namespace TinyFx
             if (ConfigUtil.Project.MinThreads > 0)
                 ThreadPool.SetMinThreads(ConfigUtil.Project.MinThreads, ConfigUtil.Project.MinThreads);
 
-            LogUtil.Debug("TinyFx 配置完成");
+            LogUtil.Info("TinyFx 配置完成");
             return builder;
         }
     }

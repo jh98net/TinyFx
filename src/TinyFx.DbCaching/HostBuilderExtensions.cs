@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.DbCaching;
 using TinyFx.DbCaching.ChangeConsumers;
+using TinyFx.Logging;
 
 namespace TinyFx
 {
@@ -16,29 +17,31 @@ namespace TinyFx
         public static IHostBuilder AddDbCachingEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<DbCachingSection>();
-            if (section != null && section.Enabled)
+            if (section == null || !section.Enabled) 
+                return builder;
+
+            builder.ConfigureServices((context, services) =>
             {
-                builder.ConfigureServices((context, services) =>
+                switch (section.PublishMode)
                 {
-                    switch (section.PublishMode)
-                    {
-                        case DbCachingPublishMode.Redis:
-                            var redisConsumer = new RedisDbCacheChangeConsumer(section.RedisConnectionStringName);
-                            redisConsumer.Register();
-                            services.AddSingleton(redisConsumer);
-                            break;
-                        case DbCachingPublishMode.MQ:
-                            var mqConsumer = new MQDbCacheChangeConsumer(section.MQConnectionStringName);
-                            mqConsumer.Register().ConfigureAwait(false).GetAwaiter().GetResult();
-                            services.AddSingleton(mqConsumer);
-                            break;
-                    }
-                    if (section.RefleshTables?.Count > 0)
-                    {
-                        services.AddHostedService<DbCachingHostedService>();
-                    }
-                });
-            }
+                    case DbCachingPublishMode.Redis:
+                        var redisConsumer = new RedisDbCacheChangeConsumer(section.RedisConnectionStringName);
+                        redisConsumer.Register();
+                        services.AddSingleton(redisConsumer);
+                        break;
+                    case DbCachingPublishMode.MQ:
+                        var mqConsumer = new MQDbCacheChangeConsumer(section.MQConnectionStringName);
+                        mqConsumer.Register().ConfigureAwait(false).GetAwaiter().GetResult();
+                        services.AddSingleton(mqConsumer);
+                        break;
+                }
+                if (section.RefleshTables?.Count > 0)
+                {
+                    services.AddHostedService<DbCachingHostedService>();
+                }
+            });
+
+            LogUtil.Debug($"DbCaching 配置启动");
             return builder;
         }
     }

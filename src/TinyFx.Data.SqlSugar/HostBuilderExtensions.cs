@@ -18,40 +18,40 @@ namespace TinyFx
         public static IHostBuilder AddSqlSugarEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<SqlSugarSection>();
-            if (section != null && section.Enabled)
+            if (section == null || !section.Enabled)
+                return builder;
+            builder.ConfigureServices((context, services) =>
             {
-                builder.ConfigureServices((context, services) =>
+                // IDbConfigProvider
+                var configProvider = !string.IsNullOrEmpty(section.DbConfigProvider)
+                    ? (IDbConfigProvider)ReflectionUtil.CreateInstance(section.DbConfigProvider)
+                    : new DefaultDbConfigProvider();
+                services.AddSingleton(configProvider);
+
+                // IDbSplitProvider
+                var splitProvider = !string.IsNullOrEmpty(section.DbSplitProvider)
+                    ? (IDbSplitProvider)ReflectionUtil.CreateInstance(section.DbSplitProvider)
+                    : new DefaultSplitProvider();
+                services.AddSingleton(splitProvider);
+
+                services.AddSingleton<ISqlSugarClient>(sp =>
                 {
-                    // IDbConfigProvider
-                    var configProvider = !string.IsNullOrEmpty(section.DbConfigProvider)
-                        ? (IDbConfigProvider)ReflectionUtil.CreateInstance(section.DbConfigProvider)
-                        : new DefaultDbConfigProvider();
-                    services.AddSingleton(configProvider);
-
-                    // IDbSplitProvider
-                    var splitProvider = !string.IsNullOrEmpty(section.DbSplitProvider)
-                        ? (IDbSplitProvider)ReflectionUtil.CreateInstance(section.DbSplitProvider)
-                        : new DefaultSplitProvider();
-                    services.AddSingleton(splitProvider);
-
-                    services.AddSingleton<ISqlSugarClient>(sp =>
+                    var provider = sp.GetRequiredService<IDbConfigProvider>();
+                    var config = provider.GetConfig(section.DefaultConnectionStringName);
+                    if (config == null)
+                        throw new Exception($"配置SqlSugar:ConnectionStrings没有找到默认连接。name:{section.DefaultConnectionStringName} type:{provider.GetType().FullName}");
+                    config.LanguageType = LanguageType.Chinese;
+                    config.IsAutoCloseConnection = true;
+                    var ret = new SqlSugarScope(config, db =>
                     {
-                        var provider = sp.GetRequiredService<IDbConfigProvider>();
-                        var config = provider.GetConfig(section.DefaultConnectionStringName);
-                        if (config == null)
-                            throw new Exception($"配置SqlSugar:ConnectionStrings没有找到默认连接。name:{section.DefaultConnectionStringName} type:{provider.GetType().FullName}");
-                        config.LanguageType = LanguageType.Chinese;
-                        config.IsAutoCloseConnection = true;
-                        var ret = new SqlSugarScope(config, db =>
-                        {
-                            DbUtil.InitDb(db, config);
-                        });
-                        if (!config.SlaveEnabled)
-                            ret.Ado.IsDisableMasterSlaveSeparation = true;
-                        return ret;
+                        DbUtil.InitDb(db, config);
                     });
+                    if (!config.SlaveEnabled)
+                        ret.Ado.IsDisableMasterSlaveSeparation = true;
+                    return ret;
                 });
-            }
+            });
+            LogUtil.Info("SqlSugar 配置完成");
             return builder;
         }
     }

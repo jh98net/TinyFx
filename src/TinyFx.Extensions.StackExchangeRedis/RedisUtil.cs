@@ -8,6 +8,7 @@ using System.Reflection;
 using TinyFx.Collections;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis.Serializers;
+using TinyFx.Logging;
 using TinyFx.Serialization;
 using static StackExchange.Redis.RedisChannel;
 using Type = System.Type;
@@ -416,6 +417,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         internal static void ReleaseAllRedis()
         {
             _redisDict.ForEach(x => x.Value.Value.Dispose());
+            LogUtil.Info("Redis资源已释放");
         }
         #endregion 
     }

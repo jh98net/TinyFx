@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Extensions.Nacos;
+using TinyFx.Logging;
 
 namespace TinyFx.Hosting.Common
 {
@@ -29,11 +30,18 @@ namespace TinyFx.Hosting.Common
 
         public IConfiguration GetConfiguration()
         {
-            var fileConfig = _fileConfigBuilder.Build(EnvString);
-            var builder = new NacosConfigSourceProvider().CreateConfigBuilder(_builder, fileConfig);
-
-            var configuration = builder != null ? builder.Build() : fileConfig;
-            return configuration;
+            IConfiguration ret = _fileConfigBuilder.Build(EnvString);
+            var builder = new NacosConfigSourceProvider().CreateConfigBuilder(_builder, ret);
+            if (builder != null)
+            {
+                ret = builder.Build();
+                LogUtil.Info("加载nacos配置源");
+            }
+            else
+            {
+                LogUtil.Info($"加载appsettings.{EnvString}.json文件配置源");
+            }
+            return ret;
         }
     }
 }

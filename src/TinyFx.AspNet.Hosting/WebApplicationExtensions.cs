@@ -60,9 +60,12 @@ namespace TinyFx
                         ? ihttp.HttpContext.RequestServices
                         : null;
                 });
-                LogUtil.Info("ProjectId: {ProjectId} Environment: {EnvironmentString} URL: {Urls}"
+                LogUtil.Info("服务已启动 => ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) IsDebug:{IsDebug} IsStaging:{IsStaging} URL: {Urls}"
                     , ConfigUtil.Project?.ProjectId
+                    , ConfigUtil.Environment
                     , ConfigUtil.EnvironmentString
+                    , ConfigUtil.IsDebugEnvironment
+                    , ConfigUtil.IsStagingEnvironment
                     , app.Urls);
                 return Task.CompletedTask;
             });
@@ -108,10 +111,11 @@ namespace TinyFx
         public static WebApplication UsePathBaseEx(this WebApplication app)
         {
             var section = ConfigUtil.GetSection<AspNetSection>();
-            if (section != null && !string.IsNullOrEmpty(section.PathBase))
-            {
-                app.UsePathBase(section.PathBase);
-            }
+            if (section == null || string.IsNullOrEmpty(section.PathBase))
+                return app;
+
+            app.UsePathBase(section.PathBase);
+            LogUtil.Info($"AspNet.PathBase: {section.PathBase}");
             return app;
         }
         public static WebApplication UseCookiePolicyEx(this WebApplication app)

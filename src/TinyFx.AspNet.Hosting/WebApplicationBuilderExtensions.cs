@@ -59,17 +59,17 @@ namespace TinyFx
             {
                 services.AddControllersEx()
                     .AddDynamicApi();
-                LogUtil.Trace($"注册 AddControllers");
+                LogUtil.Info($"注册 AddControllers");
             }
             if ((type & AspNetType.Razor) != 0)
             {
                 services.AddRazorPages();
-                LogUtil.Trace($"注册 AddRazorPages");
+                LogUtil.Info($"注册 AddRazorPages");
             }
             if ((type & AspNetType.ServerBlazor) != 0)
             {
                 services.AddServerSideBlazorEx();
-                LogUtil.Trace($"注册 AddServerSideBlazor");
+                LogUtil.Info($"注册 AddServerSideBlazor");
             }
             services.AddHealthChecks();         // health
             return services
@@ -193,24 +193,24 @@ namespace TinyFx
         public static IServiceCollection AddCorsEx(this IServiceCollection services)
         {
             var section = ConfigUtil.GetSection<CorsSection>();
-            if (section != null && section.UseCors.Enabled)
+            if (section == null || !section.UseCors.Enabled)
+                return services;
+
+            var policies = section.GetPolicies();
+            services.AddCors(opts =>
             {
-                var policies = section.GetPolicies();
-                services.AddCors(opts =>
+                if (policies?.Count > 0)
                 {
-                    if (policies?.Count > 0)
+                    foreach (var policy in policies)
                     {
-                        foreach (var policy in policies)
-                        {
-                            if (policy.Name == section.UseCors?.DefaultPolicy)
-                                opts.AddDefaultPolicy(AspNetUtil.GetPolicyBuilder(policy));
-                            else
-                                opts.AddPolicy(policy.Name, AspNetUtil.GetPolicyBuilder(policy));
-                        }
+                        if (policy.Name == section.UseCors?.DefaultPolicy)
+                            opts.AddDefaultPolicy(AspNetUtil.GetPolicyBuilder(policy));
+                        else
+                            opts.AddPolicy(policy.Name, AspNetUtil.GetPolicyBuilder(policy));
                     }
-                });
-                LogUtil.Debug($"Cors 配置启动");
-            }
+                }
+            });
+            LogUtil.Info($"注册 Cors");
             return services;
         }
         /// <summary>
@@ -234,7 +234,7 @@ namespace TinyFx
                     //new MediaTypeApiVersionReader("x-api-version"),
                     );
                 });
-                LogUtil.Trace($"ApiVersioning 配置启动");
+                LogUtil.Trace($"注册 ApiVersioning");
             }
             return services;
         }
@@ -247,62 +247,62 @@ namespace TinyFx
         public static IServiceCollection AddSwaggerGenEx(this IServiceCollection services)
         {
             var section = ConfigUtil.GetSection<AspNetSection>();
-            if (section != null && section.Swagger != null && section.Swagger.Enabled)
-            {
-                if (section.UseApiVersioning)
-                {
-                    services.AddVersionedApiExplorer(setup =>
-                    {
-                        setup.GroupNameFormat = "'v'VVV";
-                        setup.SubstituteApiVersionInUrl = true;
-                    });
-                }
+            if (section == null || section.Swagger == null || !section.Swagger.Enabled)
+                return services;
 
-                services.AddEndpointsApiExplorer();
-                services.AddSwaggerGen(opts =>
+            if (section.UseApiVersioning)
+            {
+                services.AddVersionedApiExplorer(setup =>
                 {
-                    if (section.Swagger.UseSchemaFullName)
-                        opts.CustomSchemaIds(x => x.FullName?.Replace('+', '-'));
-                    var scheme = new OpenApiSecurityScheme()
-                    {
-                        Description = "Authorization header. \r\nExample: 'Bearer 12345abcdef'",
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Authorization"
-                        },
-                        Scheme = "oauth2",
-                        Name = "Authorization",
-                        In = ParameterLocation.Header,
-                        Type = SecuritySchemeType.ApiKey,
-                    };
-                    opts.AddSecurityDefinition("Authorization", scheme);
-                    opts.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                    {
-                        [scheme] = new List<string>()
-                    });
-                    opts.IncludeXmlComments(() =>
-                        {
-                            var xmlFiles = new List<string>();
-                            foreach (var asm in AssemblyLoadContext.Default.Assemblies)
-                            {
-                                if (asm.IsDynamic || asm.GetName().GetPublicKey()?.Length > 0)
-                                    continue;
-                                var name = $"{Path.GetFileNameWithoutExtension(asm.Location)}.xml";
-                                var path = Path.Combine(AppContext.BaseDirectory, name);
-                                if (File.Exists(path))
-                                    xmlFiles.Add(path);
-                            }
-                            var xmlParser = new XmlDocumentParser(xmlFiles);
-                            return xmlParser.Document;
-                        }, true);
+                    setup.GroupNameFormat = "'v'VVV";
+                    setup.SubstituteApiVersionInUrl = true;
                 });
-                if (section.UseApiVersioning)
-                {
-                    services.ConfigureOptions<ConfigureSwaggerOptions>();
-                }
-                LogUtil.Debug($"Swagger 配置启动");
             }
+
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(opts =>
+            {
+                if (section.Swagger.UseSchemaFullName)
+                    opts.CustomSchemaIds(x => x.FullName?.Replace('+', '-'));
+                var scheme = new OpenApiSecurityScheme()
+                {
+                    Description = "Authorization header. \r\nExample: 'Bearer 12345abcdef'",
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Authorization"
+                    },
+                    Scheme = "oauth2",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                };
+                opts.AddSecurityDefinition("Authorization", scheme);
+                opts.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                {
+                    [scheme] = new List<string>()
+                });
+                opts.IncludeXmlComments(() =>
+                {
+                    var xmlFiles = new List<string>();
+                    foreach (var asm in AssemblyLoadContext.Default.Assemblies)
+                    {
+                        if (asm.IsDynamic || asm.GetName().GetPublicKey()?.Length > 0)
+                            continue;
+                        var name = $"{Path.GetFileNameWithoutExtension(asm.Location)}.xml";
+                        var path = Path.Combine(AppContext.BaseDirectory, name);
+                        if (File.Exists(path))
+                            xmlFiles.Add(path);
+                    }
+                    var xmlParser = new XmlDocumentParser(xmlFiles);
+                    return xmlParser.Document;
+                }, true);
+            });
+            if (section.UseApiVersioning)
+            {
+                services.ConfigureOptions<ConfigureSwaggerOptions>();
+            }
+            LogUtil.Info($"注册 Swagger");
             return services;
         }
 
@@ -334,7 +334,7 @@ namespace TinyFx
                     // 处理jwt事件
                     x.Events = new TinyJwtBearerEvents();
                 });
-                LogUtil.Trace($"JwtAuth 配置启动");
+                LogUtil.Debug($"注册 JwtAuth");
             }
 
             return services;
@@ -349,106 +349,106 @@ namespace TinyFx
         public static IServiceCollection AddSessionAndCookieEx(this IServiceCollection services)
         {
             var section = ConfigUtil.GetSection<SessionAndCookieSection>();
-            if (section != null && (section.UseSession || section.UseCookieIdentity))
+            if (section == null || (!section.UseSession && !section.UseCookieIdentity))
+                return services;
+
+            var appName = !string.IsNullOrEmpty(section.ApplicationName)
+                ? section.ApplicationName : ConfigUtil.Project.ProjectId;
+
+            // 配置数据保护和应用程序名称(分布式session和cookie)
+            var dpb = services.AddDataProtection().SetApplicationName(appName);
+            var redisConnStr = AspNetHost.GetDataProtectionRedisConnectionString(section.RedisConnectionStringName);
+            if (!string.IsNullOrEmpty(redisConnStr))
             {
-                var appName = !string.IsNullOrEmpty(section.ApplicationName)
-                    ? section.ApplicationName : ConfigUtil.Project.ProjectId;
+                dpb.PersistKeysToStackExchangeRedis(RedisUtil.GetRedisByConnectionString(redisConnStr)
+                    , "DataProtection-Keys");
+            }
+            else
+            {
+                dpb.PersistKeysToFileSystem(new DirectoryInfo(AppContext.BaseDirectory));
+            }
 
-                // 配置数据保护和应用程序名称(分布式session和cookie)
-                var dpb = services.AddDataProtection().SetApplicationName(appName);
-                var redisConnStr = AspNetHost.GetDataProtectionRedisConnectionString(section.RedisConnectionStringName);
-                if (!string.IsNullOrEmpty(redisConnStr))
-                {
-                    dpb.PersistKeysToStackExchangeRedis(RedisUtil.GetRedisByConnectionString(redisConnStr)
-                        , "DataProtection-Keys");
-                }
-                else
-                {
-                    dpb.PersistKeysToFileSystem(new DirectoryInfo(AppContext.BaseDirectory));
-                }
-
-                // 配置Cookie登录
-                if (section.UseCookieIdentity)
-                {
-                    services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                        .AddCookie(opts =>
-                        {
-                            opts.SlidingExpiration = true; //自动延期
-                            opts.Cookie.HttpOnly = true; //禁止js访问
-                            opts.Cookie.IsEssential = true;//绕过GDPR
-
-                            opts.Cookie.Name = $".{appName}.Identity";
-                            opts.ExpireTimeSpan = (section.CookieTimeout == 0)
-                                ? TimeSpan.FromDays(3)
-                                : TimeSpan.FromDays(section.CookieTimeout);
-                            opts.Cookie.Path = "/";// 跨基路径共享
-                            if (!string.IsNullOrEmpty(section.Domain))//跨不同子域共享 .xxx.com
-                                opts.Cookie.Domain = section.Domain;
-                            opts.Cookie.SameSite = section.SameSiteMode;
-                            opts.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-                        });
-                }
-
-                // 配置Sesion
-                if (section.UseSession)
-                {
-                    services.AddSession(opts =>
+            // 配置Cookie登录
+            if (section.UseCookieIdentity)
+            {
+                services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                    .AddCookie(opts =>
                     {
+                        opts.SlidingExpiration = true; //自动延期
                         opts.Cookie.HttpOnly = true; //禁止js访问
                         opts.Cookie.IsEssential = true;//绕过GDPR
 
-                        opts.Cookie.Name = $".{appName}.Session";
-                        opts.IdleTimeout = (section.SessionTimeout == 0)
-                                    ? TimeSpan.FromMinutes(20)
-                                    : TimeSpan.FromMinutes(section.SessionTimeout);
-                        opts.Cookie.Path = "/";
-                        if (!string.IsNullOrEmpty(section.Domain))
+                        opts.Cookie.Name = $".{appName}.Identity";
+                        opts.ExpireTimeSpan = (section.CookieTimeout == 0)
+                            ? TimeSpan.FromDays(3)
+                            : TimeSpan.FromDays(section.CookieTimeout);
+                        opts.Cookie.Path = "/";// 跨基路径共享
+                        if (!string.IsNullOrEmpty(section.Domain))//跨不同子域共享 .xxx.com
                             opts.Cookie.Domain = section.Domain;
                         opts.Cookie.SameSite = section.SameSiteMode;
                         opts.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                     });
-                }
-
-                LogUtil.Debug("SessionAndRedis 配置启动。session:{session} cookie:{cookie}"
-                    , section.UseSession, section.UseCookieIdentity);
             }
+
+            // 配置Sesion
+            if (section.UseSession)
+            {
+                services.AddSession(opts =>
+                {
+                    opts.Cookie.HttpOnly = true; //禁止js访问
+                    opts.Cookie.IsEssential = true;//绕过GDPR
+
+                    opts.Cookie.Name = $".{appName}.Session";
+                    opts.IdleTimeout = (section.SessionTimeout == 0)
+                                ? TimeSpan.FromMinutes(20)
+                                : TimeSpan.FromMinutes(section.SessionTimeout);
+                    opts.Cookie.Path = "/";
+                    if (!string.IsNullOrEmpty(section.Domain))
+                        opts.Cookie.Domain = section.Domain;
+                    opts.Cookie.SameSite = section.SameSiteMode;
+                    opts.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                });
+            }
+
+            LogUtil.Info("注册 SessionAndRedis。session:{session} cookie:{cookie}"
+                , section.UseSession, section.UseCookieIdentity);
             return services;
         }
         public static IServiceCollection AddResponseCachingEx(this IServiceCollection services)
         {
-            var rcSection = ConfigUtil.GetSection<ResponseCachingSection>();
-            if (rcSection != null && rcSection.Enabled)
+            var section = ConfigUtil.GetSection<ResponseCachingSection>();
+            if (section == null || !section.Enabled)
+                return services;
+
+            if (section.CacheProfiles?.Count > 0)
             {
-                if (rcSection.CacheProfiles?.Count > 0)
-                {
-                    services.AddResponseCaching();
-                }
-                LogUtil.Trace($"ResponseCaching 配置启动");
+                services.AddResponseCaching();
             }
+            LogUtil.Debug($"注册 ResponseCaching");
             return services;
         }
         public static IServiceCollection AddResponseCompressionEx(this IServiceCollection services)
         {
             var section = ConfigUtil.GetSection<AspNetSection>();
-            if (section != null && section.UseResponseCompression)
-            {
-                services.AddResponseCompression(options =>
-                {
-                    options.EnableForHttps = true;
-                    options.Providers.Add<BrotliCompressionProvider>();
-                    options.Providers.Add<GzipCompressionProvider>();
-                });
-                services.Configure<BrotliCompressionProviderOptions>(options =>
-                {
-                    options.Level = CompressionLevel.Fastest;
-                });
+            if (section == null || !section.UseResponseCompression)
+                return services;
 
-                services.Configure<GzipCompressionProviderOptions>(options =>
-                {
-                    options.Level = CompressionLevel.SmallestSize;
-                });
-                LogUtil.Debug($"ResponseCompression 配置启动");
-            }
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<BrotliCompressionProvider>();
+                options.Providers.Add<GzipCompressionProvider>();
+            });
+            services.Configure<BrotliCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Fastest;
+            });
+
+            services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.SmallestSize;
+            });
+            LogUtil.Debug($"注册 ResponseCompression");
             return services;
         }
         public static IServiceCollection AddForwardedHeaders(this IServiceCollection services)

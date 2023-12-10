@@ -11,16 +11,16 @@ namespace TinyFx
         public static IHostBuilder AddRabbitMQEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<RabbitMQSection>();
-            if (section != null && section.Enabled && section.ConnectionStrings != null && section.ConnectionStrings.Count > 0)
-            {
-                builder.ConfigureServices((context, services) =>
-                {
-                    services.AddSingleton(new MQContainer());
-                    services.AddHostedService<MQHostedService>();
-                });
+            if (section == null || !section.Enabled || section.ConnectionStrings == null || section.ConnectionStrings.Count == 0)
+                return builder;
 
-                LogUtil.Debug($"RabbitMQ 配置启动");
-            }
+            builder.ConfigureServices((context, services) =>
+            {
+                services.AddSingleton(new MQContainer());
+                services.AddHostedService<MQHostedService>();
+            });
+
+            LogUtil.Debug($"RabbitMQ 配置启动");
             return builder;
         }
     }

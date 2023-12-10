@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using TinyFx.Configuration;
+using TinyFx.Logging;
 using TinyFx.OAuth;
 
 namespace TinyFx
@@ -10,13 +11,14 @@ namespace TinyFx
         public static IHostBuilder AddOAuthEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<OAuthSection>();
-            if (section != null)
+            if (section == null) return builder;
+
+            builder.ConfigureServices((context, services) =>
             {
-                builder.ConfigureServices((context, services) =>
-                {
-                    services.AddSingleton<OAuthService>();
-                });
-            }
+                services.AddSingleton<OAuthService>();
+            });
+
+            LogUtil.Debug($"OAuth 配置启动");
             return builder;
         }
     }
