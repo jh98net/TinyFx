@@ -60,7 +60,7 @@ namespace TinyFx
                         ? ihttp.HttpContext.RequestServices
                         : null;
                 });
-                LogUtil.Info("服务已启动 => ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) IsDebug:{IsDebug} IsStaging:{IsStaging} URL:{Urls} PathBase:{PathBase}"
+                LogUtil.Warning("服务已启动 => ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) IsDebug:{IsDebug} IsStaging:{IsStaging} URL:{Urls} PathBase:{PathBase}"
                     , ConfigUtil.Project?.ProjectId
                     , ConfigUtil.Environment
                     , ConfigUtil.EnvironmentString

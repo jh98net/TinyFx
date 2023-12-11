@@ -27,13 +27,11 @@ namespace TinyFx
                     case DbCachingPublishMode.Redis:
                         var redisConsumer = new RedisDbCacheChangeConsumer(section.RedisConnectionStringName);
                         redisConsumer.Register();
-                        LogUtil.Info("DbCaching RedisDbCacheChangeConsumer 注册");
                         services.AddSingleton(redisConsumer);
                         break;
                     case DbCachingPublishMode.MQ:
                         var mqConsumer = new MQDbCacheChangeConsumer(section.MQConnectionStringName);
                         mqConsumer.Register().ConfigureAwait(false).GetAwaiter().GetResult();
-                        LogUtil.Info("DbCaching MQDbCacheChangeConsumer 注册");
                         services.AddSingleton(mqConsumer);
                         break;
                 }
@@ -42,8 +40,8 @@ namespace TinyFx
                     services.AddHostedService<DbCachingHostedService>();
                 }
             });
-
-            LogUtil.Info($"DbCaching 配置完成");
+            var consumer = section.PublishMode == DbCachingPublishMode.Redis ? "RedisDbCacheChangeConsumer" : "MQDbCacheChangeConsumer";
+            LogUtil.Info($"DbCaching 配置完成。ChangeConsumer: {consumer}");
             return builder;
         }
     }

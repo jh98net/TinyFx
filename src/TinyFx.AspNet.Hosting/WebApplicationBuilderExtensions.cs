@@ -334,7 +334,7 @@ namespace TinyFx
                     // 处理jwt事件
                     x.Events = new TinyJwtBearerEvents();
                 });
-                LogUtil.Debug($"注册 JwtAuth");
+                LogUtil.Info($"注册 JwtAuth");
             }
 
             return services;

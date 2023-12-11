@@ -4,7 +4,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>MySQL组件</Description>
-    <Version>3.12.10</Version>
+    <Version>3.12.11</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MySql.Data" Version="8.2.0" />
