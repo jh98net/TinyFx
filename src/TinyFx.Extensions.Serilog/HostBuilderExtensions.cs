@@ -44,7 +44,7 @@ namespace TinyFx
             // 启动Serilog内部调试
             //Serilog.Debugging.SelfLog.Enable(msg => System.Diagnostics.Debug.WriteLine(msg));
             //Serilog.Debugging.SelfLog.Enable(Console.Error);
-            LogUtil.Info("Serilog 配置启动");
+            LogUtil.Info("Serilog 配置完成");
             return builder;
         }
         private static bool SetELKSinkIndexFormat(IConfiguration config)

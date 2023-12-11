@@ -132,7 +132,7 @@ namespace TinyFx
                             options.CacheProfiles.Add(profile.Key, profile.Value);
                         }
                     }
-                    LogUtil.Trace($"ResponseCaching 配置启动");
+                    LogUtil.Trace($"ResponseCaching 配置完成");
                 }
             }).AddJsonOptions(options =>
             {

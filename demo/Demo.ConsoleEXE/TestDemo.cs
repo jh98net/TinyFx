@@ -6,7 +6,7 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var id = ShortIdUtil.Generate(15);
+            Console.WriteLine(string.Join('|',null));
         }
     }
 }

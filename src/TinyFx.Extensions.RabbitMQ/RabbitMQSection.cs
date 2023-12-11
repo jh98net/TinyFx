@@ -35,15 +35,16 @@ namespace TinyFx.Configuration
             base.Bind(configuration);
             ConnectionStrings = configuration.GetSection("ConnectionStrings")
                 .Get<Dictionary<string, MQConnectionStringElement>>() ?? new();
-            ConnectionStrings.ForEach(x => {
+            ConnectionStrings.ForEach(x =>
+            {
                 x.Value.Name = x.Key;
             });
 
             if (string.IsNullOrEmpty(DefaultConnectionStringName) && ConnectionStrings.Count == 1)
                 DefaultConnectionStringName = ConnectionStrings.First().Key;
             // Assemblies
-            ConsumerAssemblies.Clear();
-            ConsumerAssemblies = configuration?.GetSection("ConsumerAssemblies").Get<List<string>>();
+            ConsumerAssemblies = configuration?.GetSection("ConsumerAssemblies").Get<List<string>>() 
+                ?? new List<string>();
         }
     }
 }

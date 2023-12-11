@@ -327,8 +327,7 @@
         "ConfigId": "",
         "TableName": "",
         "Interval": 60 //刷新间隔，分钟
-      },
-
+      }
     ]
   },
 

@@ -27,7 +27,7 @@ namespace TinyFx
                     services.TryAddSingleton(AutoMapperUtil.Mapper);
                 }
             });
-            LogUtil.Info($"AutoMapper 配置启动");
+            LogUtil.Info($"AutoMapper 配置完成。Assemblies:{string.Join('|', section.Assemblies)}");
             return builder;
         }
     }

@@ -6,7 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Extensions.RabbitMQ;
+using TinyFx.Logging;
 using TinyFx.Reflection;
+using static System.Collections.Specialized.BitVector32;
 
 namespace TinyFx.AspNet.Hosting
 {
@@ -38,11 +40,18 @@ namespace TinyFx.AspNet.Hosting
 
         public void ConfigureServices(WebApplicationBuilder webApplicationBuilder)
         {
+            if (_startups.Count == 0)
+                return;
+            var asms = ConfigUtil.GetSection<AspNetSection>()?.HostingStartupAssemblies;
+            var asmStr =  string.Join('|', asms);
+            LogUtil.Info($"注册 TinyFxHostingStartupLoader。HostingStartupAssemblies:{asmStr}");
             _startups.ForEach(x => x.ConfigureServices(webApplicationBuilder));
         }
 
         public void Configure(WebApplication webApplication)
         {
+            if (_startups.Count == 0)
+                return;
             _startups.ForEach(x => x.Configure(webApplication));
         }
     }

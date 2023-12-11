@@ -39,19 +39,22 @@ namespace TinyFx
                     options.ConfigurationOptions = ConfigurationOptions.Parse(connStr);
                     options.InstanceName = $"{ConfigUtil.Project.ProjectId}:";
                 });
-                services.AddSingleton(sp =>
+                if(section.ConsumerAssemblies?.Count > 0)
                 {
-                    var ret = new ConsumerContainer(section.ConsumerAssemblies);
-                    //redis 资源释放
-                    var lifetime = sp.GetService<IHostApplicationLifetime>();
-                    lifetime?.ApplicationStopped.Register(() =>
+                    services.AddSingleton(sp =>
                     {
-                        RedisUtil.ReleaseAllRedis();
+                        var ret = new ConsumerContainer(section.ConsumerAssemblies);
+                        //redis 资源释放
+                        var lifetime = sp.GetService<IHostApplicationLifetime>();
+                        lifetime?.ApplicationStopped.Register(() =>
+                        {
+                            RedisUtil.ReleaseAllRedis();
+                        });
+                        return ret;
                     });
-                    return ret;
-                });
+                }
             });
-            LogUtil.Info("Redis 配置启动");
+            LogUtil.Info($"Redis 配置完成。ConsumerAssemblies: {string.Join('|', section.ConsumerAssemblies)}");
             return builder;
         }
     }
