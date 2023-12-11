@@ -1,4 +1,5 @@
-﻿using TinyFx.ShortId;
+﻿using Demo.ConsoleEXE;
+using TinyFx.ShortId;
 
 namespace TinyFx.Demos
 {
@@ -6,7 +7,7 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            Console.WriteLine(string.Join('|',null));
+            var a =DbCacheUtil.GetApp("best_shooter");
         }
     }
 }

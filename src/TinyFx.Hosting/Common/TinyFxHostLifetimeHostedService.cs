@@ -40,7 +40,7 @@ namespace TinyFx
 
         private async Task OnStarted()
         {
-            _logger.LogInformation($"IHostApplicationLifetime.ApplicationStarted 被调用");
+            _logger.LogWarning($"[IHostApplicationLifetime.ApplicationStarted] 服务已启动");
             // 此处代码在Host启动后执行
             await TinyFxHost.OnStartedEvents.ForEachAsync(async x =>
             {
@@ -50,7 +50,7 @@ namespace TinyFx
 
         private async Task OnStopping()
         {
-            _logger.LogInformation($"IHostApplicationLifetime.ApplicationStopping 被调用");
+            _logger.LogWarning($"[IHostApplicationLifetime.ApplicationStopping] 服务将停止");
             // 此处代码在Host停止动作开始时执行
             await TinyFxHost.OnStoppingEvents.ForEachAsync(async x =>
             {
@@ -60,7 +60,7 @@ namespace TinyFx
 
         private async Task OnStopped()
         {
-            _logger.LogInformation($"IHostApplicationLifetime.ApplicationStopped 被调用");
+            _logger.LogWarning($"[IHostApplicationLifetime.ApplicationStopped] 服务已停止");
             // 此处代码在Host停止后执行
             await TinyFxHost.OnStoppedEvents.ForEachAsync(async x =>
             {

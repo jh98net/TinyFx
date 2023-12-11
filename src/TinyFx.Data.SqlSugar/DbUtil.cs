@@ -112,10 +112,6 @@ namespace TinyFx.Data.SqlSugar
         }
         internal static void InitDb(ISqlSugarClient db, ConnectionElement config)
         {
-            // split table
-            db.CurrentConnectionConfig.ConfigureExternalServices.SplitTableService
-                = DIUtil.GetRequiredService<IDbSplitProvider>().SplitTable();
-
             // log
             if (config.LogEnabled)
             {

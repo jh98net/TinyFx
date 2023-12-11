@@ -46,8 +46,19 @@ namespace TinyFx
                     {
                         DbUtil.InitDb(db, config);
                     });
+                    // 分库分表
+                    ret.CurrentConnectionConfig.ConfigureExternalServices.SplitTableService
+                        = sp.GetRequiredService<IDbSplitProvider>().SplitTable();
+
                     if (!config.SlaveEnabled)
                         ret.Ado.IsDisableMasterSlaveSeparation = true;
+
+                    // 资源释放
+                    //var lifetime = sp.GetService<IHostApplicationLifetime>();
+                    //lifetime?.ApplicationStopping.Register(() =>
+                    //{
+                    //    ret.Dispose();
+                    //});
                     return ret;
                 });
             });

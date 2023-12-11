@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Reflection;
 
 namespace TinyFx
 {
@@ -43,9 +44,9 @@ namespace TinyFx
         private static bool _isBuilded = false;
         public static void InitServiceProvider(IServiceProvider provider, Func<IServiceProvider, IServiceProvider> func)
         {
-            _isBuilded = true;
             _serviceProvider = provider ?? Services.BuildServiceProvider();
             _httpServiceProviderFunc = func;
+            _isBuilded = true;
         }
         private static IServiceProvider GetServiceProvider()
         {
@@ -53,7 +54,7 @@ namespace TinyFx
             if (!_isBuilded) 
                 return Services.BuildServiceProvider();
             // 运行中
-            if (_serviceProvider == null)
+            if (_serviceProvider == null || IsServiceProviderDisposed(_serviceProvider))
                 _serviceProvider = Services.BuildServiceProvider();
 
             var ret = _httpServiceProviderFunc?.Invoke(_serviceProvider);
@@ -61,6 +62,8 @@ namespace TinyFx
                 ret = _serviceProvider.CreateScope().ServiceProvider;
             return ret;
         }
+        private static bool IsServiceProviderDisposed(IServiceProvider sp)
+           => (bool)(sp.GetType()?.GetField("_disposed", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(sp) ?? true);
         #endregion
 
         #region GetService

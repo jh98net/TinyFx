@@ -1,4 +1,5 @@
 ﻿using Demo.WebAPI.BLL.Demo;
+using Demo.WebAPI.DAL;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -20,6 +21,7 @@ using TinyFx.AspNet.Filters;
 using TinyFx.AspNet.RequestLogging;
 using TinyFx.AspNet.ResponseCaching;
 using TinyFx.Configuration;
+using TinyFx.DbCaching;
 using TinyFx.Extensions.IDGenerator;
 using TinyFx.Logging;
 using TinyFx.Net;
@@ -49,6 +51,16 @@ namespace Demo.WebAPI.Apis
             if (ahash1 != ahash2 || bhash1 != bHash2)
                 throw new Exception("DI哈希不同");
         }
+        [HttpGet]
+        [AllowAnonymous]
+        public string Test()
+        {
+            var a = DbCachingUtil.GetSingle<Ss_appEO>("best_shooter");
+            return "";
+        }
+
+
+
         [HttpGet]
         [AllowAnonymous]
         public string GetJwtToken()
