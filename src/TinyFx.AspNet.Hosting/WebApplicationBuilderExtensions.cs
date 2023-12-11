@@ -410,7 +410,7 @@ namespace TinyFx
                 });
             }
 
-            LogUtil.Info("注册 SessionAndRedis。session:{session} cookie:{cookie}"
+            LogUtil.Info("注册 SessionAndRedis [UseSession: {session} UseCookie: {cookie}]"
                 , section.UseSession, section.UseCookieIdentity);
             return services;
         }

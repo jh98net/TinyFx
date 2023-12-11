@@ -35,11 +35,11 @@ namespace TinyFx.Hosting.Common
             if (builder != null)
             {
                 ret = builder.Build();
-                LogUtil.Info("加载nacos配置源");
+                LogUtil.Info("配置管理--加载nacos配置源");
             }
             else
             {
-                LogUtil.Info($"加载appsettings.{EnvString}.json文件配置源");
+                LogUtil.Info($"配置管理--加载appsettings.{EnvString}.json文件配置源");
             }
             return ret;
         }
