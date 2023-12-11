@@ -4,7 +4,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>TinyFx nacos组件</Description>
-    <Version>3.12.8</Version>
+    <Version>3.12.9</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="nacos-sdk-csharp.AspNetCore" Version="1.3.5" />
