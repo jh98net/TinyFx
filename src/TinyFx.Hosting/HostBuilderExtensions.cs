@@ -29,6 +29,7 @@ namespace TinyFx
             //
             builder.ConfigureServices((context, services) =>
             {
+                services.AddHostedService<TinyFxHostLifetimeHostedService>();
                 //Serilog
                 services.AddLogging(builder => builder.AddSerilog(dispose: true));
                 services.AddScoped<ILogBuilder>((sp) =>
@@ -38,7 +39,6 @@ namespace TinyFx
                     return ret;
                 });
                 services.AddDistributedMemoryCache();
-                services.AddHostedService<TinyFxHostLifetimeHostedService>();
                 // DI
                 DIUtil.InitServices(services);
             });

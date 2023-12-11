@@ -51,7 +51,7 @@ namespace TinyFx
                     return ret;
                 });
             });
-            LogUtil.Debug("Redis 配置启动");
+            LogUtil.Info("Redis 配置启动");
             return builder;
         }
     }
