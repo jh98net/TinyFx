@@ -11,11 +11,21 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Configuration.Common;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace TinyFx.Extensions.Nacos
 {
     public class NacosConfigSourceProvider : IConfigSourceProvider
     {
+        public string GetServerAddresses(IConfiguration config)
+        {
+            var servers = config.GetSection("Nacos:ServerAddresses")?.Get<List<string>>();
+            return servers != null ? string.Join('|', servers) : null;
+        }
+        
+        public string GetNamespace(IConfiguration config)
+            => config.GetValue("Nacos:Namespace", "");
+
         public IConfigurationBuilder CreateConfigBuilder(IHostBuilder hostBuilder, IConfiguration config)
         {
             IConfigurationBuilder ret = null;

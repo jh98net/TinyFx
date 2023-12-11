@@ -31,15 +31,16 @@ namespace TinyFx.Hosting.Common
         public IConfiguration GetConfiguration()
         {
             IConfiguration ret = _fileConfigBuilder.Build(EnvString);
-            var builder = new NacosConfigSourceProvider().CreateConfigBuilder(_builder, ret);
+            var provider = new NacosConfigSourceProvider();
+            var builder = provider.CreateConfigBuilder(_builder, ret);
             if (builder != null)
             {
+                LogUtil.Info($"配置管理 [加载nacos配置源] ServerAddresses: {provider.GetServerAddresses(ret)} Namespace: {provider.GetNamespace(ret)}");
                 ret = builder.Build();
-                LogUtil.Info("配置管理 [加载nacos配置源]");
             }
             else
             {
-                LogUtil.Info($"配置管理 [加载appsettings.{EnvString}.json文件配置源]");
+                LogUtil.Info($"配置管理 [加载文件配置源] appsettings.{EnvString}.json");
             }
             return ret;
         }
