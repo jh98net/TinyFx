@@ -18,7 +18,7 @@ namespace TinyFx
                 services.AddSingleton<OAuthService>();
             });
 
-            LogUtil.Debug($"OAuth 配置");
+            LogUtil.Info($"OAuth 配置完成");
             return builder;
         }
     }

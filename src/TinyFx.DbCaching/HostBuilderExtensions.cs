@@ -43,7 +43,7 @@ namespace TinyFx
                 }
             });
 
-            LogUtil.Debug($"DbCaching 配置完成");
+            LogUtil.Info($"DbCaching 配置完成");
             return builder;
         }
     }

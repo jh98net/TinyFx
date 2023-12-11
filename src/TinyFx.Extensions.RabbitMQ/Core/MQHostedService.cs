@@ -37,7 +37,7 @@ namespace TinyFx.Extensions.RabbitMQ
             };
             _timer.Start();
             
-            LogUtil.Info("RabbitMQ资源已加载: MQContainer.InitAsync()");
+            //LogUtil.Info("RabbitMQ资源已加载: MQContainer.InitAsync()");
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
@@ -45,7 +45,7 @@ namespace TinyFx.Extensions.RabbitMQ
             _timer.Stop();
             _timer.Dispose();
             _container.Dispose();
-            LogUtil.Debug("RabbitMQ释放资源: MQContainer.Dispose()");
+            LogUtil.Info("RabbitMQ资源已释放: MQContainer.Dispose()");
             return Task.CompletedTask;
         }
     }

@@ -448,7 +448,7 @@ namespace TinyFx
             {
                 options.Level = CompressionLevel.SmallestSize;
             });
-            LogUtil.Debug($"注册 ResponseCompression");
+            LogUtil.Info($"注册 ResponseCompression");
             return services;
         }
         public static IServiceCollection AddForwardedHeaders(this IServiceCollection services)
