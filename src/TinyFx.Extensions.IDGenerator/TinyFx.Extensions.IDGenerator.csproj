@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>IDGenerator 雪花算法</Description>
-    <Version>3.12.16</Version>
+    <Version>3.12.17</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
