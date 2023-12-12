@@ -39,6 +39,7 @@ namespace TinyFx
                     .Enrich.WithProperty(SerilogUtil.MachineIPPropertyName, NetUtil.GetLocalIP())
                     //.Enrich.WithProperty(SerilogUtil.IndexNamePropertyName, ConfigUtil.Project?.ProjectId.Replace('.', '_').ToLowerInvariant())
                     .Enrich.WithTemplateHash();
+                Log.Logger = configuration.CreateLogger();
             }, true);
 
             // 启动Serilog内部调试
@@ -57,7 +58,7 @@ namespace TinyFx
                 {
                     var projectId = ConfigUtil.Project.ProjectId.Replace('.', '_');
                     var env = ConfigUtil.Environment != EnvironmentNames.Production
-                        ? ConfigUtil.EnvironmentString.ToLower().Replace('.', '_')
+                        ? ConfigUtil.EnvironmentString?.ToLower().Replace('.', '_')
                         : null;
                     config["Serilog:WriteTo:ELKSink:Args:indexFormat"]
                         = $"idx-{projectId}{env}-{{0:yyyy.MM.dd}}";

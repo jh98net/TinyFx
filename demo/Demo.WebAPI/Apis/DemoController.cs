@@ -55,7 +55,8 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public string Test()
         {
-            var a = DbCachingUtil.GetSingle<Ss_appEO>("best_shooter");
+            LogUtil.Info("aaaaa");
+            LogUtil.GetContextLog().SetLevel(LogLevel.Information).AddMessage("bbb").Save();
             return "";
         }
 
