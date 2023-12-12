@@ -99,7 +99,7 @@ namespace TinyFx.Logging
             msg += "[{Flag}]";
             args.Add(Flag);
             msg += "{Message}";
-            args.Add(Message.ToString());
+            args.Add(Message.ToString().TrimEnd(Environment.NewLine));
             fields.ForEach(x =>
             {
                 msg += $"{{{x.field}}}";

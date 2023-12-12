@@ -50,8 +50,6 @@ namespace TinyFx.Logging
             => Factory?.CreateLogger(categoryName);
         public static ILogger CreateLogger(Type type)
             => CreateLogger(type.Name);
-        public static LoggerWrapper Create<T>()
-            => new LoggerWrapper(Factory?.CreateLogger<T>());
 
         /// <summary>
         /// 记录日志

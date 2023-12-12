@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
 using System.Threading;
@@ -25,22 +26,25 @@ namespace TinyFx
                 throw new ArgumentNullException(nameof(builder));
             if (Serilog.Log.Logger == null)
                 SerilogUtil.CreateBootstrapLogger();
-            
+            builder.ConfigureLogging(logger => logger.ClearProviders());
             //
             builder.ConfigureServices((context, services) =>
             {
-                services.AddHostedService<TinyFxHostLifetimeHostedService>();
-                //Serilog
-                services.AddLogging(builder => builder.AddSerilog(dispose: true));
+                // DI
+                DIUtil.InitServices(services);
+                // ILoggerFactory
+                services.AddSingleton(new LoggerFactory().AddSerilog(Log.Logger));
                 services.AddScoped<ILogBuilder>((sp) =>
                 {
                     var ret = new LogBuilder("TINYFX_CONTEXT");
                     ret.IsContextLog = true;
                     return ret;
                 });
+
+                // Lifetime
+                services.AddHostedService<TinyFxHostLifetimeHostedService>();
+                // DistributedMemoryCache
                 services.AddDistributedMemoryCache();
-                // DI
-                DIUtil.InitServices(services);
             });
 
             // InitConfiguration

@@ -57,6 +57,9 @@ namespace Demo.WebAPI.Apis
         {
             LogUtil.Info("aaaaa");
             LogUtil.GetContextLog().SetLevel(LogLevel.Information).AddMessage("bbb").Save();
+            LogUtil.CreateLogger<DemoController>().LogInformation("ddd");
+            LogUtil.CreateLogger(typeof(DemoController).FullName).LogInformation("eee");
+            Serilog.Log.Logger.Information("fff");
             return "";
         }
 
