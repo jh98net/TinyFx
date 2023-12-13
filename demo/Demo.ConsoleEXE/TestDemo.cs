@@ -7,7 +7,9 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var a =DbCacheUtil.GetApp("best_shooter");
+            long amount = 960400;
+            decimal money = amount / (decimal)10000;
+
         }
     }
 }
