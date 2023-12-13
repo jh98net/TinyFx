@@ -42,7 +42,7 @@ namespace TinyFx.AspNet.Hosting
         {
             var opts = DIUtil.GetRequiredService<IOptions<CorsOptions>>();
             var section = ConfigUtil.GetSection<CorsSection>();
-            section?.AddPolicies(opts.Value);
+            section?.AddPolicies(opts.Value, true);
         }
     }
 }

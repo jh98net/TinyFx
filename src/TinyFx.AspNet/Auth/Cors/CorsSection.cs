@@ -11,6 +11,7 @@ using TinyFx.AspNet;
 using TinyFx.AspNet.Auth.Cors;
 using TinyFx.Collections;
 using TinyFx.Configuration;
+using TinyFx.Logging;
 using TinyFx.Reflection;
 using static System.Collections.Specialized.BitVector32;
 
@@ -90,18 +91,25 @@ namespace TinyFx.Configuration
             }
             return ret.Values.ToList();
         }
-        public void AddPolicies(CorsOptions opts)
+        public void AddPolicies(CorsOptions opts, bool isUpdate = false)
         {
             var policies = GetPolicies();
             if (policies?.Count > 0)
             {
+                var log = new LogBuilder("Cors").SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
+                if (isUpdate)
+                    log.AddMessage("更新跨域设置");
+                else
+                    log.AddMessage("初始化跨域设置");
                 foreach (var policy in policies)
                 {
+                    log.AddField($"Origins.{policy.Name}", policy.Origins);
                     if (policy.Name == UseCors?.DefaultPolicy)
                         opts.AddDefaultPolicy(AspNetUtil.GetPolicyBuilder(policy));
                     else
                         opts.AddPolicy(policy.Name, AspNetUtil.GetPolicyBuilder(policy));
                 }
+                log.Save();
             }
         }
     }

@@ -5,15 +5,15 @@ namespace TinyFx.DbCaching.ChangeConsumers
     [RedisConsumerRegisterIgnore]
     internal class RedisDbCacheChangeConsumer : RedisSubscribeConsumer<DbCacheChangeMessage>
     {
-        private DbCachingUpdator _executor;
+        private DbCachingUpdator _uploader;
         public RedisDbCacheChangeConsumer(string redisConnectionStringName)
         {
             ConnectionStringName = redisConnectionStringName;
-            _executor = new DbCachingUpdator(DbCachingPublishMode.Redis);
+            _uploader = new DbCachingUpdator(DbCachingPublishMode.Redis);
         }
         protected override async Task OnMessage(DbCacheChangeMessage message)
         {
-            await _executor.Execute(message);
+            await _uploader.Execute(message);
         }
         protected override Task OnError(DbCacheChangeMessage message, Exception ex)
         {

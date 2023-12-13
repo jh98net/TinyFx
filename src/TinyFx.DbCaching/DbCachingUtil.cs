@@ -1,4 +1,5 @@
 ﻿using Dm.parser;
+using EasyNetQ;
 using SqlSugar;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
@@ -172,6 +173,19 @@ namespace TinyFx.DbCaching
         public static async Task<List<DbCacheItem>> GetAllCacheItem(string redisConnectionStringName = null)
         {
             return await DbCacheDataDCache.Create(redisConnectionStringName).GetAllCacheItem();
+        }
+
+        /// <summary>
+        /// 获取缓存项的redis值
+        /// </summary>
+        /// <param name="configId"></param>
+        /// <param name="tableName"></param>
+        /// <param name="redisConnectionStringName"></param>
+        /// <returns></returns>
+        public static async Task<List<string>> GetCacheItemValue(string configId, string tableName, string redisConnectionStringName = null)
+        {
+            var dataProvider = new PageDataProvider(configId, tableName, redisConnectionStringName);
+            return await dataProvider.GetRedisValues();
         }
         /// <summary>
         /// 发布更新通知

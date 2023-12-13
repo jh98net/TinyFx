@@ -14,11 +14,11 @@ namespace TinyFx.DbCaching.ChangeConsumers
     {
         public override MQSubscribeMode SubscribeMode => MQSubscribeMode.Multicast;
         private string _connectionStringName;
-        private DbCachingUpdator _executor;
+        private DbCachingUpdator _uploader;
         public MQDbCacheChangeConsumer(string connectionStringName)
         {
             _connectionStringName = connectionStringName;
-            _executor = new DbCachingUpdator(DbCachingPublishMode.MQ);
+            _uploader = new DbCachingUpdator(DbCachingPublishMode.MQ);
         }
         protected override string GetConnectionStringName()
         {
@@ -32,7 +32,7 @@ namespace TinyFx.DbCaching.ChangeConsumers
 
         protected override async Task OnMessage(DbCacheChangeMessage message, CancellationToken cancellationToken)
         {
-            await _executor.Execute(message);
+            await _uploader.Execute(message);
         }
     }
 }
