@@ -42,44 +42,7 @@ namespace TinyFx.AspNet.Hosting
         {
             var opts = DIUtil.GetRequiredService<IOptions<CorsOptions>>();
             var section = ConfigUtil.GetSection<CorsSection>();
-
-            //
-            var policies = new Dictionary<string, CorsPolicyElement>();
-            foreach (var item in section.Policies)
-            {
-                policies.Add(item.Key, item.Value);
-            }
-
-            //
-            var newPolicies = GetPolicies(newList);
-            newPolicies.ForEach(x =>
-            {
-                x.Name ??= "default";
-                if (policies.ContainsKey(x.Name))
-                {
-                    var oldOrigins = policies[x.Name].Origins.Trim().TrimEnd(';');
-                    var newOrigins = $"{oldOrigins};{x.Origins?.Trim()}";
-                    var originsSet = newOrigins.Split(';', StringSplitOptions.RemoveEmptyEntries).ToHashSet();
-                    policies[x.Name].Origins = string.Join(';', originsSet);
-                }
-                else
-                {
-                    policies.Add(x.Name, x);
-                }
-            });
-
-            //
-            foreach (var policy in policies.Values)
-            {
-                if (policy.Name == section.UseCors.DefaultPolicy)
-                {
-                    opts.Value.AddDefaultPolicy(AspNetUtil.GetPolicyBuilder(policy));
-                }
-                else
-                {
-                    opts.Value.AddPolicy(policy.Name, AspNetUtil.GetPolicyBuilder(policy));
-                }
-            }
+            section?.AddPolicies(opts.Value);
         }
     }
 }

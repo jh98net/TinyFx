@@ -27,7 +27,7 @@ namespace TinyFx.Logging
 
         public string Flag { get; set; }
         public StringBuilder Message { get; set; } = new();
-        public ConcurrentBag<(string field, object value)> Fields = new();
+        public ConcurrentDictionary<string, string> Fields = new();
         public Exception Exception { get; set; }
 
         public LogBuilder(LogLevel level = LogLevel.Debug, string flag = null)
@@ -76,9 +76,17 @@ namespace TinyFx.Logging
                 Message.AppendLine(msg);
             return this;
         }
+
+        /// <summary>
+        /// 添加Field
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="value">对象将被json序列化</param>
+        /// <returns></returns>
         public ILogBuilder AddField(string field, object value)
         {
-            Fields.Add((field, value));
+            var valueStr = SerializerUtil.SerializeJsonNet(value);
+            Fields.AddOrUpdate(field, valueStr, (k, v) => $"{v}{Environment.NewLine}{valueStr}");
             return this;
         }
         public ILogBuilder AddException(Exception ex)
@@ -93,17 +101,17 @@ namespace TinyFx.Logging
 
         public void Save()
         {
-            var fields = Fields.ToArray();
             var msg = string.Empty;
-            var args = new List<object>(fields.Length + 2);
+            var args = new List<string>(Fields.Count + 2);
             msg += "[{Flag}]";
             args.Add(Flag);
             msg += "{Message}";
             args.Add(Message.ToString().TrimEnd(Environment.NewLine));
-            fields.ForEach(x =>
+
+            Fields.ForEach(x =>
             {
-                msg += $"{{{x.field}}}";
-                args.Add(x.value);
+                msg += $"{{{x.Key}}}";
+                args.Add(x.Value);
             });
             LogUtil.Log(Level, msg, Exception, args.ToArray());
         }

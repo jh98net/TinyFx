@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,6 +12,7 @@ using TinyFx.AspNet.Auth.Cors;
 using TinyFx.Collections;
 using TinyFx.Configuration;
 using TinyFx.Reflection;
+using static System.Collections.Specialized.BitVector32;
 
 namespace TinyFx.Configuration
 {
@@ -35,12 +37,21 @@ namespace TinyFx.Configuration
         public override void Bind(IConfiguration configuration)
         {
             base.Bind(configuration);
+            
+            // Policies
             Policies = configuration.GetSection("Policies")
                 .Get<Dictionary<string, CorsPolicyElement>>() ?? new();
             Policies.ForEach(x =>
             {
                 x.Value.Name = x.Key;
             });
+
+            // DefaultPolicy
+            if (string.IsNullOrEmpty(UseCors.DefaultPolicy))
+            {
+                UseCors.DefaultPolicy = Policies?.Count == 1
+                    ? Policies.First().Key : "default";
+            }
 
             // PolicyProvider
             if (!string.IsNullOrEmpty(UseCors.PoliciesProvider))
@@ -49,23 +60,9 @@ namespace TinyFx.Configuration
                 if (PoliciesProvider == null)
                     throw new Exception($"配置文件Cors:UseCors:PolicyProvider必须继承ICorsPoliciesProvider. value:{UseCors.PoliciesProvider}");
             }
-            if (string.IsNullOrEmpty(UseCors.DefaultPolicy))
-            {
-                if (Policies?.Count == 1)
-                {
-                    UseCors.DefaultPolicy = Policies.First().Key;
-                }
-                else
-                {
-                    if (Policies.TryGetValue("default", out var v))
-                        UseCors.DefaultPolicy = v.Name;
-                }
-            }
-            if (UseCors.Enabled && string.IsNullOrEmpty(UseCors.DefaultPolicy))
-                throw new Exception("tinyfx配置错误，UseCors.Enabled Policies没有值");
         }
 
-        public List<CorsPolicyElement> GetPolicies()
+        private List<CorsPolicyElement> GetPolicies()
         {
             var ret = new Dictionary<string, CorsPolicyElement>();
             foreach (var item in Policies)
@@ -92,6 +89,20 @@ namespace TinyFx.Configuration
                 });
             }
             return ret.Values.ToList();
+        }
+        public void AddPolicies(CorsOptions opts)
+        {
+            var policies = GetPolicies();
+            if (policies?.Count > 0)
+            {
+                foreach (var policy in policies)
+                {
+                    if (policy.Name == UseCors?.DefaultPolicy)
+                        opts.AddDefaultPolicy(AspNetUtil.GetPolicyBuilder(policy));
+                    else
+                        opts.AddPolicy(policy.Name, AspNetUtil.GetPolicyBuilder(policy));
+                }
+            }
         }
     }
 }

@@ -198,19 +198,9 @@ namespace TinyFx
             if (section == null || !section.UseCors.Enabled)
                 return services;
 
-            var policies = section.GetPolicies();
             services.AddCors(opts =>
             {
-                if (policies?.Count > 0)
-                {
-                    foreach (var policy in policies)
-                    {
-                        if (policy.Name == section.UseCors?.DefaultPolicy)
-                            opts.AddDefaultPolicy(AspNetUtil.GetPolicyBuilder(policy));
-                        else
-                            opts.AddPolicy(policy.Name, AspNetUtil.GetPolicyBuilder(policy));
-                    }
-                }
+                section.AddPolicies(opts);
             });
             LogUtil.Info($"注册 Cors");
             return services;
