@@ -56,8 +56,8 @@ namespace TinyFx
                 if (string.IsNullOrEmpty(idx))
                 {
                     var projectId = ConfigUtil.Project.ProjectId.Replace('.', '_');
-                    var env = ConfigUtil.Environment != EnvironmentNames.Production
-                        ? ConfigUtil.EnvironmentString?.ToLower().Replace('.', '_')
+                    var env = ConfigUtil.Environment != EnvironmentNames.Production && !string.IsNullOrEmpty(ConfigUtil.EnvironmentString)
+                        ? $"-{ConfigUtil.EnvironmentString.ToLower().Replace('.', '_')}"
                         : null;
                     config["Serilog:WriteTo:ELKSink:Args:indexFormat"]
                         = $"idx-{projectId}{env}-{{0:yyyy.MM.dd}}";

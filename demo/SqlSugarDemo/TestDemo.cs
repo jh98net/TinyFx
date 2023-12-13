@@ -13,6 +13,8 @@ namespace SqlSugarDemo
     {
         public override async Task Execute()
         {
+            DbUtil.GetRepository<Sdemo_classEO>().GetFirst(it => it.Name == "");
+
             var a = DbUtil.GetDb("demo").Queryable<Sdemo_classEO>().InSingle("A001");
             var b = DbUtil.GetDb("demo").Queryable<Sdemo_classEO>().InSingle("A002");
 

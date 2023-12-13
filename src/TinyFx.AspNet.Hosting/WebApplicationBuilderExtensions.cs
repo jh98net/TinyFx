@@ -103,6 +103,8 @@ namespace TinyFx
             var section = ConfigUtil.GetSection<NacosSection>();
             if (section != null && section.Enabled && !string.IsNullOrEmpty(section.ServiceName))
             {
+                if (section.ServiceName != ConfigUtil.Project.ProjectId)
+                    LogUtil.Warning($"Nacose ServiceName 和 ProjectId 不相同。ServiceName: {section.ServiceName} ProjectId: {ConfigUtil.Project.ProjectId}");
                 services.Configure<NacosAspNetOptions>(ConfigUtil.Configuration.GetSection("Nacos"));
                 services.AddNacosV2Naming(ConfigUtil.Configuration, sectionName: "Nacos");
                 services.AddHostedService<RegSvcBgTask>();
