@@ -37,7 +37,7 @@ namespace TinyFx
                 services.AddScoped<ILogBuilder>((sp) =>
                 {
                     var ret = new LogBuilder("TINYFX_CONTEXT");
-                    ret.IsContextLog = true;
+                    ret.IsContext = true;
                     return ret;
                 });
 

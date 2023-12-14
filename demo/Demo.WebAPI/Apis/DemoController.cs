@@ -56,7 +56,7 @@ namespace Demo.WebAPI.Apis
         public string Test()
         {
             LogUtil.Info("aaaaa");
-            LogUtil.GetContextLog().SetLevel(LogLevel.Information).AddMessage("bbb").Save();
+            LogUtil.GetContextLogger().SetLevel(LogLevel.Information).AddMessage("bbb").Save();
             LogUtil.CreateLogger<DemoController>().LogInformation("ddd");
             LogUtil.CreateLogger(typeof(DemoController).FullName).LogInformation("eee");
             Serilog.Log.Logger.Information("fff");
@@ -70,7 +70,7 @@ namespace Demo.WebAPI.Apis
         public string GetJwtToken()
         {
             LogUtil.Info("TEST!!!!");
-            var logger = LogUtil.GetContextLog();
+            var logger = LogUtil.GetContextLogger();
             logger.AddMessage("AAAAAAAAAAAA");
             var uip = AspNetUtil.GetRemoteIpString();
             return JwtUtil.GenerateJwtToken(RandomUtil.NextInt(10), UserRole.User, uip);

@@ -157,13 +157,15 @@ namespace TinyFx.Logging
         /// 获取上下文LogBuilder或者创建
         /// </summary>
         /// <returns></returns>
-        public static ILogBuilder GetContextLog()
+        public static ILogBuilder GetContextLogger()
         {
             var context = DIUtil.GetService<ILogBuilder>();
             if (context != null)
+            {
                 return context;
+            }
             var ret = new LogBuilder();
-            ret.IsContextLog = false;
+            ret.IsContext = false;
             return ret;
         }
 

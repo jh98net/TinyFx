@@ -278,13 +278,6 @@ namespace TinyFx.AspNet
         #endregion
 
         /// <summary>
-        /// 获取上下文日志
-        /// </summary>
-        /// <returns></returns>
-        public static ILogBuilder GetContextLogBuilder()
-            => HttpContextEx.GetLogBuilder();
-
-        /// <summary>
         /// 验证通用的请求签名
         /// 签名规则：
         ///     request headers中包含指定headerName的sign信息。

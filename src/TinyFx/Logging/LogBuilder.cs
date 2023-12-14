@@ -18,7 +18,7 @@ namespace TinyFx.Logging
     /// </summary>
     public class LogBuilder : ILogBuilder
     {
-        public bool IsContextLog { get; set; }
+        public bool IsContext { get; set; }
         public LogLevel Level { get; set; } = LogLevel.Debug;
         public LogLevel CustomeExceptionLevel { get; set; } = LogLevel.Information;
         public bool LogRequestHeaders { get; set; }

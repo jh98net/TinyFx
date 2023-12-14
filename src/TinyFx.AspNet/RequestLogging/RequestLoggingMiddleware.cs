@@ -47,6 +47,8 @@ namespace TinyFx.AspNet.RequestLogging
             logger.AddField("Request.StartTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
             logger.AddField("Request.TraceId", context.GetTraceId());
             logger.AddField("Request.Url", context.Request.Path.ToString());
+            logger.AddField("Request.Referer", AspNetUtil.GetRefererUrl());
+            logger.AddField("Request.RemoteIp", AspNetUtil.GetRemoteIpString());
             logger.AddField("Request.Method", context.Request.Method);
             if (logger.LogRequestHeaders)
                 logger.AddField("Request.Headers", context.Request.Headers.ToDictionary(x => x.Key, v => string.Join(";", v.Value.ToList())));

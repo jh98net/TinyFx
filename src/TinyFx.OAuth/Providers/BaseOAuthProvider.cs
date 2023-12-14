@@ -56,7 +56,7 @@ namespace TinyFx.OAuth.Providers
         {
             var ret = new ResponseResult<OAuthUserDto>();
 
-            var log = LogUtil.GetContextLog();
+            var log = LogUtil.GetContextLogger();
             log.AddField("oauth.ipo", SerializerUtil.SerializeJson(ipo));
             var value = await _dcache.GetStringAsync(ipo.State);
             log.AddField("oauth.uuid", value);
@@ -87,7 +87,7 @@ namespace TinyFx.OAuth.Providers
                 log.AddField("oauth.resultString", rsp.ResultString);
                 log.AddException(rsp.Exception);
             }
-            if (!log.IsContextLog)
+            if (!log.IsContext)
                 log.SetFlag("OAUTH").Save();
             return ret;
         }

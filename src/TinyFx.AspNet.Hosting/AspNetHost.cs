@@ -18,6 +18,7 @@ using TinyFx.IO;
 using System.IO;
 using TinyFx.Net;
 using TinyFx.Extensions.Serilog;
+using System.Reflection;
 
 namespace TinyFx
 {
@@ -46,6 +47,7 @@ namespace TinyFx
                        .Where(process => process != null)
                        .Select(o => { return $"id:{o.Id} name:{o.ProcessName} threads:{o.Threads.Count}"; })
                        .ToList();
+            var lastBuildTime = File.GetLastWriteTimeUtc(Assembly.GetEntryAssembly().Location).AddHours(8).ToString("yyyy-MM-dd HH:mm:ss");
             var dict = new Dictionary<string, object>
             {
                 { "ConfigUtil.EnvironmentString", ConfigUtil.EnvironmentString },
@@ -65,6 +67,7 @@ namespace TinyFx
                 { "本机IP", NetUtil.GetLocalIP() },
                 { "出口IP", await HttpClientExFactory.CreateClientEx().CreateAgent().AddUrl("http://api.ip.sb/ip").GetStringAsync() },
                 { "header总量", HttpContextEx.Request.Headers.Count },
+                { "最后一次编译时间", lastBuildTime },
             };
             foreach (var header in HttpContextEx.Request.Headers)
             {

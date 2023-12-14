@@ -93,7 +93,7 @@ namespace TinyFx
             services.AddScoped<ILogBuilder>((_) =>
             {
                 var ret = new LogBuilder("ASPNET_CONTEXT");
-                ret.IsContextLog = true;
+                ret.IsContext = true;
                 return ret;
             });
             return services;
