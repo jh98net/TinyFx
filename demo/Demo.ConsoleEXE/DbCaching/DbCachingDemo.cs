@@ -121,6 +121,11 @@ namespace Demo.ConsoleEXE
         }
         private async Task Run10()
         {
+            DbCachingUtil.GetList(() => new Ss_providerEO
+            {
+                ProviderType = 2,
+                UseBonus = false
+            });
             var eo = DbCachingUtil.GetList<Ss_providerEO>(it => new { it.ProviderType, it.UseBonus }, new Ss_providerEO
             {
                 ProviderType = 2,

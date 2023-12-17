@@ -49,23 +49,20 @@ namespace TinyFx.Extensions.Nacos
                     catch { }
                 }
                 // 是否启用config
-                var listeners = config.GetSection("Nacos:Listeners").Get<List<ConfigListener>>();
-                if (listeners != null && listeners.Count > 0)
-                {
-                    ret = new ConfigurationBuilder();
-                    ret.AddConfiguration(config, false);
-                    ret.AddNacosV2Configuration(config.GetSection("Nacos"));
-                    ret.AddEnvironmentVariables();
-                }
+                ret = new ConfigurationBuilder();
+                ret.AddConfiguration(config, false);
+                ret.AddNacosV2Configuration(config.GetSection("Nacos"));
+                ret.AddEnvironmentVariables();
+
                 // 是否启用naming
-                var clients = config.GetSection("Nacos:Clients").Get<Dictionary<string, NacosClientElement>>();
-                if (clients != null && clients.Count > 0)
-                {
-                    hostBuilder.ConfigureServices((context, services) =>
-                    {
-                        services.AddNacosV2Naming(context.Configuration, sectionName: "Nacos");
-                    });
-                }
+                //var clients = config.GetSection("Nacos:Clients").Get<Dictionary<string, NacosClientElement>>();
+                //if (clients != null && clients.Count > 0)
+                //{
+                //    hostBuilder.ConfigureServices((context, services) =>
+                //    {
+                //        services.AddNacosV2Naming(context.Configuration, sectionName: "Nacos");
+                //    });
+                //}
             }
             return ret;
         }

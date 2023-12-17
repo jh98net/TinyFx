@@ -69,7 +69,12 @@ namespace TinyFx.DbCaching
                     var vvs = names.Select(n => ReflectionUtil.GetPropertyValue(entry, n));
                     var vkey = string.Join('|', vvs);
                     if (value.ContainsKey(vkey))
-                        throw new Exception($"IDbCacheMemory获取单个缓存时不唯一。type:{typeof(TEntity).FullName} dictKey:{fieldsKey} valueKey:{valuesKey}");
+                    {
+                        var msg = $"表:{TableAttribute.TableName} 列:{fieldsKey} 重复的值:{vkey}";
+                        var fields = string.Join(',', names);
+                        var sql = $"select {fields}, count(0) from {TableAttribute.TableName} group by {fields} having count(0)>1";
+                        throw new Exception($"IDbCacheMemory获取单个缓存时不唯一。{msg} 请执行检查SQL后清除redis缓存: [{sql}]");
+                    }
                     value.Add(vkey, entry);
                 });
                 return value;

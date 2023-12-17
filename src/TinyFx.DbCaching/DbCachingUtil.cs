@@ -170,6 +170,11 @@ namespace TinyFx.DbCaching
         {
             return await DbCacheDataDCache.Create(redisConnectionStringName).ContainsCacheItem(configId, tableName);
         }
+        /// <summary>
+        /// 获取所有缓存项
+        /// </summary>
+        /// <param name="redisConnectionStringName"></param>
+        /// <returns></returns>
         public static async Task<List<DbCacheItem>> GetAllCacheItem(string redisConnectionStringName = null)
         {
             return await DbCacheDataDCache.Create(redisConnectionStringName).GetAllCacheItem();

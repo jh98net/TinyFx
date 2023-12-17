@@ -1,4 +1,6 @@
 ﻿using Demo.ConsoleEXE;
+using Demo.ConsoleEXE.DAL;
+using TinyFx.DbCaching;
 using TinyFx.ShortId;
 
 namespace TinyFx.Demos
@@ -7,8 +9,11 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            long amount = 960400;
-            decimal money = amount / (decimal)10000;
+            var ret = DbCachingUtil.GetSingle<Ss_appEO>(it => new { it.ProviderID, it.ProviderAppId }, new Ss_appEO
+            {
+                ProviderID = "pgsoft",
+                ProviderAppId = "126"
+            });
 
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Nacos.AspNetCore.V2;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,23 +9,20 @@ using TinyFx.Collections;
 
 namespace TinyFx.Configuration
 {
-    public class NacosSection : ConfigSection
+    public class NacosSection : NacosAspNetOptions, IConfigSection
     {
-        public override string SectionName => "Nacos";
+        public string SectionName => "Nacos";
         public bool Enabled { get; set; }
         /// <summary>
         /// 故障转移目录
         /// </summary>
         public string FailoverDir { get; set; }
 
-        public string ServiceName { get; set; }
-        public string GroupName { get; set; }
-        public string ClusterName { get; set; }
-
         public Dictionary<string, NacosClientElement> Clients { get; set; }
-        public override void Bind(IConfiguration configuration)
+
+        public void Bind(IConfiguration configuration)
         {
-            base.Bind(configuration);
+            configuration?.Bind(this);
             if (Clients?.Count > 0)
             {
                 Clients.ForEach(x =>
