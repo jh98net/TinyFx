@@ -47,14 +47,15 @@ namespace TinyFx.Data.SqlSugar
                 throw new Exception("DbTransactionManager执行所有事务前必须先Begin()");
             _state = 1;
         }
-
+        public ISqlSugarClient GetDb(params object[] splitDbKeys)
+            => GetDb<object>(splitDbKeys);
         public ISqlSugarClient GetDb<T>(params object[] splitDbKeys)
         {
             var configId = DIUtil.GetRequiredService<IDbSplitProvider>()
                .SplitDb<T>(splitDbKeys);
-            return GetDb(configId);
+            return GetDbById(configId);
         }
-        public ISqlSugarClient GetDb(string configId = null)
+        public ISqlSugarClient GetDbById(string configId = null)
         {
             if (_state != 1 && _state != 2)
                 throw new Exception("DbTransactionManager必须先Begin()再GetDb()或GetRepository()");
@@ -96,23 +97,16 @@ namespace TinyFx.Data.SqlSugar
         #endregion
 
         #region Utils
-        private object _sync = new();
         private bool TryAddDb(ConnectionElement config)
         {
             if (Convert.ToString(config.ConfigId) == DbUtil.DefaultConfigId)
                 return false;
             if (!_newDb.IsAnyConnection(config.ConfigId))
             {
-                lock (_sync)
-                {
-                    if (!_newDb.IsAnyConnection(config.ConfigId))
-                    {
-                        _newDb.AddConnection(config);
-                        var newDb = _newDb.GetConnection(config.ConfigId);
-                        DbUtil.InitDb(newDb, config);
-                        return true;
-                    }
-                }
+                _newDb.AddConnection(config);
+                var newDb = _newDb.GetConnection(config.ConfigId);
+                DbUtil.InitDb(newDb, config);
+                return true;
             }
             return false;
         }

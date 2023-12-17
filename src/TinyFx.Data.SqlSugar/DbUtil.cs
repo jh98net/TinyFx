@@ -1,9 +1,8 @@
 ﻿using SqlSugar;
-using System.Data;
+using SS = SqlSugar;
 using TinyFx.Configuration;
 using TinyFx.Logging;
-using static Org.BouncyCastle.Math.EC.ECCurve;
-using static System.Collections.Specialized.BitVector32;
+using System.Data;
 
 namespace TinyFx.Data.SqlSugar
 {
@@ -24,8 +23,28 @@ namespace TinyFx.Data.SqlSugar
         #endregion
 
         #region GetDb
+        public static ISqlSugarClient GetDb(SS.DbType dbType, string connectionString)
+        {
+            var ret = new SqlSugarClient(new ConnectionConfig
+            {
+                DbType = dbType,
+                ConnectionString = connectionString,
+                IsAutoCloseConnection = true,
+            });
+            InitDb(ret, null);
+            return ret;
+        }
+
         /// <summary>
-        /// 获取DB --> GetConnectionScope()
+        /// 根据IDbSplitProvider获取ISqlSugarClient
+        /// </summary>
+        /// <param name="splitDbKeys"></param>
+        /// <returns></returns>
+        public static ISqlSugarClient GetDb(params object[] splitDbKeys)
+            => GetDb<object>(splitDbKeys);
+
+        /// <summary>
+        /// 根据IDbSplitProvider获取ISqlSugarClient
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="splitDbKeys"></param>
@@ -34,9 +53,15 @@ namespace TinyFx.Data.SqlSugar
         {
             var configId = DIUtil.GetRequiredService<IDbSplitProvider>()
                 .SplitDb<T>(splitDbKeys);
-            return GetDb(configId);
+            return GetDbById(configId);
         }
-        public static ISqlSugarClient GetDb(string configId = null)
+
+        /// <summary>
+        /// 获取指定configId的ISqlSugarClient
+        /// </summary>
+        /// <param name="configId"></param>
+        /// <returns></returns>
+        public static ISqlSugarClient GetDbById(string configId = null)
         {
             // 主库
             if (string.IsNullOrEmpty(configId) || configId == DefaultConfigId)
@@ -46,14 +71,34 @@ namespace TinyFx.Data.SqlSugar
             TryAddDb(config);
             return MainDb.GetConnectionScope(configId);
         }
+/*
+        /// <summary>
+        /// 根据IDbSplitProvider获取ISqlSugarClient
+        /// </summary>
+        /// <param name="splitDbKeys"></param>
+        /// <returns></returns>
+        public static ISqlSugarClient GetNewDb(params object[] splitDbKeys)
+            => GetNewDb<object>(splitDbKeys);
 
+        /// <summary>
+        /// 根据IDbSplitProvider获取ISqlSugarClient
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="splitDbKeys"></param>
+        /// <returns></returns>
         public static ISqlSugarClient GetNewDb<T>(params object[] splitDbKeys)
         {
             var configId = DIUtil.GetRequiredService<IDbSplitProvider>()
                 .SplitDb<T>(splitDbKeys);
-            return GetNewDb(configId);
+            return GetNewDbById(configId);
         }
-        public static ISqlSugarClient GetNewDb(string configId = null)
+
+        /// <summary>
+        /// 获取指定configId的ISqlSugarClient
+        /// </summary>
+        /// <param name="configId"></param>
+        /// <returns></returns>
+        public static ISqlSugarClient GetNewDbById(string configId = null)
         {
             // 主库
             if (string.IsNullOrEmpty(configId) || configId == DefaultConfigId)
@@ -63,6 +108,7 @@ namespace TinyFx.Data.SqlSugar
             TryAddDb(config);
             return MainDb.GetConnection(configId).CopyNew();
         }
+*/
         #endregion
 
         #region Repository
@@ -80,7 +126,7 @@ namespace TinyFx.Data.SqlSugar
         public static Repository<T> GetRepository<T>(string configId = null)
             where T : class, new()
         {
-            var db = GetDb(configId);
+            var db = GetDbById(configId);
             return new Repository<T>(db);
         }
         #endregion
@@ -113,7 +159,7 @@ namespace TinyFx.Data.SqlSugar
         internal static void InitDb(ISqlSugarClient db, ConnectionElement config)
         {
             // log
-            if (config.LogEnabled)
+            if (config?.LogEnabled ?? false)
             {
                 db.Aop.OnLogExecuting = (sql, paras) =>
                 {
@@ -137,7 +183,7 @@ namespace TinyFx.Data.SqlSugar
             db.Aop.OnError = (ex) =>
             {
                 // 无参数化
-                var tmpSql = config.LogSqlMode == 2
+                var tmpSql = config?.LogSqlMode == 2
                     ? UtilMethods.GetSqlString(config.DbType, ex.Sql, (SugarParameter[])ex.Parametres)
                     : UtilMethods.GetNativeSql(ex.Sql, (SugarParameter[])ex.Parametres);
 
@@ -145,7 +191,7 @@ namespace TinyFx.Data.SqlSugar
                 if (log != null)
                 {
                     log.AddMessage("SqlSugar SQL执行异常");
-                    log.AddField("SqlSugar.ConfigId", config.ConfigId);
+                    log.AddField("SqlSugar.ConfigId", config?.ConfigId);
                     log.AddField("SqlSugar.SQL", tmpSql);
                     log.AddException(ex);
                 }

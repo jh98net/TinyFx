@@ -83,6 +83,8 @@ namespace TinyFx.Extensions.EPPlus
             var ret = new DataTable();
             foreach (var header in config.Headers)
             {
+                if(string.IsNullOrEmpty(header.MapName))
+                    continue;
                 var column = new DataColumn()
                 {
                     ColumnName = header.MapName,
@@ -102,6 +104,11 @@ namespace TinyFx.Extensions.EPPlus
                 var idx = 0;
                 foreach (var header in config.Headers)
                 {
+                    if (string.IsNullOrEmpty(header.MapName))
+                    {
+                        idx++;
+                        continue;
+                    }
                     newRow[header.MapName] = row[idx];
                     idx++;
                 }

@@ -24,14 +24,14 @@ namespace TinyFx.DbCaching
 
         public async Task<int> GetPageCount()
         {
-            var rowCount = await DbUtil.GetDb(_configId).Queryable<object>()
+            var rowCount = await DbUtil.GetDbById(_configId).Queryable<object>()
                           .AS(_tableName).CountAsync();
             return (int)TinyFxUtil.GetPageCount(rowCount, DATA_PAGE_SIZE);
         }
 
         public async Task<string> GetPageData(int pageIndex)
         {
-            var list = await DbUtil.GetDb(_configId).Queryable<object>()
+            var list = await DbUtil.GetDbById(_configId).Queryable<object>()
                 .AS(_tableName).ToPageListAsync(pageIndex, DATA_PAGE_SIZE);
             return SerializerUtil.SerializeJson(list);
         }

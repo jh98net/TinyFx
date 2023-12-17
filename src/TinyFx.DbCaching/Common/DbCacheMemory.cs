@@ -33,7 +33,7 @@ namespace TinyFx.DbCaching
             ConfigId = spliteProvider.SplitDb<TEntity>(splitDbKeys);
             TableName = TableAttribute.TableName;
             CachKey = DbCachingUtil.GetCacheKey(ConfigId, TableName);
-            PrimaryKeys = DbUtil.GetDb(ConfigId).DbMaintenance.GetPrimaries(TableName);
+            PrimaryKeys = DbUtil.GetDbById(ConfigId).DbMaintenance.GetPrimaries(TableName);
             DbData = GetInitData().GetTaskResult();
         }
         #endregion

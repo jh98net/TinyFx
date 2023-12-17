@@ -19,7 +19,7 @@ namespace TinyFx.Data.SqlSugar
         {
             var splitProvider = DIUtil.GetRequiredService<IDbSplitProvider>();
             var configId = splitProvider.SplitDb<T>(splitDbKeys);
-            base.Context = DbUtil.GetDb(configId);
+            base.Context = DbUtil.GetDbById(configId);
         }
 
         public void SetCommandTimeout(int timeoutSeconds)
