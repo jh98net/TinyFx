@@ -35,6 +35,8 @@ namespace TinyFx.Hosting.Common
             var builder = CreateProvider(ret)?.CreateBuilder(_builder);
             if (builder != null)
             {
+                builder.AddConfiguration(ret, false);
+                builder.AddEnvironmentVariables();
                 ret = builder.Build();
             }
             else
@@ -47,8 +49,12 @@ namespace TinyFx.Hosting.Common
         private IConfigSourceProvider CreateProvider(IConfiguration fileConfig)
         {
             var provider = new NacosConfigSourceProvider(fileConfig);
-            LogUtil.Info($"配置管理 [加载nacos配置源] ServerAddresses: {provider.GetServerAddresses(fileConfig)} Namespace: {provider.GetNamespace(fileConfig)}");
-            return provider;
+            if (provider.Enabled)
+            {
+                LogUtil.Info($"配置管理 [加载nacos配置源] ServerAddresses: {provider.GetServerAddresses()} Namespace: {provider.Namespace}");
+                return provider;
+            }
+            return null;
         }
     }
 }

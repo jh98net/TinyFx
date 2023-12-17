@@ -9,9 +9,8 @@ using TinyFx.Collections;
 
 namespace TinyFx.Configuration
 {
-    public class NacosSection : NacosAspNetOptions, IConfigSection
+    public class NacosSection : NacosAspNetOptions
     {
-        public string SectionName => "Nacos";
         public bool Enabled { get; set; }
         /// <summary>
         /// 故障转移目录

@@ -17,57 +17,43 @@ namespace TinyFx.Extensions.Nacos
 {
     public class NacosConfigSourceProvider : BaseConfigSourceProvider
     {
+        private IConfiguration _nacosConfig;
+        public NacosSection _section;
+        public bool Enabled => _section.Enabled;
+        public string Namespace =>_section.Namespace;
         public NacosConfigSourceProvider(IConfiguration config) : base(config)
         {
+            _nacosConfig = config.GetSection("Nacos");
+            if(_nacosConfig != null)
+            {
+                NacosUtil.Section.Bind(_nacosConfig);
+            }
+            _section = NacosUtil.Section;
         }
 
-        public string GetServerAddresses(IConfiguration config)
-        {
-            var servers = config.GetSection("Nacos:ServerAddresses")?.Get<List<string>>();
-            return servers != null ? string.Join('|', servers) : null;
-        }
+        public string GetServerAddresses()
+            => string.Join('|', _section.ServerAddresses);
         
-        public string GetNamespace(IConfiguration config)
-            => config.GetValue("Nacos:Namespace", "");
-
         public override IConfigurationBuilder CreateBuilder(IHostBuilder hostBuilder)
         {
-            IConfigurationBuilder ret = null;
-            var hasNacos = InitConfiguration.GetValue("Nacos:Enabled", false);
-            if (hasNacos)
+            if (!Enabled) return null;
+            if (!string.IsNullOrEmpty(_section.FailoverDir))
             {
-                var failoverDir = InitConfiguration.GetValue("Nacos:FailoverDir", "");
-                if (!string.IsNullOrEmpty(failoverDir))
+                var file = Path.Combine(_section.FailoverDir, "nacos", "naming", Namespace, "failover", UtilAndComs.FAILOVER_SWITCH);
+                var path = Path.GetDirectoryName(file);
+                try
                 {
-                    var ns = InitConfiguration.GetValue("Nacos:Namespace", "");
-                    var file = Path.Combine(failoverDir, "nacos", "naming", ns, "failover", UtilAndComs.FAILOVER_SWITCH);
-                    var path = Path.GetDirectoryName(file);
-                    try
-                    {
-                        if (!Directory.Exists(path))
-                            Directory.CreateDirectory(path);
-                        if (!File.Exists(file))
-                            File.WriteAllText(file, "0");
-                        System.Environment.SetEnvironmentVariable("JM.SNAPSHOT.PATH", failoverDir);
-                    }
-                    catch { }
+                    if (!Directory.Exists(path))
+                        Directory.CreateDirectory(path);
+                    if (!File.Exists(file))
+                        File.WriteAllText(file, "0");
+                    System.Environment.SetEnvironmentVariable("JM.SNAPSHOT.PATH", _section.FailoverDir);
                 }
-                // 是否启用config
-                ret = new ConfigurationBuilder();
-                ret.AddConfiguration(InitConfiguration, false);
-                ret.AddNacosV2Configuration(InitConfiguration.GetSection("Nacos"));
-                ret.AddEnvironmentVariables();
-
-                // 是否启用naming
-                //var clients = config.GetSection("Nacos:Clients").Get<Dictionary<string, NacosClientElement>>();
-                //if (clients != null && clients.Count > 0)
-                //{
-                //    hostBuilder.ConfigureServices((context, services) =>
-                //    {
-                //        services.AddNacosV2Naming(context.Configuration, sectionName: "Nacos");
-                //    });
-                //}
+                catch { }
             }
+            // 是否启用config
+            var ret = new ConfigurationBuilder();
+            ret.AddNacosV2Configuration(_nacosConfig);
             return ret;
         }
     }

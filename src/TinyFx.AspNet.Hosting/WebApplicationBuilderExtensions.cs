@@ -20,6 +20,7 @@ using TinyFx.AspNet.Common;
 using TinyFx.AspNet.Filters;
 using TinyFx.AspNet.Hosting;
 using TinyFx.Configuration;
+using TinyFx.Extensions.Nacos;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
 using TinyFx.Security;
@@ -100,14 +101,15 @@ namespace TinyFx
         }
         public static IServiceCollection AddNacosAspNetEx(this IServiceCollection services)
         {
-            var section = ConfigUtil.GetSection<NacosSection>();
+            var section = NacosUtil.Section;
             if (section != null && section.Enabled && !string.IsNullOrEmpty(section.ServiceName))
             {
                 if (section.ServiceName != ConfigUtil.Project.ProjectId)
                     LogUtil.Warning($"Nacose ServiceName 和 ProjectId 不相同。ServiceName: {section.ServiceName} ProjectId: {ConfigUtil.Project.ProjectId}");
-                services.Configure<NacosAspNetOptions>(ConfigUtil.Configuration.GetSection("Nacos"));
-                services.AddNacosV2Naming(ConfigUtil.Configuration, sectionName: "Nacos");
-                services.AddHostedService<RegSvcBgTask>();
+                services.AddNacosAspNet(ConfigUtil.Configuration, "Nacos");
+                //services.Configure<NacosAspNetOptions>(ConfigUtil.Configuration.GetSection("Nacos"));
+                //services.AddNacosV2Naming(ConfigUtil.Configuration, sectionName: "Nacos");
+                //services.AddHostedService<RegSvcBgTask>();
             }
             return services;
         }

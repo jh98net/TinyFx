@@ -13,13 +13,7 @@ namespace TinyFx.Extensions.Nacos
 {
     public static class NacosUtil
     {
-        /// <summary>
-        /// 获取nacos配置
-        /// </summary>
-        /// <param name="configuration"></param>
-        /// <returns></returns>
-        //public static NacosSection GetSection(IConfiguration configuration)
-        //{ }
+        public static readonly NacosSection Section = new();
 
         /// <summary>
         /// 获取指定nacos服务地址
@@ -69,8 +63,7 @@ namespace TinyFx.Extensions.Nacos
         }
         private static NacosClientElement GetClientElement(string name)
         {
-            var section = ConfigUtil.GetSection<NacosSection>();
-            if (section == null || section.Clients == null || !section.Clients.TryGetValue(name, out var ret))
+            if (!Section.Enabled || Section.Clients == null || !Section.Clients.TryGetValue(name, out var ret))
                 throw new Exception($"Nacos配置文件没找到ClientElement。name:{name}");
             return ret;
         }

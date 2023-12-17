@@ -9,6 +9,7 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
+            var a = TinyFxUtil.DateTimeToTimestamp(DateTime.Now);
             var ret = DbCachingUtil.GetSingle<Ss_appEO>(it => new { it.ProviderID, it.ProviderAppId }, new Ss_appEO
             {
                 ProviderID = "pgsoft",
