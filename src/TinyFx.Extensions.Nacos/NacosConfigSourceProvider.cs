@@ -15,8 +15,12 @@ using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace TinyFx.Extensions.Nacos
 {
-    public class NacosConfigSourceProvider : IConfigSourceProvider
+    public class NacosConfigSourceProvider : BaseConfigSourceProvider
     {
+        public NacosConfigSourceProvider(IConfiguration config) : base(config)
+        {
+        }
+
         public string GetServerAddresses(IConfiguration config)
         {
             var servers = config.GetSection("Nacos:ServerAddresses")?.Get<List<string>>();
@@ -26,16 +30,16 @@ namespace TinyFx.Extensions.Nacos
         public string GetNamespace(IConfiguration config)
             => config.GetValue("Nacos:Namespace", "");
 
-        public IConfigurationBuilder CreateConfigBuilder(IHostBuilder hostBuilder, IConfiguration config)
+        public override IConfigurationBuilder CreateBuilder(IHostBuilder hostBuilder)
         {
             IConfigurationBuilder ret = null;
-            var hasNacos = config.GetValue("Nacos:Enabled", false);
+            var hasNacos = InitConfiguration.GetValue("Nacos:Enabled", false);
             if (hasNacos)
             {
-                var failoverDir = config.GetValue("Nacos:FailoverDir", "");
+                var failoverDir = InitConfiguration.GetValue("Nacos:FailoverDir", "");
                 if (!string.IsNullOrEmpty(failoverDir))
                 {
-                    var ns = config.GetValue("Nacos:Namespace", "");
+                    var ns = InitConfiguration.GetValue("Nacos:Namespace", "");
                     var file = Path.Combine(failoverDir, "nacos", "naming", ns, "failover", UtilAndComs.FAILOVER_SWITCH);
                     var path = Path.GetDirectoryName(file);
                     try
@@ -50,8 +54,8 @@ namespace TinyFx.Extensions.Nacos
                 }
                 // 是否启用config
                 ret = new ConfigurationBuilder();
-                ret.AddConfiguration(config, false);
-                ret.AddNacosV2Configuration(config.GetSection("Nacos"));
+                ret.AddConfiguration(InitConfiguration, false);
+                ret.AddNacosV2Configuration(InitConfiguration.GetSection("Nacos"));
                 ret.AddEnvironmentVariables();
 
                 // 是否启用naming

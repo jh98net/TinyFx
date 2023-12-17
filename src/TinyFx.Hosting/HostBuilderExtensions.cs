@@ -48,8 +48,8 @@ namespace TinyFx
             });
 
             // InitConfiguration
-            var configHelper = new ConfigInitHelper(builder, envString);
-            var configuration = configHelper.GetConfiguration();
+            var configHelper = new ConfigSourceBuilder(builder, envString);
+            var configuration = configHelper.Build();
             ConfigUtil.InitConfiguration(configuration, configHelper.EnvString);
             builder.ConfigureHostOptions((context, opts) =>
             {

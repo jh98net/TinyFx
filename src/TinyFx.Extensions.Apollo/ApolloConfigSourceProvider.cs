@@ -12,17 +12,21 @@ using Microsoft.Extensions.Hosting;
 
 namespace TinyFx.Extensions.Apollo
 {
-    public class ApolloConfigSourceProvider : IConfigSourceProvider
+    public class ApolloConfigSourceProvider : BaseConfigSourceProvider
     {
-        public IConfigurationBuilder CreateConfigBuilder(IHostBuilder hostBuilder, IConfiguration config)
+        public ApolloConfigSourceProvider(IConfiguration config) : base(config)
+        {
+        }
+
+        public override IConfigurationBuilder CreateBuilder(IHostBuilder hostBuilder)
         {
             IConfigurationBuilder ret = null;
-            var hasApollo = config.GetValue("Apollo:Enabled", false);
+            var hasApollo = InitConfiguration.GetValue("Apollo:Enabled", false);
             if (hasApollo)
             {
-                var apollo = config.GetSection("Apollo").Get<ApolloSection>();
+                var apollo = InitConfiguration.GetSection("Apollo").Get<ApolloSection>();
                 if (string.IsNullOrEmpty(apollo.AppId))
-                    apollo.AppId = config.GetValue<string>("Project:ProjectId");
+                    apollo.AppId = InitConfiguration.GetValue<string>("Project:ProjectId");
                 if (string.IsNullOrEmpty(apollo.AppId))
                     throw new Exception("Apollo配置必须配置AppId");
                 if (string.IsNullOrEmpty(apollo.MetaServer))

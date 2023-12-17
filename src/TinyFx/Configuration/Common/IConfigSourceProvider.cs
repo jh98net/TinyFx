@@ -13,6 +13,16 @@ namespace TinyFx.Configuration
     /// </summary>
     public interface IConfigSourceProvider
     {
-        IConfigurationBuilder CreateConfigBuilder(IHostBuilder hostBuilder, IConfiguration config);
+        IConfigurationBuilder CreateBuilder(IHostBuilder hostBuilder);
+    }
+    public abstract class BaseConfigSourceProvider: IConfigSourceProvider
+    {
+        public IConfiguration InitConfiguration { get; }
+        public BaseConfigSourceProvider(IConfiguration config)
+        {
+            InitConfiguration = config;
+        }
+
+        public abstract IConfigurationBuilder CreateBuilder(IHostBuilder hostBuilder);
     }
 }

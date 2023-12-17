@@ -5,17 +5,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.Configuration;
 using TinyFx.Extensions.Nacos;
 using TinyFx.Logging;
 
 namespace TinyFx.Hosting.Common
 {
-    internal class ConfigInitHelper
+    internal class ConfigSourceBuilder
     {
         private IHostBuilder _builder { get; }
         public string EnvString { get; }
         private FileConfigBuilder _fileConfigBuilder = new();
-        public ConfigInitHelper(IHostBuilder builder, string envString)
+        public ConfigSourceBuilder(IHostBuilder builder, string envString)
         {
             _builder = builder;
 
@@ -28,14 +29,12 @@ namespace TinyFx.Hosting.Common
             EnvString = envString;
         }
 
-        public IConfiguration GetConfiguration()
+        public IConfiguration Build()
         {
             IConfiguration ret = _fileConfigBuilder.Build(EnvString);
-            var provider = new NacosConfigSourceProvider();
-            var builder = provider.CreateConfigBuilder(_builder, ret);
+            var builder = CreateProvider(ret)?.CreateBuilder(_builder);
             if (builder != null)
             {
-                LogUtil.Info($"配置管理 [加载nacos配置源] ServerAddresses: {provider.GetServerAddresses(ret)} Namespace: {provider.GetNamespace(ret)}");
                 ret = builder.Build();
             }
             else
@@ -43,6 +42,13 @@ namespace TinyFx.Hosting.Common
                 LogUtil.Info($"配置管理 [加载文件配置源] appsettings.{EnvString}.json");
             }
             return ret;
+        }
+
+        private IConfigSourceProvider CreateProvider(IConfiguration fileConfig)
+        {
+            var provider = new NacosConfigSourceProvider(fileConfig);
+            LogUtil.Info($"配置管理 [加载nacos配置源] ServerAddresses: {provider.GetServerAddresses(fileConfig)} Namespace: {provider.GetNamespace(fileConfig)}");
+            return provider;
         }
     }
 }
