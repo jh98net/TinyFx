@@ -7,12 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
-using TinyFx.Extensions.IDGenerator.Common;
+using TinyFx.IDGenerator.Common;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Net;
 using static System.Collections.Specialized.BitVector32;
 
-namespace TinyFx.Extensions.IDGenerator
+namespace TinyFx.IDGenerator
 {
     public static class IDGeneratorUtil
     {

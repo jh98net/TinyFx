@@ -8,8 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
-using TinyFx.Extensions.IDGenerator;
-using TinyFx.Extensions.IDGenerator.Common;
+using TinyFx.IDGenerator;
+using TinyFx.IDGenerator.Common;
 using TinyFx.Logging;
 
 namespace TinyFx

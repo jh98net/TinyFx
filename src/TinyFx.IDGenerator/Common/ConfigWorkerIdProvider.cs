@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
-using TinyFx.Extensions.IDGenerator.Caching;
+using TinyFx.IDGenerator.Caching;
 
-namespace TinyFx.Extensions.IDGenerator.Common
+namespace TinyFx.IDGenerator.Common
 {
     internal class ConfigWorkerIdProvider : IWorkerIdProvider
     {

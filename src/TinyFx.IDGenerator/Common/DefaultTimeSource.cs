@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TinyFx.Extensions.IDGenerator.Common
+namespace TinyFx.IDGenerator.Common
 {
     internal class DefaultTimeSource
     {

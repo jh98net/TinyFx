@@ -11,7 +11,7 @@ using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
 using TinyFx.Net;
 
-namespace TinyFx.Extensions.IDGenerator.Common
+namespace TinyFx.IDGenerator.Common
 {
     internal class IDGeneratorHostedService : BackgroundService
     {

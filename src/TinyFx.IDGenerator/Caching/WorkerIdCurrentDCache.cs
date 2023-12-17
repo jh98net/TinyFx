@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis;
 
-namespace TinyFx.Extensions.IDGenerator.Caching
+namespace TinyFx.IDGenerator.Caching
 {
     internal class WorkerIdCurrentDCache : RedisStringClient<int>
     {

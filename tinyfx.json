@@ -344,7 +344,7 @@
     "ExpireMinutes": 30 // Token过期时间（分钟）,一年525600
   },
 
-  // 雪花ID TinyFx.Extensions.IDGenerator
+  // 雪花ID TinyFx.IDGenerator
   "IDGenerator": {
     "Enabled": false,
     "UseRedis": true,

@@ -22,7 +22,7 @@ using TinyFx.AspNet.RequestLogging;
 using TinyFx.AspNet.ResponseCaching;
 using TinyFx.Configuration;
 using TinyFx.DbCaching;
-using TinyFx.Extensions.IDGenerator;
+using TinyFx.IDGenerator;
 using TinyFx.Logging;
 using TinyFx.Net;
 using TinyFx.Randoms;

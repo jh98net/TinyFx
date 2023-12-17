@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
-using TinyFx.Extensions.IDGenerator.Caching;
+using TinyFx.IDGenerator.Caching;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Net;
 
-namespace TinyFx.Extensions.IDGenerator.Common
+namespace TinyFx.IDGenerator.Common
 {
     internal class RedisWorkerIdProvider : IWorkerIdProvider
     {

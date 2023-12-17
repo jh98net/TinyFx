@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
 
-namespace TinyFx.Extensions.IDGenerator
+namespace TinyFx.IDGenerator
 {
     public class IDGeneratorSection : ConfigSection
     {
