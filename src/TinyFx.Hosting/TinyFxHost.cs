@@ -19,6 +19,7 @@ namespace TinyFx
 {
     public static class TinyFxHost
     {
+        #region Host
         /// <summary>
         /// 创建默认Host并UseTinyFx
         /// </summary>
@@ -80,6 +81,7 @@ namespace TinyFx
         /// <returns></returns>
         public static Task RunAsync(string envString = null, string[] args = null)
             => CreateHost(envString, args).RunAsync();
+        #endregion
 
         #region IHostApplicationLifetime
         /// <summary>
