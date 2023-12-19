@@ -229,16 +229,25 @@ namespace TinyFx.Reflection
         /// <returns></returns>
         public static object GetPropertyValue(this object obj, string propertyName)
         {
+            if (!TryGetPropertyValue(obj, propertyName, out var value))
+                throw new Exception($"ReflectionUtil.GetPropertyValue时没有属性。type:{obj.GetType().FullName} propertyName:{propertyName}");
+            return value;
+        }
+        public static bool TryGetPropertyValue(this object obj, string propertyName, out object value)
+        {
+            value = null;
             var key = $"{obj.GetType().FullName}:{propertyName}";
             if (!_propertyNameGetterCache.TryGetValue(key, out MethodInfo ret))
             {
                 var property = obj.GetType().GetProperty(propertyName);
+                if (property == null)
+                    return false;
                 ret = property.GetGetMethod();
                 _propertyNameGetterCache.TryAdd(key, ret);
             }
-            return ret.Invoke(obj, null);
+            value = ret.Invoke(obj, null);
+            return true;
         }
-
         /// <summary>
         /// 通过反射获取对象属性值
         /// </summary>
@@ -248,6 +257,14 @@ namespace TinyFx.Reflection
         /// <returns></returns>
         public static T GetPropertyValue<T>(this object obj, string propertyName)
             => TinyFxUtil.ConvertTo<T>(GetPropertyValue(obj, propertyName));
+        public static bool TryGetPropertyValue<T>(this object obj, string propertyName, out T value)
+        {
+            value = default;
+            if (!TryGetPropertyValue(obj, propertyName, out object v))
+                return false;
+            value = TinyFxUtil.ConvertTo<T>(v);
+            return true;
+        }
         #endregion
 
         #region SetPropertyValue

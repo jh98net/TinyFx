@@ -33,7 +33,8 @@ namespace TinyFx.Demos.Core
             Console.WriteLine(LanguageUtil.GetName("en"));
 
             // 变量格式如: {{key}}
-            var str = StringTemplate.Create("字符串模板{{key1}}替换").Set("key1", "aaa").Render();
+            var str = new StringTemplateReplacer("字符串模板{{key1}}替换").Set("key1", "aaa")
+                .ToString();
             Console.WriteLine(str);
 
             // 枚举

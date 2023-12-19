@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using TinyFx;
 using TinyFx.Configuration;
 using TinyFx.Extensions.Serilog;
+using TinyFx.Hosting;
 using TinyFx.Logging;
 using TinyFx.Net;
 
@@ -84,13 +85,14 @@ namespace TinyFx
         /// <summary>
         /// 应用程序生命周期事件的通知
         /// </summary>
-        public static IHostApplicationLifetime ApplicationLifetime
+        public static IHostApplicationLifetime Lifetime
             => DIUtil.GetRequiredService<IHostApplicationLifetime>();
+
         internal static List<Func<Task>> OnStartedEvents = new();
         internal static List<Func<Task>> OnStoppingEvents = new();
         internal static List<Func<Task>> OnStoppedEvents = new();
 
-        public static void Register(ITinyFxHostEvent @event)
+        public static void RegisterLifetimeEvent(ITinyFxHostLifetimeEvent @event)
         {
             OnStartedEvents.Add(@event.OnStarted);
             OnStoppingEvents.Add(@event.OnStopping);
@@ -110,11 +112,5 @@ namespace TinyFx
             OnStoppedEvents.Add(func);
         }
         #endregion
-    }
-    public interface ITinyFxHostEvent
-    {
-        Task OnStarted();
-        Task OnStopping();
-        Task OnStopped();
     }
 }

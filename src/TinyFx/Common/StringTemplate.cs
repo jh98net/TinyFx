@@ -1,65 +1,90 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using TinyFx.Reflection;
 
 namespace TinyFx.Common
 {
     /// <summary>
-    /// 字符串模板类，用于模板字符串替换，变量格式如: {{key}}
+    /// 字符串模板渲染器
+    /// 用于模板字符串替换，变量格式如: {{key}}
+    /// 如：字符串模板{{key1}}替换
     /// </summary>
-    public class StringTemplate
+    public class StringTemplateReplacer
     {
-        private string Content { get; set; }
+        /// <summary>
+        /// 源模板数据，如: TEST{userId}
+        /// </summary>
+        public string TemplateContent { get; }
+        /// <summary>
+        /// 是否允许检查未使用
+        /// </summary>
+        public bool IsAllowNotUsed { get; }
+        private string _content { get; set; }
 
         /// <summary>
         /// 模版引擎
         /// </summary>
-        /// <param name="content"></param>
-        public StringTemplate(string content)
+        /// <param name="templateContent"></param>
+        public StringTemplateReplacer(string templateContent, bool isAllowNotUsed = false)
         {
-            Content = content;
+            TemplateContent = _content = templateContent;
+            IsAllowNotUsed = isAllowNotUsed;
         }
-
         /// <summary>
-        /// 创建模板
+        /// 重置
         /// </summary>
-        /// <param name="content"></param>
         /// <returns></returns>
-        public static StringTemplate Create(string content)
+        public StringTemplateReplacer Reset()
         {
-            return new StringTemplate(content);
+            _content = TemplateContent;
+            return this;
         }
-
         /// <summary>
         /// 设置变量
         /// </summary>
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        public StringTemplate Set(string key, string value)
+        public StringTemplateReplacer Set(string key, string value)
         {
-            Content = Content.Replace("{{" + key + "}}", value);
+            _content = _content.Replace("{{" + key + "}}", value);
+            return this;
+        }
+        public StringTemplateReplacer Set<T>(T templateData)
+        {
+            var mc = Regex.Matches(_content, @"\{\{.+?\}\}");
+            foreach (Match m in mc)
+            {
+                var name = m.Value.Trim('{', '}');
+                if (!ReflectionUtil.TryGetPropertyValue(templateData, name, out var value))
+                    continue;
+                Set(name, Convert.ToString(value));
+            }
             return this;
         }
 
         /// <summary>
         /// 渲染模板
         /// </summary>
-        /// <param name="check">是否检查未使用的模板变量</param>
+        /// <param name="checkNoUse">是否检查未使用的模板变量</param>
         /// <returns></returns>
-        public string Render(bool check = true)
+        public override string ToString()
         {
-            var mc = Regex.Matches(Content, @"\{\{.+?\}\}");
-            if (check)
+            if (!IsAllowNotUsed)
             {
-                foreach (Match m in mc)
+                var mc = Regex.Matches(_content, @"\{\{.+?\}\}");
+                if (mc.Count > 0)
                 {
-                    throw new ArgumentException($"模版变量{m.Value}未被使用");
+                    string keys = string.Join('|', mc.Select(x => x.Value));
+                    throw new ArgumentException($"模版变量未被使用。keys: {keys}");
                 }
             }
 
-            return Content;
+            return _content;
         }
     }
 }
