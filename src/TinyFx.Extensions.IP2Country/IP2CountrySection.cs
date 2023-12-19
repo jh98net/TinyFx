@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
 
-namespace TinyFx.Extensions.IP2Country
+namespace TinyFx.IP2Country
 {
     public class IP2CountrySection : ConfigSection
     {

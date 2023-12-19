@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace TinyFx.Extensions.IP2Country.Entities
+namespace TinyFx.IP2Country.Entities
 {
     public class IPRangeCountry : IIPRangeCountry
     {

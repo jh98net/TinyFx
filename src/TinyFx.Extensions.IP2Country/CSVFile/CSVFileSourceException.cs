@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace TinyFx.Extensions.IP2Country.DataSources.CSVFile
+namespace TinyFx.IP2Country.DataSources.CSVFile
 {
     public abstract class CSVFileSourceException : Exception
     {

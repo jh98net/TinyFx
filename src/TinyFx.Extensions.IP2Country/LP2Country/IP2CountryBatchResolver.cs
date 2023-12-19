@@ -1,4 +1,4 @@
-﻿using TinyFx.Extensions.IP2Country.Entities;
+﻿using TinyFx.IP2Country.Entities;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace TinyFx.Extensions.IP2Country
+namespace TinyFx.IP2Country
 {
     public class IP2CountryBatchResolver : IIP2CountryBatchResolver
     {

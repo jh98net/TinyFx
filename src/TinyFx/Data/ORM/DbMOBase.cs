@@ -53,9 +53,10 @@ namespace TinyFx.Data.ORM
             }
 
             // IOrmConnectionRouter
-            if (ConfigUtil.Data.OrmConnectionRouter != null)
+            var section = ConfigUtil.GetSection<DataSection>();
+            if (section.OrmConnectionRouter != null)
             {
-                var connName = ConfigUtil.Data.OrmConnectionRouter.Route(thisType, SourceName);
+                var connName = section.OrmConnectionRouter.Route(thisType, SourceName);
                 config = DbConfigManager.GetConnectionStringConfig(connName);
                 if (config != null)
                 {

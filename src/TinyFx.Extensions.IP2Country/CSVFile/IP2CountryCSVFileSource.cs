@@ -1,5 +1,5 @@
-﻿using TinyFx.Extensions.IP2Country.Datasources;
-using TinyFx.Extensions.IP2Country.Entities;
+﻿using TinyFx.IP2Country.Datasources;
+using TinyFx.IP2Country.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 
-namespace TinyFx.Extensions.IP2Country.DataSources.CSVFile
+namespace TinyFx.IP2Country.DataSources.CSVFile
 {
     public abstract class IP2CountryCSVFileSource<T> : IIP2CountryDataSource
         where T : IIPRangeCountry

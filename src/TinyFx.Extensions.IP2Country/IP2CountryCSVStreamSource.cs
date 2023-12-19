@@ -4,12 +4,12 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TinyFx.Extensions.IP2Country.DataSources.CSVFile;
-using TinyFx.Extensions.IP2Country.Datasources;
-using TinyFx.Extensions.IP2Country.Entities;
+using TinyFx.IP2Country.DataSources.CSVFile;
+using TinyFx.IP2Country.Datasources;
+using TinyFx.IP2Country.Entities;
 using System.IO;
 
-namespace TinyFx.Extensions.IP2Country
+namespace TinyFx.IP2Country
 {
     public abstract class IP2CountryCSVStreamSource<T> : IIP2CountryDataSource
         where T : IIPRangeCountry

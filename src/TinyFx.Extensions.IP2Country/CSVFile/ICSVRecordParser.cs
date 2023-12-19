@@ -1,7 +1,7 @@
-﻿using TinyFx.Extensions.IP2Country.Entities;
+﻿using TinyFx.IP2Country.Entities;
 using System.Text;
 
-namespace TinyFx.Extensions.IP2Country.DataSources.CSVFile
+namespace TinyFx.IP2Country.DataSources.CSVFile
 {
     public interface ICSVRecordParser<T>
     {

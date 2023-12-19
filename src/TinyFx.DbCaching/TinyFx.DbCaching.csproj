@@ -3,7 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Description>TinyFx DbCaching封装</Description>
+    <Description>数据库和redis同步的内存缓存库</Description>
     <Version>3.12.22</Version>
   </PropertyGroup>
   <ItemGroup>

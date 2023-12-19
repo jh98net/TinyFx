@@ -15,7 +15,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\TinyFx.Extensions.EPPlus\TinyFx.Extensions.EPPlus.csproj" />
-		<ProjectReference Include="..\..\src\TinyFx.Extensions.IP2Country\TinyFx.Extensions.IP2Country.csproj" />
+		<ProjectReference Include="..\..\src\TinyFx.Extensions.IP2Country\TinyFx.IP2Country.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Extensions.SshNet\TinyFx.Extensions.SshNet.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Hosting\TinyFx.Hosting.csproj" />
 	</ItemGroup>

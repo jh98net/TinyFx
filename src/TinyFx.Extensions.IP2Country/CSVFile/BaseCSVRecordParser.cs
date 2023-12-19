@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace TinyFx.Extensions.IP2Country.DataSources.CSVFile
+namespace TinyFx.IP2Country.DataSources.CSVFile
 {
     public abstract class BaseCSVRecordParser<T> : ICSVRecordParser<T>
     {

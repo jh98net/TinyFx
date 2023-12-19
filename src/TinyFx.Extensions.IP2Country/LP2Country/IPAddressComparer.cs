@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 
-namespace TinyFx.Extensions.IP2Country
+namespace TinyFx.IP2Country
 {
     /// <summary>
     /// Compares IP addresses to determine numerically which is greater than the other.

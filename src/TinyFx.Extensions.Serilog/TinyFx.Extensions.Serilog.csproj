@@ -3,7 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Description>Serilog日志组件</Description>
+    <Description>Serilog封装</Description>
     <Version>3.12.22</Version>
   </PropertyGroup>
   <ItemGroup>

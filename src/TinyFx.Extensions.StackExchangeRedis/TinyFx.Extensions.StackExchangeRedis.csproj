@@ -3,7 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Description>StackExchange.Redis组件</Description>
+    <Description>StackExchange.Redis封装</Description>
     <Version>3.12.22</Version>
   </PropertyGroup>
   <ItemGroup>

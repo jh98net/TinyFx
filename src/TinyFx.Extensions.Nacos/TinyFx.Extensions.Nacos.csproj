@@ -3,7 +3,7 @@
     <TargetFrameworks>net6.0</TargetFrameworks>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Description>TinyFx nacos组件</Description>
+    <Description>nacos扩展</Description>
     <Version>3.12.22</Version>
   </PropertyGroup>
   <ItemGroup>

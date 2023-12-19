@@ -3,7 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <Description>TinyFx 国家IP</Description>
+    <Description>国家IP地址库</Description>
     <Version>3.12.22</Version>
   </PropertyGroup>
   <ItemGroup>

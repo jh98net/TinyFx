@@ -1,12 +1,12 @@
-﻿using TinyFx.Extensions.IP2Country.Datasources;
-using TinyFx.Extensions.IP2Country.Entities;
+﻿using TinyFx.IP2Country.Datasources;
+using TinyFx.IP2Country.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
-namespace TinyFx.Extensions.IP2Country
+namespace TinyFx.IP2Country
 {
     public class IP2CountryResolver : IIP2CountryResolver
     {

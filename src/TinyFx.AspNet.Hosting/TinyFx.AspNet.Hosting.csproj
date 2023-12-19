@@ -3,7 +3,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Description>TinyFx AspNet Hosting启动服务</Description>
+    <Description>AspNet Hosting启动服务</Description>
     <Version>3.12.22</Version>
   </PropertyGroup>
   <ItemGroup>

@@ -58,8 +58,25 @@ namespace TinyFx.Configuration
             => Environment != EnvironmentNames.Unknown
             && Environment != EnvironmentNames.Production
             && Project.IsDebugEnvironment;
+
+        /// <summary>
+        /// 是否仿真环境
+        /// </summary>
         public static bool IsStagingEnvironment
             => Environment == EnvironmentNames.Staging;
+
+        /// <summary>
+        /// 服务启动时分配的GUID
+        /// </summary>
+        public static readonly string ServiceGuid = StringUtil.GetGuidString();
+        /// <summary>
+        /// 服务的唯一标识，默认: projectId|guid
+        /// </summary>
+        public static string ServiceId { get; set; }
+        /// <summary>
+        /// 服务外部访问地址，服务启动后人工设置
+        /// </summary>
+        public static string ServiceUrl { get; set; }
         #endregion
 
         #region Init
@@ -74,6 +91,9 @@ namespace TinyFx.Configuration
             }, null);
             Configuration = configuration;
             ClearCacheData();
+
+            // 设置服务唯一标识
+            ServiceId ??= $"{Project.ProjectId}|{ServiceGuid}";
         }
         private static void OnConfigChange()
         {
@@ -177,11 +197,6 @@ namespace TinyFx.Configuration
         /// </summary>
         public static AppConfigsSection AppConfigs
             => _appConfigs ??= GetSection<AppConfigsSection>() ?? new AppConfigsSection();
-
-        /// <summary>
-        /// 数据库配置信息
-        /// </summary>
-        public static DataSection Data => GetSection<DataSection>();
 
         private static void CheckInit()
         {

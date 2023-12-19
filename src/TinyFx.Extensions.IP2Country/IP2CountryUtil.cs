@@ -1,5 +1,5 @@
-﻿using TinyFx.Extensions.IP2Country;
-using TinyFx.Extensions.IP2Country.DbIp;
+﻿using TinyFx.IP2Country;
+using TinyFx.IP2Country.DbIp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.IO;
 using TinyFx.Configuration;
 using TinyFx.Net;
 
-namespace TinyFx.Extensions.IP2Country
+namespace TinyFx.IP2Country
 {
     /// <summary>
     /// 
@@ -19,7 +19,7 @@ namespace TinyFx.Extensions.IP2Country
     /// </summary>
     public class IP2CountryUtil
     {
-        private const string IP_RESOURCE = "TinyFx.Extensions.IP2Country.dbip-country-lite-2023-10.csv.gz";
+        private const string IP_RESOURCE = "TinyFx.IP2Country.dbip-country-lite-2023-10.csv.gz";
         private static IP2CountryResolver _resolver = null;
         private static object _sync = new();
         private static IP2CountryResolver GetResolver()
