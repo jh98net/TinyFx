@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TinyFx.IP2Country.DataSources.CSVFile
 {
-    public abstract class BaseCSVRecordParser<T> : ICSVRecordParser<T>
+    internal abstract class BaseCSVRecordParser<T> : ICSVRecordParser<T>
     {
         private static readonly DateTime EPOCH = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         public Encoding Encoding { get; protected set; }

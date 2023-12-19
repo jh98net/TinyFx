@@ -11,7 +11,7 @@ using System.IO;
 
 namespace TinyFx.IP2Country
 {
-    public abstract class IP2CountryCSVStreamSource<T> : IIP2CountryDataSource
+    internal abstract class IP2CountryCSVStreamSource<T> : IIP2CountryDataSource
         where T : IIPRangeCountry
     {
         public Encoding Encoding { get; private set; }

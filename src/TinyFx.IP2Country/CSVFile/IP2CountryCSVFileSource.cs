@@ -9,7 +9,7 @@ using System.Text;
 
 namespace TinyFx.IP2Country.DataSources.CSVFile
 {
-    public abstract class IP2CountryCSVFileSource<T> : IIP2CountryDataSource
+    internal abstract class IP2CountryCSVFileSource<T> : IIP2CountryDataSource
         where T : IIPRangeCountry
     {
         public Encoding Encoding { get; private set; }

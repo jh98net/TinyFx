@@ -4,7 +4,7 @@ using System.Net;
 
 namespace TinyFx.IP2Country
 {
-    public interface IIP2CountryBatchResolver : IIP2CountryResolver
+    internal interface IIP2CountryBatchResolver : IIP2CountryResolver
     {
         IIPRangeCountry[] Resolve(string[] ips);
         IIPRangeCountry[] Resolve(IPAddress[] ips);

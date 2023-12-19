@@ -2,7 +2,7 @@
 
 namespace TinyFx.IP2Country.DbIp
 {
-    public class DbIpIPRangeCountry : IPRangeCountry
+    internal class DbIpIPRangeCountry : IPRangeCountry
     {
         
     }

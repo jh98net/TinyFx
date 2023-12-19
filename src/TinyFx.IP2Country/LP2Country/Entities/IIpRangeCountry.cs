@@ -2,7 +2,7 @@
 
 namespace TinyFx.IP2Country.Entities
 {
-    public interface IIPRangeCountry
+    internal interface IIPRangeCountry
     {
         IPAddress Start { get; set; }
         IPAddress End { get; set; }

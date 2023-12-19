@@ -7,7 +7,7 @@ using System.Net;
 
 namespace TinyFx.IP2Country.DbIp
 {
-    public class DbIpCSVFileSource : IP2CountryCSVFileSource<DbIpIPRangeCountry>
+    internal class DbIpCSVFileSource : IP2CountryCSVFileSource<DbIpIPRangeCountry>
     {
         public DbIpCSVFileSource(string file)
             : base(file, new DbIpCSVRecordParser()) { }
@@ -15,7 +15,7 @@ namespace TinyFx.IP2Country.DbIp
         public override IEnumerable<IIPRangeCountry> Read() => ReadFile(Path, Parser);
     }
 
-    public class DbIpCSVRecordParser : BaseCSVRecordParser<DbIpIPRangeCountry>
+    internal class DbIpCSVRecordParser : BaseCSVRecordParser<DbIpIPRangeCountry>
     {
         public override DbIpIPRangeCountry ParseRecord(string record)
         {

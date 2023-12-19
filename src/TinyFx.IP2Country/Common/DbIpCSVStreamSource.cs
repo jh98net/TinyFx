@@ -11,7 +11,7 @@ using TinyFx.IP2Country.Entities;
 
 namespace TinyFx.IP2Country
 {
-    public class DbIpCSVStreamSource : IP2CountryCSVStreamSource<DbIpIPRangeCountry>
+    internal class DbIpCSVStreamSource : IP2CountryCSVStreamSource<DbIpIPRangeCountry>
     {
         public DbIpCSVStreamSource(Stream stream)
             : base(stream, new DbIpCSVRecordParser()) { }

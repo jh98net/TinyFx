@@ -2,7 +2,7 @@
 
 namespace TinyFx.IP2Country.DataSources.CSVFile
 {
-    public abstract class CSVFileSourceException : Exception
+    internal abstract class CSVFileSourceException : Exception
     {
         public CSVFileSourceException()
             : base() { }
@@ -14,7 +14,7 @@ namespace TinyFx.IP2Country.DataSources.CSVFile
             : base(message, innerException) { }
     }
 
-    public class UnexpectedNumberOfFieldsException : CSVFileSourceException
+    internal class UnexpectedNumberOfFieldsException : CSVFileSourceException
     {
         public UnexpectedNumberOfFieldsException()
             : base() { }

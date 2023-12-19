@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace TinyFx.IP2Country
 {
-    public class IP2CountryBatchResolver : IIP2CountryBatchResolver
+    internal class IP2CountryBatchResolver : IIP2CountryBatchResolver
     {
         private readonly IIP2CountryResolver _resolver;
 

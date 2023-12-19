@@ -7,7 +7,7 @@ namespace TinyFx.IP2Country
     /// <summary>
     /// Compares IP addresses to determine numerically which is greater than the other.
     /// </summary>
-    public class IPAddressComparer : Comparer<IPAddress>
+    internal class IPAddressComparer : Comparer<IPAddress>
     {
 
         private static readonly Lazy<IPAddressComparer> _Default = new Lazy<IPAddressComparer>();

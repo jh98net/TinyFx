@@ -3,7 +3,7 @@ using System.Text;
 
 namespace TinyFx.IP2Country.DataSources.CSVFile
 {
-    public interface ICSVRecordParser<T>
+    internal interface ICSVRecordParser<T>
     {
         bool IgnoreErrors { get; }
         Encoding Encoding { get; }

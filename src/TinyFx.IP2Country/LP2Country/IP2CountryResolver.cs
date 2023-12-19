@@ -8,7 +8,7 @@ using System.Net.Sockets;
 
 namespace TinyFx.IP2Country
 {
-    public class IP2CountryResolver : IIP2CountryResolver
+    internal class IP2CountryResolver : IIP2CountryResolver
     {
         private readonly IDictionary<AddressFamily, IIPRangeCountry[]> _ipinfo;
         private readonly IPAddressComparer _comparer;
