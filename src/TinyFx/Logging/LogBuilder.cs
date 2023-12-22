@@ -27,7 +27,7 @@ namespace TinyFx.Logging
 
         public string Flag { get; set; }
         public StringBuilder Message { get; set; } = new();
-        public ConcurrentDictionary<string, string> Fields = new();
+        public ConcurrentDictionary<string, List<object>> Fields = new();
         public Exception Exception { get; set; }
 
         public LogBuilder(LogLevel level = LogLevel.Debug, string flag = null)
@@ -85,8 +85,10 @@ namespace TinyFx.Logging
         /// <returns></returns>
         public ILogBuilder AddField(string field, object value)
         {
-            var valueStr = SerializerUtil.SerializeJsonNet(value);
-            Fields.AddOrUpdate(field, valueStr, (k, v) => $"{v}{Environment.NewLine}{valueStr}");
+            if (Fields.TryGetValue(field, out var list))
+                list.Add(value);
+            else
+                Fields.TryAdd(field, new List<object> { value });
             return this;
         }
         public ILogBuilder AddException(Exception ex)
@@ -102,16 +104,31 @@ namespace TinyFx.Logging
         public void Save()
         {
             var msg = string.Empty;
-            var args = new List<string>(Fields.Count + 2);
+            var args = new List<object>(Fields.Count + 2);
             msg += "[{Flag}]";
             args.Add(Flag);
-            msg += "{Message}";
+            msg += " {Message}";
             args.Add(Message.ToString().TrimEnd(Environment.NewLine));
 
             Fields.ForEach(x =>
             {
-                msg += $"{{{x.Key}}}";
-                args.Add(x.Value);
+                msg += $" {x.Key}: {{{x.Key.Replace('.', '_')}}}";
+                if (x.Value.Count == 1)
+                {
+                    var obj = x.Value[0];
+                    if (obj != null && obj.GetType().IsClass)
+                        args.Add(SerializerUtil.SerializeJsonNet(obj));
+                    else
+                        args.Add(obj);
+                }
+                else
+                {
+                    string objStr = null;
+                    foreach (var obj in x.Value)
+                    {
+                        objStr += SerializerUtil.SerializeJsonNet(obj) + Environment.NewLine;
+                    }
+                }
             });
             LogUtil.Log(Level, msg, Exception, args.ToArray());
         }

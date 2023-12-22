@@ -23,6 +23,7 @@ using TinyFx.AspNet.RequestLogging;
 using TinyFx.AspNet.ResponseCaching;
 using TinyFx.Configuration;
 using TinyFx.DbCaching;
+using TinyFx.Hosting;
 using TinyFx.Hosting.Services;
 using TinyFx.IDGenerator;
 using TinyFx.Logging;
@@ -55,29 +56,15 @@ namespace Demo.WebAPI.Apis
         }
         [HttpGet]
         [AllowAnonymous]
-        public string Test1()
+        public async Task<string> Test1()
         {
-            var timer = DIUtil.GetService<ITinyFxHostTimerService>();
-            timer.Register(new TinyFxHostTimerItem
-            {
-                Id = "A",
-                Title = "A任务",
-                Interval = 1000,
-                Callback = (st) => 
-                {
-                    if (true)
-                        throw new Exception("asdf");
-                    return Task.CompletedTask;
-                }
-            });
+            HostingUtil.RegisterDelayTimer(TimeSpan.FromSeconds(5), async (t) => Console.WriteLine("ASDFASDF"));
             return "";
         }
         [HttpGet]
         [AllowAnonymous]
-        public string Test2()
+        public async Task<string> Test2()
         {
-            var timer = DIUtil.GetService<ITinyFxHostTimerService>();
-            timer.Unregister("A");
             return "";
         }
 

@@ -103,7 +103,7 @@ namespace TinyFx.Configuration
                     log.AddMessage("初始化跨域设置");
                 foreach (var policy in policies)
                 {
-                    log.AddField($"Origins.{policy.Name}", policy.Origins);
+                    log.AddField($"Origins.{policy.Name}", $"{policy.Name}:{policy.Origins}");
                     if (policy.Name == UseCors?.DefaultPolicy)
                         opts.AddDefaultPolicy(AspNetUtil.GetPolicyBuilder(policy));
                     else

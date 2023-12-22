@@ -185,6 +185,18 @@ namespace TinyFx.Configuration
                 return _project;
             }
         }
+        private static HostSection _host;
+        public static HostSection Host
+        {
+            get
+            {
+                if (_host == null)
+                {
+                    _host = GetSection<HostSection>() ?? new HostSection();
+                }
+                return _host;
+            }
+        }
 
         private static AppSettingsSection _appSettings;
         /// <summary>

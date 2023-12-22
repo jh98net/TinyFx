@@ -7,20 +7,25 @@ using TinyFx.Extensions.StackExchangeRedis;
 
 namespace TinyFx.Hosting.Services
 {
-    internal class TinyFxServiceListDCache : RedisSetClient<string>
+    internal class TinyFxHostListDCache : RedisSetClient<string>
     {
-        public TinyFxServiceListDCache()
+        public TinyFxHostListDCache()
         {
-            RedisKey = $"{RedisPrefixConst.TINYFX_HOSTS}:List";
+            RedisKey = $"{RedisPrefixConst.HOSTS}:List";
         }
 
         /// <summary>
         /// 获取所有服务id
         /// </summary>
         /// <returns></returns>
-        public async Task<List<string>> GetAllServices()
+        public async Task<List<string>> GetAllHosts()
         {
             return (await GetAllAsync()).ToList();
+        }
+
+        public async Task<bool> AddHost(string serviceId)
+        {
+            return await AddAsync(serviceId);
         }
 
         /// <summary>
@@ -28,9 +33,10 @@ namespace TinyFx.Hosting.Services
         /// </summary>
         /// <param name="serviceId"></param>
         /// <returns></returns>
-        public async Task RemoveService(string serviceId)
+        public async Task RemoveHost(string serviceId)
         {
             await RemoveAsync(serviceId);
         }
+
     }
 }

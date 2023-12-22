@@ -52,17 +52,10 @@ namespace TinyFx
 
                     if (!config.SlaveEnabled)
                         ret.Ado.IsDisableMasterSlaveSeparation = true;
-
-                    // 资源释放
-                    //var lifetime = sp.GetService<IHostApplicationLifetime>();
-                    //lifetime?.ApplicationStopping.Register(() =>
-                    //{
-                    //    ret.Dispose();
-                    //});
                     return ret;
                 });
             });
-            LogUtil.Info("SqlSugar 配置完成");
+            LogUtil.Info("配置 [SqlSugar]");
             return builder;
         }
     }

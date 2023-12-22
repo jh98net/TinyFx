@@ -45,11 +45,6 @@ namespace TinyFx
 
                 // DistributedMemoryCache
                 services.AddDistributedMemoryCache();
-
-                // Hosting
-                services.AddSingleton<ITinyFxHostTimerService>(new DefaultTinyFxHostTimerService());
-                services.AddSingleton<ITinyFxHostRegisterService>(new RedisTinyFxHostRegisterService());
-                services.AddSingleton<ITinyFxHostDataService>(new RedisTinyFxHostDataService());
             });
 
             // InitConfiguration
@@ -65,7 +60,16 @@ namespace TinyFx
             if (ConfigUtil.Project.MinThreads > 0)
                 ThreadPool.SetMinThreads(ConfigUtil.Project.MinThreads, ConfigUtil.Project.MinThreads);
 
-            LogUtil.Info("TinyFx 配置完成");
+            // Hosting
+            builder.ConfigureServices((context, services) =>
+            {
+                services.AddSingleton<ITinyFxHostLifetimeService>(new DefaultTinyFxHostLifetimeService());
+                services.AddSingleton<ITinyFxHostTimerService>(new DefaultTinyFxHostTimerService());
+                services.AddSingleton<ITinyFxHostRegisterService>(new RedisTinyFxHostRegisterService());
+                services.AddSingleton<ITinyFxHostDataService>(new RedisTinyFxHostDataService());
+            });
+
+            LogUtil.Info("配置 [TinyFx]");
             return builder;
         }
 

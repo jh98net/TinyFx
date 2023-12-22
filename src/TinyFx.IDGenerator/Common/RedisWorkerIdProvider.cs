@@ -9,6 +9,7 @@ using TinyFx.Configuration;
 using TinyFx.IDGenerator.Caching;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Net;
+using TinyFx.Logging;
 
 namespace TinyFx.IDGenerator.Common
 {
@@ -70,6 +71,7 @@ namespace TinyFx.IDGenerator.Common
         public void Dispose()
         {
             new WorkerIdsDCache(WorkerId).KeyDeleteAsync().GetTaskResult();
+            LogUtil.Debug("IDGenerator 释放");
         }
     }
 }

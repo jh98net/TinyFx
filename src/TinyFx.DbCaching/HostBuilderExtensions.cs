@@ -41,7 +41,7 @@ namespace TinyFx
                 }
             });
             var consumer = section.PublishMode == DbCachingPublishMode.Redis ? "RedisDbCacheChangeConsumer" : "MQDbCacheChangeConsumer";
-            LogUtil.Info($"DbCaching 配置完成。ChangeConsumer: {consumer}");
+            LogUtil.Info("配置 [DbCaching] ChangeConsumer: {ChangeConsumer}", consumer);
             return builder;
         }
     }

@@ -11,5 +11,6 @@ namespace TinyFx.Hosting.Services
         Task Register();
         Task Unregister();
         Task Heartbeat();
+        Task Health();
     }
 }

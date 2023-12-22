@@ -81,8 +81,16 @@
     "ResponseErrorMessage": true, //是否返回客户端错误信息(自定义异常和未处理异常的message)
     "ResponseErrorDetail": true, //是否返回客户端异常详细信息（exception序列化信息）
     "IsDebugEnvironment": true, //否测试环境
-    "Environment": null, //当前环境:local,dev,fat(qa),uat(staging),pro(prod)
-    "HostHeartbeatInterval": 5000 //主机服务信息注册心跳间隔
+    "Environment": null //当前环境:local,dev,fat(qa),uat(staging),pro(prod)
+  },
+
+  // 主机配置(TinyFx.Configuration.HostSection)
+  "Host": {
+    "HeartbeatInterval": 5000, //主机注册心跳间隔，默认5秒, 0-无心跳
+    "HeathInterval": 600000, //主机检查间隔，默认10分钟, 0-无检查
+    "DataExpire": 15000, //主机数据有效期，默认15秒,0-10分钟
+    "TimerMinDelay": 200, //主机Timer最小Delay时间, 0-无Timer
+    "TimerWaitTimeout": 20000 //主机Timer关闭等待超时
   },
 
   // 自定义配置信息 (TinyFx.Configuration.AppSettingsSection)

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Caching;
 using TinyFx.Configuration;
@@ -12,22 +9,36 @@ namespace TinyFx.Hosting.Services
     /// <summary>
     /// service服务数据
     /// </summary>
-    internal class TinyFxServiceDataDCache : RedisHashMultiClient
+    internal class TinyFxHostDataDCache : RedisHashMultiClient
     {
+        public string ServiceId { get; }
+        private TimeSpan MaxExpireSpan = TimeSpan.FromMinutes(10);
         private TimeSpan _expireSpan;
-        public TinyFxServiceDataDCache(string serviceId)
+        public TinyFxHostDataDCache(string serviceId)
         {
-            RedisKey = $"{RedisPrefixConst.TINYFX_HOSTS}:Data:{serviceId}";
-            _expireSpan = TimeSpan.FromMilliseconds(ConfigUtil.Project.HostHeartbeatInterval * 3);
+            ServiceId = serviceId;
+            RedisKey = $"{RedisPrefixConst.HOSTS}:Data:{serviceId}";
+            var expire = ConfigUtil.Host.DataExpire;
+            _expireSpan = expire > 0 ? TimeSpan.FromMilliseconds(expire) : MaxExpireSpan;
+        }
+
+        public async Task SetServiceId()
+        {
+            await SetData("ServiceId", ServiceId);
+            await ActiveData();
         }
 
         /// <summary>
         /// 激活服务
         /// </summary>
         /// <returns></returns>
-        public async Task ActiveService()
+        public async Task ActiveData()
         {
             await KeyExpireAsync(_expireSpan);
+        }
+        public async Task RemoveData()
+        {
+            await KeyDeleteAsync();
         }
 
         /// <summary>
@@ -54,7 +65,7 @@ namespace TinyFx.Hosting.Services
             var ret = new CacheValue<T>();
             ret.HasValue = data.HasValue;
             if (data.HasValue)
-                ret.Value = (T)data.Value;
+                ret.Value = TinyFxUtil.ConvertTo<T>(data.Value);
             return ret;
         }
     }

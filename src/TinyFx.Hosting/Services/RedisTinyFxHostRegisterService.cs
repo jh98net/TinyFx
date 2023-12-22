@@ -3,24 +3,44 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.Configuration;
+using TinyFx.Logging;
 
 namespace TinyFx.Hosting.Services
 {
     public class RedisTinyFxHostRegisterService : ITinyFxHostRegisterService
     {
-        public Task Register()
+        private string _serviceId;
+        private TinyFxHostListDCache _listDCache = new();
+        private TinyFxHostDataDCache _dataDCache;
+        private TinyFxHostHealthDCache _healthDCache = new();
+        public RedisTinyFxHostRegisterService() 
         {
-            return Task.CompletedTask;
+            _serviceId = ConfigUtil.ServiceId;
+            _dataDCache = new TinyFxHostDataDCache(_serviceId);
+        }
+        public async Task Register()
+        {
+            LogUtil.Info($"注册Host [RedisTinyFxHostRegisterService] ServerId:{_serviceId}");
+            await _dataDCache.SetServiceId();
+            await _listDCache.AddAsync(_serviceId);
         }
 
-        public Task Heartbeat()
+        public async Task Heartbeat()
         {
-            return Task.CompletedTask;
+            await _dataDCache.ActiveData();
         }
 
-        public Task Unregister()
+        public async Task Health()
         {
-            return Task.CompletedTask;
+            await _healthDCache.HealthHosts();
+        }
+
+        public async Task Unregister()
+        {
+            await _listDCache.RemoveHost(_serviceId);
+            await _dataDCache.RemoveData();
+            LogUtil.Info($"注销Host [RedisTinyFxHostRegisterService] ServerId:{_serviceId}");
         }
     }
 }

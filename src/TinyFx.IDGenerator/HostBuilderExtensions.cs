@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
+using TinyFx.Hosting;
 using TinyFx.IDGenerator;
 using TinyFx.IDGenerator.Common;
 using TinyFx.Logging;
@@ -32,16 +33,21 @@ namespace TinyFx
                 if (!redisSecion.ConnectionStrings.ContainsKey(section.RedisConnectionStringName))
                     throw new Exception($"启动IDGenerator时不存在redisConnectionName: {section.RedisConnectionStringName}");
             }
-
-            IDGeneratorUtil.Init();
+            HostingUtil.RegisterStarted(async () => IDGeneratorUtil.Init());
+            HostingUtil.RegisterStopped(async () => IDGeneratorUtil.WorkerIdProvider.Dispose());
             if (section.UseRedis)
             {
-                builder.ConfigureServices((ctx, services) =>
+                HostingUtil.RegisterTimer(new Hosting.Services.TinyFxHostTimerItem
                 {
-                    services.AddHostedService<IDGeneratorHostedService>();
+                    ExecuteCount = 0,
+                    Id = "IDGenerator.Heartbeat",
+                    Title = "IDGenerator心跳",
+                    Interval = section.RedisExpireMinutes * 60 * 1000 / 3,
+                    TryCount = 5,
+                    Callback = async (_) => await IDGeneratorUtil.WorkerIdProvider.Active()
                 });
             }
-            LogUtil.Debug($"IDGenerator 配置完成");
+            LogUtil.Info($"配置 [IDGenerator]");
             return builder;
         }
     }

@@ -12,6 +12,7 @@ using TinyFx;
 using TinyFx.Configuration;
 using TinyFx.Extensions.Serilog;
 using TinyFx.Hosting;
+using TinyFx.Hosting.Services;
 using TinyFx.Logging;
 using TinyFx.Net;
 

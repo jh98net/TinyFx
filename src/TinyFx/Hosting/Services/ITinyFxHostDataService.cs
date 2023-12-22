@@ -11,8 +11,8 @@ namespace TinyFx.Hosting.Services
 {
     public interface ITinyFxHostDataService
     {
-        Task SetData(string field, object value);
-        Task<CacheValue<object>> GetData(string field);
+        Task SetData<T>(string field, T value);
+        Task<CacheValue<T>> GetData<T>(string field);
     }
 
 
@@ -25,21 +25,21 @@ namespace TinyFx.Hosting.Services
             _serviceId = ConfigUtil.ServiceId;
         }
 
-        public Task SetData(string field, object value)
+        public Task SetData<T>(string field, T value)
         {
             var key = GetKey(field);
             _dict.AddOrUpdate(key, value, (k, v) => value);
             return Task.CompletedTask;
         }
 
-        public async Task<CacheValue<object>> GetData(string field)
+        public async Task<CacheValue<T>> GetData<T>(string field)
         {
-            var ret = new CacheValue<object>();
+            var ret = new CacheValue<T>();
             var key = GetKey(field);
             if (_dict.TryGetValue(key, out var value))
             {
                 ret.HasValue = true;
-                ret.Value = value;
+                ret.Value = (T)value;
             }
             return ret;
         }

@@ -4,19 +4,28 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Caching;
+using TinyFx.Configuration;
 
 namespace TinyFx.Hosting.Services
 {
     public class RedisTinyFxHostDataService : ITinyFxHostDataService
     {
-        public Task<CacheValue<object>> GetData(string field)
+        private string _serviceId;
+        private TinyFxHostDataDCache _dataDCache;
+        public RedisTinyFxHostDataService()
         {
-            throw new NotImplementedException();
+            _serviceId = ConfigUtil.ServiceId;
+            _dataDCache = new TinyFxHostDataDCache(_serviceId);
         }
 
-        public Task SetData(string field, object value)
+        public async Task SetData<T>(string field, T value)
         {
-            throw new NotImplementedException();
+            await _dataDCache.SetData(field, value);
+        }
+
+        public async Task<CacheValue<T>> GetData<T>(string field)
+        {
+            return await _dataDCache.GetData<T>(field);
         }
     }
 }

@@ -16,27 +16,53 @@ namespace TinyFx.Hosting
     {
         private ITinyFxHostRegisterService _registerService;
         private ITinyFxHostTimerService _timerService;
-        public TinyFxHostedService(ITinyFxHostRegisterService registerService, ITinyFxHostTimerService timerService)
+        private ITinyFxHostLifetimeService _lifetimeService;
+        private IHostApplicationLifetime _lifetime;
+        public TinyFxHostedService(ITinyFxHostRegisterService registerService, ITinyFxHostTimerService timerService, ITinyFxHostLifetimeService lifetimeService, IHostApplicationLifetime lifetime)
         {
             _registerService = registerService;
             _timerService = timerService;
+            _lifetimeService = lifetimeService;
+            _lifetime = lifetime;
+            if (_lifetimeService != null)
+            {
+                _lifetimeService.StartedEvents.ForEach(x => _lifetime.ApplicationStarted.Register(async () => await x()));
+                _lifetimeService.StoppingEvents.ForEach(x => _lifetime.ApplicationStopping.Register(async () => await x()));
+                _lifetimeService.StoppedEvents.ForEach(x => _lifetime.ApplicationStopped.Register(async () => await x()));
+            }
+
             if (_timerService != null && _registerService != null)
             {
-                _timerService.Register(new TinyFxHostTimerItem
+                _lifetime.ApplicationStarted.Register(async () => await _registerService.Register());
+                if (ConfigUtil.Host.HeartbeatInterval > 0)
                 {
-                    Id = "ITinyFxHostTimerService.Heartbeat",
-                    Title = "Host服务心跳",
-                    Interval = ConfigUtil.Project.HostHeartbeatInterval,
-                    ExecuteCount = 0,
-                    TryCount = int.MaxValue,
-                    Callback = (stoppingToken) => _registerService.Heartbeat()
-                });
+                    _timerService.Register(new TinyFxHostTimerItem
+                    {
+                        Id = "ITinyFxHostTimerService.Heartbeat",
+                        Title = "Host心跳",
+                        Interval = ConfigUtil.Host.HeartbeatInterval,
+                        ExecuteCount = 0,
+                        TryCount = int.MaxValue,
+                        Callback = (stoppingToken) => _registerService.Heartbeat()
+                    });
+                }
+                if (ConfigUtil.Host.HeathInterval > 0)
+                {
+                    _timerService.Register(new TinyFxHostTimerItem
+                    {
+                        Id = "ITinyFxHostTimerService.Health",
+                        Title = "Host检查",
+                        Interval = ConfigUtil.Host.HeathInterval,
+                        ExecuteCount = 0,
+                        TryCount = int.MaxValue,
+                        Callback = (stoppingToken) => _registerService.Health()
+                    });
+                }
             }
         }
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _registerService?.Register();
             await base.StartAsync(cancellationToken);
         }
 

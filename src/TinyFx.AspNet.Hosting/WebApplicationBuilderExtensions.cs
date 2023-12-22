@@ -95,7 +95,7 @@ namespace TinyFx
         {
             services.AddScoped<ILogBuilder>((_) =>
             {
-                var ret = new LogBuilder("ASPNET_CONTEXT");
+                var ret = new LogBuilder("ASPNET_REQUEST");
                 ret.IsContext = true;
                 return ret;
             });
@@ -138,7 +138,7 @@ namespace TinyFx
                             options.CacheProfiles.Add(profile.Key, profile.Value);
                         }
                     }
-                    LogUtil.Trace($"ResponseCaching 配置完成");
+                    LogUtil.Trace($"配置 [ResponseCaching]");
                 }
             }).AddJsonOptions(options =>
             {

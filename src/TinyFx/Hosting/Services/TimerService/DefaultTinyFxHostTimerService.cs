@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TinyFx.Common;
+using TinyFx.Configuration;
 using TinyFx.Logging;
 using TinyFx.Text;
 
@@ -17,15 +18,19 @@ namespace TinyFx.Hosting.Services
         /// <summary>
         /// 停止服务时，等待运行中的timer任务的timeout时间
         /// </summary>
-        public int WaitTasksTimeout { get; set; } = 20000;
-        public int MinDelayInterval = 200;
+        private int _waitTasksTimeout;
+        private int _minDelayInterval;
 
         private ConcurrentDictionary<string, TinyFxHostTimerJob> _jobs = new();
         private readonly HashSet<Task> _tasks = new();
         private CancellationTokenSource _stoppingCts = new CancellationTokenSource(); //终止通知
         private CancellationTokenSource _changeCts = new CancellationTokenSource();//改变通知
 
-        public DefaultTinyFxHostTimerService() { }
+        public DefaultTinyFxHostTimerService()
+        {
+            _waitTasksTimeout = ConfigUtil.Host.TimerWaitTimeout;
+            _minDelayInterval = ConfigUtil.Host.TimerMinDelay;
+        }
 
         #region Method
         /// <summary>
@@ -50,6 +55,8 @@ namespace TinyFx.Hosting.Services
                 Id = item.Id,
                 Title = item.Title,
                 Interval = item.Interval,
+                ExecuteCount = item.ExecuteCount,
+                TryCount = item.TryCount,
                 Callback = item.Callback,
                 Remain = item.Interval,
                 Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false)
@@ -92,6 +99,8 @@ namespace TinyFx.Hosting.Services
             {
                 _stoppingCts.Cancel();
             });
+            if (_minDelayInterval == 0)
+                return;
             LogUtil.Info("ITinyFxHostTimerService 启动");
             int interval = 0;
             while (!_stoppingCts.IsCancellationRequested)
@@ -105,6 +114,9 @@ namespace TinyFx.Hosting.Services
                     {
                         if (job.TryExecute(interval, _stoppingCts.Token, out Task task))
                         {
+                            if (job.IsCycleEnd)//循环结束
+                                _jobs.TryRemove(job.Id, out var _);
+
                             _tasks.Add(task);
                             var _ = task.ContinueWith(t =>
                             {
@@ -133,16 +145,10 @@ namespace TinyFx.Hosting.Services
                         LogUtil.Error(ex, $"DefaultTinyFxHostTimerService.StartAsync执行中出现异常，必须处理!!! id:{job.Id} title:{job.Title}");
                     }
 
-                    if (job.IsCycleEnd)//循环结束
-                    {
-                        _jobs.TryRemove(job.Id, out var _);
-                    }
-                    else
-                    {
+                    if (!job.IsCycleEnd)
                         nextInterval = Math.Min(nextInterval, job.Remain);
-                    }
                 }
-                interval = Math.Max(MinDelayInterval, nextInterval);
+                interval = Math.Max(_minDelayInterval, nextInterval);
                 await Task.Delay(TimeSpan.FromMilliseconds(nextInterval), _changeCts.Token).ContinueWith((t) =>
                 {
                     if (t.Status == TaskStatus.Canceled)
@@ -158,7 +164,7 @@ namespace TinyFx.Hosting.Services
             _stoppingCts.Cancel();
             _changeCts.Cancel();
             var tasks = GetTasks().ToArray();
-            if (!Task.WaitAll(tasks, WaitTasksTimeout, cancellationToken))
+            if (!Task.WaitAll(tasks, _waitTasksTimeout, cancellationToken))
             {
                 foreach (var task in tasks)
                 {

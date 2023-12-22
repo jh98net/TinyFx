@@ -11,6 +11,7 @@ using TinyFx.IDGenerator.Common;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Net;
 using static System.Collections.Specialized.BitVector32;
+using TinyFx.Logging;
 
 namespace TinyFx.IDGenerator
 {
@@ -48,6 +49,7 @@ namespace TinyFx.IDGenerator
 
             Generator = new SnowflakeIdGenerator(WorkerIdProvider);
             _isInited = true;
+            LogUtil.Debug("IDGenerator 启动");
         }
 
         /// <summary>

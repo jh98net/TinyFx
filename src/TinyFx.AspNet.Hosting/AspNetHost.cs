@@ -51,6 +51,8 @@ namespace TinyFx
             var lastBuildTime = File.GetLastWriteTimeUtc(Assembly.GetEntryAssembly().Location).AddHours(8).ToString("yyyy-MM-dd HH:mm:ss");
             var dict = new Dictionary<string, object>
             {
+                { "ConfigUtil.ServiceId", ConfigUtil.ServiceId },
+                { "ConfigUtil.ServiceUrl", ConfigUtil.ServiceUrl },
                 { "ConfigUtil.EnvironmentString", ConfigUtil.EnvironmentString },
                 { "ConfigUtil.Environment", ConfigUtil.Environment },
                 { "header:Host", HttpContextEx.GetHeaderValue("Host") },

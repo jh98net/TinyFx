@@ -11,12 +11,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <summary>
         /// 主机服务注册前缀
         /// </summary>
-        public const string TINYFX_HOSTS = "_TINYFX:HOSTS";
+        public const string HOSTS = "_TINYFX:Host";
 
         /// <summary>
         /// 分布式锁
         /// </summary>
-        public const string RED_LOCK = "_TINYFX:LOCK";
+        public const string REDIS_LOCK = "_TINYFX:RedisLock";
         /// <summary>
         /// 布隆过滤器
         /// </summary>
