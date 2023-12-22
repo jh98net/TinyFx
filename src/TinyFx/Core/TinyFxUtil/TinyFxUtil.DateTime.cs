@@ -189,6 +189,14 @@ namespace TinyFx
             => TimestampToDateTime(timeStamp, false, isSeconds);
         #endregion
 
+        /// <summary>
+        /// 日期字符串标准格式 yyyy-MM-dd HH:mm:ss
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
+        public static string ToFormatString(this DateTime dateTime)
+            => dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+
         #region 星座
         /// <summary>
         /// 获取星座

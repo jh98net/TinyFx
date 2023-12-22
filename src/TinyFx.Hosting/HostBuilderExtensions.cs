@@ -7,7 +7,9 @@ using System;
 using System.Threading;
 using TinyFx.Configuration;
 using TinyFx.Extensions.Serilog;
+using TinyFx.Hosting;
 using TinyFx.Hosting.Common;
+using TinyFx.Hosting.Services;
 using TinyFx.Logging;
 
 namespace TinyFx
@@ -41,10 +43,13 @@ namespace TinyFx
                     return ret;
                 });
 
-                // Lifetime
-                services.AddHostedService<TinyFxHostLifetimeHostedService>();
                 // DistributedMemoryCache
                 services.AddDistributedMemoryCache();
+
+                // Hosting
+                services.AddSingleton<ITinyFxHostTimerService>(new DefaultTinyFxHostTimerService());
+                services.AddSingleton<ITinyFxHostRegisterService>(new RedisTinyFxHostRegisterService());
+                services.AddSingleton<ITinyFxHostDataService>(new RedisTinyFxHostDataService());
             });
 
             // InitConfiguration
@@ -61,6 +66,15 @@ namespace TinyFx
                 ThreadPool.SetMinThreads(ConfigUtil.Project.MinThreads, ConfigUtil.Project.MinThreads);
 
             LogUtil.Info("TinyFx 配置完成");
+            return builder;
+        }
+
+        public static IHostBuilder AddTinyFxHost(this IHostBuilder builder)
+        {
+            builder.ConfigureServices(services =>
+            {
+                services.AddHostedService<TinyFxHostedService>();
+            });
             return builder;
         }
     }

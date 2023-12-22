@@ -26,6 +26,7 @@ namespace TinyFx
     {
         public static WebApplicationBuilder CreateBuilder(string envString = null, string[] args = null)
         {
+            ConfigUtil.HostType = TinyFxHostType.AspNet;
             SerilogUtil.CreateBootstrapLogger();
             var builder = WebApplication.CreateBuilder(args);
             // 设置启动Serilog

@@ -52,7 +52,7 @@ namespace TinyFx
             //
             TinyFxHostingStartupLoader.Instance.Configure(app);
 
-            TinyFxHost.RegisterOnStarted(() =>
+            app.Lifetime.ApplicationStarted.Register(() =>
             {
                 app.UseTinyFx(serviceProvider =>
                 {
@@ -70,7 +70,6 @@ namespace TinyFx
                     , ConfigUtil.ServiceUrl
                     , ConfigUtil.GetSection<AspNetSection>()?.PathBase
                     , ConfigUtil.ServiceId);
-                return Task.CompletedTask;
             });
             return app;
         }

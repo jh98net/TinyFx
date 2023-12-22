@@ -77,6 +77,8 @@ namespace TinyFx.Configuration
         /// 服务外部访问地址，服务启动后人工设置
         /// </summary>
         public static string ServiceUrl { get; set; }
+
+        public static TinyFxHostType HostType { get; set; } = TinyFxHostType.Unknow;
         #endregion
 
         #region Init
@@ -204,5 +206,12 @@ namespace TinyFx.Configuration
                 throw new Exception("TinyFx应用程序配置没有初始化!");
         }
         #endregion
+    }
+    public enum TinyFxHostType
+    {
+        Unknow = 0,
+        Console=1,
+        AspNet=2,
+        DotNetty=3
     }
 }

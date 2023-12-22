@@ -28,6 +28,7 @@ namespace TinyFx
         /// <returns></returns>
         public static IHostBuilder CreateBuilder(string envString = null, string[] args = null)
         {
+            ConfigUtil.HostType = TinyFxHostType.Console;
             SerilogUtil.CreateBootstrapLogger();
             var builder = Host.CreateDefaultBuilder(args)
                 .AddTinyFx(envString)
@@ -37,7 +38,8 @@ namespace TinyFx
                 .AddSqlSugarEx()
                 .AddRabbitMQEx()
                 .AddIDGenerator()
-                .AddDbCachingEx();
+                .AddDbCachingEx()
+                .AddTinyFxHost();
             return builder;
         }
 
@@ -81,38 +83,6 @@ namespace TinyFx
         /// <returns></returns>
         public static Task RunAsync(string envString = null, string[] args = null)
             => CreateHost(envString, args).RunAsync();
-        #endregion
-
-        #region IHostApplicationLifetime
-        /// <summary>
-        /// 应用程序生命周期事件的通知
-        /// </summary>
-        public static IHostApplicationLifetime Lifetime
-            => DIUtil.GetRequiredService<IHostApplicationLifetime>();
-
-        internal static List<Func<Task>> OnStartedEvents = new();
-        internal static List<Func<Task>> OnStoppingEvents = new();
-        internal static List<Func<Task>> OnStoppedEvents = new();
-
-        public static void RegisterLifetimeEvent(ITinyFxHostLifetimeEvent @event)
-        {
-            OnStartedEvents.Add(@event.OnStarted);
-            OnStoppingEvents.Add(@event.OnStopping);
-            OnStoppedEvents.Add(@event.OnStopped);
-        }
-
-        public static void RegisterOnStarted(Func<Task> func)
-        {
-            OnStartedEvents.Add(func);
-        }
-        public static void RegisterOnStopping(Func<Task> func)
-        {
-            OnStoppingEvents.Add(func);
-        }
-        public static void RegisterOnStopped(Func<Task> func)
-        {
-            OnStoppedEvents.Add(func);
-        }
         #endregion
     }
 }

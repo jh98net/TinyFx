@@ -49,5 +49,10 @@ namespace TinyFx.Configuration
         /// 项目环境 EnvironmentNames
         /// </summary>
         public string Environment { get; set; }
+
+        /// <summary>
+        /// 主机服务信息注册心跳间隔，默认5秒
+        /// </summary>
+        public int HostHeartbeatInterval { get; set; } = 5000;
     }
 }

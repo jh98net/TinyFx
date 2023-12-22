@@ -21,6 +21,7 @@ namespace TinyFx.Demos
             Console.WriteLine(str);
         }
     }
+
     public class UserInfo
     {
         public int UserId { get; set; }

@@ -1,5 +1,6 @@
 ﻿using Demo.WebAPI.BLL.Demo;
 using Demo.WebAPI.DAL;
+using EasyNetQ.Events;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Cors.Infrastructure;
@@ -22,6 +23,7 @@ using TinyFx.AspNet.RequestLogging;
 using TinyFx.AspNet.ResponseCaching;
 using TinyFx.Configuration;
 using TinyFx.DbCaching;
+using TinyFx.Hosting.Services;
 using TinyFx.IDGenerator;
 using TinyFx.Logging;
 using TinyFx.Net;
@@ -53,13 +55,52 @@ namespace Demo.WebAPI.Apis
         }
         [HttpGet]
         [AllowAnonymous]
-        public string Test()
+        public string Test1()
         {
-            LogUtil.Info("aaaaa");
-            LogUtil.GetContextLogger().SetLevel(LogLevel.Information).AddMessage("bbb").Save();
-            LogUtil.CreateLogger<DemoController>().LogInformation("ddd");
-            LogUtil.CreateLogger(typeof(DemoController).FullName).LogInformation("eee");
-            Serilog.Log.Logger.Information("fff");
+            var timer = DIUtil.GetService<ITinyFxHostTimerService>();
+            timer.Register(new TinyFxHostTimerItem
+            {
+                Id = "A",
+                Title = "A任务",
+                Interval = 1000,
+                Callback = (st) => 
+                {
+                    if (true)
+                        throw new Exception("asdf");
+                    return Task.CompletedTask;
+                }
+            });
+            return "";
+        }
+        [HttpGet]
+        [AllowAnonymous]
+        public string Test2()
+        {
+            var timer = DIUtil.GetService<ITinyFxHostTimerService>();
+            timer.Unregister("A");
+            return "";
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public string Test3()
+        {
+            var timer = DIUtil.GetService<ITinyFxHostTimerService>();
+            timer.Register(new TinyFxHostTimerItem
+            {
+                Id = "B",
+                Title = "B任务",
+                Interval = 1000,
+                Callback = async(st) =>
+                {
+                    while (true)
+                    {
+                        if (st.IsCancellationRequested)
+                            break;
+                        await Task.Delay(1000);
+                    }
+                }
+            });
             return "";
         }
 

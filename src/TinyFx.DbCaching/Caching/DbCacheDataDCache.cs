@@ -41,7 +41,7 @@ namespace TinyFx.DbCaching
         private DbCacheDataDCache(string connectionString)
         {
             Options.ConnectionString = connectionString;
-            RedisKey = RedisPrefixConst.DB_CACHING_DATA;
+            RedisKey = $"{RedisPrefixConst.DB_CACHING}:Data";
         }
         protected override async Task<CacheValue<string>> LoadValueWhenRedisNotExistsAsync(string field)
         {

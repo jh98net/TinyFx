@@ -9,6 +9,11 @@ namespace TinyFx.Extensions.StackExchangeRedis
     public static class RedisPrefixConst
     {
         /// <summary>
+        /// 主机服务注册前缀
+        /// </summary>
+        public const string TINYFX_HOSTS = "_TINYFX:HOSTS";
+
+        /// <summary>
         /// 分布式锁
         /// </summary>
         public const string RED_LOCK = "_TINYFX:LOCK";
@@ -28,7 +33,6 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <summary>
         /// TinyFx.DbCaching.DbCacheDataDCache使用
         /// </summary>
-        public const string DB_CACHING_DATA = "_TINYFX:DbCaching:Data";
-        public const string DB_CACHING_STATUS = "_TINYFX:DbCaching:Status";
+        public const string DB_CACHING = "_TINYFX:DbCaching";
     }
 }

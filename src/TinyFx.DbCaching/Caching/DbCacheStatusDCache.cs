@@ -23,7 +23,7 @@ namespace TinyFx.DbCaching
         private DbCacheStatusDCache(string connectionStringName = null)
         {
             Options.ConnectionStringName = connectionStringName;
-            RedisKey = RedisPrefixConst.DB_CACHING_STATUS;
+            RedisKey = $"{RedisPrefixConst.DB_CACHING}:Status";
         }
     }
     internal class DbCacheStatusDO

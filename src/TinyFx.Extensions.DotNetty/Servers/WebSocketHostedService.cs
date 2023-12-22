@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TinyFx.Common;
+using TinyFx.Hosting.Services;
 using TinyFx.Logging;
 using TinyFx.Net;
 
@@ -14,7 +15,7 @@ namespace TinyFx.Extensions.DotNetty
     {
         private WebSocketServer _server;
         private ServerOptions _options;
-        protected MultiTimerWorks TimerWorks { get; } = new MultiTimerWorks();
+        protected DefaultTinyFxHostTimerService _timerService = new();
         protected AppSessionContainer Sessions;
 
         public WebSocketHostedService(IHostApplicationLifetime appLifetime)
@@ -22,13 +23,13 @@ namespace TinyFx.Extensions.DotNetty
             _server = new WebSocketServer();
             _options = DIUtil.GetRequiredService<ServerOptions>();
             Sessions = DotNettyUtil.Sessions;
+            RegisterCheckInvalidSessionWork();
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
-                RegisterCheckInvalidSessionWork();
-                var _ = TimerWorks.StartAsync(stoppingToken);
+                var _ = _timerService.StartAsync(stoppingToken);
                 await _server.StartAsync();
             }
             catch (CustomException ex)
@@ -42,7 +43,7 @@ namespace TinyFx.Extensions.DotNetty
         }
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            await TimerWorks.StopAsync(cancellationToken);
+            await _timerService.StopAsync(cancellationToken);
             await _server.StopAsync();
             await base.StopAsync(cancellationToken);
         }
@@ -50,18 +51,19 @@ namespace TinyFx.Extensions.DotNetty
         {
             if (_options.CheckSessionInterval > 0 && _options.CheckSessionTimeout > 0)
             {
-                var work = new TimerWork
+                _timerService.Register(new TinyFxHostTimerItem
                 {
-                    WorkId = "CheckInvalidSessionWork",
+                    Id = "DotNetty.CheckInvalidSessionWork",
+                    Title = "DotNetty检测有效Session",
                     Interval = _options.CheckSessionInterval,
-                    Action = CheckInvalidSessionWork,
-                };
-                TimerWorks.RegisterWork(work);
+                    Callback = CheckInvalidSessionWork,
+                });
             }
         }
         private Task CheckInvalidSessionWork(CancellationToken stoppingToken)
         {
-            return Task.Run(() => {
+            return Task.Run(() =>
+            {
                 foreach (var session in Sessions.Find())
                 {
                     if (stoppingToken.IsCancellationRequested)
