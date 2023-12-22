@@ -101,7 +101,7 @@ namespace TinyFx.Hosting.Services
             });
             if (_minDelayInterval == 0)
                 return;
-            LogUtil.Info("ITinyFxHostTimerService 启动");
+            LogUtil.Info("启动 => Host定时服务[ITinyFxHostTimerService]");
             int interval = 0;
             while (!_stoppingCts.IsCancellationRequested)
             {
@@ -174,7 +174,7 @@ namespace TinyFx.Hosting.Services
                     }
                 }
             }
-            LogUtil.Info("ITinyFxHostTimerService 终止");
+            LogUtil.Info("停止 => Host定时服务[ITinyFxHostTimerService]");
             return Task.CompletedTask;
         }
 

@@ -10,7 +10,7 @@ using TinyFx.Extensions.RabbitMQ;
 namespace TinyFx.DbCaching.ChangeConsumers
 {
     [MQConsumerIgnore]
-    internal class MQDbCacheChangeConsumer : MQSubscribeConsumer<DbCacheChangeMessage>
+    internal class MQDbCacheChangeConsumer : MQSubscribeConsumer<DbCacheChangeMessage>, IDbCacheChangeConsumer
     {
         public override MQSubscribeMode SubscribeMode => MQSubscribeMode.Multicast;
         private string _connectionStringName;
@@ -33,6 +33,11 @@ namespace TinyFx.DbCaching.ChangeConsumers
         protected override async Task OnMessage(DbCacheChangeMessage message, CancellationToken cancellationToken)
         {
             await _uploader.Execute(message);
+        }
+
+        public Task RegisterConsumer()
+        {
+            return this.Register();
         }
     }
 }

@@ -96,7 +96,7 @@ namespace TinyFx.Configuration
             var policies = GetPolicies();
             if (policies?.Count > 0)
             {
-                var log = new LogBuilder("Cors").SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
+                var log = new LogBuilder("CORS").SetLevel(Microsoft.Extensions.Logging.LogLevel.Information);
                 if (isUpdate)
                     log.AddMessage("更新跨域设置");
                 else

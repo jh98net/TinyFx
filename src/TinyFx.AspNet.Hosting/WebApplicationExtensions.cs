@@ -61,7 +61,7 @@ namespace TinyFx
                         ? ihttp.HttpContext.RequestServices
                         : null;
                 });
-                LogUtil.Warning("【AspNet服务已启动】 ==> ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) IsDebug:{IsDebug} IsStaging:{IsStaging} URL:{Urls} PathBase:{PathBase} ServiceId:{ServiceId}"
+                LogUtil.Warning("===> 【AspNet服务已启动】 ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) IsDebug:{IsDebug} IsStaging:{IsStaging} URL:{Urls} PathBase:{PathBase} ServiceId:{ServiceId}"
                     , ConfigUtil.Project?.ProjectId
                     , ConfigUtil.Environment
                     , ConfigUtil.EnvironmentString
@@ -70,6 +70,18 @@ namespace TinyFx
                     , ConfigUtil.ServiceUrl
                     , ConfigUtil.GetSection<AspNetSection>()?.PathBase
                     , ConfigUtil.ServiceId);
+            });
+            app.Lifetime.ApplicationStopped.Register(() => 
+            {
+                LogUtil.Warning("===> 【AspNet服务已停止】 ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) IsDebug:{IsDebug} IsStaging:{IsStaging} URL:{Urls} PathBase:{PathBase} ServiceId:{ServiceId}"
+                 , ConfigUtil.Project?.ProjectId
+                 , ConfigUtil.Environment
+                 , ConfigUtil.EnvironmentString
+                 , ConfigUtil.IsDebugEnvironment
+                 , ConfigUtil.IsStagingEnvironment
+                 , ConfigUtil.ServiceUrl
+                 , ConfigUtil.GetSection<AspNetSection>()?.PathBase
+                 , ConfigUtil.ServiceId);
             });
             return app;
         }

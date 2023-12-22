@@ -54,7 +54,7 @@ namespace TinyFx
                     });
                 }
             });
-            LogUtil.Info("配置 [Redis] ConsumerAssemblies: {ConsumerAssemblies}", string.Join('|', section.ConsumerAssemblies));
+            LogUtil.Info("配置 => [Redis] ConsumerAssemblies: {ConsumerAssemblies}", string.Join('|', section.ConsumerAssemblies));
             return builder;
         }
     }

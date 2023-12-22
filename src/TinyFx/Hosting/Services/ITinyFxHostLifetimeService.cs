@@ -11,19 +11,27 @@ namespace TinyFx.Hosting.Services
 {
     public interface ITinyFxHostLifetimeService
     {
+        List<Func<Task>> StartingEvents { get; }
         List<Func<Task>> StartedEvents { get; }
         List<Func<Task>> StoppingEvents { get; }
         List<Func<Task>> StoppedEvents { get; }
+
+        void RegisterStarting(Func<Task> func);
         void RegisterStarted(Func<Task> func);
         void RegisterStopping(Func<Task> func);
         void RegisterStopped(Func<Task> func);
     }
     public class DefaultTinyFxHostLifetimeService : ITinyFxHostLifetimeService
     {
+        public List<Func<Task>> StartingEvents { get; } = new();
         public List<Func<Task>> StartedEvents { get; } = new();
         public List<Func<Task>> StoppingEvents { get; } = new();
         public List<Func<Task>> StoppedEvents { get; } = new();
 
+        public void RegisterStarting(Func<Task> func)
+        {
+            StartingEvents.Add(func);
+        }
         public void RegisterStarted(Func<Task> func)
         {
             StartedEvents.Add(func);

@@ -44,12 +44,10 @@ namespace TinyFx.AspNet.RequestLogging
                     logger.LogResponseBody = section.LogResponseBody;
                 }
             }
-            logger.AddField("Request.StartTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
-            logger.AddField("Request.TraceId", context.GetTraceId());
-            logger.AddField("Request.Url", context.Request.Path.ToString());
-            logger.AddField("Request.Referer", AspNetUtil.GetRefererUrl());
-            logger.AddField("Request.RemoteIp", AspNetUtil.GetRemoteIpString());
             logger.AddField("Request.Method", context.Request.Method);
+            logger.AddField("Request.Url", context.Request.Path.ToString());
+            logger.AddField("Request.TraceId", context.GetTraceId());
+            logger.AddField("Request.StartTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
             if (logger.LogRequestHeaders)
                 logger.AddField("Request.Headers", context.Request.Headers.ToDictionary(x => x.Key, v => string.Join(";", v.Value.ToList())));
             if (logger.LogRequestBody)
@@ -57,13 +55,16 @@ namespace TinyFx.AspNet.RequestLogging
 
             await _next(context); // 继续执行
 
+            logger.AddField("Request.Referer", AspNetUtil.GetRefererUrl());
+            logger.AddField("Request.RemoteIp", AspNetUtil.GetRemoteIpString());
             logger.AddField("Request.UserId", context?.User?.Identity?.Name);
             logger.AddField("Request.EndTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+            stopwatch.Stop();
+            logger.AddField("Request.ElaspedTime", stopwatch.ElapsedMilliseconds);
+
             if (!logger.LogRequestBody && logger.Exception != null)
                 await LogRequestBody(context.Request, logger);
 
-            stopwatch.Stop();
-            logger.AddField("Request.ElaspedTime", stopwatch.ElapsedMilliseconds);
             logger.Save();
         }
         private static async Task LogRequestBody(HttpRequest request, ILogBuilder logger)

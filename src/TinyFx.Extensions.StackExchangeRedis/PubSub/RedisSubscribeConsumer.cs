@@ -39,7 +39,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public void Register()
         {
             if (GetType().GetCustomAttribute<RedisConsumerRegisterIgnoreAttribute>() == null)
-                LogUtil.Info($"注册 RedisSubscribeConsumer: {GetType().FullName}");
+                LogUtil.Info($"注册 => RedisSubscribeConsumer: {GetType().FullName}");
             _sub = RedisUtil.GetRedis(ConnectionStringName, "PUBSUB").GetSubscriber();
             //_sub = RedisUtil.GetRedis(ConnectionStringName).GetSubscriber();
             _channel = RedisUtil.GetChannel<TMessage>(PatternKey, PatternMode.Value);

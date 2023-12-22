@@ -21,7 +21,7 @@ namespace TinyFx.Hosting.Services
         }
         public async Task Register()
         {
-            LogUtil.Info($"注册Host [RedisTinyFxHostRegisterService] ServerId:{_serviceId}");
+            LogUtil.Info($"启动 => Host注册[RedisTinyFxHostRegisterService] ServerId:{_serviceId}");
             await _dataDCache.SetServiceId();
             await _listDCache.AddAsync(_serviceId);
         }
@@ -40,7 +40,7 @@ namespace TinyFx.Hosting.Services
         {
             await _listDCache.RemoveHost(_serviceId);
             await _dataDCache.RemoveData();
-            LogUtil.Info($"注销Host [RedisTinyFxHostRegisterService] ServerId:{_serviceId}");
+            LogUtil.Info($"停止 => 注销Host[RedisTinyFxHostRegisterService] ServerId:{_serviceId}");
         }
     }
 }

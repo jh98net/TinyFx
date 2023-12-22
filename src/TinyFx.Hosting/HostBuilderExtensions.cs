@@ -69,7 +69,7 @@ namespace TinyFx
                 services.AddSingleton<ITinyFxHostDataService>(new RedisTinyFxHostDataService());
             });
 
-            LogUtil.Info("配置 [TinyFx]");
+            LogUtil.Info("配置 => [TinyFx]");
             return builder;
         }
 

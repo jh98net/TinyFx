@@ -50,7 +50,7 @@ namespace TinyFx.Hosting
         /// <returns></returns>
         public static bool RegisterTimer(TinyFxHostTimerItem item, bool tryUpdate = false)
             => GetTimerService().Register(item, tryUpdate);
-        
+
         /// <summary>
         /// 注销主机定时任务
         /// </summary>
@@ -58,7 +58,7 @@ namespace TinyFx.Hosting
         /// <returns></returns>
         public static bool UnregisterTimer(string id)
             => GetTimerService().Unregister(id);
-       
+
         /// <summary>
         /// 注册延迟任务
         /// </summary>
@@ -90,6 +90,12 @@ namespace TinyFx.Hosting
         #endregion
 
         #region ITinyFxHostLifetimeService
+        /// <summary>
+        /// 注册Host启动中事件
+        /// </summary>
+        /// <param name="func"></param>
+        public static void RegisterStarting(Func<Task> func)
+            => GetLifetime().RegisterStarting(func);
         /// <summary>
         /// 注册Host启动完毕事件
         /// </summary>

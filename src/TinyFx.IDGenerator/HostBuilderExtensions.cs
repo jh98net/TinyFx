@@ -33,8 +33,16 @@ namespace TinyFx
                 if (!redisSecion.ConnectionStrings.ContainsKey(section.RedisConnectionStringName))
                     throw new Exception($"启动IDGenerator时不存在redisConnectionName: {section.RedisConnectionStringName}");
             }
-            HostingUtil.RegisterStarted(async () => IDGeneratorUtil.Init());
-            HostingUtil.RegisterStopped(async () => IDGeneratorUtil.WorkerIdProvider.Dispose());
+            HostingUtil.RegisterStarting(async () => 
+            {
+                IDGeneratorUtil.Init();
+                LogUtil.Info("启动 => 雪花ID服务[IDGenerator]");
+            });
+            HostingUtil.RegisterStopped(async () => 
+            { 
+                IDGeneratorUtil.WorkerIdProvider.Dispose();
+                LogUtil.Info("停止 => 雪花ID服务[IDGenerator]");
+            });
             if (section.UseRedis)
             {
                 HostingUtil.RegisterTimer(new Hosting.Services.TinyFxHostTimerItem
@@ -47,7 +55,7 @@ namespace TinyFx
                     Callback = async (_) => await IDGeneratorUtil.WorkerIdProvider.Active()
                 });
             }
-            LogUtil.Info($"配置 [IDGenerator]");
+            LogUtil.Info($"配置 => [IDGenerator]");
             return builder;
         }
     }

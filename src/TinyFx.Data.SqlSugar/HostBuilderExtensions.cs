@@ -55,7 +55,7 @@ namespace TinyFx
                     return ret;
                 });
             });
-            LogUtil.Info("配置 [SqlSugar]");
+            LogUtil.Info("配置 => [SqlSugar]");
             return builder;
         }
     }

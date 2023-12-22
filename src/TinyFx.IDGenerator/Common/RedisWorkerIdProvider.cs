@@ -71,7 +71,6 @@ namespace TinyFx.IDGenerator.Common
         public void Dispose()
         {
             new WorkerIdsDCache(WorkerId).KeyDeleteAsync().GetTaskResult();
-            LogUtil.Debug("IDGenerator 释放");
         }
     }
 }

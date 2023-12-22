@@ -49,7 +49,6 @@ namespace TinyFx.IDGenerator
 
             Generator = new SnowflakeIdGenerator(WorkerIdProvider);
             _isInited = true;
-            LogUtil.Debug("IDGenerator 启动");
         }
 
         /// <summary>

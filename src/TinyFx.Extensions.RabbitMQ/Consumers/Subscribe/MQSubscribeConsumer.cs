@@ -61,7 +61,7 @@ namespace TinyFx.Extensions.RabbitMQ
         public override async Task Register()
         {
             if (GetType().GetCustomAttribute<MQConsumerIgnoreAttribute>() == null)
-                LogUtil.Info($"注册 MQSubscribeConsumer: {GetType().FullName}");
+                LogUtil.Info($"注册 => MQSubscribeConsumer: {GetType().FullName}");
             var subId = GetSubscriptionId();
             var configAction = GetConfigAction();
             var onMessage = GetOnMessageFunc();

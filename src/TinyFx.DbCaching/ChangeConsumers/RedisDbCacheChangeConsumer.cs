@@ -3,7 +3,7 @@
 namespace TinyFx.DbCaching.ChangeConsumers
 {
     [RedisConsumerRegisterIgnore]
-    internal class RedisDbCacheChangeConsumer : RedisSubscribeConsumer<DbCacheChangeMessage>
+    internal class RedisDbCacheChangeConsumer : RedisSubscribeConsumer<DbCacheChangeMessage>, IDbCacheChangeConsumer
     {
         private DbCachingUpdator _uploader;
         public RedisDbCacheChangeConsumer(string redisConnectionStringName)
@@ -19,5 +19,15 @@ namespace TinyFx.DbCaching.ChangeConsumers
         {
             return Task.CompletedTask;
         }
+
+        public Task RegisterConsumer()
+        {
+            this.Register();
+            return Task.CompletedTask;
+        }
+    }
+    internal interface IDbCacheChangeConsumer
+    {
+        Task RegisterConsumer();
     }
 }

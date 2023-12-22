@@ -27,7 +27,7 @@ namespace TinyFx.Logging
 
         public string Flag { get; set; }
         public StringBuilder Message { get; set; } = new();
-        public ConcurrentDictionary<string, List<object>> Fields = new();
+        public ConcurrentQueue<(string key, object value)> Fields = new();
         public Exception Exception { get; set; }
 
         public LogBuilder(LogLevel level = LogLevel.Debug, string flag = null)
@@ -85,10 +85,7 @@ namespace TinyFx.Logging
         /// <returns></returns>
         public ILogBuilder AddField(string field, object value)
         {
-            if (Fields.TryGetValue(field, out var list))
-                list.Add(value);
-            else
-                Fields.TryAdd(field, new List<object> { value });
+            Fields.Enqueue((field, value));
             return this;
         }
         public ILogBuilder AddException(Exception ex)
@@ -109,27 +106,15 @@ namespace TinyFx.Logging
             args.Add(Flag);
             msg += " {Message}";
             args.Add(Message.ToString().TrimEnd(Environment.NewLine));
-
-            Fields.ForEach(x =>
+            foreach (var field in Fields)
             {
-                msg += $" {x.Key}: {{{x.Key.Replace('.', '_')}}}";
-                if (x.Value.Count == 1)
-                {
-                    var obj = x.Value[0];
-                    if (obj != null && obj.GetType().IsClass)
-                        args.Add(SerializerUtil.SerializeJsonNet(obj));
-                    else
-                        args.Add(obj);
-                }
+                msg += $" {{{field.key.Replace('.', '_')}}}";
+                var obj = field.value;
+                if (obj != null && obj.GetType().IsClass)
+                    args.Add(SerializerUtil.SerializeJsonNet(obj));
                 else
-                {
-                    string objStr = null;
-                    foreach (var obj in x.Value)
-                    {
-                        objStr += SerializerUtil.SerializeJsonNet(obj) + Environment.NewLine;
-                    }
-                }
-            });
+                    args.Add(obj);
+            }
             LogUtil.Log(Level, msg, Exception, args.ToArray());
         }
     }

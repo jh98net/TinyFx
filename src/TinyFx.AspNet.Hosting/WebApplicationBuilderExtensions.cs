@@ -62,17 +62,17 @@ namespace TinyFx
             {
                 services.AddControllersEx()
                     .AddDynamicApi();
-                LogUtil.Info($"注册 AddControllers");
+                LogUtil.Info($"注册 => AddControllers");
             }
             if ((type & AspNetType.Razor) != 0)
             {
                 services.AddRazorPages();
-                LogUtil.Info($"注册 AddRazorPages");
+                LogUtil.Info($"注册 => AddRazorPages");
             }
             if ((type & AspNetType.ServerBlazor) != 0)
             {
                 services.AddServerSideBlazorEx();
-                LogUtil.Info($"注册 AddServerSideBlazor");
+                LogUtil.Info($"注册 => AddServerSideBlazor");
             }
             services.AddHealthChecks();         // health
             return services
@@ -138,7 +138,7 @@ namespace TinyFx
                             options.CacheProfiles.Add(profile.Key, profile.Value);
                         }
                     }
-                    LogUtil.Trace($"配置 [ResponseCaching]");
+                    LogUtil.Trace($"配置 => [ResponseCaching]");
                 }
             }).AddJsonOptions(options =>
             {
@@ -206,7 +206,7 @@ namespace TinyFx
             {
                 section.AddPolicies(opts);
             });
-            LogUtil.Info($"注册 Cors");
+            LogUtil.Info($"注册 => Cors");
             return services;
         }
         /// <summary>
@@ -230,7 +230,7 @@ namespace TinyFx
                     //new MediaTypeApiVersionReader("x-api-version"),
                     );
                 });
-                LogUtil.Trace($"注册 ApiVersioning");
+                LogUtil.Trace($"注册 => ApiVersioning");
             }
             return services;
         }
@@ -298,7 +298,7 @@ namespace TinyFx
             {
                 services.ConfigureOptions<ConfigureSwaggerOptions>();
             }
-            LogUtil.Info($"注册 Swagger");
+            LogUtil.Info($"注册 => Swagger");
             return services;
         }
 
@@ -330,7 +330,7 @@ namespace TinyFx
                     // 处理jwt事件
                     x.Events = new TinyJwtBearerEvents();
                 });
-                LogUtil.Info($"注册 JwtAuth");
+                LogUtil.Info($"注册 => JwtAuth");
             }
 
             return services;
@@ -406,7 +406,7 @@ namespace TinyFx
                 });
             }
 
-            LogUtil.Info("注册 SessionAndRedis [UseSession: {session} UseCookie: {cookie}]"
+            LogUtil.Info("注册 => SessionAndRedis [UseSession: {session} UseCookie: {cookie}]"
                 , section.UseSession, section.UseCookieIdentity);
             return services;
         }
@@ -420,7 +420,7 @@ namespace TinyFx
             {
                 services.AddResponseCaching();
             }
-            LogUtil.Debug($"注册 ResponseCaching");
+            LogUtil.Debug($"注册 => ResponseCaching");
             return services;
         }
         public static IServiceCollection AddResponseCompressionEx(this IServiceCollection services)
@@ -444,7 +444,7 @@ namespace TinyFx
             {
                 options.Level = CompressionLevel.SmallestSize;
             });
-            LogUtil.Info($"注册 ResponseCompression");
+            LogUtil.Info($"注册 => ResponseCompression");
             return services;
         }
         public static IServiceCollection AddForwardedHeaders(this IServiceCollection services)
