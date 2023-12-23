@@ -1,13 +1,17 @@
 ﻿using Dm.parser;
 using EasyNetQ;
 using SqlSugar;
+using StackExchange.Redis;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 using TinyFx.Collections;
+using TinyFx.Configuration;
 using TinyFx.Data.SqlSugar;
+using TinyFx.DbCaching.Caching;
 using TinyFx.Extensions.RabbitMQ;
 using TinyFx.Extensions.StackExchangeRedis;
+using TinyFx.Hosting;
 using TinyFx.Logging;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
@@ -168,7 +172,10 @@ namespace TinyFx.DbCaching
         /// <returns></returns>
         public static async Task<bool> ContainsCacheItem(string configId, string tableName, string redisConnectionStringName = null)
         {
-            return await DbCacheDataDCache.Create(redisConnectionStringName).ContainsCacheItem(configId, tableName);
+            var listDCache = new DbCacheListDCache(redisConnectionStringName);
+            var dataDCache = new DbCacheDataDCache(configId, tableName, redisConnectionStringName);
+            var key = GetCacheKey(configId, tableName);
+            return await listDCache.FieldExistsAsync(key) && await dataDCache.KeyExistsAsync();
         }
         /// <summary>
         /// 获取所有缓存项
@@ -177,21 +184,24 @@ namespace TinyFx.DbCaching
         /// <returns></returns>
         public static async Task<List<DbCacheItem>> GetAllCacheItem(string redisConnectionStringName = null)
         {
-            return await DbCacheDataDCache.Create(redisConnectionStringName).GetAllCacheItem();
+            var ret = new List<DbCacheItem>();
+            var listDCache = new DbCacheListDCache(redisConnectionStringName);
+            var fields = await listDCache.GetFieldsAsync();
+            foreach (var field in fields)
+            {
+                var keys = ParseCacheKey(field);
+                var dataDCache = new DbCacheDataDCache(keys.configId, keys.tableName, redisConnectionStringName);
+                if (!await dataDCache.KeyExistsAsync())
+                    continue;
+                ret.Add(new DbCacheItem
+                {
+                    ConfigId = keys.configId,
+                    TableName = keys.tableName,
+                });
+            }
+            return ret;
         }
 
-        /// <summary>
-        /// 获取缓存项的redis值
-        /// </summary>
-        /// <param name="configId"></param>
-        /// <param name="tableName"></param>
-        /// <param name="redisConnectionStringName"></param>
-        /// <returns></returns>
-        public static async Task<List<string>> GetCacheItemValue(string configId, string tableName, string redisConnectionStringName = null)
-        {
-            var dataProvider = new PageDataProvider(configId, tableName, redisConnectionStringName);
-            return await dataProvider.GetRedisValues();
-        }
         /// <summary>
         /// 发布更新通知
         /// </summary>
@@ -201,6 +211,8 @@ namespace TinyFx.DbCaching
         {
             foreach (var item in message.Changed)
             {
+                if (!await ContainsCacheItem(item.ConfigId, item.TableName, message.RedisConnectionStringName))
+                    continue;
                 var dataProvider = new PageDataProvider(item.ConfigId, item.TableName, message.RedisConnectionStringName);
                 await dataProvider.SetRedisValues();
             }
@@ -218,9 +230,52 @@ namespace TinyFx.DbCaching
                     break;
             }
         }
+
+        internal const string DB_CACHING_CHECK_KEY = "DB_CACHING_CHECK_KEY";
+        /// <summary>
+        /// 发送验证消息
+        /// </summary>
+        /// <returns></returns>
+        public static async Task CheckDbCaching(string redisConnectionStringName = null)
+        {
+            await RedisUtil.PublishAsync(new DbCacheCheckMessage
+            {
+                RedisConnectionStringName = redisConnectionStringName,
+                CheckDate = DateTime.Now.ToFormatString()
+            }, redisConnectionStringName);
+        }
         #endregion
 
+        #region Utils
         internal static string GetCacheKey(string configId, string tableName)
             => $"{configId ?? DbUtil.DefaultConfigId}|{tableName}";
+        internal static (string configId, string tableName) ParseCacheKey(string key)
+        {
+            var keys = key.Split('|');
+            return (keys[0], keys[1]);
+        }
+
+        private static ConcurrentDictionary<string, string> _redisConnDict = new();
+        private const int REDIS_ASYNC_TIMEOUT = 20000;
+        internal static string GetRedisConnectionString(string connectionStringName = null)
+        {
+            connectionStringName ??= string.Empty;
+            if (!_redisConnDict.TryGetValue(connectionStringName, out var ret))
+            {
+                var redisSection = ConfigUtil.GetSection<RedisSection>();
+                ret = string.IsNullOrEmpty(connectionStringName)
+                   ? redisSection.GetConnectionStringElement(ConfigUtil.GetSection<DbCachingSection>().RedisConnectionStringName).ConnectionString
+                   : redisSection.GetConnectionStringElement(connectionStringName).ConnectionString;
+                var conn = ConfigurationOptions.Parse(ret);
+                conn.ClientName = "DbCacheDataDCache";
+                conn.AsyncTimeout = REDIS_ASYNC_TIMEOUT;
+                conn.SyncTimeout = REDIS_ASYNC_TIMEOUT;
+                ret = conn.ToString();
+
+                _redisConnDict.TryAdd(connectionStringName, ret);
+            }
+            return ret;
+        }
+        #endregion
     }
 }

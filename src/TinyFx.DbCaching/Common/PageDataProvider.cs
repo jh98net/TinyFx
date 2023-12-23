@@ -5,7 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.Collections;
+using TinyFx.Configuration;
 using TinyFx.Data.SqlSugar;
+using TinyFx.DbCaching.Caching;
+using TinyFx.Extensions.StackExchangeRedis;
+using TinyFx.Security;
 
 namespace TinyFx.DbCaching
 {
@@ -22,62 +27,100 @@ namespace TinyFx.DbCaching
             ConnectionStringName = connectionStringName;
         }
 
-        public async Task<int> GetPageCount()
+        public async Task<DbTableRedisData> SetRedisValues()
         {
-            var rowCount = await DbUtil.GetDbById(_configId).Queryable<object>()
-                          .AS(_tableName).CountAsync();
-            return (int)TinyFxUtil.GetPageCount(rowCount, DATA_PAGE_SIZE);
-        }
+            var listDCache = new DbCacheListDCache(ConnectionStringName);
+            var dataDCache = new DbCacheDataDCache(_configId, _tableName, ConnectionStringName);
+            var data = await GetDbTableData();
 
-        public async Task<string> GetPageData(int pageIndex)
-        {
-            var list = await DbUtil.GetDbById(_configId).Queryable<object>()
-                .AS(_tableName).ToPageListAsync(pageIndex, DATA_PAGE_SIZE);
-            return SerializerUtil.SerializeJson(list);
-        }
-
-        public async Task SetRedisValues()
-        {
-            var dcache = DbCacheDataDCache.Create(ConnectionStringName);
-            var pageCount = await GetPageCount();
             var key = DbCachingUtil.GetCacheKey(_configId, _tableName);
-            await dcache.SetAsync($"{key}|0", pageCount.ToString());
-            for (int i = 1; i <= pageCount; i++)
+            var listDo1 = await listDCache.GetAsync(key);
+            // 避免并发
+            using var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{key}", 180);
+            if (!redLock.IsLocked)
             {
-                var list = await GetPageData(i);
-                await dcache.SetAsync($"{key}|{i}", list);
-                await Task.Delay(200);
+                redLock.Release();
+                throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
             }
+            var listDo2 = await listDCache.GetAsync(key);
+            if (listDo1.Value?.UpdateDate != listDo2.Value?.UpdateDate) //已更新
+                return data;
+
+            // 装载数据
+            int i = 0;
+            foreach (var pageString in data.PageList)
+            {
+                await dataDCache.SetAsync($"{i++}", pageString);
+                await Task.Delay(100);
+            }
+            await listDCache.SetAsync(key, new DbCacheListDO()
+            {
+                ConfigId = _configId,
+                TableName = _tableName,
+                PageCount = data.PageCount,
+                DataHash = data.DataHash,
+                UpdateDate = DateTime.Now.ToFormatString()
+            });
+            return data;
         }
 
-        public async Task<List<string>> GetRedisValues()
+        public async Task<DbTableRedisData> GetRedisValues()
         {
-            var ret = new List<string>();
-            var dcache = DbCacheDataDCache.Create(ConnectionStringName);
+            var listDCache = new DbCacheListDCache(ConnectionStringName);
+            var dataDCache = new DbCacheDataDCache(_configId, _tableName, ConnectionStringName);
             var key = DbCachingUtil.GetCacheKey(_configId, _tableName);
-            var pageCount = await dcache.GetOrLoadAsync($"{key}|0");
-            if (!pageCount.HasValue)
-                throw new Exception($"DbCacheDataDCache缓存没有值。key:{key}");
-            for (int i = 1; i <= pageCount.Value.ToInt32(); i++)
+            var listDo = await listDCache.GetAsync(key);
+            if (!listDo.HasValue || !await dataDCache.KeyExistsAsync())
             {
-                var pageKey = $"{key}|{i}";
-                var pageData = await dcache.GetOrLoadAsync(pageKey);
-                ret.Add(pageData.Value);
-                await Task.Delay(200);
+                return await SetRedisValues();
+            }
+
+            var ret = new DbTableRedisData()
+            {
+                ConfigId = listDo.Value.ConfigId,
+                TableName = listDo.Value.TableName,
+                PageCount = listDo.Value.PageCount,
+                DataHash = listDo.Value.DataHash,
+                UpdateDate = listDo.Value.UpdateDate,
+            };
+            for (int i = 1; i <= listDo.Value.PageCount; i++)
+            {
+                var pageString = await dataDCache.GetOrExceptionAsync(i.ToString());
+                ret.PageList.Add(pageString);
+                await Task.Delay(100);
             }
             return ret;
         }
-
-        public async Task<List<TEntity>> GetRedisValues<TEntity>() where TEntity : class
+        private async Task<DbTableRedisData> GetDbTableData()
         {
-            List<TEntity> ret = new List<TEntity>();
-            var list = await GetRedisValues();
-            foreach (var item in list)
+            var ret = new DbTableRedisData()
             {
-                var value = SerializerUtil.DeserializeJson<List<TEntity>>(item);
-                ret.AddRange(value);
+                ConfigId = _configId,
+                TableName = _tableName,
+            };
+            var totalList = await DbUtil.GetDbById(_configId).Queryable<object>()
+                .AS(_tableName).ToListAsync();
+            var pageList = totalList.ToPage(DATA_PAGE_SIZE);
+            ret.PageCount = pageList.Count;
+            string dataString = null;
+            foreach (var item in pageList)
+            {
+                var pageString = SerializerUtil.SerializeJsonNet(item);
+                ret.PageList.Add(pageString);
+                dataString += pageString;
             }
+            ret.DataHash = SecurityUtil.MD5Hash(dataString);
             return ret;
         }
+    }
+    public class DbTableRedisData
+    {
+        public string ConfigId { get; set; }
+        public string TableName { get; set; }
+        public int PageCount { get; set; }
+        public string DataHash { get; set; }
+        public string UpdateDate { get; set; }
+
+        public List<string> PageList { get; set; } = new();
     }
 }

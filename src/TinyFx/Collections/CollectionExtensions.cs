@@ -24,6 +24,25 @@ namespace TinyFx.Collections
             => list.Skip((index - 1) * size).Take(size);
 
         /// <summary>
+        /// 集合分页成列表集合
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        public static List<List<T>> ToPage<T>(this List<T> list, int pageSize)
+        {
+            var ret = new List<List<T>>();
+            var pageCount = TinyFxUtil.GetPageCount(list.Count, pageSize);
+            for (int i = 1; i <= pageCount; i++)
+            {
+                var page = list.ToPage(pageSize, i).ToList();
+                ret.Add(page);
+            }
+            return ret;
+        }
+
+        /// <summary>
         /// 遍历每个元素使用Action操作
         /// </summary>
         /// <typeparam name="T"></typeparam>

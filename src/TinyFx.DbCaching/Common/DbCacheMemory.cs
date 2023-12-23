@@ -16,8 +16,10 @@ namespace TinyFx.DbCaching
         public string TableName { get; }
         public string CachKey { get; }
         public List<string> PrimaryKeys { get; }
-        public List<TEntity> DbData { get; private set; }
-        public int DbDataCount => DbData.Count;
+
+        public DbTableRedisData RedisData { get; private set; }
+        public List<TEntity> RowList { get; private set; }
+        public int RowCount => RowList.Count;
 
         // key: 一对一类型(主键或唯一索引)
         public ConcurrentDictionary<string, Dictionary<string, TEntity>> SingleDict { get; } = new();
@@ -34,11 +36,13 @@ namespace TinyFx.DbCaching
             TableName = TableAttribute.TableName;
             CachKey = DbCachingUtil.GetCacheKey(ConfigId, TableName);
             PrimaryKeys = DbUtil.GetDbById(ConfigId).DbMaintenance.GetPrimaries(TableName);
-            DbData = GetInitData().GetTaskResult();
+
+            RedisData = new PageDataProvider(ConfigId, TableName).GetRedisValues().GetTaskResult();
+            RowList = GetEntities(RedisData);
         }
         #endregion
 
-        public List<TEntity> GetAllList() => DbData;
+        public List<TEntity> GetAllList() => RowList;
 
         #region GetSingle
         public TEntity GetSingle(object id)
@@ -63,7 +67,7 @@ namespace TinyFx.DbCaching
             var dict = SingleDict.GetOrAdd(fieldsKey, x =>
             {
                 var value = new Dictionary<string, TEntity>();
-                DbData.ForEach(entry =>
+                RowList.ForEach(entry =>
                 {
                     var names = fieldsKey.Split('|');
                     var vvs = names.Select(n => ReflectionUtil.GetPropertyValue(entry, n));
@@ -100,7 +104,7 @@ namespace TinyFx.DbCaching
             var dict = ListDict.GetOrAdd(fieldsKey, x =>
             {
                 var value = new Dictionary<string, List<TEntity>>();
-                DbData.ForEach(entry =>
+                RowList.ForEach(entry =>
                 {
                     var names = fieldsKey.Split('|');
                     var vvs = names.Select(n => ReflectionUtil.GetPropertyValue(entry, n));
@@ -129,7 +133,7 @@ namespace TinyFx.DbCaching
             var key = $"_CUSTOM_SINGLE_{name}";
             return SingleDict.GetOrAdd(key, (k) =>
             {
-                return func(DbData);
+                return func(RowList);
             });
         }
         /// <summary>
@@ -144,7 +148,7 @@ namespace TinyFx.DbCaching
             var key = $"_CUSTOM_LIST_{name}";
             return ListDict.GetOrAdd(key, (k) =>
             {
-                return func(DbData);
+                return func(RowList);
             });
         }
         public TCache GetOrAddCustom<TCache>(string name, Func<List<TEntity>, TCache> func)
@@ -153,15 +157,21 @@ namespace TinyFx.DbCaching
             var key = $"_CUSTOM_OBJECT_{name}";
             return (TCache)CustomDict.GetOrAdd(key, (k) =>
             {
-                return func(DbData);
+                return func(RowList);
             });
         }
         #endregion
 
         #region Utils
-        private async Task<List<TEntity>> GetInitData()
+        private List<TEntity> GetEntities(DbTableRedisData redisData)
         {
-            return await new PageDataProvider(ConfigId, TableName).GetRedisValues<TEntity>();
+            List<TEntity> ret = new List<TEntity>();
+            foreach (var item in redisData.PageList)
+            {
+                var value = SerializerUtil.DeserializeJson<List<TEntity>>(item);
+                ret.AddRange(value);
+            }
+            return ret;
         }
         private (string FieldsKey, string ValuesKey) GetKeys(Expression<Func<TEntity>> expr)
         {
@@ -231,24 +241,28 @@ namespace TinyFx.DbCaching
                 Thread.Sleep(100);
             }
         }
+
+        private DbTableRedisData _updateData;
         private List<TEntity> _updateList;
-        public void BeginUpdate(List<string> datas)
+        public void BeginUpdate(DbTableRedisData data)
         {
             var ret = new List<TEntity>();
-            foreach (var data in datas)
+            foreach (var item in data.PageList)
             {
-                var items = SerializerUtil.DeserializeJson<List<TEntity>>(data);
+                var items = SerializerUtil.DeserializeJson<List<TEntity>>(item);
                 ret.AddRange(items);
             }
+            _updateData = data;
             _updateList = ret;
         }
         public void EndUpdate()
         {
             _isUpdating = true;
-            var oldList = DbData;
+            var oldList = RowList;
             try
             {
-                DbData = _updateList;
+                RedisData = _updateData;
+                RowList = _updateList;
                 SingleDict.Clear();
                 ListDict.Clear();
                 CustomDict.Clear();
@@ -259,7 +273,7 @@ namespace TinyFx.DbCaching
             }
             try
             {
-                UpdateCallback?.Invoke(oldList, DbData);
+                UpdateCallback?.Invoke(oldList, RowList);
             }
             catch
             { }
@@ -277,8 +291,9 @@ namespace TinyFx.DbCaching
     {
         string ConfigId { get; }
         string TableName { get; }
-        int DbDataCount { get; }
-        void BeginUpdate(List<string> datas);
+        int RowCount { get; }
+        DbTableRedisData RedisData { get; }
+        void BeginUpdate(DbTableRedisData data);
         void EndUpdate();
     }
 }

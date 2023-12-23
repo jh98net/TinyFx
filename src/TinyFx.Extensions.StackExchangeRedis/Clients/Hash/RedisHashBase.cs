@@ -184,7 +184,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="field"></param>
         /// <param name="flags"></param>
         /// <returns></returns>
-        public async Task<bool> ExistsAsync(string field, CommandFlags flags = CommandFlags.None)
+        public async Task<bool> FieldExistsAsync(string field, CommandFlags flags = CommandFlags.None)
         {
             var ret = await Database.HashExistsAsync(RedisKey, field, flags);
             await SetSlidingExpirationAsync();

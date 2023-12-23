@@ -21,21 +21,23 @@ namespace TinyFx.DbCaching.ChangeConsumers
             var logger = new LogBuilder(Microsoft.Extensions.Logging.LogLevel.Warning, "内存缓存更新通知消费")
                 .AddField("DbCaching.PublishMode", _mode.ToString())
                 .AddField("DbCaching.Message", SerializerUtil.SerializeJson(message));
-            var list = new List<(IDbCacheMemoryUpdate cache, List<string> datas)>();
+            var list = new List<(IDbCacheMemoryUpdate cache, DbTableRedisData data)>();
             try
             {
                 foreach (var item in message.Changed)
                 {
                     logger.AddMessage($"开始更新: {item.ConfigId}.{item.TableName}");
-                    List<string> redisValues = null;
                     var key = DbCachingUtil.GetCacheKey(item.ConfigId, item.TableName);
-                    var dataProvider = new PageDataProvider(item.ConfigId, item.TableName);
-                    // 等3分钟，1秒申请一次
-                    using (var redLock = await RedisUtil.LockAsync($"RedisDbCacheChangeConsumer:{key}", 180))
+                    if (!DbCachingUtil.CacheDict.ContainsKey(key))
+                        continue;
+                    DbTableRedisData redisValues = null;
+                    // 等5分钟，1秒申请一次
+                    using (var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{key}", 300))
                     {
                         if (!redLock.IsLocked)
                             throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
-                        redisValues = await dataProvider.GetRedisValues();
+                        redisValues = await new PageDataProvider(item.ConfigId, item.TableName)
+                            .GetRedisValues();
                     }
                     if (DbCachingUtil.CacheDict.TryGetValue(key, out var dict))
                     {
@@ -45,11 +47,11 @@ namespace TinyFx.DbCaching.ChangeConsumers
                         });
                     }
                 }
-                list.ForEach(x => x.cache.BeginUpdate(x.datas));
+                list.ForEach(x => x.cache.BeginUpdate(x.data));
                 list.ForEach(x =>
                 {
                     x.cache.EndUpdate();
-                    logger.AddMessage($"更新成功: {x.cache.ConfigId}.{x.cache.TableName} count:{x.cache.DbDataCount}");
+                    logger.AddMessage($"更新成功: {x.cache.ConfigId}.{x.cache.TableName} count:{x.cache.RowCount}");
                 });
             }
             catch (Exception ex)
