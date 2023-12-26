@@ -38,7 +38,8 @@ namespace TinyFx.DbCaching.ChangeConsumers
                     }
                 });
             }
-            await HostingUtil.SetHostData(DbCachingUtil.DB_CACHING_CHECK_KEY, list);
+            await HostingUtil.SetHostData(DbCachingUtil.DB_CACHING_CHECK_DATA, list);
+            await HostingUtil.SetHostData(DbCachingUtil.DB_CACHING_CHECK_KEY, message.TraceId);
         }
         protected override Task OnError(DbCacheCheckMessage message, Exception ex)
         {

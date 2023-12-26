@@ -233,30 +233,43 @@ namespace TinyFx.DbCaching
         }
 
         internal const string DB_CACHING_CHECK_KEY = "DB_CACHING_CHECK_KEY";
+        internal const string DB_CACHING_CHECK_DATA = "DB_CACHING_CHECK_DATA";
         /// <summary>
         /// 发送验证消息
         /// </summary>
         /// <returns></returns>
-        public static async Task PublishCheck(string redisConnectionStringName = null)
-        {
-            await RedisUtil.PublishAsync(new DbCacheCheckMessage
-            {
-                RedisConnectionStringName = redisConnectionStringName,
-                CheckDate = DateTime.Now.ToFormatString()
-            }, redisConnectionStringName);
-        }
-        public static async Task<List<DbCachingCheckResult>> GetAllHostCheckResult(string redisConnectionStringName = null)
+        public static async Task<List<DbCachingCheckResult>> PublishCheck(string redisConnectionStringName = null, int timeoutSeconds = 20)
         {
             var ret = new List<DbCachingCheckResult>();
+            var msg = new DbCacheCheckMessage
+            {
+                TraceId = StringUtil.GetGuidString(),
+                RedisConnectionStringName = redisConnectionStringName,
+                CheckDate = DateTime.Now.ToFormatString()
+            };
+            await RedisUtil.PublishAsync(msg, redisConnectionStringName);
             var dataService = DIUtil.GetService<ITinyFxHostDataService>();
             if (dataService == null)
                 throw new Exception("获取所有host的DbCaching缓存检查数据异常，ITinyFxHostDataService不存在");
             var serviceIds = await dataService.GetHosts(redisConnectionStringName);
-            foreach (var serviceId in serviceIds)
+            var idQueue = new Queue<string>();
+            serviceIds.ForEach(x => idQueue.Enqueue(x));
+            var currTime = 0;
+            while (idQueue.Count > 0)
             {
+                var serviceId = idQueue.Dequeue();
+                await Task.Delay(200);
+                currTime += 200;
+                if (currTime > timeoutSeconds * 1000)
+                    throw new Exception($"DbCachingUtil.PublishCheck操作超时，serviceId:{serviceId}");
+                var traceId = await dataService.GetHostData<string>(serviceId, DB_CACHING_CHECK_KEY, redisConnectionStringName);
+                if (!traceId.HasValue || traceId.Value != msg.TraceId)
+                {
+                    idQueue.Enqueue(serviceId);
+                    continue;
+                }
                 var items = await dataService.GetHostData<List<DbCachingCheckItem>>(serviceId
-                    , DB_CACHING_CHECK_KEY, redisConnectionStringName);
-
+                    , DB_CACHING_CHECK_DATA, redisConnectionStringName);
                 if (!items.HasValue)
                     continue;
                 var result = new DbCachingCheckResult

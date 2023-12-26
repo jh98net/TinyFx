@@ -20,7 +20,9 @@ namespace TinyFx.Hosting.Services
             Options.ConnectionStringName = connectionStringName;
             RedisKey = $"{RedisPrefixConst.HOSTS}:Data:{serviceId}";
             var expire = ConfigUtil.Host.DataExpire;
-            _expireSpan = expire > 0 ? TimeSpan.FromMilliseconds(expire) : MaxExpireSpan;
+            _expireSpan = expire > 0 || !ConfigUtil.IsDebugEnvironment
+                ? TimeSpan.FromMilliseconds(expire) 
+                : MaxExpireSpan;
         }
 
         public async Task SetServiceId()

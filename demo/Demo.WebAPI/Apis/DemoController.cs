@@ -69,7 +69,6 @@ namespace Demo.WebAPI.Apis
             var a = await DbCachingUtil.GetAllCacheItem();
             var b = await DbCachingUtil.ContainsCacheItem("default", "s_app");
             var c = await DbCachingUtil.ContainsCacheItem("default", "s_provider");
-            await DbCachingUtil.PublishCheck();
             return "";
         }
         [HttpGet]
@@ -97,9 +96,9 @@ namespace Demo.WebAPI.Apis
 
         [HttpGet]
         [AllowAnonymous]
-        public string Test3()
+        public async Task<string> Test3()
         {
-            var result = DbCachingUtil.GetAllHostCheckResult();
+            var result = await DbCachingUtil.PublishCheck(); 
             return "";
         }
 
