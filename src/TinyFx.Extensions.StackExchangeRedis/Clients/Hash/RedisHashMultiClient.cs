@@ -14,7 +14,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
     /// Redis Hash表（key-value结构） value值的类型可以不相同
     ///     可以被继承，也可以直接构建
     ///     RedisKey => Field => RedisValue
-    ///     可存入null值，不存在抛出异常CacheNotFound
+    ///     可存入null值
     /// </summary>
     public class RedisHashMultiClient : RedisHashBase<object>
     {
@@ -68,7 +68,16 @@ namespace TinyFx.Extensions.StackExchangeRedis
         }
         #endregion
 
-        #region TryGet & GetEntity
+        #region Get & GetEntity
+        public async Task<CacheValue<T>> GetAsync<T>(string field, CommandFlags flags = CommandFlags.None)
+        {
+            var value = await Database.HashGetAsync(RedisKey, field, flags);
+            var ret = TryDeserialize(value, out T v)
+                ? new CacheValue<T>(true, v)
+                : new CacheValue<T>(false);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
 
         public async Task<T> GetEntityAsync<T>(CommandFlags flags = CommandFlags.None)
             where T : new()

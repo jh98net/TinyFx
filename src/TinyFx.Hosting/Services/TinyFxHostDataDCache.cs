@@ -14,9 +14,10 @@ namespace TinyFx.Hosting.Services
         public string ServiceId { get; }
         private TimeSpan MaxExpireSpan = TimeSpan.FromMinutes(10);
         private TimeSpan _expireSpan;
-        public TinyFxHostDataDCache(string serviceId)
+        public TinyFxHostDataDCache(string serviceId, string connectionStringName = null)
         {
             ServiceId = serviceId;
+            Options.ConnectionStringName = connectionStringName;
             RedisKey = $"{RedisPrefixConst.HOSTS}:Data:{serviceId}";
             var expire = ConfigUtil.Host.DataExpire;
             _expireSpan = expire > 0 ? TimeSpan.FromMilliseconds(expire) : MaxExpireSpan;
@@ -61,12 +62,7 @@ namespace TinyFx.Hosting.Services
         /// <returns></returns>
         public async Task<CacheValue<T>> GetData<T>(string field)
         {
-            var data = await GetAsync(field);
-            var ret = new CacheValue<T>();
-            ret.HasValue = data.HasValue;
-            if (data.HasValue)
-                ret.Value = TinyFxUtil.ConvertTo<T>(data.Value);
-            return ret;
+            return await GetAsync<T>(field);
         }
     }
 }

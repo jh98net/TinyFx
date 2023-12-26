@@ -17,7 +17,6 @@ namespace TinyFx.Hosting.Services
             _serviceId = ConfigUtil.ServiceId;
             _dataDCache = new TinyFxHostDataDCache(_serviceId);
         }
-
         public async Task SetData<T>(string field, T value)
         {
             await _dataDCache.SetData(field, value);
@@ -26,6 +25,27 @@ namespace TinyFx.Hosting.Services
         public async Task<CacheValue<T>> GetData<T>(string field)
         {
             return await _dataDCache.GetData<T>(field);
+        }
+
+        public Task<CacheValue<T>> GetHostData<T>(string serviceId, string field, string connectionStringName)
+        {
+            return new TinyFxHostDataDCache(serviceId, connectionStringName).GetData<T>(field);
+        }
+
+        public async Task<List<string>> GetHosts(string connectionStringName = null)
+        {
+            var ret = new List<string>();
+            var listDCache = new TinyFxHostListDCache(connectionStringName);
+            var hosts = await listDCache.GetAllAsync();
+            foreach (var serviceId in hosts.ToList())
+            {
+                var exists = await new TinyFxHostDataDCache(serviceId, connectionStringName).KeyExistsAsync();
+                if (exists)
+                    ret.Add(serviceId);
+                else
+                    await listDCache.RemoveHost(serviceId);
+            }
+            return ret;
         }
     }
 }

@@ -12,6 +12,7 @@ using TinyFx.DbCaching.Caching;
 using TinyFx.Extensions.RabbitMQ;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Hosting;
+using TinyFx.Hosting.Services;
 using TinyFx.Logging;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
@@ -236,7 +237,7 @@ namespace TinyFx.DbCaching
         /// 发送验证消息
         /// </summary>
         /// <returns></returns>
-        public static async Task CheckDbCaching(string redisConnectionStringName = null)
+        public static async Task PublishCheck(string redisConnectionStringName = null)
         {
             await RedisUtil.PublishAsync(new DbCacheCheckMessage
             {
@@ -244,6 +245,30 @@ namespace TinyFx.DbCaching
                 CheckDate = DateTime.Now.ToFormatString()
             }, redisConnectionStringName);
         }
+        public static async Task<List<DbCachingCheckResult>> GetAllHostCheckResult(string redisConnectionStringName = null)
+        {
+            var ret = new List<DbCachingCheckResult>();
+            var dataService = DIUtil.GetService<ITinyFxHostDataService>();
+            if (dataService == null)
+                throw new Exception("获取所有host的DbCaching缓存检查数据异常，ITinyFxHostDataService不存在");
+            var serviceIds = await dataService.GetHosts(redisConnectionStringName);
+            foreach (var serviceId in serviceIds)
+            {
+                var items = await dataService.GetHostData<List<DbCachingCheckItem>>(serviceId
+                    , DB_CACHING_CHECK_KEY, redisConnectionStringName);
+
+                if (!items.HasValue)
+                    continue;
+                var result = new DbCachingCheckResult
+                {
+                    ServiceId = serviceId,
+                    Items = items.Value
+                };
+                ret.Add(result);
+            }
+            return ret;
+        }
+
         #endregion
 
         #region Utils

@@ -12,7 +12,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
     /// Redis Hash表（key-value结构）value值的类型必须是T
     ///     可以被继承，也可以直接构建
     ///     RedisKey => Field => RedisValue
-    ///     可存入null值，不存在抛出异常CacheNotFound
+    ///     可存入null值
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class RedisHashClient<T> : RedisHashBase<T>

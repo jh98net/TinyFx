@@ -14,7 +14,7 @@ namespace TinyFx.Hosting.Services
         private TinyFxHostListDCache _listDCache = new();
         private TinyFxHostDataDCache _dataDCache;
         private TinyFxHostHealthDCache _healthDCache = new();
-        public RedisTinyFxHostRegisterService() 
+        public RedisTinyFxHostRegisterService()
         {
             _serviceId = ConfigUtil.ServiceId;
             _dataDCache = new TinyFxHostDataDCache(_serviceId);

@@ -22,7 +22,7 @@ namespace TinyFx.DbCaching
         public string ConnectionStringName { get; }
         public PageDataProvider(string configId, string tableName, string connectionStringName = null)
         {
-            _configId = configId;
+            _configId = configId ?? DbUtil.DefaultConfigId;
             _tableName = tableName;
             ConnectionStringName = connectionStringName;
         }
@@ -48,9 +48,10 @@ namespace TinyFx.DbCaching
 
             // 装载数据
             int i = 0;
+            await dataDCache.KeyDeleteAsync();
             foreach (var pageString in data.PageList)
             {
-                await dataDCache.SetAsync($"{i++}", pageString);
+                await dataDCache.SetAsync($"{++i}", pageString);
                 await Task.Delay(100);
             }
             await listDCache.SetAsync(key, new DbCacheListDO()

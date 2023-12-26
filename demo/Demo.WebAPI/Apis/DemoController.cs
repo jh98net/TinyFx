@@ -22,6 +22,7 @@ using TinyFx.AspNet.Filters;
 using TinyFx.AspNet.RequestLogging;
 using TinyFx.AspNet.ResponseCaching;
 using TinyFx.Configuration;
+using TinyFx.Data.SqlSugar;
 using TinyFx.DbCaching;
 using TinyFx.Hosting;
 using TinyFx.Hosting.Services;
@@ -58,13 +59,39 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public async Task<string> Test1()
         {
-            HostingUtil.RegisterDelayTimer(TimeSpan.FromSeconds(5), async (t) => Console.WriteLine("ASDFASDF"));
+            var eo1 = DbCachingUtil.GetSingle<Ss_providerEO>("own");
+            var eo2 = DbCachingUtil.GetList(() => new Ss_providerEO
+            {
+                ProviderType = 2,
+                UseBonus = false
+            });
+            var eo3 = DbCachingUtil.GetList<Ss_operator_appEO>(it => it.OperatorID, "own_lobby_bra");
+            var a = await DbCachingUtil.GetAllCacheItem();
+            var b = await DbCachingUtil.ContainsCacheItem("default", "s_app");
+            var c = await DbCachingUtil.ContainsCacheItem("default", "s_provider");
+            await DbCachingUtil.PublishCheck();
             return "";
         }
         [HttpGet]
         [AllowAnonymous]
         public async Task<string> Test2()
         {
+            var i = Random.Shared.Next(10);
+            await DbUtil.GetRepository<Ss_providerEO>().UpdateAsync(it => new Ss_providerEO
+            {
+                ProviderName = $"自有供应商{i}"
+            }, it => it.ProviderID == "own"); ;
+            await DbCachingUtil.PublishUpdate(new DbCacheChangeMessage 
+            {
+                Changed = new List<DbCacheItem> 
+                {
+                    new DbCacheItem
+                    {
+                        ConfigId = "default",
+                        TableName = "s_provider",
+                    }
+                }
+            });
             return "";
         }
 
@@ -72,22 +99,7 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public string Test3()
         {
-            var timer = DIUtil.GetService<ITinyFxHostTimerService>();
-            timer.Register(new TinyFxHostTimerItem
-            {
-                Id = "B",
-                Title = "B任务",
-                Interval = 1000,
-                Callback = async(st) =>
-                {
-                    while (true)
-                    {
-                        if (st.IsCancellationRequested)
-                            break;
-                        await Task.Delay(1000);
-                    }
-                }
-            });
+            var result = DbCachingUtil.GetAllHostCheckResult();
             return "";
         }
 

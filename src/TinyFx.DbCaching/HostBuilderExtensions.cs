@@ -25,26 +25,28 @@ namespace TinyFx
             if (section == null || !section.Enabled)
                 return builder;
 
-            IDbCacheChangeConsumer consumer = null;
+            var checkConsumer = new RedisDbCacheCheckConsumer();
+            IDbCacheChangeConsumer changeConsumer = null;
             switch (section.PublishMode)
             {
                 case DbCachingPublishMode.Redis:
-                    consumer = new RedisDbCacheChangeConsumer(section.RedisConnectionStringName);
+                    changeConsumer = new RedisDbCacheChangeConsumer(section.RedisConnectionStringName);
                     break;
                 case DbCachingPublishMode.MQ:
-                    consumer = new MQDbCacheChangeConsumer(section.MQConnectionStringName);
+                    changeConsumer = new MQDbCacheChangeConsumer(section.MQConnectionStringName);
                     break;
                 default:
                     throw new Exception("未知的DbCachingPublishMode");
             }
             builder.ConfigureServices((context, services) =>
             {
-                services.AddSingleton(consumer!);
-                services.AddSingleton(new RedisDbCacheCheckConsumer());
+                services.AddSingleton(changeConsumer!);
+                services.AddSingleton(checkConsumer);
             });
             HostingUtil.RegisterStarting(async () =>
             {
-                await consumer!.RegisterConsumer();
+                await changeConsumer!.RegisterConsumer();
+                checkConsumer.Register();
                 LogUtil.Info("启动 => 内存缓存[DbCaching]");
             });
             HostingUtil.RegisterStopping(async () =>
@@ -71,7 +73,7 @@ namespace TinyFx
                     });
                 }
             }
-            LogUtil.Info("配置 => [DbCaching] ChangeConsumer: {ChangeConsumer}", consumer!.GetType().Name);
+            LogUtil.Info("配置 => [DbCaching] ChangeConsumer: {ChangeConsumer}", changeConsumer!.GetType().Name);
             return builder;
         }
     }

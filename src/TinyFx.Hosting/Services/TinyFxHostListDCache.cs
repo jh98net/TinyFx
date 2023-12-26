@@ -9,8 +9,9 @@ namespace TinyFx.Hosting.Services
 {
     internal class TinyFxHostListDCache : RedisSetClient<string>
     {
-        public TinyFxHostListDCache()
+        public TinyFxHostListDCache(string connectionStringName = null)
         {
+            Options.ConnectionStringName = connectionStringName;
             RedisKey = $"{RedisPrefixConst.HOSTS}:List";
         }
 

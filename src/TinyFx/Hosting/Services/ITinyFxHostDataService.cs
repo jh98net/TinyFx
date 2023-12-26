@@ -11,8 +11,36 @@ namespace TinyFx.Hosting.Services
 {
     public interface ITinyFxHostDataService
     {
+        /// <summary>
+        /// 设置本机host数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         Task SetData<T>(string field, T value);
+        /// <summary>
+        /// 获取本机host数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="field"></param>
+        /// <returns></returns>
         Task<CacheValue<T>> GetData<T>(string field);
+        /// <summary>
+        /// 获取指定serviceId的host数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="serviceId"></param>
+        /// <param name="field"></param>
+        /// <param name="connectionStringName"></param>
+        /// <returns></returns>
+        Task<CacheValue<T>> GetHostData<T>(string serviceId, string field, string connectionStringName = null);
+        /// <summary>
+        /// 获取所有host的serviceId
+        /// </summary>
+        /// <param name="connectionStringName"></param>
+        /// <returns></returns>
+        Task<List<string>> GetHosts(string connectionStringName = null);
     }
 
 
@@ -45,5 +73,15 @@ namespace TinyFx.Hosting.Services
         }
         private string GetKey(string field)
             => $"{_serviceId}|{field}";
+
+        public Task<CacheValue<T>> GetHostData<T>(string serviceId, string field, string connectionStringName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<string>> GetHosts(string connectionStringName)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
