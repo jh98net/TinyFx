@@ -49,6 +49,17 @@ namespace TinyFx.Extensions.StackExchangeRedis
             => SetAsync(field, value, new TimeSpan(days, 0, 0, 0), true, flags);
         #endregion
 
+        #region Get
+        public async Task<CacheValue<T>> GetAsync<T>(string field, CommandFlags flags = CommandFlags.None)
+        {
+            var value = await Database.HashGetAsync(RedisKey, field, flags);
+            var ret = TryDeserializeExpire(field, value, out T v)
+                ? new CacheValue<T>(true, v)
+                : new CacheValue<T>(false);
+            await SetSlidingExpirationAsync();
+            return ret;
+        }
+        #endregion
 
         #region GetOrLoad
         /// <summary>
