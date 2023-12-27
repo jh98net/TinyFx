@@ -30,8 +30,8 @@ namespace TinyFx.Hosting.Services
             var list = new List<string>();
             foreach (var serviceId in await _listDCache.GetAllAsync())
             {
-                var exists = await new TinyFxHostDataDCache(serviceId).KeyExistsAsync();
-                if (!exists)
+                var isValid = await new TinyFxHostDataDCache(serviceId).IsValid();
+                if (!isValid)
                     list.Add(serviceId);
             }
             foreach (var serviceId in list)

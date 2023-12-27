@@ -12,6 +12,7 @@ namespace TinyFx.Hosting.Services
     public class RedisTinyFxHostRegisterService : ITinyFxHostRegisterService
     {
         public string ServiceId { get; }
+
         private TinyFxHostListDCache _listDCache = new();
         private TinyFxHostDataDCache _dataDCache;
         private TinyFxHostHealthDCache _healthDCache = new();
@@ -29,7 +30,7 @@ namespace TinyFx.Hosting.Services
         public async Task Unregister()
         {
             await _listDCache.RemoveHost(ServiceId);
-            await _dataDCache.RemoveData();
+            await _dataDCache.DeleteData();
             LogUtil.Info($"停止 => 注销Host[RedisTinyFxHostRegisterService] ServerId:{ServiceId}");
         }
 

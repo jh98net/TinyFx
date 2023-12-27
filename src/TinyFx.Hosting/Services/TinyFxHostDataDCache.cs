@@ -51,7 +51,7 @@ namespace TinyFx.Hosting.Services
             var lastTime = lastDate.ToFormatDateTime();
             return DateTime.UtcNow - lastTime < _expireSpan;
         }
-        public async Task RemoveData()
+        public async Task DeleteData()
         {
             await KeyDeleteAsync();
         }
