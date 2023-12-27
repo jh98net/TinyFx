@@ -132,7 +132,7 @@ namespace TinyFx
             }
             return ret;
         }
-        
+
         /// <summary>
         /// 将String转换成公共语言运行时类型。
         /// </summary>
@@ -279,7 +279,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static sbyte ToSByte(this string src)
-            =>  To(src, (str)=>sbyte.Parse(str, NumberStyles.Any));
+            => To(src, (str) => sbyte.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成SByte，如果转换失败则使用默认值。
@@ -315,7 +315,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static byte ToByte(this string src)
-            => To(src, (str)=>byte.Parse(str, NumberStyles.Any));
+            => To(src, (str) => byte.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成Byte，如果转换失败则使用默认值。
@@ -351,7 +351,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static short ToInt16(this string src)
-            => To(src, (str)=>short.Parse(str, NumberStyles.Any));
+            => To(src, (str) => short.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成Int16(short)，如果转换失败则使用默认值。
@@ -387,7 +387,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static ushort ToUInt16(this string src)
-            => To(src, (str)=>ushort.Parse(str, NumberStyles.Any));
+            => To(src, (str) => ushort.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成UInt16(ushort)，如果转换失败则使用默认值。
@@ -423,7 +423,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static int ToInt32(this string src)
-            => To(src, (str)=>int.Parse(str, NumberStyles.Any));
+            => To(src, (str) => int.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成Int32，如果转换失败则使用默认值。
@@ -459,7 +459,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static uint ToUInt32(this string src)
-            => To(src, (str)=>uint.Parse(str, NumberStyles.Any));
+            => To(src, (str) => uint.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成UInt32(uint)，如果转换失败则使用默认值。
@@ -495,7 +495,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static long ToInt64(this string src)
-            => To(src, (str)=> long.Parse(str, NumberStyles.Any));
+            => To(src, (str) => long.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成Int64(long)，如果转换失败则使用默认值。
@@ -531,7 +531,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static ulong ToUInt64(this string src)
-            => To(src, (str)=>ulong.Parse(str, NumberStyles.Any));
+            => To(src, (str) => ulong.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成UInt64(ulong)，如果转换失败则使用默认值。
@@ -567,7 +567,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static float ToSingle(this string src)
-            => To(src, (str)=> float.Parse(str, NumberStyles.Any));
+            => To(src, (str) => float.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成Single(float)，如果转换失败则使用默认值。
@@ -603,7 +603,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static double ToDouble(this string src)
-            => To(src, (str)=>double.Parse(str, NumberStyles.Any));
+            => To(src, (str) => double.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成Double，如果转换失败则使用默认值。
@@ -639,7 +639,7 @@ namespace TinyFx
         /// <param name="src">源字符串</param>
         /// <returns></returns>
         public static decimal ToDecimal(this string src)
-            => To(src, (str)=>decimal.Parse(str, NumberStyles.Any));
+            => To(src, (str) => decimal.Parse(str, NumberStyles.Any));
 
         /// <summary>
         /// 将String转换成Decimal，如果转换失败则使用默认值。
@@ -777,7 +777,8 @@ namespace TinyFx
         /// <returns></returns>
         public static DateTime? ToDateTimeN(this string src, DateTime defaultValue)
             => ToN(src, defaultValue, ToDateTime);
-
+        public static DateTime ToFormatDateTime(this string src)
+            => ToDateTime(src, "yyyy-MM-dd HH:mm:ss");
         /// <summary>
         /// 将String转换成DateTime
         /// </summary>

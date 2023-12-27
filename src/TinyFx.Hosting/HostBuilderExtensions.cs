@@ -66,7 +66,6 @@ namespace TinyFx
                 services.AddSingleton<ITinyFxHostLifetimeService>(new DefaultTinyFxHostLifetimeService());
                 services.AddSingleton<ITinyFxHostTimerService>(new DefaultTinyFxHostTimerService());
                 services.AddSingleton<ITinyFxHostRegisterService>(new RedisTinyFxHostRegisterService());
-                services.AddSingleton<ITinyFxHostDataService>(new RedisTinyFxHostDataService());
             });
 
             LogUtil.Info("配置 => [TinyFx]");

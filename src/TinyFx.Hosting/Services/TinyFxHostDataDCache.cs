@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Threading.Tasks;
 using TinyFx.Caching;
 using TinyFx.Configuration;
@@ -21,23 +22,34 @@ namespace TinyFx.Hosting.Services
             RedisKey = $"{RedisPrefixConst.HOSTS}:Data:{serviceId}";
             var expire = ConfigUtil.Host.DataExpire;
             _expireSpan = expire > 0 || !ConfigUtil.IsDebugEnvironment
-                ? TimeSpan.FromMilliseconds(expire) 
+                ? TimeSpan.FromMilliseconds(expire)
                 : MaxExpireSpan;
         }
 
-        public async Task SetServiceId()
+        public async Task RegisterData()
         {
-            await SetData("ServiceId", ServiceId);
+            await SetAsync("ServiceId", ServiceId);
             await ActiveData();
         }
-
         /// <summary>
         /// 激活服务
         /// </summary>
         /// <returns></returns>
         public async Task ActiveData()
         {
+            await SetAsync("ActiveDate", DateTime.UtcNow.ToFormatString());
             await KeyExpireAsync(_expireSpan);
+        }
+
+        public async Task<bool> IsValid()
+        {
+            if (!await KeyExistsAsync())
+                return false;
+            var lastDate = await GetOrDefaultAsync<string>("ActiveDate", null);
+            if (string.IsNullOrEmpty(lastDate))
+                return false;
+            var lastTime = lastDate.ToFormatDateTime();
+            return DateTime.UtcNow - lastTime < _expireSpan;
         }
         public async Task RemoveData()
         {

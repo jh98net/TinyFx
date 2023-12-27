@@ -14,8 +14,8 @@ TinyFx.Extensions.Serilog
 TinyFx.Extensions.SshNet
 TinyFx.Extensions.StackExchangeRedis
 
-TinyFx.Extensions.EPPlus => mysql
-TinyFx.Extensions.RabbitMQ ==> redis
-TinyFx.Extensions.IDGenerator ==> redis
+TinyFx.Extensions.EPPlus => SqlSugar
+TinyFx.Extensions.RabbitMQ ==> StackExchangeRedis
+TinyFx.Extensions.IDGenerator ==> StackExchangeRedis
 
-TinyFx.DbCaching ==> sqlsugar redis mq
+TinyFx.DbCaching ==> SqlSugar StackExchangeRedis RabbitMQ
