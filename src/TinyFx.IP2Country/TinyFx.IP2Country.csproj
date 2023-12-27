@@ -4,7 +4,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>国家IP地址库</Description>
-    <Version>3.13.4</Version>
+    <Version>3.13.5</Version>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="dbip-country-lite-2023-10.csv.gz" />
