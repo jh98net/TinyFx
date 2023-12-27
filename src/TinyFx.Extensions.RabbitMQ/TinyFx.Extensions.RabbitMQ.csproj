@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>EasyNetQ封装</Description>
-    <Version>3.13.3-beta</Version>
+    <Version>3.13.4</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="EasyNetQ.DI.Microsoft" Version="7.7.0" />
