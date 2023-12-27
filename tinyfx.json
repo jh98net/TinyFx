@@ -81,7 +81,8 @@
     "ResponseErrorMessage": true, //是否返回客户端错误信息(自定义异常和未处理异常的message)
     "ResponseErrorDetail": true, //是否返回客户端异常详细信息（exception序列化信息）
     "IsDebugEnvironment": true, //否测试环境
-    "Environment": null //当前环境:local,dev,fat(qa),uat(staging),pro(prod)
+    "Environment": null, //当前环境:local,dev,fat(qa),uat(staging),pro(prod)
+    "ServiceUrl": null //服务地址
   },
 
   // 主机配置(TinyFx.Configuration.HostSection)

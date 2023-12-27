@@ -49,5 +49,10 @@ namespace TinyFx.Configuration
         /// 项目环境 EnvironmentNames
         /// </summary>
         public string Environment { get; set; }
+        /// <summary>
+        /// 服务地址，设置ConfigUtil.ServiceUrl
+        /// </summary>
+        public string ServiceUrl { get; set; }
+
     }
 }

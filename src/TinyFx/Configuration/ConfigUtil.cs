@@ -96,6 +96,8 @@ namespace TinyFx.Configuration
 
             // 设置服务唯一标识
             ServiceId ??= $"{Project.ProjectId}|{ServiceGuid}";
+            // 当前服务地址
+            ServiceUrl ??= Project.ServiceUrl;
         }
         private static void OnConfigChange()
         {
@@ -222,8 +224,8 @@ namespace TinyFx.Configuration
     public enum TinyFxHostType
     {
         Unknow = 0,
-        Console=1,
-        AspNet=2,
-        DotNetty=3
+        Console = 1,
+        AspNet = 2,
+        DotNetty = 3
     }
 }
