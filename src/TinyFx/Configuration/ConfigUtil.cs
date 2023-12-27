@@ -95,7 +95,7 @@ namespace TinyFx.Configuration
             ClearCacheData();
 
             // 设置服务唯一标识
-            ServiceId ??= $"{Project.ProjectId}|{ServiceGuid}";
+            ServiceId ??= $"{Project.ProjectId}:{ServiceGuid}";
             // 当前服务地址
             ServiceUrl ??= Project.ServiceUrl;
         }
