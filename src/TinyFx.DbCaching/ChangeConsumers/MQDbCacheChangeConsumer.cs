@@ -14,11 +14,11 @@ namespace TinyFx.DbCaching.ChangeConsumers
     {
         public override MQSubscribeMode SubscribeMode => MQSubscribeMode.Multicast;
         private string _connectionStringName;
-        private DbCachingUpdator _uploader;
+        private DbCacheUpdator _uploader;
         public MQDbCacheChangeConsumer(string connectionStringName)
         {
             _connectionStringName = connectionStringName;
-            _uploader = new DbCachingUpdator(DbCachingPublishMode.MQ);
+            _uploader = new DbCacheUpdator(DbCachingPublishMode.MQ);
         }
         protected override string GetConnectionStringName()
         {

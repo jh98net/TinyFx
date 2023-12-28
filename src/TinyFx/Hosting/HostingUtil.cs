@@ -64,11 +64,12 @@ namespace TinyFx.Hosting
         /// </summary>
         /// <param name="delay"></param>
         /// <param name="callback"></param>
-        public static void RegisterDelayTimer(TimeSpan delay, Func<CancellationToken, Task> callback)
+        /// <param name="title"></param>
+        public static void RegisterDelayTimer(TimeSpan delay, Func<CancellationToken, Task> callback, string title = null)
         {
             RegisterTimer(new TinyFxHostTimerItem
             {
-                Title = "",
+                Title = title,
                 ExecuteCount = 1,
                 TryCount = 0,
                 Interval = (int)delay.TotalMilliseconds,

@@ -26,14 +26,15 @@ namespace TinyFx.DbCaching
         // key: 一对多类型
         public ConcurrentDictionary<string, Dictionary<string, List<TEntity>>> ListDict { get; } = new();
         public ConcurrentDictionary<string, object> CustomDict { get; } = new();
-        public DbCacheMemory(params object[] splitDbKeys)
+        public DbCacheMemory(string configId, string tableName)
         {
             TableAttribute = typeof(TEntity).GetCustomAttribute<SugarTable>();
             if (TableAttribute == null)
                 throw new Exception($"DbCacheMemory内存缓存类型仅支持有SugarTableAttribute的类。type: {typeof(TEntity).FullName}");
-            var spliteProvider = DIUtil.GetRequiredService<IDbSplitProvider>();
-            ConfigId = spliteProvider.SplitDb<TEntity>(splitDbKeys);
+            ConfigId = configId;
             TableName = TableAttribute.TableName;
+            if (tableName != TableName)
+                throw new Exception($"DbCacheMemory构建时,TableName不同。attribute:{TableName} constructor:{tableName}");
             CachKey = DbCachingUtil.GetCacheKey(ConfigId, TableName);
             PrimaryKeys = DbUtil.GetDbById(ConfigId).DbMaintenance.GetPrimaries(TableName);
 

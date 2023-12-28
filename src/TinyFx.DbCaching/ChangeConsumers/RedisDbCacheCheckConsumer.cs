@@ -15,7 +15,7 @@ namespace TinyFx.DbCaching.ChangeConsumers
     {
         protected override async Task OnMessage(DbCacheCheckMessage message)
         {
-            var list = new List<DbCachingCheckItem>();
+            var list = new List<DbCacheCheckItem>();
             var listDCache = new DbCacheListDCache(message.RedisConnectionStringName);
             foreach (var dict in DbCachingUtil.CacheDict.Values)
             {
@@ -26,7 +26,7 @@ namespace TinyFx.DbCaching.ChangeConsumers
                     var redisData = (await listDCache.GetAsync(key)).Value;
                     if (redisData.DataHash != cacheData.DataHash || redisData.UpdateDate != cacheData.UpdateDate)
                     {
-                        list.Add(new DbCachingCheckItem
+                        list.Add(new DbCacheCheckItem
                         {
                             ConfigId = cacheData.ConfigId,
                             TableName = cacheData.TableName,

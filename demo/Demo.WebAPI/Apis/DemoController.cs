@@ -59,16 +59,17 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public async Task<string> Test1()
         {
-            var eo1 = DbCachingUtil.GetSingle<Ss_providerEO>("own");
-            var eo2 = DbCachingUtil.GetList(() => new Ss_providerEO
-            {
-                ProviderType = 2,
-                UseBonus = false
-            });
-            var eo3 = DbCachingUtil.GetList<Ss_operator_appEO>(it => it.OperatorID, "own_lobby_bra");
-            var a = await DbCachingUtil.GetAllCacheItem();
-            var b = await DbCachingUtil.ContainsCacheItem("default", "s_app");
-            var c = await DbCachingUtil.ContainsCacheItem("default", "s_provider");
+            await DbCachingUtil.PublishCheck();
+            //var eo1 = DbCachingUtil.GetSingle<Ss_providerEO>("own");
+            //var eo2 = DbCachingUtil.GetList(() => new Ss_providerEO
+            //{
+            //    ProviderType = 2,
+            //    UseBonus = false
+            //});
+            //var eo3 = DbCachingUtil.GetList<Ss_operator_appEO>(it => it.OperatorID, "own_lobby_bra");
+            //var a = await DbCachingUtil.GetAllCacheItem();
+            //var b = await DbCachingUtil.ContainsCacheItem("default", "s_app");
+            //var c = await DbCachingUtil.ContainsCacheItem("default", "s_provider");
             return "";
         }
         [HttpGet]
@@ -80,9 +81,9 @@ namespace Demo.WebAPI.Apis
             {
                 ProviderName = $"自有供应商{i}"
             }, it => it.ProviderID == "own"); ;
-            await DbCachingUtil.PublishUpdate(new DbCacheChangeMessage 
+            await DbCachingUtil.PublishUpdate(new DbCacheChangeMessage
             {
-                Changed = new List<DbCacheItem> 
+                Changed = new List<DbCacheItem>
                 {
                     new DbCacheItem
                     {
@@ -98,7 +99,7 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public async Task<string> Test3()
         {
-            var result = await DbCachingUtil.PublishCheck(); 
+            var result = await DbCachingUtil.PublishCheck();
             return "";
         }
 
@@ -273,6 +274,16 @@ namespace Demo.WebAPI.Apis
     {
         public int Id { get; set; }
         public string Name { get; set; }
+    }
+
+    public class DemoProvider : IDbCachePreloadProvider
+    {
+        public List<DbCachePreloadItem> GetPreloadList()
+        {
+            var ret = new List<DbCachePreloadItem>();
+            ret.Add(new DbCachePreloadItem(typeof(Ss_appEO)));
+            return ret;
+        }
     }
 }
 

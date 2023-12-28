@@ -29,7 +29,7 @@ namespace TinyFx.AspNet.Hosting
         {
             if (_cache == null)
             {
-                _cache = DbCachingUtil.GetNamedCache<TEntity>(null, GetSplitDbKeys());
+                _cache = DbCachingUtil.GetCache<TEntity>(GetSplitDbKeys());
             }
             return _cache;
         }

@@ -30,8 +30,11 @@ namespace TinyFx
                 container.Dispose();
                 LogUtil.Info("停止 => [RabbitMQ]资源释放");
             });
-            HostingUtil.RegisterDelayTimer(TimeSpan.FromSeconds(section.SACBindDelay)
-                , async (_) => await container.BindSACConsumer());
+            HostingUtil.RegisterDelayTimer(
+                TimeSpan.FromSeconds(section.SACBindDelay)
+                , async (_) => await container.BindSACConsumer()
+                , "RabbitMQ.BindSACConsumer"
+                );
 
 
             LogUtil.Info("配置 => [RabbitMQ] ConsumerAssemblies: {ConsumerAssemblies}", string.Join('|', section.ConsumerAssemblies));

@@ -91,7 +91,7 @@ namespace TinyFx.DbCaching
 
         #region GetOrAddCustom
         /// <summary>
-        /// 自定义单字典缓存，name唯一
+        /// 自定义字典缓存，name唯一
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="name"></param>
@@ -102,7 +102,7 @@ namespace TinyFx.DbCaching
           where TEntity : class, new()
             => GetCache<TEntity>(splitDbKeys).GetOrAddCustom(name, func);
         /// <summary>
-        /// 自定义列表字典缓存，name唯一
+        /// 自定义列表缓存，name唯一
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="name"></param>
@@ -126,18 +126,13 @@ namespace TinyFx.DbCaching
             => GetCache<TEntity>(splitDbKeys).GetOrAddCustom(name, func);
 
         /// <summary>
-        /// 获取缓存对象
+        /// 获取缓存对象DbCacheMemory
         /// </summary>
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
         /// <param name="splitDbKeys">分库路由数据</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
         public static DbCacheMemory<TEntity> GetCache<TEntity>(params object[] splitDbKeys)
-          where TEntity : class, new()
-        {
-            return GetNamedCache<TEntity>(null, splitDbKeys);
-        }
-        public static DbCacheMemory<TEntity> GetNamedCache<TEntity>(string cacheName, params object[] splitDbKeys)
           where TEntity : class, new()
         {
             var key = splitDbKeys == null || splitDbKeys.Length == 0
@@ -156,10 +151,41 @@ namespace TinyFx.DbCaching
             });
             // configId|tableName => dict
             var dict = CacheDict.GetOrAdd(cacheKey, (k) => new ConcurrentDictionary<string, object>());
-            // eoTypeName => memory
-            cacheName ??= typeof(TEntity).FullName;
-            var ret = dict.GetOrAdd(cacheName, (k) => new DbCacheMemory<TEntity>(splitDbKeys));
+            // eoTypeName => memory 可能存在多个Entity类对应一个表
+            var cacheName = typeof(TEntity).FullName;
+            var cacheKeys = ParseCacheKey(cacheKey);
+            var ret = dict.GetOrAdd(cacheName, (k) => new DbCacheMemory<TEntity>(cacheKeys.configId, cacheKeys.tableName));
             return (DbCacheMemory<TEntity>)ret;
+        }
+        internal static object PreloadCache(Type entityType, params object[] splitDbKeys)
+        {
+            var key = splitDbKeys == null || splitDbKeys.Length == 0
+                ? entityType.FullName
+                : $"{entityType.FullName}|{string.Join('|', splitDbKeys)}";
+
+            // configId|tableName
+            var cacheKey = CachKeyDict.GetOrAdd(key, k =>
+            {
+                var attr = entityType.GetCustomAttribute<SugarTable>();
+                if (attr == null)
+                    throw new Exception($"内存缓存类型仅支持有SugarTableAttribute的类。type: {entityType.FullName}");
+                var routingProvider = DIUtil.GetRequiredService<IDbSplitProvider>();
+                var method = routingProvider.GetType().GetMethod("SplitDb").MakeGenericMethod(entityType);
+                var configId = method.Invoke(routingProvider, new object[] { splitDbKeys }) as string;
+                return GetCacheKey(configId, attr.TableName);
+            });
+            // configId|tableName => dict
+            var dict = CacheDict.GetOrAdd(cacheKey, (k) => new ConcurrentDictionary<string, object>());
+            // eoTypeName => memory
+            var cacheName = entityType.FullName;
+            var cacheKeys = ParseCacheKey(cacheKey);
+            var ret = dict.GetOrAdd(cacheName, (k) =>
+            {
+                var baseType = typeof(DbCacheMemory<>);
+                var memoryType = baseType.MakeGenericType(entityType);
+                return Activator.CreateInstance(memoryType, cacheKeys.configId, cacheKeys.tableName);
+            });
+            return ret;
         }
         #endregion
 
@@ -225,10 +251,6 @@ namespace TinyFx.DbCaching
                 case DbCachingPublishMode.MQ:
                     await MQUtil.PublishAsync(message, null, null, message.MQConnectionStringName);
                     break;
-                case DbCachingPublishMode.All:
-                    await RedisUtil.PublishAsync(message, message.RedisConnectionStringName);
-                    await MQUtil.PublishAsync(message, null, null, message.MQConnectionStringName);
-                    break;
             }
         }
 
@@ -242,9 +264,9 @@ namespace TinyFx.DbCaching
         /// <param name="timeoutSeconds">单个host验证的timeout秒</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<List<DbCachingCheckResult>> PublishCheck(string redisConnectionStringName = null, int timeoutSeconds = 5)
+        public static async Task<List<DbCacheCheckResult>> PublishCheck(string redisConnectionStringName = null, int timeoutSeconds = 5)
         {
-            var ret = new List<DbCachingCheckResult>();
+            var ret = new List<DbCacheCheckResult>();
             var msg = new DbCacheCheckMessage
             {
                 TraceId = StringUtil.GetGuidString(),
@@ -255,33 +277,42 @@ namespace TinyFx.DbCaching
             var registerService = DIUtil.GetService<ITinyFxHostRegisterService>();
             if (registerService == null)
                 throw new Exception("获取所有host的DbCaching缓存检查数据异常，ITinyFxHostRegisterService不存在");
-            
+
             var serviceIds = await registerService.GetHosts(redisConnectionStringName);
-            var idQueue = new Queue<string>();
-            serviceIds.ForEach(x => idQueue.Enqueue(x));
-            var currTime = 0;
-            var maxTime = idQueue.Count * timeoutSeconds * 1000;
+            var idQueue = new Queue<(string serviceId, long waitTime)>();
+            serviceIds.ForEach(x => idQueue.Enqueue((x, 0)));
+            var maxTime = timeoutSeconds * 1000;
             while (idQueue.Count > 0)
             {
-                var serviceId = idQueue.Dequeue();
-                await Task.Delay(100);
-                currTime += 100;
-                if (currTime > maxTime)
-                    throw new Exception($"DbCachingUtil.PublishCheck操作超时，serviceId:{serviceId}");
+                var item = idQueue.Dequeue();
+                var serviceId = item.serviceId;
+                var waitTime = item.waitTime;
+                waitTime += 1000;
+                await Task.Delay(1000);
+
+                if (waitTime > maxTime)
+                {
+                    ret.Add(new DbCacheCheckResult
+                    {
+                        ServiceId = serviceId,
+                        Success = false
+                    });
+                    continue;
+                    //throw new Exception($"DbCachingUtil.PublishCheck操作超时，serviceId:{serviceId}");
+                }
                 var traceId = await registerService.GetHostData<string>(serviceId, DB_CACHING_CHECK_KEY, redisConnectionStringName);
                 if (!traceId.HasValue || traceId.Value != msg.TraceId)
                 {
-                    idQueue.Enqueue(serviceId);
+                    idQueue.Enqueue((serviceId, waitTime));
                     continue;
                 }
-                var items = await registerService.GetHostData<List<DbCachingCheckItem>>(serviceId
+                var items = await registerService.GetHostData<List<DbCacheCheckItem>>(serviceId
                     , DB_CACHING_CHECK_DATA, redisConnectionStringName);
-                if (!items.HasValue)
-                    continue;
-                var result = new DbCachingCheckResult
+                var result = new DbCacheCheckResult
                 {
                     ServiceId = serviceId,
-                    Items = items.Value
+                    Success = true,
+                    Items = items.HasValue ? items.Value : null
                 };
                 ret.Add(result);
             }

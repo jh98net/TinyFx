@@ -9,10 +9,10 @@ using TinyFx.Logging;
 
 namespace TinyFx.DbCaching.ChangeConsumers
 {
-    internal class DbCachingUpdator
+    internal class DbCacheUpdator
     {
         private DbCachingPublishMode _mode;
-        public DbCachingUpdator(DbCachingPublishMode mode)
+        public DbCacheUpdator(DbCachingPublishMode mode)
         {
             _mode = mode;
         }

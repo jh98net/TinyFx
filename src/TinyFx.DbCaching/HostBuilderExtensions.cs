@@ -27,13 +27,16 @@ namespace TinyFx
 
             var checkConsumer = new RedisDbCacheCheckConsumer();
             IDbCacheChangeConsumer changeConsumer = null;
+            DbCacheUpdator updator = null;
             switch (section.PublishMode)
             {
                 case DbCachingPublishMode.Redis:
                     changeConsumer = new RedisDbCacheChangeConsumer(section.RedisConnectionStringName);
+                    updator = new DbCacheUpdator(DbCachingPublishMode.Redis);
                     break;
                 case DbCachingPublishMode.MQ:
                     changeConsumer = new MQDbCacheChangeConsumer(section.MQConnectionStringName);
+                    updator = new DbCacheUpdator(DbCachingPublishMode.MQ);
                     break;
                 default:
                     throw new Exception("未知的DbCachingPublishMode");
@@ -42,11 +45,25 @@ namespace TinyFx
             {
                 services.AddSingleton(changeConsumer!);
                 services.AddSingleton(checkConsumer);
+                services.AddSingleton(updator);
             });
             HostingUtil.RegisterStarting(async () =>
             {
                 await changeConsumer!.RegisterConsumer();
                 checkConsumer.Register();
+                // preload
+                if (section.PreloadProviders != null && section.PreloadProviders.Count > 0)
+                {
+                    foreach (var providerType in section.PreloadProviders)
+                    {
+                        var type = Type.GetType(providerType);
+                        var provider = Activator.CreateInstance(type) as IDbCachePreloadProvider;
+                        foreach (var preload in provider.GetPreloadList())
+                        {
+                            DbCachingUtil.PreloadCache(preload.EntityType, preload.SplitDbKeys);
+                        }
+                    }
+                }
                 LogUtil.Info("启动 => 内存缓存[DbCaching]");
             });
             HostingUtil.RegisterStopping(async () =>
@@ -67,8 +84,21 @@ namespace TinyFx
                         {
                             var dataProvider = new PageDataProvider(table.ConfigId, table.TableName, section.RedisConnectionStringName);
                             await dataProvider.SetRedisValues();
-                            // remove
-                            DbCachingUtil.CachKeyDict.TryRemove(key, out var _);
+                            // update
+                            await updator.Execute(new DbCacheChangeMessage
+                            {
+                                PublishMode = section.PublishMode,
+                                RedisConnectionStringName = section.RedisConnectionStringName,
+                                MQConnectionStringName = section.MQConnectionStringName,
+                                Changed = new List<DbCacheItem>
+                                {
+                                    new DbCacheItem
+                                    {
+                                        ConfigId = table.ConfigId,
+                                        TableName = table.TableName,
+                                    }
+                                }
+                            });
                         }
                     });
                 }

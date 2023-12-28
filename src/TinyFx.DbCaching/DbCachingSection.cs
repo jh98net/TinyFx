@@ -13,9 +13,12 @@ namespace TinyFx.DbCaching
         public DbCachingPublishMode PublishMode { get; set; } = DbCachingPublishMode.Redis;
         public string RedisConnectionStringName { get; set; }
         public string MQConnectionStringName { get; set; }
+        /// <summary>
+        /// 预加载缓存表IDbCachePreloadProvider实现类，如:Demo.DemoDbCachePreloadProvider,Demo.BLL
+        /// </summary>
+        public List<string> PreloadProviders { get; set; }
         public List<DbCachingRefleshTable> RefleshTables { get; set; }
     }
-
     public class DbCachingRefleshTable
     {
         public string ConfigId { get; set; }
@@ -35,7 +38,6 @@ namespace TinyFx.DbCaching
     public enum DbCachingPublishMode
     {
         Redis,
-        MQ,
-        All
+        MQ
     }
 }
