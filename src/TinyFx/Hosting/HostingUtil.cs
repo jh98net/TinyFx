@@ -95,31 +95,31 @@ namespace TinyFx.Hosting
         /// </summary>
         /// <param name="func"></param>
         public static void RegisterStarting(Func<Task> func)
-            => GetLifetime().RegisterStarting(func);
+            => GetLifetimeService().RegisterStarting(func);
         /// <summary>
         /// 注册Host启动完毕事件
         /// </summary>
         /// <param name="func"></param>
         public static void RegisterStarted(Func<Task> func)
-            => GetLifetime().RegisterStarted(func);
+            => GetLifetimeService().RegisterStarted(func);
         /// <summary>
         /// 注册Host准备停止事件
         /// </summary>
         /// <param name="func"></param>
         public static void RegisterStopping(Func<Task> func)
-            => GetLifetime().RegisterStopping(func);
+            => GetLifetimeService().RegisterStopping(func);
         /// <summary>
         /// 注册Host已经停止事件
         /// </summary>
         /// <param name="func"></param>
         public static void RegisterStopped(Func<Task> func)
-            => GetLifetime().RegisterStopped(func);
+            => GetLifetimeService().RegisterStopped(func);
 
         /// <summary>
         /// 获取Host生命周期事件注册服务
         /// </summary>
         /// <returns></returns>
-        private static ITinyFxHostLifetimeService GetLifetime()
+        private static ITinyFxHostLifetimeService GetLifetimeService()
         {
             var ret = DIUtil.GetService<ITinyFxHostLifetimeService>();
             if (ret == null)
