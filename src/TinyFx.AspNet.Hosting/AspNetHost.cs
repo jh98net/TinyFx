@@ -19,6 +19,7 @@ using System.IO;
 using TinyFx.Net;
 using TinyFx.Extensions.Serilog;
 using System.Reflection;
+using TinyFx.Text;
 
 namespace TinyFx
 {
@@ -49,12 +50,21 @@ namespace TinyFx
                        .Select(o => { return $"id:{o.Id} name:{o.ProcessName} threads:{o.Threads.Count}"; })
                        .ToList();
             var lastBuildTime = File.GetLastWriteTimeUtc(Assembly.GetEntryAssembly().Location).AddHours(8).ToString("yyyy-MM-dd HH:mm:ss");
+            var startTime = ((long)ObjectId.Parse(ConfigUtil.ServiceGuid).Timestamp).TimestampToUtcDateTime().ToFormatString();
+            string outputIp = null;
+            try
+            {
+                outputIp = (await HttpClientExFactory.CreateClientEx().CreateAgent().AddUrl("http://api.ip.sb/ip").GetStringAsync()).ResultString.TrimEnd('\n');
+            }
+            catch { }
             var dict = new Dictionary<string, object>
             {
+                { "服务启动UTC时间", startTime },
                 { "ConfigUtil.ServiceId", ConfigUtil.ServiceId },
                 { "ConfigUtil.ServiceUrl", ConfigUtil.ServiceUrl },
+                { "ConfigUtil.ServiceGuid", ConfigUtil.ServiceGuid },
                 { "ConfigUtil.EnvironmentString", ConfigUtil.EnvironmentString },
-                { "ConfigUtil.Environment", ConfigUtil.Environment },
+                { "ConfigUtil.Environment", ConfigUtil.Environment.ToString() },
                 { "header:Host", HttpContextEx.GetHeaderValue("Host") },
                 { "header:X-Forwarded-Proto",HttpContextEx.GetHeaderValue("X-Forwarded-Proto")},
                 { "header:Referer", HttpContextEx.GetHeaderValue("Referer") },
@@ -64,20 +74,21 @@ namespace TinyFx
                 { "AspNetUtil.GetRefererUrl()", AspNetUtil.GetRefererUrl() },
                 { "AspNetUtil.GetRemoteIpString()", AspNetUtil.GetRemoteIpString() },
                 { "AppContext.BaseDirectory", AppContext.BaseDirectory },
-                { "ProcessInfos", processInfos },
-                { "分配的内存总量GC.GetTotalMemory(false)-(gc-heap-size)", GC.GetTotalMemory(false) },
+                { "DiagnosticsClient.GetPublishedProcesses()", processInfos },
+                { "分配的内存总量: GC.GetTotalMemory(false)-(gc-heap-size)", GC.GetTotalMemory(false) },
                 { "GCSettings.IsServerGC", GCSettings.IsServerGC },
-                { "本机IP", NetUtil.GetLocalIP() },
-                { "出口IP", await HttpClientExFactory.CreateClientEx().CreateAgent().AddUrl("http://api.ip.sb/ip").GetStringAsync() },
-                { "header总量", HttpContextEx.Request.Headers.Count },
-                { "最后一次编译时间", lastBuildTime },
+                { "服务器本机IP", NetUtil.GetLocalIPs() },
+                { "服务器出口IP", outputIp },
+                { "代码最后一次编译时间", lastBuildTime },
             };
+            ThreadPool.GetAvailableThreads(out var worker, out var completion);
+            dict.Add("ThreadPool.GetAvailableThreads()", $"workerThreads:{worker} completionPortThreads:{completion}");
+            
+            dict.Add("headers总量", HttpContextEx.Request.Headers.Count);
             foreach (var header in HttpContextEx.Request.Headers)
             {
                 dict.Add($"headers.{header.Key}", header.Value);
             }
-            ThreadPool.GetAvailableThreads(out var worker, out var completion);
-            dict.Add("ThreadPool.GetAvailableThreads()", $"workerThreads:{worker} completionPortThreads:{completion}");
 
             return SerializerUtil.SerializeJsonNet(dict);
         }

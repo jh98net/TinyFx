@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using TinyFx.Configuration.Common;
 using TinyFx.Logging;
+using TinyFx.Text;
 
 namespace TinyFx.Configuration
 {
@@ -68,7 +69,7 @@ namespace TinyFx.Configuration
         /// <summary>
         /// 服务启动时分配的GUID
         /// </summary>
-        public static readonly string ServiceGuid = StringUtil.GetGuidString();
+        public static readonly string ServiceGuid = ObjectId.NewId();
         /// <summary>
         /// 服务的唯一标识，默认: projectId|guid
         /// </summary>

@@ -327,7 +327,7 @@
     "PublishMode": "Redis", // 数据变更通知模式 Redis,MQ
     "RedisConnectionStringName": "default",
     "MQConnectionStringName": "default",
-    "PreloadProviders": [], //预加载缓存表IDbCachePreloadProvider实现类，格式:ClassLibrary1.Class1,ClassLibrary1
+    "PreloadProviders": [], //预加载缓存表IDbCachePreloadProvider实现类，如:Demo.DemoDbCachePreloadProvider,Demo.BLL
     "RefleshTables": [
       {
         "ConfigId": "",

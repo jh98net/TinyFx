@@ -111,7 +111,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.IDGenerator", "src\T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.IP2Country", "src\TinyFx.IP2Country\TinyFx.IP2Country.csproj", "{7C0AF1D2-E5B9-4041-A3FA-903BEE56A675}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Labraries", "Labraries", "{711A998E-6B9E-4C6E-9A1F-037C218A9D61}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Labrary", "Labrary", "{711A998E-6B9E-4C6E-9A1F-037C218A9D61}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
