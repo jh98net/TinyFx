@@ -65,31 +65,28 @@ namespace TinyFx.Configuration
 
         private List<CorsPolicyElement> GetPolicies()
         {
-            var ret = new Dictionary<string, CorsPolicyElement>();
-            foreach (var item in Policies)
-            {
-                ret.Add(item.Key, item.Value);
-            }
             if (PoliciesProvider != null)
             {
                 var policies = PoliciesProvider.GetPolicies();
+                // 附加到配置中
                 policies.ForEach(x =>
                 {
                     x.Name ??= "default";
-                    if (ret.ContainsKey(x.Name))
+                    if (Policies.ContainsKey(x.Name))
                     {
-                        var oldOrigins = ret[x.Name].Origins.Trim().TrimEnd(';');
+                        var oldOrigins = Policies[x.Name].Origins.Trim().TrimEnd(';');
                         var newOrigins = $"{oldOrigins};{x.Origins?.Trim()}";
                         var originsSet = newOrigins.Split(';', StringSplitOptions.RemoveEmptyEntries).ToHashSet();
-                        ret[x.Name].Origins = string.Join(';', originsSet);
+                        Policies[x.Name].Origins = string.Join(';', originsSet);
                     }
                     else
                     {
-                        ret.Add(x.Name, x);
+                        Policies.Add(x.Name, x);
                     }
+                    Policies[x.Name].OriginSet = null;
                 });
             }
-            return ret.Values.ToList();
+            return Policies.Values.ToList();
         }
         public void AddPolicies(CorsOptions opts, bool isUpdate = false)
         {

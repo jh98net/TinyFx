@@ -31,7 +31,7 @@ namespace TinyFx.DbCaching
         {
             var listDCache = new DbCacheListDCache(ConnectionStringName);
             var dataDCache = new DbCacheDataDCache(_configId, _tableName, ConnectionStringName);
-            var data = await GetDbTableData();
+            var ret = await GetDbTableData();
 
             var key = DbCachingUtil.GetCacheKey(_configId, _tableName);
             var listDo1 = await listDCache.GetAsync(key);
@@ -44,12 +44,12 @@ namespace TinyFx.DbCaching
             }
             var listDo2 = await listDCache.GetAsync(key);
             if (listDo1.Value?.UpdateDate != listDo2.Value?.UpdateDate) //已更新
-                return data;
+                return ret;
 
             // 装载数据
             int i = 0;
             await dataDCache.KeyDeleteAsync();
-            foreach (var pageString in data.PageList)
+            foreach (var pageString in ret.PageList)
             {
                 await dataDCache.SetAsync($"{++i}", pageString);
                 await Task.Delay(100);
@@ -58,11 +58,11 @@ namespace TinyFx.DbCaching
             {
                 ConfigId = _configId,
                 TableName = _tableName,
-                PageCount = data.PageCount,
-                DataHash = data.DataHash,
-                UpdateDate = DateTime.Now.ToFormatString()
+                PageCount = ret.PageCount,
+                DataHash = ret.DataHash,
+                UpdateDate = ret.UpdateDate
             });
-            return data;
+            return ret;
         }
 
         public async Task<DbTableRedisData> GetRedisValues()
@@ -98,6 +98,7 @@ namespace TinyFx.DbCaching
             {
                 ConfigId = _configId,
                 TableName = _tableName,
+                UpdateDate = DateTime.UtcNow.ToFormatString()
             };
             var totalList = await DbUtil.GetDbById(_configId).Queryable<object>()
                 .AS(_tableName).ToListAsync();
