@@ -22,7 +22,9 @@ namespace TinyFx.Configuration
         /// </summary>
         public bool UseApiActionResultFilter { get; set; } = true;
         /// <summary>
-        /// 是否使用ApiModelStateFilter（屏蔽[ApiController]的自动 400 响应） 
+        /// 是否使用ValidateModelFilter
+        /// 屏蔽[ApiController]的自动 400 响应
+        /// 使用自定义的如RequiredExAttribute等
         /// </summary>
         public bool UseModelStateFilter { get; set; } = true;
         /// <summary>

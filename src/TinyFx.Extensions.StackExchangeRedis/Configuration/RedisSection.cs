@@ -25,11 +25,6 @@ namespace TinyFx.Configuration
         /// </summary>
         public string DefaultConnectionStringName { get; set; }
         /// <summary>
-        /// 是否开启DbCacheChangeConsumer
-        /// </summary>
-        public bool UseDbCaching { get; set; }
-        public bool RunNewTaskWhenSync { get; set; } = true;
-        /// <summary>
         /// redis连接集合
         /// </summary>
         public Dictionary<string, ConnectionStringElement> ConnectionStrings = new Dictionary<string, ConnectionStringElement>();
