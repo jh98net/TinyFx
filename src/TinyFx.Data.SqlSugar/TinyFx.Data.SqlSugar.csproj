@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>SqlSugar封装</Description>
-    <Version>3.13.14</Version>
+    <Version>3.13.15</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SqlSugarCore" Version="5.1.4.127" />
