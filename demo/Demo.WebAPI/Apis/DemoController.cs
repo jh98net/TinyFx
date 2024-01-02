@@ -68,7 +68,7 @@ namespace Demo.WebAPI.Apis
             var result = helper.VerifyBothKey(sourceKey, sourceData, sign);
 
             //F89F733B671176B6072034C3CA87E57923A9890C0701E09099CD8739699B51D6
-            var accessKey = helper.GetAccessKey(sourceKey, "F89F733B671176B6072034C3CA87E57923A9890C0701E09099CD8739699B51D6");
+            var accessKey = helper.GetAccessKeyDecrypt(sourceKey, "F89F733B671176B6072034C3CA87E57923A9890C0701E09099CD8739699B51D6");
 
             //80150420F2885ECC2867209112D4E745|HgLHd+fXmCvkS7Uclt+wjUAJTorKNwjQpor6ux3iY+g=
             sourceData = "{\"appId\":\"lobby\",\"operatorId\":\"own_lobby_bra\",\"langId\":\"pt\",\"countryId\":\"BRA\",\"currencyId\":\"BRL\"}";

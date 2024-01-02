@@ -60,6 +60,8 @@ namespace TinyFx.AspNet
             }
         }
 
+        public string GetBothKey(string sourceKey)
+            => GetKey(BothKeySeed, BothKeyIndexes, sourceKey);
         /// <summary>
         /// 验证BothKey签名
         /// </summary>
@@ -72,12 +74,14 @@ namespace TinyFx.AspNet
             if (!Enabled)
                 return true;
             TinyFxUtil.ThrowIfNullOrEmpty("AccessVerifyService.VerifyBothKey时,sourceKey,sourceData,sign不能为空", sourceKey, sourceData, sign);
-            var bothKey = GetKey(BothKeySeed, BothKeyIndexes, sourceKey);
+            var bothKey = GetBothKey(sourceKey);
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(bothKey));
             var hash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(sourceData)));
             return hash == sign;
         }
 
+        public string GetAccessKey(string sourceKey)
+            => GetKey(AccessKeySeed, AccessKeyIndexes, sourceKey);
         /// <summary>
         /// 获取加密的AccessKey
         /// </summary>
@@ -85,18 +89,16 @@ namespace TinyFx.AspNet
         /// <returns></returns>
         public string GetAccessKeyEncrypt(string sourceKey)
         {
-            var bothKey = GetKey(BothKeySeed, BothKeyIndexes, sourceKey);
+            var bothKey = GetBothKey(sourceKey);
             var accessKey = GetAccessKey(sourceKey);
             var ret = JsAesUtil.Encrypt(accessKey, bothKey);
             return ret;
         }
 
-        public string GetAccessKey(string sourceKey)
-            => GetKey(AccessKeySeed, AccessKeyIndexes, sourceKey);
-        public string GetAccessKey(string sourceKey, string decryptAccessKey)
+        public string GetAccessKeyDecrypt(string sourceKey, string encryptAccessKey)
         {
-            var bothKey = GetKey(BothKeySeed, BothKeyIndexes, sourceKey);
-            return JsAesUtil.Decrypt(decryptAccessKey, bothKey);
+            var bothKey = GetBothKey(sourceKey);
+            return JsAesUtil.Decrypt(encryptAccessKey, bothKey);
         }
 
         /// <summary>
@@ -111,7 +113,7 @@ namespace TinyFx.AspNet
             if (!Enabled)
                 return true;
             TinyFxUtil.ThrowIfNullOrEmpty("AccessVerifyService.VerifyAccessKey时,sourceKey,sourceData,sign不能为空", sourceKey, sourceData, sign);
-            var accessKey = GetKey(AccessKeySeed, AccessKeyIndexes, sourceKey);
+            var accessKey = GetAccessKey(sourceKey);
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(accessKey));
             var hash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(sourceData)));
             return hash == sign;
