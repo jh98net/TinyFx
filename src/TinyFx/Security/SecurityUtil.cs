@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using static SevenZip.Compression.LZMA.Base;
 
 namespace TinyFx.Security
 {
@@ -797,6 +798,53 @@ namespace TinyFx.Security
                     //    break;
             }
             return ret;
+        }
+        #endregion
+
+        #region BothKey
+        /// <summary>
+        /// 根据双方约定的算法获取key
+        /// </summary>
+        /// <param name="constStr">约定的填充source的字符串</param>
+        /// <param name="constIndexes">约定的获取key的索引序列</param>
+        /// <param name="source">生成key的原始字符串</param>
+        /// <returns></returns>
+        public static string GetBothKey(string constStr, int[] constIndexes, string source)
+        {
+            if (constStr.Length < constIndexes.Length)
+                throw new Exception("SecurityUtil.GetBothKey()时,约定的constStr长度必须大于等于constIndexes长度");
+            var len = constIndexes.Length;
+            var mod = source.Length % len;
+            source += constStr.Substring(0, len - mod);
+            var max = source.Length / len;
+            var ret = string.Empty;
+            for (int i = 0; i < constIndexes.Length; i++)
+            {
+                var idx = i % max * len;
+                ret += source[idx + constIndexes[i]];
+            }
+            return ret;
+/* TypeScript代码
+    class BothKeyGenerator {
+      private _constStr = 'hNMmcYykGdCluYqe';
+      private _constIndexes = [7, 1, 4, 15, 5, 2, 0, 8, 13, 14, 9, 12, 11, 10, 6, 3];
+      private getBothKey(constStr: string, constIndexes: number[], source: string) {
+        var len = constIndexes.length;
+        var mod = source.length % len;
+        source += constStr.substring(0, len - mod);
+        var max = source.length / len;
+        var ret = '';
+        for (var i = 0; i < constIndexes.length; i++) {
+          var idx = (i % max) * len;
+          ret += source[idx + constIndexes[i]];
+        }
+        return ret;
+      }
+      public get(source: string) {
+        return this.getBothKey(this._constStr, this._constIndexes, source);
+      }
+    }
+*/
         }
         #endregion
     }
