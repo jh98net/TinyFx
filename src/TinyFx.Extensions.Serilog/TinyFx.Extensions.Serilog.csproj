@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>Serilog封装</Description>
-    <Version>3.13.11</Version>
+    <Version>3.13.12</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
