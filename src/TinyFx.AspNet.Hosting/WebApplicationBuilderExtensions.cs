@@ -466,7 +466,7 @@ namespace TinyFx
             var section = ConfigUtil.GetSection<AccessVerifySection>();
             if (section != null && section.Enabled)
             {
-                services.AddSingleton<IAccessVerifyHelper>(new AccessVerifyHelper());
+                services.AddSingleton<IAccessVerifyService>(new AccessVerifyService());
             }
             return services;
         }

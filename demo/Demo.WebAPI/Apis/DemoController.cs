@@ -62,7 +62,7 @@ namespace Demo.WebAPI.Apis
             var sourceKey = "80150420F2885ECC2867209112D4E745lobby";
             var sourceData = $"1704188983585{sourceKey}";
             var sign = "I7XObb8dHk78D/Oe/Ec0pD42CqvgbVZdb9beJ8oXx7Y=";
-            var helper = new AccessVerifyHelper();
+            var helper = new AccessVerifyService();
             // true
             //08yC0b81GC2k8DN5 bothKey
             var result = helper.VerifyBothKey(sourceKey, sourceData, sign);

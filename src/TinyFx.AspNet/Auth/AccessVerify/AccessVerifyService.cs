@@ -11,36 +11,42 @@ using TinyFx.Text;
 
 namespace TinyFx.AspNet
 {
-    public interface IAccessVerifyHelper
+    public interface IAccessVerifyService
     {
+        string BothKeySeed { get; set; }
+        int[] BothKeyIndexes { get; set; }
+        string AccessKeySeed { get; set; }
+        int[] AccessKeyIndexes { get; set; }
         string GetAccessKeyEncrypt(string sourceKey);
         bool VerifyAccessKey(string sourceKey, string sourceData, string sign);
         bool VerifyBothKey(string sourceKey, string sourceData, string sign);
     }
 
-    public class AccessVerifyHelper : IAccessVerifyHelper
+    public class AccessVerifyService : IAccessVerifyService
     {
-        private string BOTH_KEY_SEED = "hNMmcYykGdCluYqe";
-        private int[] BOTH_KEY_INDEXES = { 7, 1, 4, 15, 5, 2, 0, 8, 13, 14, 9, 12, 11, 10, 6, 3 };
+        private bool _enabled;
+        public string BothKeySeed { get; set; } = "hNMmcYykGdCluYqe";
+        public int[] BothKeyIndexes { get; set; } = { 7, 1, 4, 15, 5, 2, 0, 8, 13, 14, 9, 12, 11, 10, 6, 3 };
 
-        private string ACCESS_KEY_SEED = "vMjV3VFW3SyklQeQ";
-        private int[] ACCESS_KEY_INDEXES = { 8, 11, 13, 12, 9, 7, 3, 14, 5, 2, 1, 0, 4, 6, 15, 10 };
-        public AccessVerifyHelper()
+        public string AccessKeySeed { get; set; } = "vMjV3VFW3SyklQeQ";
+        public int[] AccessKeyIndexes { get; set; } = { 8, 11, 13, 12, 9, 7, 3, 14, 5, 2, 1, 0, 4, 6, 15, 10 };
+        public AccessVerifyService()
         {
             var section = ConfigUtil.GetSection<AccessVerifySection>();
+            _enabled = section?.Enabled ?? false;
             if (!string.IsNullOrEmpty(section?.BothKeySeed))
-                BOTH_KEY_SEED = section.BothKeySeed;
+                BothKeySeed = section.BothKeySeed;
             if (!string.IsNullOrEmpty(section?.BothKeyIndexes))
             {
-                BOTH_KEY_INDEXES = section.BothKeyIndexes.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                BothKeyIndexes = section.BothKeyIndexes.Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Trim().ToInt32()).ToArray();
             }
 
             if (!string.IsNullOrEmpty(section?.AccessKeySeed))
-                ACCESS_KEY_SEED = section.AccessKeySeed;
+                AccessKeySeed = section.AccessKeySeed;
             if (!string.IsNullOrEmpty(section?.AccessKeyIndexes))
             {
-                ACCESS_KEY_INDEXES = section.AccessKeyIndexes.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                AccessKeyIndexes = section.AccessKeyIndexes.Split(',', StringSplitOptions.RemoveEmptyEntries)
                     .Select(x => x.Trim().ToInt32()).ToArray();
             }
         }
@@ -54,7 +60,9 @@ namespace TinyFx.AspNet
         /// <returns></returns>
         public bool VerifyBothKey(string sourceKey, string sourceData, string sign)
         {
-            var bothKey = GetKey(BOTH_KEY_SEED, BOTH_KEY_INDEXES, sourceKey);
+            if (!_enabled)
+                return true;
+            var bothKey = GetKey(BothKeySeed, BothKeyIndexes, sourceKey);
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(bothKey));
             var hash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(sourceData)));
             return hash == sign;
@@ -67,17 +75,17 @@ namespace TinyFx.AspNet
         /// <returns></returns>
         public string GetAccessKeyEncrypt(string sourceKey)
         {
-            var bothKey = GetKey(BOTH_KEY_SEED, BOTH_KEY_INDEXES, sourceKey);
+            var bothKey = GetKey(BothKeySeed, BothKeyIndexes, sourceKey);
             var accessKey = GetAccessKey(sourceKey);
             var ret = JsAesUtil.Encrypt(accessKey, bothKey);
             return ret;
         }
 
         public string GetAccessKey(string sourceKey)
-            => GetKey(ACCESS_KEY_SEED, ACCESS_KEY_INDEXES, sourceKey);
+            => GetKey(AccessKeySeed, AccessKeyIndexes, sourceKey);
         public string GetAccessKey(string sourceKey, string decryptAccessKey)
         {
-            var bothKey = GetKey(BOTH_KEY_SEED, BOTH_KEY_INDEXES, sourceKey);
+            var bothKey = GetKey(BothKeySeed, BothKeyIndexes, sourceKey);
             return JsAesUtil.Decrypt(decryptAccessKey, bothKey);
         }
 
@@ -90,7 +98,9 @@ namespace TinyFx.AspNet
         /// <returns></returns>
         public bool VerifyAccessKey(string sourceKey, string sourceData, string sign)
         {
-            var accessKey = GetKey(ACCESS_KEY_SEED, ACCESS_KEY_INDEXES, sourceKey);
+            if (!_enabled)
+                return true;
+            var accessKey = GetKey(AccessKeySeed, AccessKeyIndexes, sourceKey);
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(accessKey));
             var hash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(sourceData)));
             return hash == sign;

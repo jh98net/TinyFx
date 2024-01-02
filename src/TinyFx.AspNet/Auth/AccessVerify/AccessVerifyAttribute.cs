@@ -16,15 +16,15 @@ namespace TinyFx.AspNet
     public class AccessVerifyAttribute : Attribute, IAsyncActionFilter
     {
         public const string HEADER_NAME = "tinyfx-sign";
-        private IAccessVerifyHelper _helper;
+        private IAccessVerifyService _verifySvc;
         public AccessVerifyAttribute()
         {
-            _helper = DIUtil.GetService<IAccessVerifyHelper>();
+            _verifySvc = DIUtil.GetService<IAccessVerifyService>();
         }
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var section = ConfigUtil.GetSection<AccessVerifySection>();
-            if (section != null && section.Enabled && _helper != null)
+            if (section != null && section.Enabled && _verifySvc != null)
             {
                 if (!context.HttpContext.Request.Headers.TryGetValue(HEADER_NAME, out var value))
                     throw new CustomException(GResponseCodes.G_UNAUTHORIZED, $"header不存在: {HEADER_NAME}");
@@ -37,7 +37,7 @@ namespace TinyFx.AspNet
                 var content = await AspNetUtil.GetRawBodyAsync(context.HttpContext.Request);
                 content = string.IsNullOrEmpty(content) ? "null" : content;
 
-                var isValid = _helper.VerifyAccessKey(sourceKey, content, sign);
+                var isValid = _verifySvc.VerifyAccessKey(sourceKey, content, sign);
                 if (!isValid)
                 {
                     var msg = $"header {HEADER_NAME} 值无效: {value}";
