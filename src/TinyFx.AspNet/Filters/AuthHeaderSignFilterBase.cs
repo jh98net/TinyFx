@@ -20,6 +20,7 @@ using TinyFx.Security;
 
 namespace TinyFx.AspNet
 {
+    /*
     /// <summary>
     /// 验证Headers中的签名有效性
     ///     sign = Headers[HeaderName]
@@ -87,5 +88,5 @@ namespace TinyFx.AspNet
             return SecurityUtil.RSAVerifyData(source, sign, PublicKey, RSAKeyMode.RSAPublicKey
                 , HashAlgorithmName.SHA256, CipherEncode.Base64);
         }
-    }
+    }*/
 }

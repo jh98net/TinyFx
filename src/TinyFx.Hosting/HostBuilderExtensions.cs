@@ -63,11 +63,10 @@ namespace TinyFx
             // Hosting
             builder.ConfigureServices((context, services) =>
             {
-                services.AddSingleton<ITinyFxHostLifetimeService>(new DefaultTinyFxHostLifetimeService());
+                services.AddSingleton<ITinyFxHostLifetimeService>(HostingUtil.LifetimeService);
                 services.AddSingleton<ITinyFxHostTimerService>(new DefaultTinyFxHostTimerService());
                 services.AddSingleton<ITinyFxHostRegisterService>(new RedisTinyFxHostRegisterService());
             });
-
             LogUtil.Info("配置 => [TinyFx]");
             return builder;
         }

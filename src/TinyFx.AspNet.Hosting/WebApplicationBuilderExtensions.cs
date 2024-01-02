@@ -22,6 +22,7 @@ using TinyFx.Configuration;
 using TinyFx.Extensions.Nacos;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
+using TinyFx.Reflection;
 using TinyFx.Security;
 
 namespace TinyFx
@@ -51,7 +52,7 @@ namespace TinyFx
             AddAspNetExDetail(builder.Services, type);
             //
             TinyFxHostingStartupLoader.Instance.ConfigureServices(builder);
-            
+
             // 注册Host
             builder.Host.AddTinyFxHost();
             return builder;
@@ -89,7 +90,9 @@ namespace TinyFx
 
                 .AddOptions()                   // IOptions
                 .AddHttpClient()                // IHttpClientFactory
-                .AddHttpContextAccessor();//.AddOAuth();      // IHttpContextAccessor
+                .AddHttpContextAccessor()       // .AddOAuth();      // IHttpContextAccessor
+                .AddAccessVerifyEx()            // AccessVerify
+                .AddSyncNotifyEx();             // SyncNotify
         }
         public static IServiceCollection AddRequestLoggingEx(this IServiceCollection services)
         {
@@ -456,6 +459,24 @@ namespace TinyFx
                 //options.KnownProxies.Clear();
                 // ASPNETCORE_FORWARDEDHEADERS_ENABLED true
             });
+            return services;
+        }
+        public static IServiceCollection AddAccessVerifyEx(this IServiceCollection services)
+        {
+            var section = ConfigUtil.GetSection<AccessVerifySection>();
+            if (section != null && section.Enabled)
+            {
+                services.AddSingleton<IAccessVerifyHelper>(new AccessVerifyHelper());
+            }
+            return services;
+        }
+        public static IServiceCollection AddSyncNotifyEx(this IServiceCollection services)
+        {
+            var section = ConfigUtil.GetSection<AspNetSection>();
+            if (section != null && section.UseSyncNotify)
+            {
+                services.AddSingleton<ISyncNotifyService>(new RedisSyncNotifyService());
+            }
             return services;
         }
     }

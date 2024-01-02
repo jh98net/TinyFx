@@ -59,17 +59,21 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public async Task<string> Test1()
         {
-            await DbCachingUtil.PublishCheck();
-            //var eo1 = DbCachingUtil.GetSingle<Ss_providerEO>("own");
-            //var eo2 = DbCachingUtil.GetList(() => new Ss_providerEO
-            //{
-            //    ProviderType = 2,
-            //    UseBonus = false
-            //});
-            //var eo3 = DbCachingUtil.GetList<Ss_operator_appEO>(it => it.OperatorID, "own_lobby_bra");
-            //var a = await DbCachingUtil.GetAllCacheItem();
-            //var b = await DbCachingUtil.ContainsCacheItem("default", "s_app");
-            //var c = await DbCachingUtil.ContainsCacheItem("default", "s_provider");
+            var sourceKey = "80150420F2885ECC2867209112D4E745lobby";
+            var sourceData = $"1704188983585{sourceKey}";
+            var sign = "I7XObb8dHk78D/Oe/Ec0pD42CqvgbVZdb9beJ8oXx7Y=";
+            var helper = new AccessVerifyHelper();
+            // true
+            //08yC0b81GC2k8DN5 bothKey
+            var result = helper.VerifyBothKey(sourceKey, sourceData, sign);
+
+            //F89F733B671176B6072034C3CA87E57923A9890C0701E09099CD8739699B51D6
+            var accessKey = helper.GetAccessKey(sourceKey, "F89F733B671176B6072034C3CA87E57923A9890C0701E09099CD8739699B51D6");
+
+            //80150420F2885ECC2867209112D4E745|HgLHd+fXmCvkS7Uclt+wjUAJTorKNwjQpor6ux3iY+g=
+            sourceData = "{\"appId\":\"lobby\",\"operatorId\":\"own_lobby_bra\",\"langId\":\"pt\",\"countryId\":\"BRA\",\"currencyId\":\"BRL\"}";
+            result = helper.VerifyAccessKey("80150420F2885ECC2867209112D4E745", sourceData, "HgLHd+fXmCvkS7Uclt+wjUAJTorKNwjQpor6ux3iY+g=");
+
             return "";
         }
         [HttpGet]

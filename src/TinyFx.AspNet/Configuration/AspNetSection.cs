@@ -56,6 +56,10 @@ namespace TinyFx.Configuration
         /// 动态加载的API所在的Assembly列表
         /// </summary>
         public List<string> DynamicApiAssemblies { get; set; } = new();
+        /// <summary>
+        /// 启用同步通知提供者(SyncNotifyAttribute)
+        /// </summary>
+        public bool UseSyncNotify { get; set; } = true;
 
         public string DumpPath { get; set; } = "./dumps";
 

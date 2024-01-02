@@ -25,6 +25,7 @@ using System.Runtime;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
 
 namespace TinyFx.AspNet
 {
@@ -277,6 +278,27 @@ namespace TinyFx.AspNet
         }
         #endregion
 
+        #region ISyncNotifyService
+        /// <summary>
+        /// 设置客户端同步通知值
+        /// </summary>
+        /// <param name="userId">userId</param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static async Task SetSyncNotify(string userId, bool value)
+            => await DIUtil.GetService<ISyncNotifyService>()?.SetNotify(userId, value);
+        /// <summary>
+        /// 获取客户端同步通知值,如果没有ISyncNotifyService返回null
+        /// </summary>
+        /// <param name="userId">userId</param>
+        /// <returns></returns>
+        public static async Task<bool?> GetSyncNotify(string userId)
+        {
+            var service = DIUtil.GetService<ISyncNotifyService>();
+            return service != null ? await service.GetNotify(userId) : null;
+        }
+        #endregion
+
         /// <summary>
         /// 验证通用的请求签名
         /// 签名规则：
@@ -298,6 +320,7 @@ namespace TinyFx.AspNet
             if (string.IsNullOrEmpty(publicKey))
                 throw new ArgumentNullException(nameof(publicKey));
 
+            var logger = LogUtil.GetContextLogger();
             var request = HttpContextEx.Request;
             if (request.Headers.TryGetValue(headerName, out StringValues values))
             {
@@ -319,18 +342,33 @@ namespace TinyFx.AspNet
                             , encoding
                         );
                         if (!ret)
-                            LogUtil.Warning("AspNetUtil.VerifyRequestHeaderSign:验证异常.source:{rsa.source} sign:{rsa.sign} publicKey:{rsa.publicKey} keyMode:{rsa.keyMode} hashName:{rsa.hashName} cipher:{rsa.cipher}"
-                                , source, sign, publicKey, keyMode, hashName, cipher);
+                        {
+                            logger.AddMessage($"AspNetUtil.VerifyRequestHeaderSign时验证异常")
+                                .SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning)
+                                .AddField("VerifyRequestHeaderSign.HeaderName", headerName)
+                                .AddField("VerifyRequestHeaderSign.Source", source)
+                                .AddField("VerifyRequestHeaderSign.PublicKey", publicKey)
+                                .AddField("VerifyRequestHeaderSign.KeyMode", keyMode)
+                                .AddField("VerifyRequestHeaderSign.HashName", hashName)
+                                .AddField("VerifyRequestHeaderSign.Cipher", cipher)
+                                .AddField("VerifyRequestHeaderSign.Sign", sign);
+                        }
                         return ret;
                     }
                     else
-                        LogUtil.Warning("AspNetUtil.VerifyRequestHeaderSign:没有从请求body中获取值. url:{request.url}", request.Path.ToString());
+                        return true; // 没有requestBody
                 }
                 else
-                    LogUtil.Warning("AspNetUtil.VerifyRequestHeaderSign: 没有从HttpHeader中获取值。url:{request.url} headerName:{headerName}", request.Path.ToString(), headerName);
+                {
+                    logger.AddMessage($"AspNetUtil.VerifyRequestHeaderSign时header={headerName}没有值")
+                        .SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
+                }
             }
             else
-                LogUtil.Warning("AspNetUtil.VerifyRequestHeaderSign: 没有从HttpHeader中获取值。url:{request.url} headerName:{headerName}", request.Path.ToString(), headerName);
+            {
+                logger.AddMessage($"AspNetUtil.VerifyRequestHeaderSign时header不存在: {headerName}")
+                        .SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
+            }
             return false;
         }
     }

@@ -34,5 +34,10 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// TinyFx.DbCaching.DbCacheDataDCache使用
         /// </summary>
         public const string DB_CACHING = "_TINYFX:DbCaching";
+
+        /// <summary>
+        /// TinyFx.AspNet.SyncNotifyAttribute使用
+        /// </summary>
+        public const string SYNC_NOTIFY = "_TINYFX:SyncNotify";
     }
 }

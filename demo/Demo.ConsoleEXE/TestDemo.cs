@@ -2,8 +2,11 @@
 using Demo.ConsoleEXE.DAL;
 using TinyFx.Common;
 using TinyFx.DbCaching;
+using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.IP2Country;
+using TinyFx.Randoms;
 using TinyFx.ShortId;
+using TinyFx.Text;
 
 namespace TinyFx.Demos
 {
@@ -11,14 +14,19 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var tmpl = "TEST{{UserId}}ASDF{{Name1}}";
-            var str= new StringTemplateReplacer(tmpl).Set(new UserInfo 
+            var client = RedisUtil.CreateStringClient<object>("TEST_SyncNotify");
+            var count = 0;
+            for (int i = 0; i < 1000000; i++)
             {
-                UserId=2,
-                Name="===="
-            })
-                .ToString();
-            Console.WriteLine(str);
+                var hashCode = Guid.NewGuid().ToString().GetHashCode();
+                var id = (long)hashCode + int.MaxValue + 1;
+                var result = await client.GetBitAsync(id);
+                if (result)
+                    count++;
+                await client.SetBitAsync(id, true);
+                Console.WriteLine($"{i}=>{count}");
+            }
+            Console.WriteLine(count);
         }
     }
 

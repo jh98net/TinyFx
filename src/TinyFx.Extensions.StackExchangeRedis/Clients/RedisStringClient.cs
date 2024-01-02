@@ -275,5 +275,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
             return ret;
         }
         #endregion
+
+        #region Bit操作
+        public async Task<bool> GetBitAsync(long offset, CommandFlags flags = CommandFlags.None)
+            => await Database.StringGetBitAsync(RedisKey, offset, flags);
+        public async Task SetBitAsync(long offset, bool bit, CommandFlags flags = CommandFlags.None)
+            => await Database.StringSetBitAsync(RedisKey, offset, bit, flags);
+        #endregion
     }
 }

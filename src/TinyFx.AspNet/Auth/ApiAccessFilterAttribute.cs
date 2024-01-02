@@ -32,8 +32,11 @@ namespace TinyFx.AspNet
             if (!CheckAllow(userIp))
             {
                 context.Result = new UnauthorizedResult();
-                LogUtil.Warning("ApiAccessFilterAttribute禁止访问。filterName:{filterName} userIp:{userIp}"
-                    , _name, userIp);
+                LogUtil.GetContextLogger()
+                    .SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning)
+                    .AddField("ApiAccessFilter.UserIp", userIp)
+                    .AddField("ApiAccessFilter.FilterName", _name)
+                    .AddMessage("ApiAccessFilterAttribute禁止访问。");
                 return;
             }
             await base.OnActionExecutionAsync(context, next);

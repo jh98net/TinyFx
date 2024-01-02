@@ -7,6 +7,7 @@ using System.Net;
 using System.Reflection;
 using TinyFx.Collections;
 using TinyFx.Configuration;
+using TinyFx.Extensions.StackExchangeRedis.Clients;
 using TinyFx.Extensions.StackExchangeRedis.Serializers;
 using TinyFx.Logging;
 using TinyFx.Serialization;
@@ -109,56 +110,63 @@ namespace TinyFx.Extensions.StackExchangeRedis
         public static RedisListClient<T> CreateListClient<T>(string redisKey, string connectionStringName = null)
         {
             var options = GetOptions(connectionStringName, null);
-            var ret = new RedisListClient<T>(options);
+            var ret = new RedisListClient<T>(options: options);
             ret.RedisKey = redisKey;
             return ret;
         }
         public static RedisSetClient<T> CreateSetClient<T>(string redisKey, string connectionStringName = null)
         {
             var options = GetOptions(connectionStringName, null);
-            var ret = new RedisSetClient<T>(options);
+            var ret = new RedisSetClient<T>(options: options);
             ret.RedisKey = redisKey;
             return ret;
         }
         public static RedisSortedSetClient<T> CreateSortedSetClient<T>(string redisKey, string connectionStringName = null)
         {
             var options = GetOptions(connectionStringName, null);
-            var ret = new RedisSortedSetClient<T>(options);
+            var ret = new RedisSortedSetClient<T>(options: options);
             ret.RedisKey = redisKey;
             return ret;
         }
         public static RedisStringClient<T> CreateStringClient<T>(string redisKey, string connectionStringName = null)
         {
             var options = GetOptions(connectionStringName, null);
-            var ret = new RedisStringClient<T>(options);
+            var ret = new RedisStringClient<T>(options: options);
+            ret.RedisKey = redisKey;
+            return ret;
+        }
+        public static RedisBitClient CreateBitClient(string redisKey, string connectionStringName = null)
+        {
+            var options = GetOptions(connectionStringName, null);
+            var ret = new RedisBitClient(options: options);
             ret.RedisKey = redisKey;
             return ret;
         }
         public static RedisHashClient<T> CreateHashClient<T>(string redisKey, string connectionStringName = null)
         {
             var options = GetOptions(connectionStringName, null);
-            var ret = new RedisHashClient<T>(options);
+            var ret = new RedisHashClient<T>(options: options);
             ret.RedisKey = redisKey;
             return ret;
         }
         public static RedisHashMultiClient CreateHashMultiClient(string redisKey, string connectionStringName = null)
         {
             var options = GetOptions(connectionStringName, null);
-            var ret = new RedisHashMultiClient(options);
+            var ret = new RedisHashMultiClient(options: options);
             ret.RedisKey = redisKey;
             return ret;
         }
         public static RedisHashExpireClient<T> CreateHashExpireClient<T>(string redisKey, string connectionStringName = null)
         {
             var options = GetOptions(connectionStringName, null);
-            var ret = new RedisHashExpireClient<T>(options);
+            var ret = new RedisHashExpireClient<T>(options: options);
             ret.RedisKey = redisKey;
             return ret;
         }
         public static RedisHashExpireMutilClient CreateHashExpireMutilClient(string redisKey, string connectionStringName = null)
         {
             var options = GetOptions(connectionStringName, null);
-            var ret = new RedisHashExpireMutilClient(options);
+            var ret = new RedisHashExpireMutilClient(options: options);
             ret.RedisKey = redisKey;
             return ret;
         }
@@ -327,7 +335,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
 
         #region BloomFilter
         /// <summary>
-        /// 布隆过滤器
+        /// 布隆过滤器(一定不存在或者可能存在)
         /// </summary>
         /// <param name="redisKey">业务标识</param>
         /// <param name="expectedElements">预期总元素数</param>
@@ -337,7 +345,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
         {
             var key = $"{RedisPrefixConst.BLOOM_FILTER}:{redisKey}";
             var conn = GetRedis();
-            return FilterRedisBuilder.Build(conn, key, expectedElements, method);
+            return FilterRedisBuilder.Build(conn, key, expectedElements, method, redisKey);
         }
         #endregion
 

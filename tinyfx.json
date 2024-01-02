@@ -481,6 +481,7 @@
     "UseApiVersioning": true, // 是否开启版本控制
     "RequestPeriodSecond": 15, //请求宽限期（秒）
     "RequestBytesPerSecond": 100, //请求每秒字节限制
+    "UseSyncNotify": true, //客户端同步通知
     "Swagger": {
       "Enabled": true,
       "UseSchemaFullName": false //生成接口用到的类型信息时，是否使用带命名空间的全名称，以避免重名异常
@@ -488,6 +489,15 @@
     "PathBase": null, // 项目基础路径
     "HostingStartupAssemblies": [], //启动时host配置assembly，继承ITinyFxHostingStartup
     "DynamicApiAssemblies": [] // 动态加载的API所在的 xxx.dll
+  },
+
+  //
+  "AccessVerify": {
+    "Enabled": true,
+    "AccessKeySeed": "vMjV3VFW3SyklQeQ",
+    "AccessKeyIndexes": "8, 11, 13, 12, 9, 7, 3, 14, 5, 2, 1, 0, 4, 6, 15, 10",
+    "BothKeySeed": "hNMmcYykGdCluYqe",
+    "BothKeyIndexes": "7, 1, 4, 15, 5, 2, 0, 8, 13, 14, 9, 12, 11, 10, 6, 3"
   },
 
   // 请求日志配置
