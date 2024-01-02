@@ -25,7 +25,7 @@ namespace TinyFx.AspNet
         int[] AccessKeyIndexes { get; set; }
 
         bool VerifyBothKey(string sourceKey, string sourceData, string sign);
-        string GetAccessKeyEncrypt(string bothKeySourceKey, string accessKeySourceKey);
+        string GetAccessKeyEncrypt(string bothSourceKey, string accessSourceKey);
         bool VerifyAccessKey(string sourceKey, string sourceData, string sign);
         Task VerifyAccessKeyByHeader(HttpContext context = null);
     }
