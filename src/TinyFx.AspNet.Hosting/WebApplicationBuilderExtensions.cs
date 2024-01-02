@@ -463,11 +463,12 @@ namespace TinyFx
         }
         public static IServiceCollection AddAccessVerifyEx(this IServiceCollection services)
         {
-            var section = ConfigUtil.GetSection<AccessVerifySection>();
-            if (section != null && section.Enabled)
-            {
-                services.AddSingleton<IAccessVerifyService>(new AccessVerifyService());
-            }
+            //var section = ConfigUtil.GetSection<AccessVerifySection>();
+            //if (section != null && section.Enabled)
+            //{
+            //    services.AddSingleton<IAccessVerifyService>(new AccessVerifyService());
+            //}
+            services.AddSingleton<IAccessVerifyService>(new AccessVerifyService());
             return services;
         }
         public static IServiceCollection AddSyncNotifyEx(this IServiceCollection services)
