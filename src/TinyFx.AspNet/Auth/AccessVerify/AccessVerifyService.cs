@@ -25,7 +25,7 @@ namespace TinyFx.AspNet
         int[] AccessKeyIndexes { get; set; }
 
         bool VerifyBothKey(string sourceKey, string sourceData, string sign);
-        string GetAccessKeyEncrypt(string sourceKey);
+        string GetAccessKeyEncrypt(string bothKeySourceKey, string accessKeySourceKey);
         bool VerifyAccessKey(string sourceKey, string sourceData, string sign);
         Task VerifyAccessKeyByHeader(HttpContext context = null);
     }
@@ -82,19 +82,20 @@ namespace TinyFx.AspNet
 
         public string GetAccessKey(string sourceKey)
             => GetKey(AccessKeySeed, AccessKeyIndexes, sourceKey);
+
         /// <summary>
         /// 获取加密的AccessKey
         /// </summary>
-        /// <param name="sourceKey"></param>
+        /// <param name="bothKeySourceKey"></param>
+        /// <param name="accessKeySourceKey"></param>
         /// <returns></returns>
-        public string GetAccessKeyEncrypt(string sourceKey)
+        public string GetAccessKeyEncrypt(string bothKeySourceKey, string accessKeySourceKey)
         {
-            var bothKey = GetBothKey(sourceKey);
-            var accessKey = GetAccessKey(sourceKey);
+            var bothKey = GetBothKey(bothKeySourceKey);
+            var accessKey = GetAccessKey(accessKeySourceKey);
             var ret = JsAesUtil.Encrypt(accessKey, bothKey);
             return ret;
         }
-
         public string GetAccessKeyDecrypt(string sourceKey, string encryptAccessKey)
         {
             var bothKey = GetBothKey(sourceKey);
