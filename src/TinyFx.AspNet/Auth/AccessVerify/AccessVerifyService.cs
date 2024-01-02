@@ -13,6 +13,7 @@ namespace TinyFx.AspNet
 {
     public interface IAccessVerifyService
     {
+        bool Enabled { get; set; }
         string BothKeySeed { get; set; }
         int[] BothKeyIndexes { get; set; }
         string AccessKeySeed { get; set; }
@@ -24,7 +25,7 @@ namespace TinyFx.AspNet
 
     public class AccessVerifyService : IAccessVerifyService
     {
-        private bool _enabled;
+        public bool Enabled { get; set; }
         public string BothKeySeed { get; set; } = "hNMmcYykGdCluYqe";
         public int[] BothKeyIndexes { get; set; } = { 7, 1, 4, 15, 5, 2, 0, 8, 13, 14, 9, 12, 11, 10, 6, 3 };
 
@@ -33,7 +34,7 @@ namespace TinyFx.AspNet
         public AccessVerifyService()
         {
             var section = ConfigUtil.GetSection<AccessVerifySection>();
-            _enabled = section?.Enabled ?? false;
+            Enabled = section?.Enabled ?? false;
             if (!string.IsNullOrEmpty(section?.BothKeySeed))
                 BothKeySeed = section.BothKeySeed;
             if (!string.IsNullOrEmpty(section?.BothKeyIndexes))
@@ -60,7 +61,7 @@ namespace TinyFx.AspNet
         /// <returns></returns>
         public bool VerifyBothKey(string sourceKey, string sourceData, string sign)
         {
-            if (!_enabled)
+            if (!Enabled)
                 return true;
             var bothKey = GetKey(BothKeySeed, BothKeyIndexes, sourceKey);
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(bothKey));
@@ -98,7 +99,7 @@ namespace TinyFx.AspNet
         /// <returns></returns>
         public bool VerifyAccessKey(string sourceKey, string sourceData, string sign)
         {
-            if (!_enabled)
+            if (!Enabled)
                 return true;
             var accessKey = GetKey(AccessKeySeed, AccessKeyIndexes, sourceKey);
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(accessKey));
