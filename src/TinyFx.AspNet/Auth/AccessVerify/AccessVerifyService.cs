@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
+using Polly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +9,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
+using TinyFx.Logging;
+using TinyFx.Net;
 using TinyFx.Security;
 using TinyFx.Text;
 
@@ -18,13 +23,16 @@ namespace TinyFx.AspNet
         int[] BothKeyIndexes { get; set; }
         string AccessKeySeed { get; set; }
         int[] AccessKeyIndexes { get; set; }
+
+        bool VerifyBothKey(string sourceKey, string sourceData, string sign);
         string GetAccessKeyEncrypt(string sourceKey);
         bool VerifyAccessKey(string sourceKey, string sourceData, string sign);
-        bool VerifyBothKey(string sourceKey, string sourceData, string sign);
+        Task VerifyAccessKeyByHeader(HttpContext context = null);
     }
 
     public class AccessVerifyService : IAccessVerifyService
     {
+        public const string HEADER_NAME = "tinyfx-sign";
         public bool Enabled { get; set; }
         public string BothKeySeed { get; set; } = "hNMmcYykGdCluYqe";
         public int[] BothKeyIndexes { get; set; } = { 7, 1, 4, 15, 5, 2, 0, 8, 13, 14, 9, 12, 11, 10, 6, 3 };
@@ -105,6 +113,37 @@ namespace TinyFx.AspNet
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(accessKey));
             var hash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(sourceData)));
             return hash == sign;
+        }
+        public async Task VerifyAccessKeyByHeader(HttpContext context = null)
+        {
+            if (!Enabled)
+                return;
+            context ??= HttpContextEx.Current;
+            if (!context.Request.Headers.TryGetValue(HEADER_NAME, out var value))
+                throw new CustomException(GResponseCodes.G_UNAUTHORIZED, $"header不存在: {HEADER_NAME}");
+            var data = Convert.ToString(value)?.Split('|');
+            if (data == null || data.Length != 2)
+                throw new CustomException(GResponseCodes.G_UNAUTHORIZED, $"header {HEADER_NAME} 值格式错误: {value}");
+
+            var sourceKey = data[0];
+            var sign = data[1];
+            var content = await AspNetUtil.GetRawBodyAsync(context.Request);
+            content = string.IsNullOrEmpty(content) ? "null" : content;
+
+            var isValid = VerifyAccessKey(sourceKey, content, sign);
+            if (!isValid)
+            {
+                var msg = $"header {HEADER_NAME} 值无效: {value}";
+                LogUtil.GetContextLogger()
+                    .SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning)
+                    .AddMessage(msg)
+                    .AddField("BothKeyVerify.HeaderValue", data)
+                    .AddField("BothKeyVerify.SourceKey", sourceKey)
+                    .AddField("BothKeyVerify.Sign", sign)
+                    .AddField("BothKeyVerify.Content", content);
+
+                throw new CustomException(GResponseCodes.G_UNAUTHORIZED, msg);
+            }
         }
 
         /// <summary>
