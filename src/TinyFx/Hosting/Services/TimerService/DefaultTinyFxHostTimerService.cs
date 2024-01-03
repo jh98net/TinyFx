@@ -22,7 +22,7 @@ namespace TinyFx.Hosting.Services
         private int _minDelayInterval;
 
         private ConcurrentDictionary<string, TinyFxHostTimerJob> _jobs = new();
-        private readonly HashSet<Task> _tasks = new();
+        private readonly ConcurrentDictionary<int, Task> _taskDict = new();
         private CancellationTokenSource _stoppingCts = new CancellationTokenSource(); //终止通知
         private CancellationTokenSource _changeCts = new CancellationTokenSource();//改变通知
 
@@ -116,11 +116,24 @@ namespace TinyFx.Hosting.Services
                         {
                             if (job.IsCycleEnd)//循环结束
                                 _jobs.TryRemove(job.Id, out var _);
-
-                            _tasks.Add(task);
+                            var taskId = task.GetHashCode();
+                            _taskDict.TryAdd(taskId, task);
                             var _ = task.ContinueWith(t =>
                             {
-                                if (t.IsFaulted)
+                                // IsCompleted=true时, Task.Status=RanToCompletion,Canceled或者Faulted
+                                if (t.Status == TaskStatus.RanToCompletion) // 成功
+                                {
+                                    LogUtil.Debug("HostTimer任务执行成功: [{Id}]-{Title} Interval:{Interval} Count:{CurrentCount}/{ExecuteCount} Error:{ErrorCount}/{TryCount} ThreadId:{ThreadId}"
+                                        , job.Id, job.Title, job.Interval, job.CurrentCount, job.ExecuteCount, job.ErrorCount, job.TryCount, Thread.CurrentThread.ManagedThreadId);
+                                    job.ErrorCount = 0;
+                                }
+                                else if (t.Status == TaskStatus.Canceled) // 取消
+                                {
+                                    LogUtil.Warning("HostTimer任务执行取消: [{Id}]-{Title} Interval:{Interval} Count:{CurrentCount}/{ExecuteCount} Error:{ErrorCount}/{TryCount} ThreadId:{ThreadId}"
+                                        , job.Id, job.Title, job.Interval, job.CurrentCount, job.ExecuteCount, job.ErrorCount, job.TryCount, Thread.CurrentThread.ManagedThreadId);
+                                    job.ErrorCount = 0;
+                                }
+                                else if(t.Status == TaskStatus.Faulted) // 失败
                                 {
                                     // 超过重试次数移除!
                                     job.ErrorCount++;
@@ -129,14 +142,7 @@ namespace TinyFx.Hosting.Services
                                     if (job.TryCount == 0 || job.ErrorCount >= job.TryCount)
                                         _jobs.TryRemove(job.Id, out var _);
                                 }
-                                else
-                                {
-                                    LogUtil.Debug("HostTimer任务执行结束: [{Id}]-{Title} Interval:{Interval} Count:{CurrentCount}/{ExecuteCount} Error:{ErrorCount}/{TryCount} ThreadId:{ThreadId}"
-                                        , job.Id, job.Title, job.Interval, job.CurrentCount, job.ExecuteCount, job.ErrorCount, job.TryCount, Thread.CurrentThread.ManagedThreadId);
-                                    job.ErrorCount = 0;
-                                }
-                                //if (t.IsCompleted)
-                                _tasks.Remove(t);
+                                _taskDict.TryRemove(taskId, out var _);
                             });
                         }
                     }
@@ -181,10 +187,10 @@ namespace TinyFx.Hosting.Services
         #region Utils
         private IEnumerable<Task> GetTasks()
         {
-            var enumtor = _tasks.GetEnumerator();
+            var enumtor = _taskDict.GetEnumerator();
             while (enumtor.MoveNext())
             {
-                yield return enumtor.Current;
+                yield return enumtor.Current.Value;
             }
         }
         private IEnumerable<TinyFxHostTimerJob> GetJobs()

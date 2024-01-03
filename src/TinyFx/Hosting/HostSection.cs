@@ -21,6 +21,7 @@ namespace TinyFx.Configuration
         public int HeathInterval { get; set; } = 600000;
         /// <summary>
         /// 主机数据有效期，默认15秒,0-10分钟
+        /// DataExpire=0或者ConfigUtil.IsDebugEnvironment=true时有效期为10分钟
         /// </summary>
         public int DataExpire { get; set; } = 15000;
 
