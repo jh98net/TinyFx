@@ -345,7 +345,7 @@
   "JwtAuth": {
     "Enabled": true, //是否起效
     "DebugToken": "", // Debug时的Token（仅Development或Testing时有效，用于设置默认swagger的jwt）
-    "SignSecret": "xxxxx_xxxxx",
+    "SignSecret": "ABASDfasfwe@#45346dfg",
     "DynamicSignSecret": false,
     "EncryptSecret": "",
     "Issuer": "tinyfx.com",
