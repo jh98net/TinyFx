@@ -2,11 +2,9 @@
 using EasyNetQ.ConnectionString;
 using EasyNetQ.DI;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Reflection;
 using TinyFx.Collections;
 using TinyFx.Configuration;
-using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Net;
 using TinyFx.Reflection;
 

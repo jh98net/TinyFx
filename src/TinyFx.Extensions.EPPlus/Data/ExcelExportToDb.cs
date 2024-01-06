@@ -1,30 +1,26 @@
-﻿using MySqlConnector;
-using OfficeOpenXml;
-using SQLitePCL;
+﻿using OfficeOpenXml;
 using SqlSugar;
-using SS = SqlSugar;
 using System;
-using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TinyFx.Data;
 using TinyFx.Data.SqlSugar;
 using TinyFx.Logging;
-using static OfficeOpenXml.ExcelErrorValue;
+using SS = SqlSugar;
 
 namespace TinyFx.Extensions.EPPlus
 {
-    public class ExcelImportDb
+    /// <summary>
+    /// Excel向DataTable导出数据
+    /// </summary>
+    public class ExcelExportToDb
     {
         private ISqlSugarClient _db;
-        public ExcelImportDb(string connectionStringName = null)
+        public ExcelExportToDb(string connectionStringName = null)
         {
             _db = DbUtil.GetDbById(connectionStringName);
         }
-        public ExcelImportDb(SS.DbType dbType, string connectionString)
+        public ExcelExportToDb(SS.DbType dbType, string connectionString)
         {
             _db = DbUtil.GetDb(dbType, connectionString);
         }
@@ -38,10 +34,10 @@ namespace TinyFx.Extensions.EPPlus
         /// <param name="isSame">是否和excel完全一样。false:没有的插入，有的更新</param>
         /// <returns></returns>
         /// <exception cref="FileNotFoundException"></exception>
-        public async Task Import(string fromExcelFile, string tableName, string sheetName = null, bool isSame = true)
+        public async Task Export(string fromExcelFile, string tableName, string sheetName = null, bool isSame = true)
         {
             if (!File.Exists(fromExcelFile))
-                throw new FileNotFoundException($"ExcelImportDb导入时Excel文件不存在:{fromExcelFile}");
+                throw new FileNotFoundException($"ExcelExportToDb时Excel文件不存在:{fromExcelFile}");
             sheetName ??= tableName;
             EPPlusUtil.NoLicense();
 
@@ -52,7 +48,7 @@ namespace TinyFx.Extensions.EPPlus
 
                 var sheet = pkg.Workbook.Worksheets[sheetName];
                 if (sheet == null)
-                    throw new Exception($"ExcelImportDb导入时sheet不存在: {sheetName}");
+                    throw new Exception($"ExcelExportToDb时sheet不存在: {sheetName}");
                 var config = new ExcelReadConfig()
                 {
                     StartColumnIndex = 2,
@@ -85,7 +81,7 @@ namespace TinyFx.Extensions.EPPlus
             catch (Exception ex)
             {
                 _db.AsTenant().RollbackTran();
-                LogUtil.Error(ex, $"ExcelImportDb导入时Excel文件失败。excel:{fromExcelFile} table:{tableName}");
+                LogUtil.Error(ex, $"ExcelExportToDb时Excel文件失败。excel:{fromExcelFile} table:{tableName}");
                 throw;
             }
         }

@@ -71,44 +71,6 @@ namespace TinyFx.Data.SqlSugar
             TryAddDb(config);
             return MainDb.GetConnectionScope(configId);
         }
-/*
-        /// <summary>
-        /// 根据IDbSplitProvider获取ISqlSugarClient
-        /// </summary>
-        /// <param name="splitDbKeys"></param>
-        /// <returns></returns>
-        public static ISqlSugarClient GetNewDb(params object[] splitDbKeys)
-            => GetNewDb<object>(splitDbKeys);
-
-        /// <summary>
-        /// 根据IDbSplitProvider获取ISqlSugarClient
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="splitDbKeys"></param>
-        /// <returns></returns>
-        public static ISqlSugarClient GetNewDb<T>(params object[] splitDbKeys)
-        {
-            var configId = DIUtil.GetRequiredService<IDbSplitProvider>()
-                .SplitDb<T>(splitDbKeys);
-            return GetNewDbById(configId);
-        }
-
-        /// <summary>
-        /// 获取指定configId的ISqlSugarClient
-        /// </summary>
-        /// <param name="configId"></param>
-        /// <returns></returns>
-        public static ISqlSugarClient GetNewDbById(string configId = null)
-        {
-            // 主库
-            if (string.IsNullOrEmpty(configId) || configId == DefaultConfigId)
-                return MainDb.GetConnection(DefaultConfigId).CopyNew();
-
-            var config = GetConfig(configId);
-            TryAddDb(config);
-            return MainDb.GetConnection(configId).CopyNew();
-        }
-*/
         #endregion
 
         #region Repository

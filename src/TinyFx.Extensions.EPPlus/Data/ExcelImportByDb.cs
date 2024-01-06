@@ -1,12 +1,8 @@
 ﻿using OfficeOpenXml;
-using OfficeOpenXml.DataValidation;
 using OfficeOpenXml.Style;
 using SqlSugar;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Data;
 using TinyFx.Data.SqlSugar;
@@ -14,32 +10,32 @@ using TinyFx.Data.SqlSugar;
 namespace TinyFx.Extensions.EPPlus
 {
     /// <summary>
-    /// DataTable导出到Excel
+    /// Excel从DataTable导入数据
     /// </summary>
-    public class DbExportExcel
+    public class ExcelImportByDb
     {
         private ISqlSugarClient _db;
-        public DbExportExcel(string connectionStringName = null)
+        public ExcelImportByDb(string connectionStringName = null)
         {
             _db = DbUtil.GetDbById(connectionStringName);
         }
-        public DbExportExcel(DbType dbType, string connectionString)
+        public ExcelImportByDb(DbType dbType, string connectionString)
         {
             _db = DbUtil.GetDb(dbType, connectionString);
         }
 
-        public async Task ExportTable(string toExcelFile, string tableName, string sheetName = null)
-            => await ExportCore(toExcelFile, null, tableName, sheetName);
-        public async Task ExportSql(string toExcelFile, string sql, string sheetName = null)
-            => await ExportCore(toExcelFile, sql, null, sheetName);
+        //public async Task ImportTable(string toExcelFile, string tableName, string sheetName = null)
+        //    => await ImportCore(toExcelFile, null, tableName, sheetName);
+        public async Task Import(string toExcelFile, string sql, string sheetName = null)
+            => await ImportCore(toExcelFile, sql, null, sheetName);
 
-        private async Task ExportCore(string toExcelFile, string sql, string tableName, string sheetName)
+        private async Task ImportCore(string toExcelFile, string sql, string tableName, string sheetName)
         {
             // check
             if (string.IsNullOrEmpty(toExcelFile))
-                throw new Exception("DbExportExcel导出toExcelFile不能为空");
+                throw new Exception("ExcelImportFromDb时toExcelFile不能为空");
             if (string.IsNullOrEmpty(sql) && string.IsNullOrEmpty(tableName))
-                throw new Exception("DbExportExcel导出sql和tableName不能同时为空");
+                throw new Exception("ExcelImportFromDb时sql和tableName不能同时为空");
             if (string.IsNullOrEmpty(sql))
             {
                 sql = $"select * from {tableName}";
@@ -51,7 +47,7 @@ namespace TinyFx.Extensions.EPPlus
             }
             sheetName ??= tableName;
             if (_db.DbMaintenance.IsAnyTable(tableName))
-                throw new Exception($"DbExportExcel导出时没有指定SQL且TableName无效。tableName:{tableName}");
+                throw new Exception($"ExcelImportFromDb时没有指定SQL且TableName无效。tableName:{tableName}");
 
             //
             var dt = await _db.Ado.GetDataTableAsync(sql);
