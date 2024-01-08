@@ -3,6 +3,7 @@ using SS = SqlSugar;
 using TinyFx.Configuration;
 using TinyFx.Logging;
 using System.Data;
+using System.Linq.Expressions;
 
 namespace TinyFx.Data.SqlSugar
 {
@@ -38,21 +39,21 @@ namespace TinyFx.Data.SqlSugar
         /// <summary>
         /// 根据IDbSplitProvider获取ISqlSugarClient
         /// </summary>
-        /// <param name="splitDbKeys"></param>
+        /// <param name="splitDbKey"></param>
         /// <returns></returns>
-        public static ISqlSugarClient GetDb(params object[] splitDbKeys)
-            => GetDb<object>(splitDbKeys);
+        public static ISqlSugarClient GetDb(object splitDbKey = null)
+            => GetDb<object>(splitDbKey);
 
         /// <summary>
         /// 根据IDbSplitProvider获取ISqlSugarClient
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="splitDbKeys"></param>
+        /// <param name="splitDbKey"></param>
         /// <returns></returns>
-        public static ISqlSugarClient GetDb<T>(params object[] splitDbKeys)
+        public static ISqlSugarClient GetDb<T>(object splitDbKey = null)
         {
             var configId = DIUtil.GetRequiredService<IDbSplitProvider>()
-                .SplitDb<T>(splitDbKeys);
+                .SplitDb<T>(splitDbKey);
             return GetDbById(configId);
         }
 
@@ -78,19 +79,59 @@ namespace TinyFx.Data.SqlSugar
         /// 创建Repository
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="splitDbKeys">分库标识</param>
+        /// <param name="splitDbKey">分库标识</param>
         /// <returns></returns>
-        public static Repository<T> GetRepository<T>(params object[] splitDbKeys)
+        public static Repository<T> GetRepository<T>(object splitDbKey = null)
             where T : class, new()
         {
-            return new Repository<T>(splitDbKeys);
+            return new Repository<T>(splitDbKey);
         }
-        public static Repository<T> GetRepository<T>(string configId = null)
+        public static Repository<T> GetRepositoryById<T>(string configId = null)
             where T : class, new()
         {
             var db = GetDbById(configId);
             return new Repository<T>(db);
         }
+        #endregion
+
+        #region Queryable
+        /// <summary>
+        /// 获取查询器
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
+        public static ISugarQueryable<T> GetQueryable<T>(object splitDbKey = null)
+            => GetDb<T>(splitDbKey).Queryable<T>();
+        public static ISugarQueryable<T, T2> GetQueryable<T, T2>(Expression<Func<T, T2, JoinQueryInfos>> joinExpression, object splitDbKey = null)
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public static ISugarQueryable<T, T2, T3> GetQueryable<T, T2, T3>(Expression<Func<T, T2, T3, JoinQueryInfos>> joinExpression, object splitDbKey = null)
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public static ISugarQueryable<T, T2, T3, T4> GetQueryable<T, T2, T3, T4>(Expression<Func<T, T2, T3, T4, JoinQueryInfos>> joinExpression, object splitDbKey = null)
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public static ISugarQueryable<T, T2, T3, T4, T5> GetQueryable<T, T2, T3, T4, T5>(Expression<Func<T, T2, T3, T4, T5, JoinQueryInfos>> joinExpression, object splitDbKey = null)
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+
+        /// <summary>
+        /// 获取查询器(inner join)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <param name="joinExpression"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
+        public static ISugarQueryable<T, T2> GetQueryable<T, T2>(Expression<Func<T, T2, bool>> joinExpression, object splitDbKey = null)
+            where T : class, new()
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public static ISugarQueryable<T, T2, T3> GetQueryable<T, T2, T3>(Expression<Func<T, T2, T3, bool>> joinExpression, object splitDbKey = null)
+            where T : class, new()
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public static ISugarQueryable<T, T2, T3, T4> GetQueryable<T, T2, T3, T4>(Expression<Func<T, T2, T3, T4, bool>> joinExpression, object splitDbKey = null)
+            where T : class, new()
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public static ISugarQueryable<T, T2, T3, T4, T5> GetQueryable<T, T2, T3, T4, T5>(Expression<Func<T, T2, T3, T4, T5, bool>> joinExpression, object splitDbKey = null)
+            where T : class, new()
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
         #endregion
 
         #region Utils
@@ -162,5 +203,4 @@ namespace TinyFx.Data.SqlSugar
         }
         #endregion
     }
-
 }

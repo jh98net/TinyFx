@@ -22,6 +22,7 @@ namespace TinyFx.Text
         private readonly int _b;
         private readonly int _c;
         public static string NewId() => GenerateNewId().ToString();
+        public static string NewId(DateTime utcDateTime) => GenerateNewId(utcDateTime).ToString();
         // constructors
         /// <summary>
         /// Initializes a new instance of the ObjectId class.

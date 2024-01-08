@@ -129,7 +129,7 @@ namespace TinyFx.Net
             }
             catch (Exception ex)
             {
-                _logger?.LogWarning("Failed sending a close message to client", ex);
+                _logger?.LogWarning(ex,"Failed sending a close message to client");
             }
         }
 
@@ -166,7 +166,7 @@ namespace TinyFx.Net
 
         protected virtual void RaiseConnectionError(Exception ex)
         {
-            _logger?.LogError("A connection error occured", ex);
+            _logger?.LogError(ex,"A connection error occured");
             OnError?.Invoke(ex);
         }
     }

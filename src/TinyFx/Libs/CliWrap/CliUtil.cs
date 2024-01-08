@@ -20,6 +20,7 @@ namespace TinyFx.CliWrap
         /// 执行命令，输出到sdtout
         /// </summary>
         /// <param name="commandLine"></param>
+        /// <param name="workDir"></param>
         /// <returns></returns>
         public static CliResult Execute(string commandLine, string workDir = null)
             => ExecuteBaseAsync(commandLine, workDir).Result;

@@ -13,24 +13,23 @@ namespace TinyFx.Data.SqlSugar
         /// <summary>
         /// 分库(根据类型和分库标识)
         ///     1) 按上下文分库，如：登录用户的集团ID
-        ///     2) 按指定值分库，如splitDbKeys参数传入合作商ID
-        ///     3) 按指定表和值分库，即T+splitDbKeys
+        ///     2) 按指定值分库，如splitDbKey参数传入合作商ID
+        ///     3) 按指定表和值分库，即T+splitDbKey
         /// </summary>
         /// <typeparam name="T">如果是object，则表示所有表按约定的值分库</typeparam>
-        /// <param name="splitDbKeys"></param>
+        /// <param name="splitDbKey"></param>
         /// <returns></returns>
-        string SplitDb<T>(params object[] splitDbKeys);
+        string SplitDb<T>(object splitDbKey = null);
 
         /// <summary>
         /// 分表(根据实体类型和表数据)
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         ISplitTableService SplitTable();
     }
     public class DefaultSplitProvider : IDbSplitProvider
     {
-        public string SplitDb<T>(params object[] splitDbKeys)
+        public string SplitDb<T>(object splitDbKey = null)
         {
             return null;
         }

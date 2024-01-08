@@ -58,10 +58,10 @@ namespace TinyFx.Randoms
             }
             throw new Exception("WeightRandomHelper没有获得随机数!");
         }
-        class WeightRandomItem<T>
+        class WeightRandomItem<TItem>
         {
             public int Weight { get; set; }
-            public T Item { get; set; }
+            public TItem Item { get; set; }
         }
     }
 }

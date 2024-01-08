@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Logging;
@@ -51,18 +53,18 @@ namespace TinyFx.Data.SqlSugar
         #endregion
 
         #region GetDb & GetRepository
-        public Repository<T> GetRepository<T>(params object[] splitDbKeys)
+        public Repository<T> GetRepository<T>(object splitDbKey = null)
             where T : class, new()
         {
-            var db = GetDb<T>(splitDbKeys);
+            var db = GetDb<T>(splitDbKey);
             return new Repository<T>(db);
         }
-        public ISqlSugarClient GetDb(params object[] splitDbKeys)
-            => GetDb<object>(splitDbKeys);
-        public ISqlSugarClient GetDb<T>(params object[] splitDbKeys)
+        public ISqlSugarClient GetDb(object splitDbKey = null)
+            => GetDb<object>(splitDbKey);
+        public ISqlSugarClient GetDb<T>(object splitDbKey = null)
         {
             var configId = DIUtil.GetRequiredService<IDbSplitProvider>()
-               .SplitDb<T>(splitDbKeys);
+               .SplitDb<T>(splitDbKey);
             return GetDbById(configId);
         }
         public ISqlSugarClient GetDbById(string configId = null)
@@ -94,6 +96,88 @@ namespace TinyFx.Data.SqlSugar
             }
             return false;
         }
+        #endregion
+
+        #region Queryable
+        /// <summary>
+        /// 获取查询器
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
+        public ISugarQueryable<T> GetQueryable<T>(object splitDbKey = null)
+            => GetDb<T>(splitDbKey).Queryable<T>();
+        public ISugarQueryable<T, T2> GetQueryable<T, T2>(Expression<Func<T, T2, JoinQueryInfos>> joinExpression, object splitDbKey = null)
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public ISugarQueryable<T, T2, T3> GetQueryable<T, T2, T3>(Expression<Func<T, T2, T3, JoinQueryInfos>> joinExpression, object splitDbKey = null)
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public ISugarQueryable<T, T2, T3, T4> GetQueryable<T, T2, T3, T4>(Expression<Func<T, T2, T3, T4, JoinQueryInfos>> joinExpression, object splitDbKey = null)
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public ISugarQueryable<T, T2, T3, T4, T5> GetQueryable<T, T2, T3, T4, T5>(Expression<Func<T, T2, T3, T4, T5, JoinQueryInfos>> joinExpression, object splitDbKey = null)
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+
+        /// <summary>
+        /// 获取查询器(inner join)
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <param name="joinExpression"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
+        public ISugarQueryable<T, T2> GetQueryable<T, T2>(Expression<Func<T, T2, bool>> joinExpression, object splitDbKey = null)
+            where T : class, new()
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public ISugarQueryable<T, T2, T3> GetQueryable<T, T2, T3>(Expression<Func<T, T2, T3, bool>> joinExpression, object splitDbKey = null)
+            where T : class, new()
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public ISugarQueryable<T, T2, T3, T4> GetQueryable<T, T2, T3, T4>(Expression<Func<T, T2, T3, T4, bool>> joinExpression, object splitDbKey = null)
+            where T : class, new()
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        public ISugarQueryable<T, T2, T3, T4, T5> GetQueryable<T, T2, T3, T4, T5>(Expression<Func<T, T2, T3, T4, T5, bool>> joinExpression, object splitDbKey = null)
+            where T : class, new()
+            => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        #endregion
+
+        #region Delete & Insert & Update
+        public async Task<bool> DeleteByIdAsync<T>(dynamic id, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).DeleteByIdAsync(id);
+        public async Task<bool> DeleteByIdsAsync<T>(dynamic[] ids, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).DeleteByIdsAsync(ids);
+        public async Task<bool> DeleteByIdAsync<T>(T id, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).DeleteByIdAsync(id);
+        public async Task<bool> DeleteByIdsAsync<T>(List<T> ids, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).DeleteByIdsAsync(ids);
+        public async Task<bool> DeleteAsync<T>(T item, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).DeleteAsync(item);
+        public async Task<bool> DeleteAsync<T>(List<T> items, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).DeleteAsync(items);
+
+        public async Task<bool> InsertAsync<T>(T item, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).InsertAsync(item);
+        public async Task<bool> InsertAsync<T>(List<T> items, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).InsertRangeAsync(items);
+
+        public async Task<bool> UpdateAsync<T>(T item, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).UpdateAsync(item);
+        public async Task<bool> UpdateAsync<T>(List<T> items, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).UpdateRangeAsync(items);
+
+        public async Task<bool> InsertOrUpdateAsync<T>(T item, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).InsertOrUpdateAsync(item);
+        public async Task<bool> InsertOrUpdateAsync<T>(List<T> items, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).InsertOrUpdateAsync(items);
         #endregion
 
         #region Commit & Rollback
