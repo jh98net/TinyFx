@@ -4,6 +4,7 @@ using TinyFx.Configuration;
 using TinyFx.Logging;
 using System.Data;
 using System.Linq.Expressions;
+using System.Reflection.Emit;
 
 namespace TinyFx.Data.SqlSugar
 {
@@ -95,6 +96,16 @@ namespace TinyFx.Data.SqlSugar
         #endregion
 
         #region Queryable
+        public static async Task<T> GetByIdAsync<T>(dynamic id, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
+        public static async Task<T> GetByIdAsync<T>(T id, object splitDbKey = null)
+             where T : class, new()
+         => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
+        public static async Task<T> GetByIdsAsync<T>(List<T> ids, object splitDbKey = null)
+             where T : class, new()
+         => await GetRepository<T>(splitDbKey).GetByIdAsync(ids);
+
         /// <summary>
         /// 获取查询器
         /// </summary>
@@ -132,6 +143,48 @@ namespace TinyFx.Data.SqlSugar
         public static ISugarQueryable<T, T2, T3, T4, T5> GetQueryable<T, T2, T3, T4, T5>(Expression<Func<T, T2, T3, T4, T5, bool>> joinExpression, object splitDbKey = null)
             where T : class, new()
             => GetDb<T>(splitDbKey).Queryable(joinExpression);
+        #endregion
+
+        #region Delete & Insert & Update
+        public static async Task<bool> DeleteByIdAsync<T>(dynamic id, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).DeleteByIdAsync(id);
+        public static async Task<bool> DeleteByIdsAsync<T>(dynamic[] ids, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).DeleteByIdsAsync(ids);
+        public static async Task<bool> DeleteByIdAsync<T>(T id, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).DeleteByIdAsync(id);
+        public static async Task<bool> DeleteByIdsAsync<T>(List<T> ids, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).DeleteByIdsAsync(ids);
+        public static async Task<bool> DeleteAsync<T>(T item, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).DeleteAsync(item);
+        public static async Task<bool> DeleteAsync<T>(List<T> items, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).DeleteAsync(items);
+
+        public static async Task<bool> InsertAsync<T>(T item, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).InsertAsync(item);
+        public static async Task<bool> InsertAsync<T>(List<T> items, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).InsertRangeAsync(items);
+
+        public static async Task<bool> UpdateAsync<T>(T item, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).UpdateAsync(item);
+        public static async Task<bool> UpdateAsync<T>(List<T> items, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).UpdateRangeAsync(items);
+
+        public static async Task<bool> InsertOrUpdateAsync<T>(T item, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).InsertOrUpdateAsync(item);
+        public static async Task<bool> InsertOrUpdateAsync<T>(List<T> items, object splitDbKey = null)
+              where T : class, new()
+            => await GetRepository<T>(splitDbKey).InsertOrUpdateAsync(items);
         #endregion
 
         #region Utils

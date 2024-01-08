@@ -96,7 +96,7 @@ namespace TinyFx.DataSplit.DataMove
                 RecDate = DateTime.UtcNow, //当天仅运行一条
                 HandlerLog = string.Empty
             };
-            await DbUtil.GetInsertable(_logEo).ExecuteCommandAsync();
+            await DbUtil.InsertAsync(_logEo);
         }
 
         protected void AddHandlerLog(string msg)

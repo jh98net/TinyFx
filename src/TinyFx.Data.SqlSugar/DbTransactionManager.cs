@@ -99,6 +99,16 @@ namespace TinyFx.Data.SqlSugar
         #endregion
 
         #region Queryable
+        public async Task<T> GetByIdAsync<T>(dynamic id, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
+        public async Task<T> GetByIdAsync<T>(T id, object splitDbKey = null)
+             where T : class, new()
+         => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
+        public async Task<T> GetByIdsAsync<T>(List<T> ids, object splitDbKey = null)
+             where T : class, new()
+         => await GetRepository<T>(splitDbKey).GetByIdAsync(ids);
+
         /// <summary>
         /// 获取查询器
         /// </summary>

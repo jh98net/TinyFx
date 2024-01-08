@@ -29,22 +29,16 @@ namespace TinyFx.Data.SqlSugar
         {
             base.Context.Ado.CommandTimeOut = timeoutSeconds;
         }
-        
+
         /// <summary>
         /// 根据联合主键删除
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         public virtual async Task<bool> DeleteByIdAsync(T id)
-        {
-            var ret = await Context.Deleteable(id).ExecuteCommandAsync();
-            return ret == 1;
-        }
+            => await DeleteAsync(id);
         public virtual async Task<bool> DeleteByIdsAsync(List<T> ids)
-        {
-            var ret = await Context.Deleteable(ids).ExecuteCommandAsync();
-            return ret > 0;
-        }
+            => await DeleteAsync(ids);
 
         /// <summary>
         /// 根据联合主键查询
@@ -59,11 +53,6 @@ namespace TinyFx.Data.SqlSugar
                 throw new Exception($"Repository.GetByIdAsync()多主键查询不唯一。type:{typeof(T).FullName} pkeys: {SerializerUtil.SerializeJson(id)}");
             return ret.Count == 0 ? null : ret[0];
         }
-        /// <summary>
-        /// 根据联合主键查询
-        /// </summary>
-        /// <param name="ids"></param>
-        /// <returns></returns>
         public virtual async Task<List<T>> GetByIdsAsync(List<T> ids)
             => await Context.Queryable<T>().WhereClassByPrimaryKey(ids).ToListAsync();
 
