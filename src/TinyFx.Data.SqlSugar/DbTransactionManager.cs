@@ -98,20 +98,8 @@ namespace TinyFx.Data.SqlSugar
         }
         #endregion
 
+        #region 常用方法
         #region Queryable
-        public async Task<T> GetByIdAsync<T>(dynamic id, object splitDbKey = null)
-              where T : class, new()
-          => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
-        public async Task<List<T>> GetByIdsAsync<T>(dynamic[] ids, object splitDbKey = null)
-            where T : class, new()
-            => await GetDb<T>(splitDbKey).Queryable<T>().In(ids).ToListAsync();
-        public async Task<T> GetByIdAsync<T>(T id, object splitDbKey = null)
-             where T : class, new()
-         => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
-        public async Task<T> GetByIdsAsync<T>(List<T> ids, object splitDbKey = null)
-             where T : class, new()
-         => await GetRepository<T>(splitDbKey).GetByIdAsync(ids);
-
         /// <summary>
         /// 获取查询器
         /// </summary>
@@ -151,19 +139,94 @@ namespace TinyFx.Data.SqlSugar
             => GetDb<T>(splitDbKey).Queryable(joinExpression);
         #endregion
 
-        #region Delete & Insert & Update
+        #region GetByIdAsync
+        /// <summary>
+        /// 按单一主键查询
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
+        public async Task<T> GetByIdAsync<T>(dynamic id, object splitDbKey = null)
+              where T : class, new()
+          => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
+        /// <summary>
+        /// 按单一主键查询
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ids"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
+        public async Task<List<T>> GetByIdAsync<T>(List<dynamic> ids, object splitDbKey = null)
+               where T : class, new()
+          => await GetRepository<T>(splitDbKey).GetByIdAsync(ids);
+        /// <summary>
+        /// 按联合主键查询
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
+        public async Task<T> GetByIdAsync<T>(T id, object splitDbKey = null)
+             where T : class, new()
+         => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
+        /// <summary>
+        /// 按联合主键查询
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ids"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
+        public async Task<List<T>> GetByIdAsync<T>(List<T> ids, object splitDbKey = null)
+             where T : class, new()
+         => await GetRepository<T>(splitDbKey).GetByIdAsync(ids);
+        #endregion
+
+        #region DeleteByIdAsync
+        /// <summary>
+        /// 按单一主键删除
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
         public async Task<bool> DeleteByIdAsync<T>(dynamic id, object splitDbKey = null)
               where T : class, new()
           => await GetRepository<T>(splitDbKey).DeleteByIdAsync(id);
-        public async Task<bool> DeleteByIdsAsync<T>(dynamic[] ids, object splitDbKey = null)
+        /// <summary>
+        /// 按单一主键删除
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ids"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
+        public async Task<bool> DeleteByIdAsync<T>(List<dynamic> ids, object splitDbKey = null)
               where T : class, new()
-          => await GetRepository<T>(splitDbKey).DeleteByIdsAsync(ids);
+          => await GetRepository<T>(splitDbKey).DeleteByIdAsync(ids);
+        /// <summary>
+        /// 按联合主键删除
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
         public async Task<bool> DeleteByIdAsync<T>(T id, object splitDbKey = null)
               where T : class, new()
           => await GetRepository<T>(splitDbKey).DeleteByIdAsync(id);
-        public async Task<bool> DeleteByIdsAsync<T>(List<T> ids, object splitDbKey = null)
+        /// <summary>
+        /// 按联合主键删除
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="ids"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
+        public async Task<bool> DeleteByIdAsync<T>(List<T> ids, object splitDbKey = null)
               where T : class, new()
-          => await GetRepository<T>(splitDbKey).DeleteByIdsAsync(ids);
+          => await GetRepository<T>(splitDbKey).DeleteByIdAsync(ids);
+        #endregion
+
+        #region Delete & Insert & Update
+
         public async Task<bool> DeleteAsync<T>(T item, object splitDbKey = null)
               where T : class, new()
             => await GetRepository<T>(splitDbKey).DeleteAsync(item);
@@ -191,6 +254,7 @@ namespace TinyFx.Data.SqlSugar
         public async Task<bool> InsertOrUpdateAsync<T>(List<T> items, object splitDbKey = null)
               where T : class, new()
             => await GetRepository<T>(splitDbKey).InsertOrUpdateAsync(items);
+        #endregion
         #endregion
 
         #region Commit & Rollback
