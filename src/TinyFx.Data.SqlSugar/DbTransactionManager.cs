@@ -102,6 +102,9 @@ namespace TinyFx.Data.SqlSugar
         public async Task<T> GetByIdAsync<T>(dynamic id, object splitDbKey = null)
               where T : class, new()
           => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
+        public async Task<List<T>> GetByIdsAsync<T>(dynamic[] ids, object splitDbKey = null)
+            where T : class, new()
+            => await GetDb<T>(splitDbKey).Queryable<T>().In(ids).ToListAsync();
         public async Task<T> GetByIdAsync<T>(T id, object splitDbKey = null)
              where T : class, new()
          => await GetRepository<T>(splitDbKey).GetByIdAsync(id);

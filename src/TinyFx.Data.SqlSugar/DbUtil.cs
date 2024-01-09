@@ -99,6 +99,7 @@ namespace TinyFx.Data.SqlSugar
         public static async Task<T> GetByIdAsync<T>(dynamic id, object splitDbKey = null)
               where T : class, new()
           => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
+        public static async Task<List<T>> GetByIdsAsync<T>(IEnumerable<dynamic> ids, object splitDbKey = null)
         public static async Task<T> GetByIdAsync<T>(T id, object splitDbKey = null)
              where T : class, new()
          => await GetRepository<T>(splitDbKey).GetByIdAsync(id);
@@ -146,18 +147,33 @@ namespace TinyFx.Data.SqlSugar
         #endregion
 
         #region Delete & Insert & Update
+        /// <summary>
+        /// 主键删除
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
         public static async Task<bool> DeleteByIdAsync<T>(dynamic id, object splitDbKey = null)
               where T : class, new()
           => await GetRepository<T>(splitDbKey).DeleteByIdAsync(id);
-        public static async Task<bool> DeleteByIdsAsync<T>(dynamic[] ids, object splitDbKey = null)
+        public static async Task<bool> DeleteByIdsAsync<T>(List<dynamic> ids, object splitDbKey = null)
               where T : class, new()
           => await GetRepository<T>(splitDbKey).DeleteByIdsAsync(ids);
+        /// <summary>
+        /// 联合主键删除
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="splitDbKey"></param>
+        /// <returns></returns>
         public static async Task<bool> DeleteByIdAsync<T>(T id, object splitDbKey = null)
               where T : class, new()
           => await GetRepository<T>(splitDbKey).DeleteByIdAsync(id);
         public static async Task<bool> DeleteByIdsAsync<T>(List<T> ids, object splitDbKey = null)
               where T : class, new()
           => await GetRepository<T>(splitDbKey).DeleteByIdsAsync(ids);
+
         public static async Task<bool> DeleteAsync<T>(T item, object splitDbKey = null)
               where T : class, new()
             => await GetRepository<T>(splitDbKey).DeleteAsync(item);

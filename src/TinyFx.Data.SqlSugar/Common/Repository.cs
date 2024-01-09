@@ -39,6 +39,8 @@ namespace TinyFx.Data.SqlSugar
             => await DeleteAsync(id);
         public virtual async Task<bool> DeleteByIdsAsync(List<T> ids)
             => await DeleteAsync(ids);
+        public virtual async Task<bool> DeleteByIdsAsync(List<dynamic> ids)
+            => await DeleteByIdsAsync(ids.ToArray());
 
         /// <summary>
         /// 根据联合主键查询
