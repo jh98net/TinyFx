@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TinyFx.DataSplit.Common
 {
-    public enum HandlerMode
+    public enum HandleMode
     {
         Unknow = 0,
         /// <summary>

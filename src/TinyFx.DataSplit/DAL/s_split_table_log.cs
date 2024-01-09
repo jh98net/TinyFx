@@ -14,16 +14,17 @@ namespace TinyFx.DataSplit.DAL
            public Ss_split_table_logEO(){
 
             this.ColumnType =0;
-            this.HandlerMode =0;
+            this.HandleMode =0;
             this.MoveKeepMode =0;
             this.MoveKeepValue =0;
             this.MoveTableMode =0;
             this.SplitMaxRowCount =0;
             this.HandleOrder =0;
+            this.DbTimeout =0;
             this.BathPageSize =0;
-            this.RowNum =0;
-            this.HandlerTime =0;
             this.Status =0;
+            this.RowNum =0;
+            this.HandleTime =0;
             this.RecDate =DateTime.Now;
 
            }
@@ -38,16 +39,16 @@ namespace TinyFx.DataSplit.DAL
            /// <summary>
            /// Desc:数据库标识
            /// Default:
-           /// Nullable:False
+           /// Nullable:True
            /// </summary>           
-           public string DatabaseId {get;set;}
+           public string? DatabaseId {get;set;}
 
            /// <summary>
            /// Desc:分表表名
            /// Default:
-           /// Nullable:False
+           /// Nullable:True
            /// </summary>           
-           public string TableName {get;set;}
+           public string? TableName {get;set;}
 
            /// <summary>
            /// Desc:分表字段名
@@ -57,7 +58,7 @@ namespace TinyFx.DataSplit.DAL
            public string? ColumnName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段类型0-未知1-DateTime2-ObjectId
+           /// Desc:分表字段类型0-未知1-DateTime(UTC)
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -73,7 +74,7 @@ namespace TinyFx.DataSplit.DAL
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int HandlerMode {get;set;}
+           public int HandleMode {get;set;}
 
            /// <summary>
            /// Desc:迁移保留模式(0-天1-月)
@@ -125,11 +126,25 @@ namespace TinyFx.DataSplit.DAL
            public int HandleOrder {get;set;}
 
            /// <summary>
+           /// Desc:数据库执超时
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int DbTimeout {get;set;}
+
+           /// <summary>
            /// Desc:批处理分页行数
            /// Default:0
            /// Nullable:False
            /// </summary>           
            public int BathPageSize {get;set;}
+
+           /// <summary>
+           /// Desc:状态(0-进行中1-成功2-失败)
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int Status {get;set;}
 
            /// <summary>
            /// Desc:起始时间
@@ -157,14 +172,14 @@ namespace TinyFx.DataSplit.DAL
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int HandlerTime {get;set;}
+           public int HandleTime {get;set;}
 
            /// <summary>
            /// Desc:执行日志
            /// Default:
            /// Nullable:True
            /// </summary>           
-           public string? HandlerLog {get;set;}
+           public string? HandleLog {get;set;}
 
            /// <summary>
            /// Desc:异常消息
@@ -178,14 +193,7 @@ namespace TinyFx.DataSplit.DAL
            /// Default:
            /// Nullable:True
            /// </summary>           
-           public string? TargetTableNames {get;set;}
-
-           /// <summary>
-           /// Desc:状态(0-进行中1-成功2-失败)
-           /// Default:0
-           /// Nullable:False
-           /// </summary>           
-           public int Status {get;set;}
+           public string? HandleTables {get;set;}
 
            /// <summary>
            /// Desc:记录时间

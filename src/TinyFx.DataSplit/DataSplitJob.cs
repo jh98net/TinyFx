@@ -21,13 +21,13 @@ namespace TinyFx.DataSplit
                 .Where(it => it.Status == 1).OrderBy(it => it.HandleOrder).ToListAsync();
             foreach (var item in list)
             {
-                var mode = item.HandlerMode.ToEnum(HandlerMode.Unknow);
+                var mode = item.HandleMode.ToEnum(HandleMode.Unknow);
                 switch(mode)
                 {
-                    case HandlerMode.Delete:
+                    case HandleMode.Delete:
                         await new DeleteJob(item).Execute();
                         break;
-                    case HandlerMode.Move:
+                    case HandleMode.Move:
                         break;
                 }
             }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Org.BouncyCastle.Tls;
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -21,8 +22,30 @@ namespace TinyFx.Text
         private readonly int _a;
         private readonly int _b;
         private readonly int _c;
-        public static string NewId() => GenerateNewId().ToString();
+
+        /// <summary>
+        /// 获取新的Id和使用的DateTime.UtcNow
+        /// </summary>
+        /// <returns></returns>
+        public static (string Id, DateTime UtcDate) NextId()
+        {
+            var utcDate = DateTime.UtcNow;
+            var id = NewId(utcDate);
+            return (id, utcDate);
+        }
+        /// <summary>
+        /// 根据指定的Utc时间获取新的Id
+        /// </summary>
+        /// <param name="utcDateTime"></param>
+        /// <returns></returns>
         public static string NewId(DateTime utcDateTime) => GenerateNewId(utcDateTime).ToString();
+        /// <summary>
+        /// 获取新的Id
+        /// </summary>
+        /// <returns></returns>
+        public static string NewId() => GenerateNewId().ToString();
+        
+        
         // constructors
         /// <summary>
         /// Initializes a new instance of the ObjectId class.

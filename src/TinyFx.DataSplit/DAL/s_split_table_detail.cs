@@ -14,7 +14,7 @@ namespace TinyFx.DataSplit.DAL
            public Ss_split_table_detailEO(){
 
             this.ColumnType =0;
-            this.HandlerMode =0;
+            this.HandleMode =0;
             this.Status =0;
             this.RecDate =DateTime.Now;
 
@@ -49,47 +49,23 @@ namespace TinyFx.DataSplit.DAL
            public string? ColumnName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段类型0-未知1-DateTime2-ObjectId
+           /// Desc:分表字段类型0-未知1-DateTime(UTC)
            /// Default:0
            /// Nullable:False
            /// </summary>           
            public int ColumnType {get;set;}
 
            /// <summary>
-           /// Desc:处理模式
+           /// Desc:处理模式（取不同字段的值）
 			///              0-未知
-			///              1-删除 ==> HandlerData=保留天数
-			///              2-按天迁移 ==> HandlerData=保留天数 表名=xxx_yyyyMMdd_2_
-			///              3-按周迁移 ==> HandlerData=保留周数 表名=xxx_yyyyWeek_3_
-			///              4-按月迁移 ==> HandlerData=保留月数 表名=xxx_yyyyMM_4_
-			///              5-按季迁移 ==> HandlerData=保留季数 表名=xxx_yyyy1,2,3,4_5_
-			///              6-按年迁移 ==> HandlerData=保留年数 表名=xxx_yyyy_6_
-			///              9-按最大行数分表 ==> HandlerData=最大行数 表名=xxx_yyyyMMddHHmmss_9_
+			///              1-删除
+			///              2-迁移
+			///              3-分表-按表最大行数 
+			///                  ==> SplitMaxRowCount=最大行数 表名=xxx_yyyyMMddHHmmss_3_
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int HandlerMode {get;set;}
-
-           /// <summary>
-           /// Desc:分表处理数据（根据SplitMode不同而不同）
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? HandlerData {get;set;}
-
-           /// <summary>
-           /// Desc:迁移数据的条件
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? MoveWhere {get;set;}
-
-           /// <summary>
-           /// Desc:执行日志
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? HandlerLog {get;set;}
+           public int HandleMode {get;set;}
 
            /// <summary>
            /// Desc:分表后的表名

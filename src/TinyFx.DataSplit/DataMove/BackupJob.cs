@@ -13,6 +13,8 @@ namespace TinyFx.DataSplit.DataMove
         private int LIMIT_ROWS = 500000;
         public BackupJob(Ss_split_tableEO option) : base(option)
         {
+            if ((HandleMode)option.HandleMode != HandleMode.Move)
+                throw new Exception("DataMove.DeleteJob时HandleMode必须是Move");
             LIMIT_ROWS = option.BathPageSize > 0 ? option.BathPageSize : 500000;
         }
         protected override Task ExecuteJob()

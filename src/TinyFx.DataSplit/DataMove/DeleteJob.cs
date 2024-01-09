@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.DataSplit.Common;
 using TinyFx.DataSplit.DAL;
 
 namespace TinyFx.DataSplit.DataMove
@@ -12,6 +13,8 @@ namespace TinyFx.DataSplit.DataMove
         private int LIMIT_ROWS = 1000000;
         public DeleteJob(Ss_split_tableEO option) : base(option)
         {
+            if ((HandleMode)option.HandleMode != HandleMode.Delete)
+                throw new Exception("DataMove.DeleteJob时HandleMode必须是Delete");
             LIMIT_ROWS = option.BathPageSize > 0 ? option.BathPageSize : 1000000;
         }
         protected override async Task ExecuteJob()
@@ -32,7 +35,7 @@ namespace TinyFx.DataSplit.DataMove
                 AddHandlerLog($"SQL: {sql}");
                 while (true)
                 {
-                    var rows = await _database.Ado.ExecuteCommandAsync($"{sql} LIMIT {_option.BathPageSize}");
+                    var rows = await _database.Ado.ExecuteCommandAsync($"{sql} LIMIT {LIMIT_ROWS}");
                     if (rows == 0) break;
                     _logEo.RowNum += rows;
                     await Task.Delay(200);

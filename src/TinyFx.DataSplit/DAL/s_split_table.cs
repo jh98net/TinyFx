@@ -14,12 +14,13 @@ namespace TinyFx.DataSplit.DAL
            public Ss_split_tableEO(){
 
             this.ColumnType =0;
-            this.HandlerMode =0;
+            this.HandleMode =0;
             this.MoveKeepMode =0;
             this.MoveKeepValue =0;
             this.MoveTableMode =0;
             this.SplitMaxRowCount =0;
             this.HandleOrder =0;
+            this.DbTimeout =0;
             this.BathPageSize =0;
             this.Status =0;
             this.RecDate =DateTime.Now;
@@ -49,7 +50,7 @@ namespace TinyFx.DataSplit.DAL
            public string? ColumnName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段类型0-未知1-DateTime2-ObjectId
+           /// Desc:分表字段类型0-未知1-DateTime(UTC)
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -65,7 +66,7 @@ namespace TinyFx.DataSplit.DAL
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int HandlerMode {get;set;}
+           public int HandleMode {get;set;}
 
            /// <summary>
            /// Desc:迁移保留模式(0-天1-月)
@@ -117,6 +118,13 @@ namespace TinyFx.DataSplit.DAL
            public int HandleOrder {get;set;}
 
            /// <summary>
+           /// Desc:数据库执超时
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int DbTimeout {get;set;}
+
+           /// <summary>
            /// Desc:批处理分页行数
            /// Default:0
            /// Nullable:False
@@ -124,7 +132,7 @@ namespace TinyFx.DataSplit.DAL
            public int BathPageSize {get;set;}
 
            /// <summary>
-           /// Desc:状态(0-无效1-有效2-已改变未同步)
+           /// Desc:状态(0-无效1-有效)
            /// Default:0
            /// Nullable:False
            /// </summary>           

@@ -25,11 +25,12 @@ namespace TinyFx.DataSplit.DataMove
                 .AddField("DataMove.Option", option);
             _option = option;
             _database = DbUtil.GetDb(option.DatabaseId);
-            _database.Ado.CommandTimeOut = DB_TIMEOUT_SECONDS;
+            _database.Ado.CommandTimeOut = _option.DbTimeout > 0
+                ? _option.DbTimeout : DB_TIMEOUT_SECONDS;
         }
 
         protected abstract Task ExecuteJob();
-        
+
         public async Task Execute()
         {
             // 有正在执行的任务就退出
@@ -53,7 +54,7 @@ namespace TinyFx.DataSplit.DataMove
                     throw new Exception($"DataMove数据表不存在。databaseId:{_option.DatabaseId} tableName:{_option.TableName}");
                 await ExecuteJob();
                 sw.Stop();
-                _logEo.HandlerTime = (int)sw.Elapsed.TotalSeconds;
+                _logEo.HandleTime = (int)sw.Elapsed.TotalSeconds;
                 _logEo.Status = 1;
                 if (_logEo.RowNum == 0)
                     await logMo.DeleteByIdAsync(_logEo.LogID);
@@ -76,14 +77,15 @@ namespace TinyFx.DataSplit.DataMove
         }
         private async Task AddLogEo()
         {
+            var oid = ObjectId.NextId();
             _logEo = new Ss_split_table_logEO()
             {
-                LogID = ObjectId.NewId(),
+                LogID = oid.Id,
                 DatabaseId = _option.DatabaseId,
                 TableName = _option.TableName,
                 ColumnName = _option.ColumnName,
                 ColumnType = _option.ColumnType,
-                HandlerMode = _option.HandlerMode,
+                HandleMode = _option.HandleMode,
                 MoveKeepMode = _option.MoveKeepMode,
                 MoveKeepValue = _option.MoveKeepValue,
                 MoveTableMode = _option.MoveTableMode,
@@ -93,8 +95,8 @@ namespace TinyFx.DataSplit.DataMove
                 HandleOrder = _option.HandleOrder,
                 BathPageSize = _option.BathPageSize,
                 Status = 0, //状态 0-运行中1-成功2-失败
-                RecDate = DateTime.UtcNow, //当天仅运行一条
-                HandlerLog = string.Empty
+                RecDate = oid.UtcDate, //当天仅运行一条
+                HandleLog = string.Empty
             };
             await DbUtil.InsertAsync(_logEo);
         }
@@ -102,7 +104,7 @@ namespace TinyFx.DataSplit.DataMove
         protected void AddHandlerLog(string msg)
         {
             LogUtil.Debug(msg);
-            _logEo.HandlerLog += msg + Environment.NewLine;
+            _logEo.HandleLog += msg + Environment.NewLine;
         }
         protected DateTime GetKeepEndDate()
         {
