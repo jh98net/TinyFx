@@ -36,7 +36,8 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 AddHandlerLog($"SQL: {sql}");
                 while (true)
                 {
-                    var rows = await _database.Ado.ExecuteCommandAsync($"{sql} LIMIT {LIMIT_ROWS}");
+                    var rows = 0;
+                    //var rows = await _database.Ado.ExecuteCommandAsync($"{sql} LIMIT {LIMIT_ROWS}");
                     if (rows == 0) break;
                     _logEo.RowNum += rows;
                     await Task.Delay(200);
