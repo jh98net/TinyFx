@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TinyFx.DataSplit
+namespace TinyFx.BIZ.DataSplit
 {
     public class DataSplitService
     {

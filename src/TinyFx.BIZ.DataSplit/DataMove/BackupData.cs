@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TinyFx.DataSplit.DataMove
+namespace TinyFx.BIZ.DataSplit.DataMove
 {
     internal class BackupData
     {

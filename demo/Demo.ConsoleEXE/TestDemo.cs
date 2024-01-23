@@ -14,6 +14,10 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
+            var id = ObjectId.TimestampId(DateTime.UtcNow);
+            Console.WriteLine(id);
+            id = ObjectId.TimestampId(DateTime.UtcNow,false);
+            Console.WriteLine(id);
         }
     }
 

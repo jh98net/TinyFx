@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TinyFx.DataSplit.Common;
-using TinyFx.DataSplit.DAL;
+using TinyFx.BIZ.DataSplit.Common;
+using TinyFx.BIZ.DataSplit.DAL;
 
-namespace TinyFx.DataSplit.DataMove
+namespace TinyFx.BIZ.DataSplit.DataMove
 {
     internal class DeleteJob : BaseDataMove
     {
-        private int LIMIT_ROWS = 1000000;
+        private int LIMIT_ROWS = 1000000; // 批量删除默认100万条
         public DeleteJob(Ss_split_tableEO option) : base(option)
         {
             if ((HandleMode)option.HandleMode != HandleMode.Delete)
-                throw new Exception("DataMove.DeleteJob时HandleMode必须是Delete");
-            LIMIT_ROWS = option.BathPageSize > 0 ? option.BathPageSize : 1000000;
+                throw new Exception($"{GetType().FullName}时HandleMode必须是Delete");
+            if (option.BathPageSize > 0)
+                LIMIT_ROWS = option.BathPageSize;
         }
         protected override async Task ExecuteJob()
         {

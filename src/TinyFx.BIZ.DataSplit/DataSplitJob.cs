@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.BIZ.DataSplit.Common;
+using TinyFx.BIZ.DataSplit.DAL;
+using TinyFx.BIZ.DataSplit.DataMove;
 using TinyFx.Data.SqlSugar;
-using TinyFx.DataSplit.Common;
-using TinyFx.DataSplit.DAL;
-using TinyFx.DataSplit.DataMove;
 
-namespace TinyFx.DataSplit
+
+namespace TinyFx.BIZ.DataSplit
 {
     /// <summary>
     /// 数据分库分表定时任务

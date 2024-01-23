@@ -23,6 +23,7 @@ namespace TinyFx.Text
         private readonly int _b;
         private readonly int _c;
 
+        #region !!! 常用方法 !!!
         /// <summary>
         /// 获取新的Id和使用的DateTime.UtcNow
         /// </summary>
@@ -44,8 +45,36 @@ namespace TinyFx.Text
         /// </summary>
         /// <returns></returns>
         public static string NewId() => GenerateNewId().ToString();
-        
-        
+        /// <summary>
+        /// 获取指定Utc时间的id值
+        /// </summary>
+        /// <param name="utcDateTime"></param>
+        /// <param name="isFull">是否全长度24</param>
+        /// <returns></returns>
+        public static string TimestampId(DateTime utcDateTime, bool isFull = true)
+        {
+            var ret = string.Empty;
+            var ts = GetTimestampFromDateTime(utcDateTime);
+            if (isFull)
+                ret = new ObjectId(ts, 0, 0).ToString();
+            else
+            {
+                var c = new char[8];
+                c[0] = ToHexChar(ts >> 28 & 0x0f);
+                c[1] = ToHexChar(ts >> 24 & 0x0f);
+                c[2] = ToHexChar(ts >> 20 & 0x0f);
+                c[3] = ToHexChar(ts >> 16 & 0x0f);
+                c[4] = ToHexChar(ts >> 12 & 0x0f);
+                c[5] = ToHexChar(ts >> 8 & 0x0f);
+                c[6] = ToHexChar(ts >> 4 & 0x0f);
+                c[7] = ToHexChar(ts & 0x0f);
+                ret = new string(c);
+            }
+            return ret;
+        }
+        #endregion
+
+
         // constructors
         /// <summary>
         /// Initializes a new instance of the ObjectId class.

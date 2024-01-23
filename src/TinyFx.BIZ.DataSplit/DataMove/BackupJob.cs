@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TinyFx.DataSplit.Common;
-using TinyFx.DataSplit.DAL;
+using TinyFx.BIZ.DataSplit.Common;
+using TinyFx.BIZ.DataSplit.DAL;
 
-namespace TinyFx.DataSplit.DataMove
+
+namespace TinyFx.BIZ.DataSplit.DataMove
 {
     internal class BackupJob : BaseDataMove
     {

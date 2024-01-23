@@ -14,7 +14,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\TinyFx.DataSplit\TinyFx.DataSplit.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Extensions.EPPlus\TinyFx.Extensions.EPPlus.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Extensions.SshNet\TinyFx.Extensions.SshNet.csproj" />
 		<ProjectReference Include="..\..\src\TinyFx.Hosting\TinyFx.Hosting.csproj" />

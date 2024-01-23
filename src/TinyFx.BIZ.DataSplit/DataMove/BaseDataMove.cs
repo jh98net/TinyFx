@@ -5,12 +5,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.BIZ.DataSplit.DAL;
 using TinyFx.Data.SqlSugar;
-using TinyFx.DataSplit.DAL;
 using TinyFx.Logging;
 using TinyFx.Text;
 
-namespace TinyFx.DataSplit.DataMove
+namespace TinyFx.BIZ.DataSplit.DataMove
 {
     internal abstract class BaseDataMove
     {
@@ -44,22 +44,23 @@ namespace TinyFx.DataSplit.DataMove
                 return;
             }
 
-            await AddLogEo();
+            await InsertLogEo();
             var sw = new Stopwatch();
             sw.Start();
-            var logMo = DbUtil.GetRepository<Ss_split_table_logEO>();
+            var logRo = DbUtil.GetRepository<Ss_split_table_logEO>();
             try
             {
                 if (!_database.DbMaintenance.IsAnyTable(_option.TableName))
                     throw new Exception($"DataMove数据表不存在。databaseId:{_option.DatabaseId} tableName:{_option.TableName}");
                 await ExecuteJob();
                 sw.Stop();
-                _logEo.HandleTime = (int)sw.Elapsed.TotalSeconds;
+
                 _logEo.Status = 1;
+                _logEo.HandleTime = (int)sw.Elapsed.TotalSeconds;
                 if (_logEo.RowNum == 0)
-                    await logMo.DeleteByIdAsync(_logEo.LogID);
+                    await logRo.DeleteByIdAsync(_logEo.LogID);
                 else
-                    await logMo.UpdateAsync(_logEo);
+                    await logRo.UpdateAsync(_logEo);
             }
             catch (Exception ex)
             {
@@ -70,12 +71,13 @@ namespace TinyFx.DataSplit.DataMove
                     .AddException(ex);
 
                 _logEo.Status = 2;
+                _logEo.HandleTime = (int)sw.Elapsed.TotalSeconds;
                 _logEo.Exception += SerializerUtil.SerializeJsonNet(ex);
-                await logMo.UpdateAsync(_logEo);
+                await logRo.UpdateAsync(_logEo);
             }
             _logger.Save();
         }
-        private async Task AddLogEo()
+        private async Task InsertLogEo()
         {
             var oid = ObjectId.NextId();
             _logEo = new Ss_split_table_logEO()
@@ -93,6 +95,7 @@ namespace TinyFx.DataSplit.DataMove
                 MoveWhere = _option.MoveWhere,
                 SplitMaxRowCount = _option.SplitMaxRowCount,
                 HandleOrder = _option.HandleOrder,
+                DbTimeout = _option.DbTimeout,
                 BathPageSize = _option.BathPageSize,
                 Status = 0, //状态 0-运行中1-成功2-失败
                 RecDate = oid.UtcDate, //当天仅运行一条
@@ -115,8 +118,18 @@ namespace TinyFx.DataSplit.DataMove
         }
         protected async Task<DateTime> GetTableMinDate(DateTime endDate)
         {
-            var begin = await _database.Ado.GetScalarAsync($"SELECT MIN(`{_option.ColumnName}`)"
-                 + $" FROM `{_option.TableName}` WHERE `{_option.ColumnName}` < @EndDate", new SugarParameter("@EndDate", endDate));
+            var sql = string.Empty;
+            switch (_option.ColumnType)
+            {
+                case 0: // DateTime
+                    sql = $"SELECT MIN(`{_option.ColumnName}`) FROM `{_option.TableName}` WHERE `{_option.ColumnName}` < '{endDate.ToString("yyyy-MM-dd")}'";
+                    break;
+                case 1: // ObjectId
+                    // select FROM_UNIXTIME(CAST(CONV(SUBSTR(UserID, 1, 8), 16, 10) AS UNSIGNED)) from s_user
+                    sql = $"SELECT MIN(`{_option.ColumnName}`) FROM `{_option.TableName}` WHERE `{_option.ColumnName}` < '{ObjectId.TimestampId(endDate)}'";
+                    break;
+            }
+            var begin = await _database.Ado.GetScalarAsync(sql);
             if (begin is DBNull || begin == null)
             {
                 return DateTime.MaxValue;
@@ -140,7 +153,16 @@ namespace TinyFx.DataSplit.DataMove
         }
         protected string GetWhereByDay(DateTime currDate)
         {
-            var ret = $"`{_option.ColumnName}`>='{currDate.ToString("yyyy-MM-dd")}' AND {_option.ColumnName}<'{currDate.AddDays(1).ToString("yyyy-MM-dd")}'";
+            var ret = string.Empty;
+            switch (_option.ColumnType)
+            {
+                case 0: // DateTime
+                    ret = $"`{_option.ColumnName}`>='{currDate.ToString("yyyy-MM-dd")}' AND `{_option.ColumnName}`<'{currDate.AddDays(1).ToString("yyyy-MM-dd")}'";
+                    break;
+                case 1: // ObjectId
+                    ret = $"`{_option.ColumnName}`>='{ObjectId.TimestampId(currDate)}' AND `{_option.ColumnName}`<'{ObjectId.TimestampId(currDate.AddDays(1))}'";
+                    break;
+            }
             if (!string.IsNullOrEmpty(_option.MoveWhere))
             {
                 var where = _option.MoveWhere.ToUpper().Trim().TrimStart("AND ");
