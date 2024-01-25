@@ -99,8 +99,6 @@ namespace TinyFx.Hosting.Services
             {
                 _stoppingCts.Cancel();
             });
-            if (_minDelayInterval == 0)
-                return;
             LogUtil.Info("启动 => Host定时服务[ITinyFxHostTimerService]");
             int interval = 0;
             while (!_stoppingCts.IsCancellationRequested)
@@ -133,13 +131,13 @@ namespace TinyFx.Hosting.Services
                                         , job.Id, job.Title, job.Interval, job.CurrentCount, job.ExecuteCount, job.ErrorCount, job.TryCount, Thread.CurrentThread.ManagedThreadId);
                                     job.ErrorCount = 0;
                                 }
-                                else if(t.Status == TaskStatus.Faulted) // 失败
+                                else if (t.Status == TaskStatus.Faulted) // 失败
                                 {
                                     // 超过重试次数移除!
                                     job.ErrorCount++;
                                     LogUtil.Error(t.Exception, "HostTimer任务执行异常: [{Id}]-{Title} Interval:{Interval} Count:{CurrentCount}/{ExecuteCount} Error:{ErrorCount}/{TryCount} ThreadId:{ThreadId}"
                                         , job.Id, job.Title, job.Interval, job.CurrentCount, job.ExecuteCount, job.ErrorCount, job.TryCount, Thread.CurrentThread.ManagedThreadId);
-                                    if (job.TryCount == 0 || job.ErrorCount >= job.TryCount)
+                                    if (job.TryCount == 0 || (job.TryCount > 0 && job.ErrorCount >= job.TryCount))
                                         _jobs.TryRemove(job.Id, out var _);
                                 }
                                 _taskDict.TryRemove(taskId, out var _);
@@ -155,7 +153,7 @@ namespace TinyFx.Hosting.Services
                         nextInterval = Math.Min(nextInterval, job.Remain);
                 }
                 interval = Math.Max(_minDelayInterval, nextInterval);
-                await Task.Delay(TimeSpan.FromMilliseconds(nextInterval), _changeCts.Token).ContinueWith((t) =>
+                await Task.Delay(TimeSpan.FromMilliseconds(interval), _changeCts.Token).ContinueWith((t) =>
                 {
                     if (t.Status == TaskStatus.Canceled)
                     {

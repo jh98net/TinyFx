@@ -9,10 +9,10 @@ using TinyFx.BIZ.DataSplit.DAL;
 
 namespace TinyFx.BIZ.DataSplit.DataMove
 {
-    internal class BackupJob : BaseDataMove
+    internal class BackupJob : BaseDataMoveJob
     {
         private int LIMIT_ROWS = 500000;
-        public BackupJob(Ss_split_tableEO option) : base(option)
+        public BackupJob(Ss_split_tableEO option, DateTime execTime) : base(option, execTime)
         {
             if ((HandleMode)option.HandleMode != HandleMode.Move)
                 throw new Exception("DataMove.DeleteJob时HandleMode必须是Move");

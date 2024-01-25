@@ -9,6 +9,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TinyFx.BIZ.DataSplit\TinyFx.BIZ.DataSplit.csproj" />
+    <ProjectReference Include="..\..\src\TinyFx.Hosting\TinyFx.Hosting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

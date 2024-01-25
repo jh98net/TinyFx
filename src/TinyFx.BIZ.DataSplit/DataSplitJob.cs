@@ -23,13 +23,14 @@ namespace TinyFx.BIZ.DataSplit
                 list = await DbUtil.GetRepository<Ss_split_tableEO>().AsQueryable()
                     .Where(it => it.Status == 1).OrderBy(it => it.HandleOrder).ToListAsync();
             }
+            var execTime = DateTime.UtcNow;
             foreach (var item in list)
             {
                 var mode = item.HandleMode.ToEnum(HandleMode.Unknow);
                 switch (mode)
                 {
                     case HandleMode.Delete:
-                        await new DeleteJob(item).Execute();
+                        await new DeleteJob(item, execTime).Execute();
                         break;
                     case HandleMode.Move:
                         break;

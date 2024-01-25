@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,26 +13,50 @@ namespace TinyFx.Configuration
         public override string SectionName => "Host";
 
         /// <summary>
-        /// 主机注册心跳间隔，默认5秒, 0-无心跳
+        /// 是否注册Host服务
         /// </summary>
-        public int HeartbeatInterval { get; set; } = 5000;
+        public bool RegisterEnabled { get; set; }
         /// <summary>
-        /// 主机检查间隔，默认10分钟, 0-无检查
+        /// 主机注册心跳间隔，默认5秒
         /// </summary>
-        public int HeathInterval { get; set; } = 600000;
+        public int HeartbeatInterval { get; set; }
         /// <summary>
-        /// 主机数据有效期，默认15秒,0-10分钟
-        /// DataExpire=0或者ConfigUtil.IsDebugEnvironment=true时有效期为10分钟
+        /// 主机检查间隔，默认10分钟
         /// </summary>
-        public int DataExpire { get; set; } = 15000;
+        public int HeathInterval { get; set; }
+        /// <summary>
+        /// 主机数据有效期，默认心跳间隔3倍
+        /// ConfigUtil.IsDebugEnvironment=true时有效期为10分钟
+        /// </summary>
+        public int DataExpire { get; set; }
 
         /// <summary>
-        /// 主机Timer最小Delay时间, 0-无Timer
+        /// 主机Timer最小Delay时间, 默认200最小100
         /// </summary>
-        public int TimerMinDelay { get; set; } = 200;
+        public int TimerMinDelay { get; set; }
         /// <summary>
-        /// 主机Timer关闭等待超时
+        /// 主机Timer关闭等待超时，默认20000最小5000
         /// </summary>
         public int TimerWaitTimeout { get; set; } = 20000;
+
+        public override void Bind(IConfiguration configuration)
+        {
+            base.Bind(configuration);
+
+            if (HeartbeatInterval <= 0)
+                HeartbeatInterval = 5000;
+            if (DataExpire <= 0)
+                DataExpire = HeartbeatInterval * 3;
+            if (HeathInterval <= 0)
+                HeathInterval = 600000;
+            if (TimerMinDelay == 0)
+                TimerMinDelay = 200;
+            else
+                TimerMinDelay = Math.Max(TimerMinDelay, 100);
+            if (TimerWaitTimeout == 0)
+                TimerWaitTimeout = 20000;
+            else
+                TimerWaitTimeout = Math.Max(TimerWaitTimeout, 5000);
+        }
     }
 }

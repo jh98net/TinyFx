@@ -87,11 +87,11 @@
 
   // 主机配置(TinyFx.Configuration.HostSection)
   "Host": {
-    "HeartbeatInterval": 5000, //主机注册心跳间隔，默认5秒, 0-无心跳
-    "HeathInterval": 600000, //主机检查间隔，默认10分钟, 0-无检查
-    "DataExpire": 15000, //主机数据有效期，默认15秒,0-10分钟
-    "TimerMinDelay": 200, //主机Timer最小Delay时间, 0-无Timer
-    "TimerWaitTimeout": 20000 //主机Timer关闭等待超时
+    "RegisterEnabled": true, // 是否注册Host服务
+    "HeartbeatInterval": 5000, // 主机注册心跳间隔，默认5秒
+    "HeathInterval": 600000, // 主机检查间隔，默认10分钟
+    "TimerMinDelay": 200, // 主机Timer最小Delay时间, 最小100
+    "TimerWaitTimeout": 20000 // 主机Timer关闭等待超时，最小5000
   },
 
   // 自定义配置信息 (TinyFx.Configuration.AppSettingsSection)

@@ -109,6 +109,7 @@ namespace TinyFx.Configuration
         {
             _env = null;
             _project = null;
+            _host = null;
             _appSettings = null;
             _appConfigs = null;
             Sections.Clear();

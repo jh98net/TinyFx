@@ -13,17 +13,15 @@ namespace TinyFx.Hosting.Services
     internal class TinyFxHostDataDCache : RedisHashMultiClient
     {
         public string ServiceId { get; }
-        private TimeSpan MaxExpireSpan = TimeSpan.FromMinutes(10);
         private TimeSpan _expireSpan;
         public TinyFxHostDataDCache(string serviceId, string connectionStringName = null)
         {
             ServiceId = serviceId;
             Options.ConnectionStringName = connectionStringName;
             RedisKey = $"{RedisPrefixConst.HOSTS}:Data:{serviceId}";
-            var expire = ConfigUtil.Host.DataExpire;
-            _expireSpan = expire > 0 || !ConfigUtil.IsDebugEnvironment
-                ? TimeSpan.FromMilliseconds(expire)
-                : MaxExpireSpan;
+            _expireSpan = ConfigUtil.Host.DataExpire == 0 || ConfigUtil.IsDebugEnvironment
+                ? TimeSpan.FromMinutes(10) // 没有设置或Debug时10分钟
+                : TimeSpan.FromMilliseconds(ConfigUtil.Host.DataExpire);
         }
 
         public async Task RegisterData()

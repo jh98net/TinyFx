@@ -17,8 +17,8 @@ namespace TinyFx.BIZ.DataSplit.Common
             db.DbMaintenance.TruncateTable<Ss_split_demoEO>();
 
             var list = new List<Ss_split_demoEO>();
-            var begin = new DateTime(2022, 1, 1);
-            var end = new DateTime(2025, 1, 1);
+            var begin = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var end = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             var idx = 1;
             var curr = begin;
             while (curr <= end)

@@ -30,26 +30,26 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// <summary>
            /// Desc:数据库标识
            /// Default:
-           /// Nullable:True
+           /// Nullable:False
            /// </summary>           
-           public string? DatabaseId {get;set;}
+           public string DatabaseId {get;set;}
 
            /// <summary>
            /// Desc:分表表名
            /// Default:
-           /// Nullable:True
+           /// Nullable:False
            /// </summary>           
-           public string? TableName {get;set;}
+           public string TableName {get;set;}
 
            /// <summary>
            /// Desc:分表字段名
            /// Default:
-           /// Nullable:True
+           /// Nullable:False
            /// </summary>           
-           public string? ColumnName {get;set;}
+           public string ColumnName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段类型0-未知1-DateTime(UTC)
+           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId)
            /// Default:0
            /// Nullable:False
            /// </summary>           

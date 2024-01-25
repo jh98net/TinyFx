@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Collections;
+using TinyFx.Configuration;
 using TinyFx.DbCaching.Caching;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Hosting;
@@ -15,9 +16,12 @@ namespace TinyFx.DbCaching.ChangeConsumers
     {
         protected override async Task OnMessage(DbCacheCheckMessage message)
         {
+            if (!ConfigUtil.Host.RegisterEnabled)
+                return;
             var list = new List<DbCacheCheckItem>();
             var listDCache = new DbCacheListDCache(message.RedisConnectionStringName);
-            foreach (var dict in DbCachingUtil.CacheDict.Values)
+            var values = DbCachingUtil.CacheDict.Values.ToArray();
+            foreach (var dict in values)
             {
                 dict.Values.ForEach(async (x) =>
                 {

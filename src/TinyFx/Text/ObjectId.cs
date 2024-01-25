@@ -72,6 +72,13 @@ namespace TinyFx.Text
             }
             return ret;
         }
+        /// <summary>
+        /// 解析ObjectId中的Timestamp
+        /// </summary>
+        /// <param name="objectId"></param>
+        /// <returns></returns>
+        public static DateTime ParseTimestamp(string objectId)
+            => Parse(objectId).CreationTime;
         #endregion
 
 

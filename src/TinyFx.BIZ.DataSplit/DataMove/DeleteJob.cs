@@ -8,36 +8,37 @@ using TinyFx.BIZ.DataSplit.DAL;
 
 namespace TinyFx.BIZ.DataSplit.DataMove
 {
-    internal class DeleteJob : BaseDataMove
+    internal class DeleteJob : BaseDataMoveJob
     {
-        private int LIMIT_ROWS = 1000000; // 批量删除默认100万条
-        public DeleteJob(Ss_split_tableEO option) : base(option)
+        public DeleteJob(Ss_split_tableEO option, DateTime execTime) : base(option, execTime)
         {
             if ((HandleMode)option.HandleMode != HandleMode.Delete)
                 throw new Exception($"{GetType().FullName}时HandleMode必须是Delete");
-            if (option.BathPageSize > 0)
-                LIMIT_ROWS = option.BathPageSize;
+            if (option.BathPageSize == 0)
+                BATCH_PAGE_SIZE = 0;
         }
         protected override async Task ExecuteJob()
         {
             //实际操作数据：beginDate <= target < endDate
             var endDate = GetKeepEndDate();
             var beginDate = await GetTableMinDate(endDate);
-            if (beginDate == DateTime.MaxValue)
+            if (!beginDate.HasValue)
                 return;
             AddHandlerLog($"==>开始删除{_option.TableName} {beginDate} => {endDate}");
 
             _logEo.BeginDate = beginDate;
             _logEo.EndDate = endDate;
-            var dateList = GetDayList(beginDate, endDate);
+            var dateList = GetDayList(beginDate.Value, endDate);
             foreach (var currDate in dateList)
             {
                 var sql = $"DELETE FROM `{_option.TableName}` WHERE {GetWhereByDay(currDate)}";
+                if (BATCH_PAGE_SIZE > 0)
+                    sql += $" LIMIT {BATCH_PAGE_SIZE}";
                 AddHandlerLog($"SQL: {sql}");
                 while (true)
                 {
-                    var rows = 0;
-                    //var rows = await _database.Ado.ExecuteCommandAsync($"{sql} LIMIT {LIMIT_ROWS}");
+                    //var rows = 0;
+                    var rows = await _database.Ado.ExecuteCommandAsync(sql);
                     if (rows == 0) break;
                     _logEo.RowNum += rows;
                     await Task.Delay(200);

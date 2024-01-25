@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.BIZ.DataSplit.Common;
 using TinyFx.BIZ.DataSplit.DAL;
 using TinyFx.Data.SqlSugar;
 using TinyFx.Logging;
@@ -12,21 +14,29 @@ using TinyFx.Text;
 
 namespace TinyFx.BIZ.DataSplit.DataMove
 {
-    internal abstract class BaseDataMove
+    internal abstract class BaseDataMoveJob
     {
-        public const int DB_TIMEOUT_SECONDS = 1800;
+        public int DB_TIMEOUT_SECONDS = 1800; //
+        public int BATCH_PAGE_SIZE = 1000000; //100万
+
         protected ILogBuilder _logger;
         protected Ss_split_tableEO _option;
+        protected DateTime _execTime;
         protected Ss_split_table_logEO _logEo;
         protected ISqlSugarClient _database;
-        public BaseDataMove(Ss_split_tableEO option)
+        public BaseDataMoveJob(Ss_split_tableEO option, DateTime execTime)
         {
             _logger = new LogBuilder("DataMove")
                 .AddField("DataMove.Option", option);
             _option = option;
+            _execTime = execTime;
             _database = DbUtil.GetDb(option.DatabaseId);
-            _database.Ado.CommandTimeOut = _option.DbTimeout > 0
-                ? _option.DbTimeout : DB_TIMEOUT_SECONDS;
+
+            if (option.DbTimeout > 0)
+                DB_TIMEOUT_SECONDS = option.DbTimeout;
+            if (option.BathPageSize > 0)
+                BATCH_PAGE_SIZE = option.BathPageSize;
+            _database.Ado.CommandTimeOut = DB_TIMEOUT_SECONDS;
         }
 
         protected abstract Task ExecuteJob();
@@ -41,7 +51,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             if (oldLogEo?.Count > 0)
             {
                 LogUtil.Debug($"DataMove时当天有正在执行的任务。databaseId:{_option.DatabaseId} tableName:{_option.TableName}");
-                return;
+                //return;
             }
 
             await InsertLogEo();
@@ -95,8 +105,9 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 MoveWhere = _option.MoveWhere,
                 SplitMaxRowCount = _option.SplitMaxRowCount,
                 HandleOrder = _option.HandleOrder,
-                DbTimeout = _option.DbTimeout,
-                BathPageSize = _option.BathPageSize,
+                DbTimeout = DB_TIMEOUT_SECONDS,
+                BathPageSize = BATCH_PAGE_SIZE,
+                ExecTime = _execTime,
                 Status = 0, //状态 0-运行中1-成功2-失败
                 RecDate = oid.UtcDate, //当天仅运行一条
                 HandleLog = string.Empty
@@ -111,12 +122,27 @@ namespace TinyFx.BIZ.DataSplit.DataMove
         }
         protected DateTime GetKeepEndDate()
         {
-            var now = DateTime.UtcNow;
-            return _option.MoveKeepMode == 0
-                ? now.AddDays(-_option.MoveKeepValue).Date
-                : now.AddMonths(-_option.MoveKeepValue).Date;
+            switch ((MoveKeepMode)_option.MoveKeepMode)
+            {
+                case MoveKeepMode.Day:
+                    return _execTime.AddDays(-_option.MoveKeepValue).Date;
+                case MoveKeepMode.Week:
+                    var weekDate = _execTime.AddDays(-_option.MoveKeepValue * 7).Date;
+                    return TinyFxUtil.BeginDayOfWeek(weekDate);
+                case MoveKeepMode.Month:
+                    var monthDate = _execTime.AddMonths(-_option.MoveKeepValue).Date;
+                    return new DateTime(monthDate.Year, monthDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                case MoveKeepMode.Quarter:
+                    var quarterDate = _execTime.AddMonths(-_option.MoveKeepValue * 3);
+                    var quarterMonth = Math.DivRem(quarterDate.Month - 1, 3, out int _) * 3 + 1;
+                    return new DateTime(quarterDate.Year, quarterMonth, 1, 0, 0, 0, DateTimeKind.Utc);
+                case MoveKeepMode.Year:
+                    return new DateTime(_execTime.Year - _option.MoveKeepValue, 1, 1);
+                default:
+                    throw new Exception("未知的MoveKeepMode");
+            }
         }
-        protected async Task<DateTime> GetTableMinDate(DateTime endDate)
+        protected async Task<DateTime?> GetTableMinDate(DateTime endDate)
         {
             var sql = string.Empty;
             switch (_option.ColumnType)
@@ -129,16 +155,23 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                     sql = $"SELECT MIN(`{_option.ColumnName}`) FROM `{_option.TableName}` WHERE `{_option.ColumnName}` < '{ObjectId.TimestampId(endDate)}'";
                     break;
             }
+            DateTime? ret = null;
             var begin = await _database.Ado.GetScalarAsync(sql);
-            if (begin is DBNull || begin == null)
+            if (begin != null && begin is not DBNull)
             {
-                return DateTime.MaxValue;
+                switch (_option.ColumnType)
+                {
+                    case 0:
+                        var dt = begin.ConvertTo<DateTime>();
+                        ret = new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0, DateTimeKind.Utc);
+                        break;
+                    case 1:
+                        var dt1 = ObjectId.ParseTimestamp(begin.ToString());
+                        ret = new DateTime(dt1.Year, dt1.Month, dt1.Day, 0, 0, 0, DateTimeKind.Utc);
+                        break;
+                }
             }
-            else
-            {
-                var ret = begin.ConvertTo<DateTime>();
-                return new DateTime(ret.Year, ret.Month, ret.Day);
-            }
+            return ret;
         }
         protected List<DateTime> GetDayList(DateTime beginDate, DateTime endDate)
         {

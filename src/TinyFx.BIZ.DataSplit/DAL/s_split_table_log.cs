@@ -39,38 +39,38 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// <summary>
            /// Desc:数据库标识
            /// Default:
-           /// Nullable:True
+           /// Nullable:False
            /// </summary>           
-           public string? DatabaseId {get;set;}
+           public string DatabaseId {get;set;}
 
            /// <summary>
            /// Desc:分表表名
            /// Default:
-           /// Nullable:True
+           /// Nullable:False
            /// </summary>           
-           public string? TableName {get;set;}
+           public string TableName {get;set;}
 
            /// <summary>
            /// Desc:分表字段名
            /// Default:
-           /// Nullable:True
+           /// Nullable:False
            /// </summary>           
-           public string? ColumnName {get;set;}
+           public string ColumnName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段类型0-未知1-DateTime(UTC)
+           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId)
            /// Default:0
            /// Nullable:False
            /// </summary>           
            public int ColumnType {get;set;}
 
            /// <summary>
-           /// Desc:处理模式（取不同字段的值）
+           /// Desc:处理模式
 			///              0-未知
-			///              1-删除
-			///              2-迁移
-			///              3-分表-按表最大行数 
-			///                  ==> SplitMaxRowCount=最大行数 表名=xxx_yyyyMMddHHmmss_3_
+			///              1-迁移-删除 ==> 保留天数: MoveKeepMode + MoveKeepValue
+			///              2-迁移-备份 ==> 保留天数: MoveKeepMode + MoveKeepValue
+			///                                  目标表名: MoveTableMode + MoveTableValue
+			///              3-分表-按最大行数 ==> SplitMaxRowCount=最大行数 表名=xxx_yyyyMMddHHmmss_3_
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -126,7 +126,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public int HandleOrder {get;set;}
 
            /// <summary>
-           /// Desc:数据库执超时
+           /// Desc:数据库执超时（秒）
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -138,6 +138,13 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Nullable:False
            /// </summary>           
            public int BathPageSize {get;set;}
+
+           /// <summary>
+           /// Desc:执行基础UTC时间
+           /// Default:
+           /// Nullable:False
+           /// </summary>           
+           public DateTime ExecTime {get;set;}
 
            /// <summary>
            /// Desc:状态(0-进行中1-成功2-失败)

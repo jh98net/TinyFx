@@ -22,7 +22,7 @@ namespace TinyFx.Hosting
             _registerService = registerService;
             _timerService = timerService;
             _lifetimeService = lifetimeService;
-            if (_timerService != null && _registerService != null)
+            if (ConfigUtil.Host.RegisterEnabled && _registerService != null && _timerService != null)
             {
                 if (ConfigUtil.Host.HeartbeatInterval > 0)
                 {
@@ -32,7 +32,7 @@ namespace TinyFx.Hosting
                         Title = "Host心跳",
                         Interval = ConfigUtil.Host.HeartbeatInterval,
                         ExecuteCount = 0,
-                        TryCount = int.MaxValue,
+                        TryCount = -1,
                         Callback = (stoppingToken) => _registerService.Heartbeat()
                     });
                 }
@@ -44,7 +44,7 @@ namespace TinyFx.Hosting
                         Title = "Host检查",
                         Interval = ConfigUtil.Host.HeathInterval,
                         ExecuteCount = 0,
-                        TryCount = int.MaxValue,
+                        TryCount = -1,
                         Callback = (stoppingToken) => _registerService.Health()
                     });
                 }
@@ -54,29 +54,39 @@ namespace TinyFx.Hosting
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            foreach (var item in _lifetimeService.StartingEvents)
+            if (_lifetimeService != null)
             {
-                await item.Invoke();
+                foreach (var item in _lifetimeService.StartingEvents)
+                {
+                    await item.Invoke();
+                }
             }
             await base.StartAsync(cancellationToken);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            foreach (var item in _lifetimeService.StartedEvents)
+            if (_lifetimeService != null)
             {
-                await item.Invoke();
+                foreach (var item in _lifetimeService.StartedEvents)
+                {
+                    await item.Invoke();
+                }
             }
             await _timerService?.StartAsync(stoppingToken);
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            await _registerService?.Unregister();
+            if (ConfigUtil.Host.RegisterEnabled)
+                await _registerService?.Unregister();
             await _timerService?.StopAsync();
-            foreach (var item in _lifetimeService.StoppingEvents)
+            if (_lifetimeService != null)
             {
-                await item.Invoke();
+                foreach (var item in _lifetimeService.StoppingEvents)
+                {
+                    await item.Invoke();
+                }
             }
             await base.StopAsync(cancellationToken);
         }

@@ -45,24 +45,24 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// <summary>
            /// Desc:分表字段名
            /// Default:
-           /// Nullable:True
+           /// Nullable:False
            /// </summary>           
-           public string? ColumnName {get;set;}
+           public string ColumnName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段类型0-未知1-DateTime(UTC)
+           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId)
            /// Default:0
            /// Nullable:False
            /// </summary>           
            public int ColumnType {get;set;}
 
            /// <summary>
-           /// Desc:处理模式（取不同字段的值）
+           /// Desc:处理模式
 			///              0-未知
-			///              1-删除
-			///              2-迁移
-			///              3-分表-按表最大行数 
-			///                  ==> SplitMaxRowCount=最大行数 表名=xxx_yyyyMMddHHmmss_3_
+			///              1-迁移-删除 ==> 保留天数: MoveKeepMode + MoveKeepValue
+			///              2-迁移-备份 ==> 保留天数: MoveKeepMode + MoveKeepValue
+			///                                  目标表名: MoveTableMode + MoveTableValue
+			///              3-分表-按最大行数 ==> SplitMaxRowCount=最大行数 表名=xxx_yyyyMMddHHmmss_3_
            /// Default:0
            /// Nullable:False
            /// </summary>           
