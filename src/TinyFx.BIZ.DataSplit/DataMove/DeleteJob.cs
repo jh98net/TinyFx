@@ -24,7 +24,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             var beginDate = await GetTableMinDate(endDate);
             if (!beginDate.HasValue)
                 return;
-            AddHandlerLog($"==>开始删除{_option.TableName} {beginDate} => {endDate}");
+            AddHandleLog($"==>开始删除{_option.TableName} {beginDate} => {endDate}");
 
             _logEo.BeginDate = beginDate;
             _logEo.EndDate = endDate;
@@ -34,7 +34,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 var sql = $"DELETE FROM `{_option.TableName}` WHERE {GetWhereByDay(currDate)}";
                 if (BATCH_PAGE_SIZE > 0)
                     sql += $" LIMIT {BATCH_PAGE_SIZE}";
-                AddHandlerLog($"SQL: {sql}");
+                AddHandleLog($"SQL: {sql}");
                 while (true)
                 {
                     //var rows = 0;
@@ -44,7 +44,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                     await Task.Delay(200);
                 }
             }
-            AddHandlerLog($"==>完成删除{_option.TableName} {beginDate} => {endDate} count: {_logEo.RowNum}");
+            AddHandleLog($"==>完成删除{_option.TableName} {beginDate} => {endDate} count: {_logEo.RowNum}");
         }
     }
 }

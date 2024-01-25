@@ -115,7 +115,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             await DbUtil.InsertAsync(_logEo);
         }
 
-        protected void AddHandlerLog(string msg)
+        protected void AddHandleLog(string msg)
         {
             LogUtil.Debug(msg);
             _logEo.HandleLog += msg + Environment.NewLine;
