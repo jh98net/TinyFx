@@ -114,6 +114,20 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             };
             await DbUtil.InsertAsync(_logEo);
         }
+        protected async Task InsertDetailEo(string tableName)
+        {
+            var oid = ObjectId.NextId();
+            var eo = new Ss_split_table_detailEO
+            {
+                DetailID = oid.Id,
+                DatabaseId = _option.DatabaseId,
+                TableName = _option.TableName,
+                SplitTableName = tableName,
+                Status = 1,
+                RecDate = oid.UtcDate,
+            };
+            await DbUtil.InsertAsync(eo);
+        }
 
         protected void AddHandleLog(string msg)
         {

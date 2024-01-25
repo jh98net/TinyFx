@@ -39,6 +39,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                     await BackupDayRows(item.BackupTableName, currDate);
                     await Task.Delay(100);
                 }
+                await InsertDetailEo(item.BackupTableName);
                 AddHandleLog($"[任务{i + 1}]-完成备份: [{_option.TableName} => {item.BackupTableName}] [{item.BeginDate} => {item.EndDate}] count: {_logEo.RowNum} {Environment.NewLine}");
             }
         }
