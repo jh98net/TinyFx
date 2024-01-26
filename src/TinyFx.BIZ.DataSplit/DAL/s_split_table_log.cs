@@ -24,7 +24,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
             this.BathPageSize =0;
             this.Status =0;
             this.RowNum =0;
-            this.HandleTime =0;
+            this.HandleSeconds =0;
             this.RecDate =DateTime.Now;
 
            }
@@ -179,7 +179,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int HandleTime {get;set;}
+           public int HandleSeconds {get;set;}
 
            /// <summary>
            /// Desc:执行日志

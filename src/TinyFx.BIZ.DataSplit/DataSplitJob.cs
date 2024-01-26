@@ -33,6 +33,7 @@ namespace TinyFx.BIZ.DataSplit
                         await new DeleteJob(item, execTime).Execute();
                         break;
                     case HandleMode.Move:
+                        await new BackupJob(item, execTime).Execute();
                         break;
                 }
             }

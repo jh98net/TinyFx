@@ -17,8 +17,8 @@ namespace TinyFx.BIZ.DataSplit.Common
             db.DbMaintenance.TruncateTable<Ss_split_demoEO>();
 
             var list = new List<Ss_split_demoEO>();
-            var begin = new DateTime(2022, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            var end = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var begin = new DateTime(2023, 2, 3, 0, 0, 0, DateTimeKind.Utc);
+            var end = new DateTime(2024, 2, 1, 0, 0, 0, DateTimeKind.Utc);
             var idx = 1;
             var curr = begin;
             while (curr <= end)
@@ -31,6 +31,7 @@ namespace TinyFx.BIZ.DataSplit.Common
                     RecDate = curr,
                 };
                 list.Add(eo);
+                idx++;
 
                 var curr1 = curr.AddHours(new Random().Next(23));
                 var eo1 = new Ss_split_demoEO
@@ -41,9 +42,9 @@ namespace TinyFx.BIZ.DataSplit.Common
                     RecDate = curr1,
                 };
                 list.Add(eo1);
+                idx++;
                 //
                 curr = curr.AddDays(1);
-                idx++;
             }
             await db.Fastest<Ss_split_demoEO>().BulkCopyAsync(list);
         }

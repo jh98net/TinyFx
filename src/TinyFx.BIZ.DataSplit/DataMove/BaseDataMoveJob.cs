@@ -66,7 +66,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 sw.Stop();
 
                 _logEo.Status = 1;
-                _logEo.HandleTime = (int)sw.Elapsed.TotalSeconds;
+                _logEo.HandleSeconds = (int)sw.Elapsed.TotalSeconds;
                 if (_logEo.RowNum == 0)
                     await logRo.DeleteByIdAsync(_logEo.LogID);
                 else
@@ -81,7 +81,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                     .AddException(ex);
 
                 _logEo.Status = 2;
-                _logEo.HandleTime = (int)sw.Elapsed.TotalSeconds;
+                _logEo.HandleSeconds = (int)sw.Elapsed.TotalSeconds;
                 _logEo.Exception += SerializerUtil.SerializeJsonNet(ex);
                 await logRo.UpdateAsync(_logEo);
             }
@@ -113,20 +113,6 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 HandleLog = string.Empty
             };
             await DbUtil.InsertAsync(_logEo);
-        }
-        protected async Task InsertDetailEo(string tableName)
-        {
-            var oid = ObjectId.NextId();
-            var eo = new Ss_split_table_detailEO
-            {
-                DetailID = oid.Id,
-                DatabaseId = _option.DatabaseId,
-                TableName = _option.TableName,
-                SplitTableName = tableName,
-                Status = 1,
-                RecDate = oid.UtcDate,
-            };
-            await DbUtil.InsertAsync(eo);
         }
 
         protected void AddHandleLog(string msg)
@@ -198,24 +184,34 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             }
             return ret;
         }
-        protected string GetWhereByDay(DateTime currDate)
+        protected WhereByDayData GetWhereByDay(DateTime currDate)
         {
-            var ret = string.Empty;
+            var ret = new WhereByDayData();
             switch (_option.ColumnType)
             {
                 case 0: // DateTime
-                    ret = $"`{_option.ColumnName}`>='{currDate.ToString("yyyy-MM-dd")}' AND `{_option.ColumnName}`<'{currDate.AddDays(1).ToString("yyyy-MM-dd")}'";
+                    ret.Begin = currDate.ToString("yyyy-MM-dd");
+                    ret.End = currDate.AddDays(1).ToString("yyyy-MM-dd");
+                    ret.Content = $"`{_option.ColumnName}`>='{ret.Begin}' AND `{_option.ColumnName}`<'{ret.End}'";
                     break;
                 case 1: // ObjectId
-                    ret = $"`{_option.ColumnName}`>='{ObjectId.TimestampId(currDate)}' AND `{_option.ColumnName}`<'{ObjectId.TimestampId(currDate.AddDays(1))}'";
+                    ret.Begin = ObjectId.TimestampId(currDate);
+                    ret.End = ObjectId.TimestampId(currDate.AddDays(1));
+                    ret.Content = $"`{_option.ColumnName}`>='{ret.Begin}' AND `{_option.ColumnName}`<'{ret.End}'";
                     break;
             }
             if (!string.IsNullOrEmpty(_option.MoveWhere))
             {
                 var where = _option.MoveWhere.ToUpper().Trim().TrimStart("AND ");
-                ret = $"{ret} AND {where}";
+                ret.Content = $"{ret.Content} AND {where}";
             }
             return ret;
         }
+    }
+    internal class WhereByDayData
+    {
+        public string Content { get; set; }
+        public string Begin { get; set; }
+        public string End { get; set; }
     }
 }

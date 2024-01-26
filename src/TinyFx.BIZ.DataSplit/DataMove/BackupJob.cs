@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.BIZ.DataSplit.Common;
 using TinyFx.BIZ.DataSplit.DAL;
+using TinyFx.Text;
 
 
 namespace TinyFx.BIZ.DataSplit.DataMove
@@ -37,9 +39,8 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 foreach (var currDate in dateList)
                 {
                     await BackupDayRows(item.BackupTableName, currDate);
-                    await Task.Delay(100);
+                    //await Task.Delay(100);
                 }
-                await InsertDetailEo(item.BackupTableName);
                 AddHandleLog($"[任务{i + 1}]-完成备份: [{_option.TableName} => {item.BackupTableName}] [{item.BeginDate} => {item.EndDate}] count: {_logEo.RowNum} {Environment.NewLine}");
             }
         }
@@ -52,7 +53,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             // 1) 获取备份的数据
             // SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
             var selectSql = $"SELECT * FROM `{_option.TableName}`";
-            var selectCount = await _database.SqlQueryable<object>(selectSql).Where(where).CountAsync();
+            var selectCount = await _database.SqlQueryable<object>(selectSql).Where(where.Content).CountAsync();
             if (selectCount == 0)
                 return 0;
             // page
@@ -64,14 +65,14 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             for (int idx = 1; idx <= pageCount; idx++)
             {
                 watch.Restart();
-                var dt = _database.SqlQueryable<object>(selectSql).Where(where).ToDataTablePage(idx, BATCH_PAGE_SIZE);
+                var dt = _database.SqlQueryable<object>(selectSql).Where(where.Content).ToDataTablePage(idx, BATCH_PAGE_SIZE);
                 if (dt == null || dt.Rows.Count == 0)
                     break;
                 readCount += dt.Rows.Count;
                 dtList.Add(dt);
                 watch.Stop();
                 AddHandleLog($"  SQL:[{(int)watch.Elapsed.TotalSeconds}秒] {selectSql} pageSize:{BATCH_PAGE_SIZE} pageCount:{dtList.Count}");
-                await Task.Delay(100);
+                //await Task.Delay(100);
             }
             if (readCount != selectCount)
                 throw new Exception($"分页读取时行记录不一致: {selectSql} selectCount:{selectCount} readCount:{readCount}");
@@ -84,7 +85,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
 
                 // 2) 删除备份表旧数据
                 AddHandleLog($"  2) 删除备份表旧数据开始: {backTableName}");
-                var oldDeleteSql = $"DELETE FROM `{backTableName}` WHERE {where}";
+                var oldDeleteSql = $"DELETE FROM `{backTableName}` WHERE {where.Content}";
                 watch.Restart();
                 var oldDeleteCount = await _database.Ado.ExecuteCommandAsync(oldDeleteSql);
                 watch.Stop();
@@ -100,7 +101,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                     insertCount += await _database.Fastest<DataTable>().AS(backTableName).BulkCopyAsync(dt);
                     watch.Stop();
                     AddHandleLog($"  SQL:[{(int)watch.Elapsed.TotalSeconds}秒] INSERT INTO `{backTableName}` total: {insertCount}");
-                    await Task.Delay(100);
+                    //await Task.Delay(100);
                 }
                 if (selectCount != insertCount)
                     throw new Exception($"DataMove插入时总记录数不相同。fromTable: {_option.TableName} toTable:{backTableName}");
@@ -108,7 +109,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
 
                 // 4) 删除原始表数据
                 AddHandleLog($"  4) 删除原始表数据开始: {_option.TableName}");
-                var deleteSql = $"DELETE FROM `{_option.TableName}` WHERE {where}";
+                var deleteSql = $"DELETE FROM `{_option.TableName}` WHERE {where.Content}";
                 var deleteCount = 0;
                 while (true)
                 {
@@ -119,12 +120,34 @@ namespace TinyFx.BIZ.DataSplit.DataMove
 
                     if (rows == 0) break;
                     deleteCount += rows;
-                    await Task.Delay(100);
+                    //await Task.Delay(100);
                 }
                 if (deleteCount != selectCount)
                     throw new Exception($"DataMove删除记录数不等于插入记录数。{_option.TableName} => {backTableName} currDate: {currDate} insertCount: {selectCount} deleteCount: {deleteCount}");
                 AddHandleLog($"  4) 删除原始表数据结束: {_option.TableName} deleteCount: {deleteCount}");
                 _logEo.RowNum += deleteCount;
+
+                // 5) 保存detail记录
+                var oid = ObjectId.NextId();
+                var detailEo = new Ss_split_table_detailEO
+                {
+                    DetailID = oid.Id,
+                    LogID = _logEo.LogID,
+                    DatabaseId = _option.DatabaseId,
+                    TableName = _option.TableName,
+                    ColumnName = _option.ColumnName,
+                    ColumnType = _option.ColumnType,
+                    HandleMode = _option.HandleMode,
+                    SplitTableName = backTableName,
+                    ColumnMin = where.Begin,
+                    ColumnMax = where.End,
+                    RowCount = selectCount,
+                    Status = 1,
+                    RecDate = oid.UtcDate,
+                };
+                await _database.Insertable(detailEo).ExecuteCommandAsync();
+
+                // 提交事务
                 _database.Ado.CommitTran();
                 AddHandleLog($"  ======== 事务提交 ========");
             }
@@ -153,19 +176,39 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             switch ((MoveTableMode)_option.MoveTableMode)
             {
                 case MoveTableMode.Day:
-                    list = await BuildBackupDataList((endDate) => endDate.AddDays(-1));
+                    list = await BuildBackupDataList((endDate) =>
+                    {
+                        return endDate.AddDays(-1);
+                    });
                     break;
                 case MoveTableMode.Week:
-                    list = await BuildBackupDataList((endDate) => endDate.AddDays(-7));
+                    list = await BuildBackupDataList((endDate) =>
+                    {
+                        var date = endDate.AddDays(-1);
+                        return TinyFxUtil.BeginDayOfWeek(date);
+                    });
                     break;
                 case MoveTableMode.Month:
-                    list = await BuildBackupDataList((endDate) => endDate.AddMonths(-1));
+                    list = await BuildBackupDataList((endDate) =>
+                    {
+                        var date = endDate.AddDays(-1);
+                        return new DateTime(date.Year, date.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                    });
                     break;
                 case MoveTableMode.Quarter:
-                    list = await BuildBackupDataList((endDate) => endDate.AddMonths(-3));
+                    list = await BuildBackupDataList((endDate) =>
+                    {
+                        var date = endDate.AddDays(-1);
+                        var quarterMonth = Math.DivRem(date.Month - 1, 3, out int _) * 3 + 1;
+                        return new DateTime(date.Year, quarterMonth, 1, 0, 0, 0, DateTimeKind.Utc);
+                    });
                     break;
                 case MoveTableMode.Year:
-                    list = await BuildBackupDataList((endDate) => endDate.AddYears(-1));
+                    list = await BuildBackupDataList((endDate) =>
+                    {
+                        var date = endDate.AddDays(-1);
+                        return new DateTime(date.Year, 1, 1);
+                    });
                     break;
                 case MoveTableMode.Custom:
                     list = await BuildCustomBackupDataList();
@@ -187,8 +230,8 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 var beginDate = calcBeginDate(endDate);
                 var item = new BackupData
                 {
-                    BackupTableName = $"{_option.TableName}_{beginDate:yyyyMMddHH:mm:ss}",
-                    BeginDate = beginDate,
+                    BackupTableName = $"{_option.TableName}_{beginDate:yyyyMMddHHmmss}",
+                    BeginDate = beginDate < minDate.Value ? minDate.Value : beginDate,
                     EndDate = endDate
                 };
                 ret.Add(item);

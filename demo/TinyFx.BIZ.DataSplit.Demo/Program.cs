@@ -17,12 +17,12 @@ var list = new List<Ss_split_tableEO>
     {
         DatabaseId = "default",
         TableName = "s_split_demo",
-        HandleMode = (int)HandleMode.Delete,
+        HandleMode = (int)HandleMode.Move,
         ColumnName = "RecDate",
         ColumnType = 0, // 0-datetime 1-objectId
         MoveKeepMode = (int)MoveKeepMode.Day,
-        MoveKeepValue = 2,
-        MoveTableMode = 0, //0-天1-月2-指定表名
+        MoveKeepValue = 5,
+        MoveTableMode = (int)MoveTableMode.Year,
         MoveTableValue = null,
         MoveWhere = null,
         SplitMaxRowCount = 0,

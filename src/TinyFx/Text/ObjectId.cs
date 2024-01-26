@@ -25,6 +25,16 @@ namespace TinyFx.Text
 
         #region !!! 常用方法 !!!
         /// <summary>
+        /// 根据指定的Utc时间获取新的Id
+        /// </summary>
+        /// <param name="utcDateTime">指定的Utc时间</param>
+        /// <returns></returns>
+        public static string NewId(DateTime? utcDateTime = null)
+            => utcDateTime.HasValue
+            ? GenerateNewId(utcDateTime.Value).ToString()
+            : GenerateNewId().ToString();
+
+        /// <summary>
         /// 获取新的Id和使用的DateTime.UtcNow
         /// </summary>
         /// <returns></returns>
@@ -35,21 +45,10 @@ namespace TinyFx.Text
             return (id, utcDate);
         }
         /// <summary>
-        /// 根据指定的Utc时间获取新的Id
-        /// </summary>
-        /// <param name="utcDateTime"></param>
-        /// <returns></returns>
-        public static string NewId(DateTime utcDateTime) => GenerateNewId(utcDateTime).ToString();
-        /// <summary>
-        /// 获取新的Id
-        /// </summary>
-        /// <returns></returns>
-        public static string NewId() => GenerateNewId().ToString();
-        /// <summary>
         /// 获取指定Utc时间的id值
         /// </summary>
         /// <param name="utcDateTime"></param>
-        /// <param name="isFull">是否全长度24</param>
+        /// <param name="isFull">true:全长度24位 false:8位</param>
         /// <returns></returns>
         public static string TimestampId(DateTime utcDateTime, bool isFull = true)
         {

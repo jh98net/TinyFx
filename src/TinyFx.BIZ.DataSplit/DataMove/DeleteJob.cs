@@ -31,7 +31,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             var dateList = GetDayList(beginDate.Value, endDate);
             foreach (var currDate in dateList)
             {
-                var sql = $"DELETE FROM `{_option.TableName}` WHERE {GetWhereByDay(currDate)}";
+                var sql = $"DELETE FROM `{_option.TableName}` WHERE {GetWhereByDay(currDate).Content}";
                 if (BATCH_PAGE_SIZE > 0)
                     sql += $" LIMIT {BATCH_PAGE_SIZE}";
                 AddHandleLog($"SQL: {sql}");
