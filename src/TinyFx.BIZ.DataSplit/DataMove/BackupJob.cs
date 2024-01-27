@@ -17,8 +17,8 @@ namespace TinyFx.BIZ.DataSplit.DataMove
     {
         public BackupJob(Ss_split_tableEO option, DateTime execTime) : base(option, execTime)
         {
-            if ((HandleMode)option.HandleMode != HandleMode.Move)
-                throw new Exception("DataMove.DeleteJob时HandleMode必须是Move");
+            if ((HandleMode)option.HandleMode != HandleMode.Backup)
+                throw new Exception("DataMove.BackupJob时HandleMode必须是Backup");
         }
 
         protected override async Task ExecuteJob()

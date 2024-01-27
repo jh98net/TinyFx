@@ -8,18 +8,18 @@ namespace TinyFx.BIZ.DataSplit.Common
 {
     public enum HandleMode
     {
-        Unknow = 0,
+        None = 0,
         /// <summary>
         /// 1-删除 
         ///     保留天数：MoveKeepMode + MoveKeepValue
         /// </summary>
         Delete = 1,
         /// <summary>
-        /// 2-迁移
+        /// 2-备份
         ///     保留天数：MoveKeepMode + MoveKeepValue
         ///     目标表名: MoveTableMode + MoveTableValue
         /// </summary>
-        Move = 2,
+        Backup = 2,
         /// <summary>
         /// 3-分表(按最大行数分)
         /// </summary>

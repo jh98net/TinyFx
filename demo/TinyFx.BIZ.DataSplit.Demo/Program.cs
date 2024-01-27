@@ -17,7 +17,7 @@ var list = new List<Ss_split_tableEO>
     {
         DatabaseId = "default",
         TableName = "s_split_demo",
-        HandleMode = (int)HandleMode.Move,
+        HandleMode = (int)HandleMode.SplitMaxRows,
         ColumnName = "RecDate",
         ColumnType = 0, // 0-datetime 1-objectId
         MoveKeepMode = (int)MoveKeepMode.Day,
@@ -25,7 +25,7 @@ var list = new List<Ss_split_tableEO>
         MoveTableMode = (int)MoveTableMode.Year,
         MoveTableValue = null,
         MoveWhere = null,
-        SplitMaxRowCount = 0,
+        SplitMaxRowCount = 10,
     },
 };
 await new DataSplitJob().Execute(list);

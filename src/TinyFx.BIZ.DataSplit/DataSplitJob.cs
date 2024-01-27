@@ -26,14 +26,17 @@ namespace TinyFx.BIZ.DataSplit
             var execTime = DateTime.UtcNow;
             foreach (var item in list)
             {
-                var mode = item.HandleMode.ToEnum(HandleMode.Unknow);
+                var mode = item.HandleMode.ToEnum(HandleMode.None);
                 switch (mode)
                 {
                     case HandleMode.Delete:
                         await new DeleteJob(item, execTime).Execute();
                         break;
-                    case HandleMode.Move:
+                    case HandleMode.Backup:
                         await new BackupJob(item, execTime).Execute();
+                        break;
+                    case HandleMode.SplitMaxRows:
+                        await new SplitMaxRowsJob(item, execTime).Execute();
                         break;
                 }
             }

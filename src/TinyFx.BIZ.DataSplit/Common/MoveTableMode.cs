@@ -8,11 +8,12 @@ namespace TinyFx.BIZ.DataSplit.Common
 {
     public enum MoveTableMode
     {
-        Day = 0,
-        Week = 1,
-        Month = 2,
-        Quarter = 3,
-        Year = 4,
-        Custom = 5
+        None = 0,
+        Day = 1,
+        Week = 2,
+        Month = 3,
+        Quarter = 4,
+        Year = 5,
+        Custom = 6
     }
 }
