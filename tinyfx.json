@@ -345,7 +345,7 @@
   //jwt验证 (TinyFx.Security.JwtAuthSection)
   "JwtAuth": {
     "Enabled": true, //是否起效
-    "DebugToken": "", // Debug时的Token（仅Development或Testing时有效，用于设置默认swagger的jwt）
+    "DebugToken": "", // Debug时默认的JwtToken或者UserId（仅ConfigUtil.IsDebugEnvironment时有效）
     "SigningKey": "NoiA32QqU0elJ0FW5qgnILF7M3WpP7fS",
     "Issuer": "tinyfx.com",
     "Audience": "tinyfx.com",

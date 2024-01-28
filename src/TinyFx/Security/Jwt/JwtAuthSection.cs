@@ -34,7 +34,7 @@ namespace TinyFx.Configuration
         public int ExpireMinutes { get; set; } = int.MaxValue;
 
         /// <summary>
-        /// Debug时的Token（仅Development和Testing有效，用于设置默认swagger的jwt）
+        /// Debug时默认的JwtToken或者UserId（仅ConfigUtil.IsDebugEnvironment时有效）
         /// </summary>
         public string DebugToken { get; set; }
     }

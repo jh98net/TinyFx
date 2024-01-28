@@ -31,10 +31,14 @@ namespace TinyFx.AspNet
             var section = ConfigUtil.GetSection<JwtAuthSection>();
             if (string.IsNullOrEmpty(context.Token)
                 && !string.IsNullOrEmpty(section.DebugToken)
-                && ConfigUtil.IsDebugEnvironment
+                && ConfigUtil.IsDebugEnvironment 
+                && !context.Request.Headers.ContainsKey("Authorization")
               )
             {
-                context.Token = section.DebugToken;
+                if (section.DebugToken.Length < 100)
+                    context.Token = JwtUtil.GenerateJwtToken(section.DebugToken);
+                else if (JwtUtil.ReadJwtToken(section.DebugToken).Status == JwtTokenStatus.Success)
+                    context.Token = section.DebugToken;
             }
             return base.MessageReceived(context);
         }

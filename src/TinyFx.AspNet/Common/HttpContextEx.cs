@@ -176,16 +176,20 @@ namespace TinyFx.AspNet
         #endregion
 
         #region JWT
+        private const string JWT_CONTEXT_KEY = "JWT_CONTEXT_KEY";
         public static JwtTokenInfo GetJwtToken()
         {
+            if (TryGetItem<JwtTokenInfo>(JWT_CONTEXT_KEY, out var ret))
+                return ret;
             var token = GetHeaderValue("Authorization");
             if (!string.IsNullOrEmpty(token) && token.StartsWith("Bearer "))
             {
                 token = token.Substring(7).Trim();
                 if (!string.IsNullOrEmpty(token))
-                    return JwtUtil.ReadJwtToken(token);
+                    ret = JwtUtil.ReadJwtToken(token);
             }
-            return null;
+            SetItem(JWT_CONTEXT_KEY, ret);
+            return ret;
         }
         #endregion
     }
