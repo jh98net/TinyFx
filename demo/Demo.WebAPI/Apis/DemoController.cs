@@ -58,7 +58,7 @@ namespace Demo.WebAPI.Apis
         [HttpGet]
         public string Version()
         {
-            return "1.0";
+            return HttpContextEx.GetJwtToken().UserId;
         }
 
         [HttpGet]

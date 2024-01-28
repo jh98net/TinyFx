@@ -93,19 +93,6 @@ namespace TinyFx
             return SerializerUtil.SerializeJsonNet(dict);
         }
 
-        // ASP.NET Core Identity共享身份验证cookie
-        internal static string GetDataProtectionRedisConnectionString(string connectionStringName)
-        {
-            var redisSection = ConfigUtil.GetSection<RedisSection>();
-            if (redisSection == null)
-                return null;
-            connectionStringName ??= redisSection.DefaultConnectionStringName;
-            if (redisSection.ConnectionStrings.TryGetValue(connectionStringName, out var element))
-                return element.ConnectionString;
-            var ret = redisSection.ConnectionStrings.FirstOrDefault();
-            return ret.Value.ConnectionString;
-        }
-
         /// <summary>
         /// 崩溃自动dump，环境变量
         /// COMPlus_DbgEnableMiniDump=1

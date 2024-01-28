@@ -25,6 +25,12 @@ namespace TinyFx.Configuration
         /// </summary>
         public string Description { get; set; }
         /// <summary>
+        /// 应用程序名称(相同名称的项目间数据保护,Session和Cookie共享)
+        /// 数据保护共享的ApplicationName（redis）
+        /// 如需跨应用共享session或cookie，需设置相同值
+        /// </summary>
+        public string ApplicationName { get; set; } = "tinyfx";
+        /// <summary>
         /// 默认Console日志级别
         /// </summary>
         public LogLevel ConsoleLogLevel { get; set; } = LogLevel.Debug;
@@ -53,6 +59,5 @@ namespace TinyFx.Configuration
         /// 服务地址，设置ConfigUtil.ServiceUrl
         /// </summary>
         public string ServiceUrl { get; set; }
-
     }
 }

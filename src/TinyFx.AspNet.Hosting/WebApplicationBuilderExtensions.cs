@@ -336,7 +336,7 @@ namespace TinyFx
             var section = ConfigUtil.GetSection<JwtAuthSection>();
             if (section != null && section.Enabled)
             {
-                if (string.IsNullOrEmpty(section.SignSecret))
+                if (string.IsNullOrEmpty(section.SigningKey))
                     throw new Exception("配置文件ApiJwtAuth:SignSecret不能为空");
                 services.AddAuthentication(x =>
                 {
@@ -369,22 +369,6 @@ namespace TinyFx
             if (section == null || (!section.UseSession && !section.UseCookieIdentity))
                 return services;
 
-            var appName = !string.IsNullOrEmpty(section.ApplicationName)
-                ? section.ApplicationName : ConfigUtil.Project.ProjectId;
-
-            // 配置数据保护和应用程序名称(分布式session和cookie)
-            var dpb = services.AddDataProtection().SetApplicationName(appName);
-            var redisConnStr = AspNetHost.GetDataProtectionRedisConnectionString(section.RedisConnectionStringName);
-            if (!string.IsNullOrEmpty(redisConnStr))
-            {
-                dpb.PersistKeysToStackExchangeRedis(RedisUtil.GetRedisByConnectionString(redisConnStr)
-                    , "DataProtection-Keys");
-            }
-            else
-            {
-                dpb.PersistKeysToFileSystem(new DirectoryInfo(AppContext.BaseDirectory));
-            }
-
             // 配置Cookie登录
             if (section.UseCookieIdentity)
             {
@@ -395,7 +379,7 @@ namespace TinyFx
                         opts.Cookie.HttpOnly = true; //禁止js访问
                         opts.Cookie.IsEssential = true;//绕过GDPR
 
-                        opts.Cookie.Name = $".{appName}.Identity";
+                        opts.Cookie.Name = $".{ConfigUtil.Project.ApplicationName}.Identity";
                         opts.ExpireTimeSpan = (section.CookieTimeout == 0)
                             ? TimeSpan.FromDays(3)
                             : TimeSpan.FromDays(section.CookieTimeout);
@@ -415,7 +399,7 @@ namespace TinyFx
                     opts.Cookie.HttpOnly = true; //禁止js访问
                     opts.Cookie.IsEssential = true;//绕过GDPR
 
-                    opts.Cookie.Name = $".{appName}.Session";
+                    opts.Cookie.Name = $".{ConfigUtil.Project.ApplicationName}.Session";
                     opts.IdleTimeout = (section.SessionTimeout == 0)
                                 ? TimeSpan.FromMinutes(20)
                                 : TimeSpan.FromMinutes(section.SessionTimeout);

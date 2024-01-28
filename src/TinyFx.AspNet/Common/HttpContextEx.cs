@@ -176,14 +176,14 @@ namespace TinyFx.AspNet
         #endregion
 
         #region JWT
-        public static JwtTokenInfo GetJwtToken(string userIp = null)
+        public static JwtTokenInfo GetJwtToken()
         {
             var token = GetHeaderValue("Authorization");
             if (!string.IsNullOrEmpty(token) && token.StartsWith("Bearer "))
             {
                 token = token.Substring(7).Trim();
                 if (!string.IsNullOrEmpty(token))
-                    return JwtUtil.ReadJwtToken(token, userIp);
+                    return JwtUtil.ReadJwtToken(token);
             }
             return null;
         }

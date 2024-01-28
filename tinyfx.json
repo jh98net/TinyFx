@@ -76,6 +76,7 @@
   "Project": {
     "ProjectId": "demo_app", //项目标识确保唯一
     "Description": "demo项目", //项目描述
+    "ApplicationName": "tinyfx", // 应用程序名称(相同名称的项目间数据保护,Session和Cookie共享)
     "ConsoleLogLevel": "Debug", //LogUtil.ConsoleLogger的日志级别，如果使用Serilog则无效
     "MinThreads": 100, // 线程池最小线程数，0-采用默认值
     "ResponseErrorMessage": true, //是否返回客户端错误信息(自定义异常和未处理异常的message)
@@ -345,9 +346,7 @@
   "JwtAuth": {
     "Enabled": true, //是否起效
     "DebugToken": "", // Debug时的Token（仅Development或Testing时有效，用于设置默认swagger的jwt）
-    "SignSecret": "ABASDfasfwe@#45346dfg",
-    "DynamicSignSecret": false,
-    "EncryptSecret": "",
+    "SigningKey": "NoiA32QqU0elJ0FW5qgnILF7M3WpP7fS",
     "Issuer": "tinyfx.com",
     "Audience": "tinyfx.com",
     "ValidateLifetime": false, //是否验证过期
@@ -513,8 +512,6 @@
 
   // 启用Session或者Cookie Identity (TinyFx.AspNet.Configuration.SessionAndCookieSection)
   "SessionAndCookie": {
-    "ApplicationName": "tinyfx", // 默认ProjectId，如需跨应用共享session或cookie，需设置相同值
-    "RedisConnectionStringName": null, // redis连接字符串名，对应配置：Redis:ConnectionStrings:Name
     "UseCookieIdentity": true,
     "CookieTimeout": 3, // cookie过期时间3天
     "Domain": null, // cookie和session保存的domain，跨域如: .xxyy.com

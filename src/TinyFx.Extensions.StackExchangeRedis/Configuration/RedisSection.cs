@@ -24,6 +24,7 @@ namespace TinyFx.Configuration
         /// 默认redis连接
         /// </summary>
         public string DefaultConnectionStringName { get; set; }
+
         /// <summary>
         /// redis连接集合
         /// </summary>

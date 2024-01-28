@@ -18,21 +18,25 @@ namespace TinyFx.Security
         /// </summary>
         User = 1,
         /// <summary>
+        /// 开发用户
+        /// </summary>
+        Dev = 2,
+        /// <summary>
         /// 线上测试用户（调用第三方扣减）
         /// </summary>
-        Tester = 2,
+        Tester = 3,
         /// <summary>
         /// 线上测试用户（不调用第三方扣减）
         /// </summary>
-        LocalTester = 3,
+        LocalTester = 4,
         /// <summary>
         /// 仿真测试人员
         /// </summary>
-        Staging = 4,
+        Staging = 5,
         /// <summary>
         /// 联调测试用户
         /// </summary>
-        Debug = 5,
+        Debug = 6,
         /// <summary>
         /// 管理员
         /// </summary>

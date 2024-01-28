@@ -184,6 +184,8 @@ namespace TinyFx.Configuration
                     {
                         proj.ProjectId = Assembly.GetEntryAssembly().GetName().Name;
                     }
+                    if (string.IsNullOrEmpty(proj.ApplicationName))
+                        proj.ApplicationName = proj.ProjectId;
                     _project = proj;
                 }
                 return _project;

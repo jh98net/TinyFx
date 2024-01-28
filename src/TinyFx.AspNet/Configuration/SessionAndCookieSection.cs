@@ -14,15 +14,6 @@ namespace TinyFx.Configuration
     {
         public override string SectionName => "SessionAndCookie";
         /// <summary>
-        /// 默认ProjectId，如需跨应用共享session或cookie，需设置相同值
-        /// </summary>
-        public string ApplicationName { get; set; }
-        /// <summary>
-        /// redis连接字符串名，对应配置：Redis:ConnectionStrings:Name
-        /// </summary>
-        public string RedisConnectionStringName { get; set; }
-
-        /// <summary>
         /// 是否启用Cookie Identity
         /// </summary>
         public bool UseCookieIdentity { get; set; } = true;

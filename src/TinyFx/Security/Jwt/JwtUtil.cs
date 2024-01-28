@@ -8,6 +8,7 @@ using TinyFx.Configuration;
 using System.Linq;
 using TinyFx;
 using TinyFx.Security;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace TinyFx.Security
 {
@@ -16,13 +17,14 @@ namespace TinyFx.Security
         /// <summary>
         /// 创建JWT Token
         /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="role"></param>
-        /// <param name="userIp"></param>
-        /// <param name="signSecret"></param>
+        /// <param name="userId">用户ID</param>
+        /// <param name="role">角色UserRole</param>
+        /// <param name="userIp">用户IP</param>
+        /// <param name="customData">自定义数据</param>
+        /// <param name="signingKey">签名秘钥</param>
         /// <returns></returns>
-        public static string GenerateJwtToken(object userId, UserRole role, string userIp = null, string signSecret = null)
-            => GenerateJwtToken(userId, Convert.ToString(role), userIp, null, signSecret);
+        public static string GenerateJwtToken(object userId, UserRole role, string userIp = null, string customData = null, string signingKey = null)
+            => GenerateJwtToken(userId, Convert.ToString(role), userIp, customData, signingKey);
 
         /// <summary>
         /// 创建JWT Token
@@ -30,12 +32,13 @@ namespace TinyFx.Security
         /// <param name="userId">用户ID</param>
         /// <param name="role">角色UserRole</param>
         /// <param name="userIp">用户IP</param>
-        /// <param name="signSecret">签名秘钥</param>
+        /// <param name="customData">自定义数据</param>
+        /// <param name="signingKey">签名秘钥</param>
         /// <returns></returns>
-        public static string GenerateJwtToken(object userId, string role = null, string userIp = null, string customData = null, string signSecret = null)
+        public static string GenerateJwtToken(object userId, string role = null, string userIp = null, string customData = null, string signingKey = null)
         {
-            var section = GetSection(userIp, signSecret, out string finalSecret);
-            var signKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(finalSecret));
+            var section = GetSection(signingKey);
+            var signKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(section.SigningKey));
             //
             var uid = Convert.ToString(userId);
             if (string.IsNullOrEmpty(uid))
@@ -62,11 +65,6 @@ namespace TinyFx.Security
             if (expire > 0)
                 tokenDescriptor.Expires = DateTime.UtcNow.AddMinutes(expire);
 
-            //if (!string.IsNullOrEmpty(section?.EncryptSecret))
-            //{
-            //    var encryptKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(section.EncryptSecret));
-            //    tokenDescriptor.EncryptingCredentials = new EncryptingCredentials(encryptKey, JwtConstants.DirectKeyUseAlg, SecurityAlgorithms.Aes256CbcHmacSha512);
-            //}
             var token = tokenHandler.CreateJwtSecurityToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
@@ -75,17 +73,16 @@ namespace TinyFx.Security
         /// 解码（读取）JWT Token
         /// </summary>
         /// <param name="token"></param>
-        /// <param name="userIp"></param>
-        /// <param name="signSecret"></param>
+        /// <param name="signingKey"></param>
         /// <returns></returns>
-        public static JwtTokenInfo ReadJwtToken(string token, string userIp = null, string signSecret = null)
+        public static JwtTokenInfo ReadJwtToken(string token, string signingKey = null)
         {
             var ret = new JwtTokenInfo();
             try
             {
                 // signSecret
-                var section = GetSection(userIp, signSecret, out string finalSecret);
-                var parameters = GetParameters(section, finalSecret);
+                var section = GetSection(signingKey);
+                var parameters = GetParameters(section);
                 var handler = new JwtSecurityTokenHandler();
                 var principal = handler.ValidateToken(token, parameters, out SecurityToken stoken);
                 ret = ReadJwtToken(principal);
@@ -132,43 +129,28 @@ namespace TinyFx.Security
             // exp
             var exp = claims.FirstOrDefault(item => item.Type == "exp")?.Value;
             if (exp != null)
-                ret.Expires = TinyFxUtil.TimestampToDateTime(exp);
+                ret.Expires = TinyFxUtil.TimestampToUtcDateTime(exp);
             return ret;
         }
-        private static JwtAuthSection GetSection(string userIp, string signSecret, out string finalSecret)
+        private static JwtAuthSection GetSection(string signingKey = null)
         {
             var section = ConfigUtil.GetSection<JwtAuthSection>() ?? new JwtAuthSection();
-            if (!string.IsNullOrEmpty(signSecret))
-                finalSecret = signSecret;
-            else if (!string.IsNullOrEmpty(section.SignSecret))
-                finalSecret = section.SignSecret;
-            else
-                throw new Exception("请在配置文件中配置JwtAuth:SignSecret");
-
-            if (section.DynamicSignSecret)
-            {
-                if (string.IsNullOrEmpty(userIp))
-                    throw new Exception("动态SignSecret时用户IP不能为空");
-                finalSecret = SecurityUtil.EncryptPassword(finalSecret, userIp);
-            }
+            if (!string.IsNullOrEmpty(signingKey))
+                section.SigningKey = signingKey;
+            if (string.IsNullOrEmpty(section.SigningKey))
+                throw new Exception("请在配置文件中配置JwtAuth:SignSecret"); 
             return section;
         }
 
-        public static TokenValidationParameters GetParameters(JwtAuthSection section, string signSecret = null)
+        public static TokenValidationParameters GetParameters(JwtAuthSection section)
         {
             var ret = new TokenValidationParameters()
             {
                 ClockSkew = TimeSpan.FromMinutes(10), // 时钟偏斜可补偿服务器时间漂移
-                ValidateIssuerSigningKey = true, //是否验证SecurityKey
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signSecret ?? section.SignSecret)),
+                ValidateIssuerSigningKey = true, //是否验证SigningKey
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(section.SigningKey)),
                 RequireSignedTokens = true,
             };
-            //// Token加密
-            //if (!string.IsNullOrEmpty(section.EncryptSecret))
-            //{
-            //    var encryptKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(section.EncryptSecret));
-            //    x.TokenValidationParameters.TokenDecryptionKey = encryptKey;
-            //}
 
             //是否验证失效时间
             ret.ValidateLifetime = section.ValidateLifetime;

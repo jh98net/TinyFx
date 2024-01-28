@@ -17,13 +17,11 @@ namespace TinyFx.Configuration
         /// </summary>
         public bool Enabled { get; set; } = true;
         /// <summary>
-        /// 签名秘钥
+        /// 签名秘钥,32长度密码
+        /// NoiA32QqU0elJ0FW5qgnILF7M3WpP7fS
         /// </summary>
-        public string SignSecret { get; set; } = "Sh7d97oQYx3ufffKasV8q";
-        /// <summary>
-        /// 加密秘钥，非必须
-        /// </summary>
-        public string EncryptSecret { get; set; }
+        public string SigningKey { get; set; } = "ABASDfasfwe@#45346dfg";
+
         public string Audience { get; set; } = "tinyfx.com";
         public string Issuer { get; set; } = "tinyfx.com";
         /// <summary>
@@ -34,10 +32,6 @@ namespace TinyFx.Configuration
         /// Jwt Token过期时间(分钟）
         /// </summary>
         public int ExpireMinutes { get; set; } = int.MaxValue;
-        /// <summary>
-        /// 是否使用动态SignSecret，默认使用UserIp作为动态参数
-        /// </summary>
-        public bool DynamicSignSecret { get; set; } = false;
 
         /// <summary>
         /// Debug时的Token（仅Development和Testing有效，用于设置默认swagger的jwt）

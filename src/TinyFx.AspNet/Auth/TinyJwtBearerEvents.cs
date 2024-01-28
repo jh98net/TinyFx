@@ -36,12 +36,6 @@ namespace TinyFx.AspNet
             {
                 context.Token = section.DebugToken;
             }
-            if (section?.DynamicSignSecret ?? false)
-            {
-                var uip = AspNetUtil.GetRemoteIpString();
-                var key = SecurityUtil.EncryptPassword(section.SignSecret, uip);
-                context.Options.TokenValidationParameters.IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
-            }
             return base.MessageReceived(context);
         }
         /// <summary>

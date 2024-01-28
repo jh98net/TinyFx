@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
 using System;
@@ -23,38 +24,60 @@ namespace TinyFx
         public static IHostBuilder AddRedisEx(this IHostBuilder builder, string connectionStringName = null)
         {
             var section = ConfigUtil.GetSection<RedisSection>();
-            if (section == null || section.ConnectionStrings == null || section.ConnectionStrings.Count == 0)
-                return builder;
+            var useRedis = section?.ConnectionStrings?.Count > 0;
 
             //ConnectionMultiplexer.SetFeatureFlag("preventthreadtheft", true);
             builder.ConfigureServices((context, services) =>
             {
-                // 支持IDistributedCache。（AddRequestLimitEx 和 AddRedisSessionEx 需要）
-                services.AddStackExchangeRedisCache(options =>
+                // 数据保护
+                var dpb = services.AddDataProtection()
+                    .SetDefaultKeyLifetime(TimeSpan.FromDays(365 * 100)) //密钥生存期
+                    .SetApplicationName(ConfigUtil.Project.ApplicationName); // ApplicationName共享
+                if (!useRedis)
                 {
-                    var name = string.IsNullOrEmpty(connectionStringName) 
-                        ? section.DefaultConnectionStringName 
-                        : connectionStringName;
-                    var connStr = section.ConnectionStrings[name].ConnectionString;
-                    options.ConfigurationOptions = ConfigurationOptions.Parse(connStr);
-                    options.InstanceName = $"{ConfigUtil.Project.ProjectId}:";
-                });
-                if(section.ConsumerAssemblies?.Count > 0)
+                    dpb.PersistKeysToFileSystem(new DirectoryInfo(AppContext.BaseDirectory));
+                }
+                else
                 {
-                    services.AddSingleton(sp =>
+                    var connName = string.IsNullOrEmpty(connectionStringName)
+                       ? section.DefaultConnectionStringName
+                       : connectionStringName;
+                    var connStr = !string.IsNullOrEmpty(connName)
+                        ? section.ConnectionStrings[connName].ConnectionString
+                        : section.ConnectionStrings.First().Value.ConnectionString;
+                    // DataProtection
+                    dpb.PersistKeysToStackExchangeRedis(RedisUtil.GetRedisByConnectionString(connStr)
+                        , "DataProtection-Keys");
+
+                    // 支持IDistributedCache。（AddRequestLimitEx 和 AddRedisSessionEx 需要）
+                    services.AddStackExchangeRedisCache(options =>
                     {
-                        var ret = new ConsumerContainer(section.ConsumerAssemblies);
-                        //redis 资源释放
-                        var lifetime = sp.GetService<IHostApplicationLifetime>();
-                        lifetime?.ApplicationStopped.Register(() =>
-                        {
-                            RedisUtil.ReleaseAllRedis();
-                        });
-                        return ret;
+                        options.ConfigurationOptions = ConfigurationOptions.Parse(connStr);
+                        // Key: InstanceName+自己定义的键
+                        options.InstanceName = $"{ConfigUtil.Project.ApplicationName}:";
+                        //options.InstanceName = $"{ConfigUtil.Project.ProjectId}:"; 
                     });
+                    if (section.ConsumerAssemblies?.Count > 0)
+                    {
+                        services.AddSingleton(sp =>
+                        {
+                            var ret = new ConsumerContainer(section.ConsumerAssemblies);
+                            //redis 资源释放
+                            var lifetime = sp.GetService<IHostApplicationLifetime>();
+                            lifetime?.ApplicationStopped.Register(() =>
+                            {
+                                RedisUtil.ReleaseAllRedis();
+                            });
+                            return ret;
+                        });
+                    }
                 }
             });
-            LogUtil.Info("配置 => [Redis] ConsumerAssemblies: {ConsumerAssemblies}", string.Join('|', section.ConsumerAssemblies));
+            if (useRedis)
+            {
+                LogUtil.Info("配置 => [Redis] ConsumerAssemblies: {ConsumerAssemblies}"
+                    , string.Join('|', section.ConsumerAssemblies));
+            }
             return builder;
         }
     }
