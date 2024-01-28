@@ -31,7 +31,7 @@ namespace TinyFx.AspNet
             var section = ConfigUtil.GetSection<JwtAuthSection>();
             if (string.IsNullOrEmpty(context.Token)
                 && !string.IsNullOrEmpty(section.DebugToken)
-                && (ConfigUtil.IsDebugEnvironment)
+                && ConfigUtil.IsDebugEnvironment
               )
             {
                 context.Token = section.DebugToken;

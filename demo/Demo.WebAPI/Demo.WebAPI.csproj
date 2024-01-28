@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Apis\v2\" />
+    <Folder Include="Apis\V2\" />
     <Folder Include="BLL\Caching\" />
     <Folder Include="BLL\Common\" />
     <Folder Include="DAL\" />

@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Asp.Versioning;
+using Asp.Versioning.Conventions;
+using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +27,7 @@ using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
 using TinyFx.Reflection;
 using TinyFx.Security;
+using static System.Net.WebRequestMethods;
 
 namespace TinyFx
 {
@@ -63,6 +67,12 @@ namespace TinyFx
             {
                 services.AddControllersEx()
                     .AddDynamicApi();
+                // 解决Multipart body length limit 134217728 exceeded
+                services.Configure<FormOptions>(x =>
+                {
+                    x.ValueLengthLimit = int.MaxValue;
+                    x.MultipartBodyLengthLimit = int.MaxValue; // In case of multipart
+                });
                 LogUtil.Info($"注册 => AddControllers");
             }
             if ((type & AspNetType.Razor) != 0)
@@ -153,7 +163,7 @@ namespace TinyFx
                 {
                     options.SuppressModelStateInvalidFilter = true;
                 }
-            }); ;
+            });
         }
         public static IMvcBuilder AddRazorPagesEx(this IServiceCollection services)
         {
@@ -222,16 +232,31 @@ namespace TinyFx
             var section = ConfigUtil.GetSection<AspNetSection>();
             if (section != null && section.UseApiVersioning)
             {
-                services.AddApiVersioning(options =>
+                services.AddApiVersioning(opts =>
                 {
-                    options.DefaultApiVersion = new ApiVersion(1, 0);
-                    options.AssumeDefaultVersionWhenUnspecified = true; // 不提供版本时，默认为1.0
-                    options.ReportApiVersions = true; //API返回支持的版本信息
-                    options.ApiVersionReader = ApiVersionReader.Combine(
-                        new UrlSegmentApiVersionReader(),
-                        new HeaderApiVersionReader("x-api-version")
-                    //new MediaTypeApiVersionReader("x-api-version"),
-                    );
+                    opts.DefaultApiVersion = new ApiVersion(1, 0);
+                    opts.AssumeDefaultVersionWhenUnspecified = true; // 不提供版本时，默认为1.0
+                    opts.ReportApiVersions = true; //API返回支持的版本信息
+                    opts.ApiVersionReader = new UrlSegmentApiVersionReader();
+                    //options.ApiVersionReader = ApiVersionReader.Combine(
+                    //    new UrlSegmentApiVersionReader(),
+                    //    new QueryStringApiVersionReader("api-version"),
+                    //    new HeaderApiVersionReader("x-api-version"),
+                    //    new MediaTypeApiVersionReader("x-api-version")
+                    //);
+
+                    //默认以当前最高版本进行访问
+                    //opts.ApiVersionSelector = new CurrentImplementationApiVersionSelector(opts);
+                })
+                .AddMvc(options =>
+                {
+                    // 根据定义控制器的命名空间的名称自动应用 api 版本
+                    options.Conventions.Add(new VersionByNamespaceConvention());
+                })
+                .AddApiExplorer(setup =>
+                {
+                    setup.GroupNameFormat = "'v'VVV";
+                    setup.SubstituteApiVersionInUrl = true;
                 });
                 LogUtil.Trace($"注册 => ApiVersioning");
             }
@@ -249,37 +274,30 @@ namespace TinyFx
             if (section == null || section.Swagger == null || !section.Swagger.Enabled)
                 return services;
 
-            if (section.UseApiVersioning)
-            {
-                services.AddVersionedApiExplorer(setup =>
-                {
-                    setup.GroupNameFormat = "'v'VVV";
-                    setup.SubstituteApiVersionInUrl = true;
-                });
-            }
-
-            services.AddEndpointsApiExplorer();
+            //services.AddEndpointsApiExplorer(); //只有最小 API 调用
             services.AddSwaggerGen(opts =>
             {
                 if (section.Swagger.UseSchemaFullName)
                     opts.CustomSchemaIds(x => x.FullName?.Replace('+', '-'));
-                var scheme = new OpenApiSecurityScheme()
+
+                // 添加承载身份验证的安全定义和要求
+                opts.AddSecurityDefinition("JwtAuth", new OpenApiSecurityScheme
                 {
-                    Description = "Authorization header. \r\nExample: 'Bearer 12345abcdef'",
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Authorization"
-                    },
-                    Scheme = "oauth2",
-                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                };
-                opts.AddSecurityDefinition("Authorization", scheme);
-                opts.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    Description = "JWT授权 ==> 输入框输入token"
+                });
+                opts.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-                    [scheme] = new List<string>()
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "JwtAuth" }
+                        },
+                        new string[] {}
+                    }
                 });
                 opts.IncludeXmlComments(() =>
                 {
@@ -290,7 +308,7 @@ namespace TinyFx
                             continue;
                         var name = $"{Path.GetFileNameWithoutExtension(asm.Location)}.xml";
                         var path = Path.Combine(AppContext.BaseDirectory, name);
-                        if (File.Exists(path))
+                        if (System.IO.File.Exists(path))
                             xmlFiles.Add(path);
                     }
                     var xmlParser = new XmlDocumentParser(xmlFiles);
@@ -299,7 +317,7 @@ namespace TinyFx
             });
             if (section.UseApiVersioning)
             {
-                services.ConfigureOptions<ConfigureSwaggerOptions>();
+                services.ConfigureOptions<NamedSwaggerGenOptions>();
             }
             LogUtil.Info($"注册 => Swagger");
             return services;

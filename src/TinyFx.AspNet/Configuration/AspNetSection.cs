@@ -33,6 +33,7 @@ namespace TinyFx.Configuration
         public bool UseResponseCompression { get; set; } = true;
         /// <summary>
         /// 是否开启版本控制
+        /// 多版本的Controller需继承TinyFxControllerVersionBase，命名空间需使用V{version}，如Demo.V2
         /// </summary>
         public bool UseApiVersioning { get; set; } = true;
         public SwaggerConfig Swagger { get; set; } = new();

@@ -23,6 +23,9 @@ using TinyFx.AspNet.RequestLogging;
 using TinyFx.Extensions.AppMetric;
 using TinyFx.AspNet.Hosting;
 using Microsoft.Diagnostics.NETCore.Client;
+using Microsoft.Extensions.Options;
+using SqlSugar;
+using Asp.Versioning.ApiExplorer;
 
 namespace TinyFx
 {
@@ -71,7 +74,7 @@ namespace TinyFx
                     , ConfigUtil.GetSection<AspNetSection>()?.PathBase
                     , ConfigUtil.ServiceId);
             });
-            app.Lifetime.ApplicationStopped.Register(() => 
+            app.Lifetime.ApplicationStopped.Register(() =>
             {
                 LogUtil.Warning("===> 【AspNet服务已停止】 ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) IsDebug:{IsDebug} IsStaging:{IsStaging} URL:{Urls} PathBase:{PathBase} ServiceId:{ServiceId}"
                  , ConfigUtil.Project?.ProjectId
@@ -189,19 +192,18 @@ namespace TinyFx
                 app.UseSwagger(opts =>
                 {
                 });
-                var provider = app.Services.GetService<IApiVersionDescriptionProvider>();
-                app.UseSwaggerUI(options =>
+                app.UseSwaggerUI(opts =>
                 {
+                    var pathBase = !string.IsNullOrEmpty(section.PathBase)
+                            ? $"/{section.PathBase.Trim().TrimStart('/')}" : null;
+                    var provider = app.Services.GetService<IApiVersionDescriptionProvider>();
                     if (provider != null)
                     {
-                        //var list = provider.ApiVersionDescriptions.Reverse();
-                        var pathBase = !string.IsNullOrEmpty(section.PathBase)
-                            ? $"/{section.PathBase.Trim().TrimStart('/')}" : null;
-                        var list = provider.ApiVersionDescriptions;
-                        foreach (var description in list)
+                        foreach (var description in provider.ApiVersionDescriptions)
                         {
-                            options.SwaggerEndpoint($"{pathBase}/swagger/{description.GroupName}/swagger.json",
-                                description.GroupName.ToUpperInvariant());
+                            //var path = $"/swagger/{description.GroupName}/swagger.json";
+                            var path = $"{pathBase}/swagger/{description.GroupName}/swagger.json";
+                            opts.SwaggerEndpoint(path, description.GroupName.ToUpperInvariant());
                         }
                     }
                 });

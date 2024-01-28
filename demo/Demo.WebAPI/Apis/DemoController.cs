@@ -56,6 +56,12 @@ namespace Demo.WebAPI.Apis
                 throw new Exception("DI哈希不同");
         }
         [HttpGet]
+        public string Version()
+        {
+            return "1.0";
+        }
+
+        [HttpGet]
         [AllowAnonymous]
         public async Task<string> Test1()
         {
@@ -113,9 +119,6 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public string GetJwtToken()
         {
-            LogUtil.Info("TEST!!!!");
-            var logger = LogUtil.GetContextLogger();
-            logger.AddMessage("AAAAAAAAAAAA");
             var uip = AspNetUtil.GetRemoteIpString();
             return JwtUtil.GenerateJwtToken(RandomUtil.NextInt(10), UserRole.User, uip);
         }

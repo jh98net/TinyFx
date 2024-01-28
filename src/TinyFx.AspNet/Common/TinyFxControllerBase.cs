@@ -11,15 +11,10 @@ using TinyFx.Security;
 
 namespace TinyFx.AspNet
 {
-    //[ApiVersion("1.0")] 支持的版本 Method上可添加 [MapToApiVersion("2.0")]
-    //[Area("CMS")]
-    [Route("api/[controller]/[action]")]
-    //[Route("api/v{version:apiVersion}/[controller]/[action]")]
     [ApiController]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Authorize]
     //[AllowAnonymous]
-    public class TinyFxControllerBase : ControllerBase
+    public class BaseTinyFxController : ControllerBase
     {
         #region UserId & Role
         /// <summary>
@@ -76,70 +71,20 @@ namespace TinyFx.AspNet
         [NonAction]
         public bool IsInRole(string role) => User.IsInRole(role);
         #endregion
-
-        /*
-        /// <summary>
-        /// 无返回值
-        /// </summary>
-        /// <returns></returns>
-        [NonAction]
-        public new ApiResult Ok() => new ApiResult(null);
-
-        /// <summary>
-        /// 返回成功200：Api统一对象ApiResult
-        /// </summary>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        [NonAction]
-        public new ApiResult Ok(object result) => new ApiResult(result);
-
-        /// <summary>
-        /// 返回ApiResult错误：定义与客户端协商的code。
-        /// </summary>
-        /// <param name="code"></param>
-        /// <param name="message"></param>
-        /// <param name="ex"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        [NonAction]
-        public ApiResult Error(string code, string message, Exception ex = null, object result = null)
-            => new ApiResult(code, message, ex, result);
-
-        /// <summary>
-        /// 返回ApiResult错误：定义客户端的message。code = G_BAD_REQUEST。
-        /// </summary>
-        /// <param name="message"></param>
-        /// <param name="ex"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        [NonAction]
-        public ApiResult Error(string message, Exception ex = null, object result = null)
-            => new ApiResult(ResponseCode.G_BAD_REQUEST, message, ex, result);
-
-        /// <summary>
-        /// 返回ApiResult错误：定义与客户端协商的action。code = G_BAD_REQUEST。
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="message"></param>
-        /// <param name="ex"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        [NonAction]
-        public ApiResult Error(int action, string message = null, Exception ex = null, object result = null)
-            => new ApiResult(action, message, ex, result);
-
-        /// <summary>
-        /// 返回ApiResult错误：定义与客户端协商的code和action
-        /// </summary>
-        /// <param name="code"></param>
-        /// <param name="action"></param>
-        /// <param name="message"></param>
-        /// <param name="ex"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        [NonAction]
-        public ApiResult Error(string code, int action, string message = null, Exception ex = null, object result = null)
-            => new ApiResult(code, action, message, ex, result);
-        */
     }
+    
+    /// <summary>
+    /// API基类
+    /// </summary>
+    [Route("api/[controller]/[action]")]
+    public class TinyFxControllerBase : BaseTinyFxController
+    {
+    }
+    
+    /// <summary>
+    /// API多版本基类
+    /// </summary>
+    [Route("api/v{version:apiVersion}/[controller]/[action]")]
+    public class TinyFxControllerVersionBase : BaseTinyFxController
+    { }
 }

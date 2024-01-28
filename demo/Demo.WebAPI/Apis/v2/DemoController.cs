@@ -20,11 +20,9 @@ using TinyFx.Logging;
 using TinyFx.Randoms;
 using TinyFx.Security;
 
-namespace Demo.WebAPI.Apis.v2
+namespace Demo.WebAPI.Apis.V2
 {
-    /*
-    [ApiVersion("2.0")]
-    public class DemoController : TinyFxControllerBase
+    public class DemoController : TinyFxControllerVersionBase
     {
         [HttpGet]
         [AllowAnonymous]
@@ -33,5 +31,4 @@ namespace Demo.WebAPI.Apis.v2
             return "2.0";
         }
     }
-    */
 }

@@ -158,7 +158,7 @@ namespace TinyFx.Security
         {
             var ret = new TokenValidationParameters()
             {
-                ClockSkew = TimeSpan.FromMinutes(5), // 时钟偏斜可补偿服务器时间漂移
+                ClockSkew = TimeSpan.FromMinutes(10), // 时钟偏斜可补偿服务器时间漂移
                 ValidateIssuerSigningKey = true, //是否验证SecurityKey
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signSecret ?? section.SignSecret)),
                 RequireSignedTokens = true,
