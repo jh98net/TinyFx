@@ -24,6 +24,7 @@ namespace TinyFx.BIZ.DataSplit
                     .Where(it => it.Status == 1).OrderBy(it => it.HandleOrder).ToListAsync();
             }
             var execTime = DateTime.UtcNow;
+            // 执行
             foreach (var item in list)
             {
                 var mode = item.HandleMode.ToEnum(HandleMode.None);
@@ -40,6 +41,10 @@ namespace TinyFx.BIZ.DataSplit
                         break;
                 }
             }
+            // 缓存
+
+            // 清除
+
         }
         public Task Execute(Ss_split_tableEO item)
             => Execute(new List<Ss_split_tableEO> { item });

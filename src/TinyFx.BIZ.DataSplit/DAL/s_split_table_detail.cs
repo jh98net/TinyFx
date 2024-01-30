@@ -104,7 +104,14 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public int RowCount {get;set;}
 
            /// <summary>
-           /// Desc:状态(0-无效1-有效)
+           /// Desc:备份待删除执行数据
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string? BackupDeleteData {get;set;}
+
+           /// <summary>
+           /// Desc:状态(0-无效1-有效2-备份待删除)
            /// Default:0
            /// Nullable:False
            /// </summary>           

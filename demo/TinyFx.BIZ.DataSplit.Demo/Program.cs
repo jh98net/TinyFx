@@ -20,12 +20,13 @@ var list = new List<Ss_split_tableEO>
         HandleMode = (int)HandleMode.SplitMaxRows,
         ColumnName = "RecDate",
         ColumnType = 0, // 0-datetime 1-objectId
-        MoveKeepMode = (int)MoveKeepMode.Day,
-        MoveKeepValue = 5,
-        MoveTableMode = (int)MoveTableMode.Year,
+        MoveKeepMode = (int)MoveKeepMode.None,
+        MoveKeepValue = 0,
+        MoveTableMode = (int)MoveTableMode.None,
         MoveTableValue = null,
         MoveWhere = null,
         SplitMaxRowCount = 10,
+        SplitMaxRowHours = 2
     },
 };
 await new DataSplitJob().Execute(list);

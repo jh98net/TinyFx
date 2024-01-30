@@ -30,13 +30,18 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 .AddField("DataMove.Option", option);
             _option = option;
             _execTime = execTime;
-            _database = DbUtil.GetDb(option.DatabaseId);
-
             if (option.DbTimeout > 0)
                 DB_TIMEOUT_SECONDS = option.DbTimeout;
             if (option.BathPageSize > 0)
                 BATCH_PAGE_SIZE = option.BathPageSize;
-            _database.Ado.CommandTimeOut = DB_TIMEOUT_SECONDS;
+
+            _database = GetDb();
+        }
+        protected ISqlSugarClient GetDb(DbTransactionManager tm = null)
+        {
+            var ret = tm == null ? DbUtil.GetDb(_option.DatabaseId) : tm.GetDbById(_option.DatabaseId);
+            ret.Ado.CommandTimeOut = DB_TIMEOUT_SECONDS;
+            return ret;
         }
 
         protected abstract Task ExecuteJob();
@@ -115,6 +120,16 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             await DbUtil.InsertAsync(_logEo);
         }
 
+        protected async Task CreateTable(string backTableName, ISqlSugarClient db=null)
+        {
+            db ??= _database;
+            if (db.DbMaintenance.IsAnyTable(backTableName))
+                return;
+            var createSql = $"CREATE TABLE if not exists `{backTableName}` like `{_option.TableName}`";
+            AddHandleLog($"==> 创建备份表SQL: {createSql}");
+            await db.Ado.ExecuteCommandAsync(createSql);
+        }
+
         protected void AddHandleLog(string msg)
         {
             LogUtil.Debug(msg);
@@ -152,7 +167,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                     break;
                 case 1: // ObjectId
                     // select FROM_UNIXTIME(CAST(CONV(SUBSTR(UserID, 1, 8), 16, 10) AS UNSIGNED)) from s_user
-                    sql = $"SELECT MIN(`{_option.ColumnName}`) FROM `{_option.TableName}` WHERE `{_option.ColumnName}` < '{ObjectId.TimestampId(endDate)}'";
+                    sql = $"SELECT MIN(`{_option.ColumnName}`) FROM `{_option.TableName}` WHERE `{_option.ColumnName}` < '{ObjectId.TimestampId(endDate)}' AND LENGTH(`{_option.ColumnName}`)=24";
                     break;
             }
             DateTime? ret = null;
@@ -197,7 +212,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 case 1: // ObjectId
                     ret.Begin = ObjectId.TimestampId(currDate);
                     ret.End = ObjectId.TimestampId(currDate.AddDays(1));
-                    ret.Content = $"`{_option.ColumnName}`>='{ret.Begin}' AND `{_option.ColumnName}`<'{ret.End}'";
+                    ret.Content = $"`{_option.ColumnName}`>='{ret.Begin}' AND `{_option.ColumnName}`<'{ret.End}' AND LENGTH(`{_option.ColumnName}`)=24";
                     break;
             }
             if (!string.IsNullOrEmpty(_option.MoveWhere))
