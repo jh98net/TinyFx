@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TinyFx.AspNet.HCaptcha
+namespace TinyFx.HCaptcha
 {
     /// <summary>
     /// hCaptcha验证请求参数

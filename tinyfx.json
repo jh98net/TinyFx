@@ -423,21 +423,6 @@
     }
   },
 
-  // OAuth验证
-  "OAuth": {
-    "ProvidersProvider": null,
-    "Providers": {
-      "Google": {
-        "ClientId": "",
-        "ClientSecret": ""
-      },
-      "Facebook": {
-        "ClientId": "",
-        "ClientSecret": ""
-      }
-    }
-  },
-
   "IP2Country": {
     "Enabled": false,
     "DbIpSource": null, //IP库：https://db-ip.com/db/download/ip-to-country-lite
@@ -490,7 +475,30 @@
     "DynamicApiAssemblies": [] // 动态加载的API所在的 xxx.dll
   },
 
-  //
+  // OAuth验证
+  "OAuth": {
+    "ProvidersProvider": null,
+    "Providers": {
+      "Google": {
+        "ClientId": "",
+        "ClientSecret": ""
+      },
+      "Facebook": {
+        "ClientId": "",
+        "ClientSecret": ""
+      }
+    }
+  },
+
+  // HCaptcha验证码
+  "HCaptcha": {
+    "SiteKey": "9459ee20-43d9-4777-af5d-b1fbe89b403e",
+    "Secret": "ES_01c1e11250f54abc8d90248733f370db",
+    "ApiBaseUrl": "https://api.hcaptcha.com/",
+    "VerifyRemoteIp": false
+  },
+
+  // 访问验证
   "AccessVerify": {
     "Enabled": true,
     "AccessKeySeed": "vMjV3VFW3SyklQeQ",

@@ -94,6 +94,6 @@ namespace TinyFx.Logging
         /// <summary>
         /// 保存日志
         /// </summary>
-        void Save();
+        void Save(bool saveWhenContext = false);
     }
 }

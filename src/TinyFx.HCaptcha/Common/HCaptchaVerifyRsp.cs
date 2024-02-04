@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace TinyFx.AspNet.HCaptcha
+namespace TinyFx.HCaptcha
 {
     /// <summary>
     /// hCaptcha验证返回

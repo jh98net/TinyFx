@@ -65,7 +65,7 @@ namespace TinyFx.AspNet.RequestLogging
             if (!logger.LogRequestBody && logger.Exception != null)
                 await LogRequestBody(context.Request, logger);
 
-            logger.Save();
+            logger.Save(true);
         }
         private static async Task LogRequestBody(HttpRequest request, ILogBuilder logger)
         {

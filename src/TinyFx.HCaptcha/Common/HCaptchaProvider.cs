@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.AspNet;
 using TinyFx.Configuration;
+using TinyFx.Logging;
 using TinyFx.Net;
 
-namespace TinyFx.AspNet.HCaptcha.Common
+namespace TinyFx.HCaptcha
 {
     internal class HCaptchaProvider
     {
@@ -24,6 +26,7 @@ namespace TinyFx.AspNet.HCaptcha.Common
         public async Task<ApiResult<HCaptchaVerifyRsp>> Verify(string token, string? remoteIp = null)
         {
             var ret = new ApiResult<HCaptchaVerifyRsp>();
+            var logger = LogUtil.GetContextLogger();
             try
             {
                 var req = new HCaptchaVerifyReq
@@ -32,10 +35,12 @@ namespace TinyFx.AspNet.HCaptcha.Common
                     Response = token,
                     RemoteIp = _section.VerifyRemoteIp ? remoteIp : null
                 };
+                logger.AddField("HCaptchaVerify.req", req);
                 var rsp = await _client.CreateAgent()
                     .AddUrl("/siteverify")
                     .BuildJsonContent(req)
                     .PostAsync<HCaptchaVerifyRsp, object>();
+                logger.AddField("HCaptchaVerify.rsp", rsp);
                 if (!rsp.Success)
                 {
                     ret.Success = false;
@@ -51,6 +56,11 @@ namespace TinyFx.AspNet.HCaptcha.Common
             {
                 ret.Success = false;
                 ret.Exception = ex;
+            }
+            if (!ret.Success)
+            {
+                logger.AddException(ret.Exception);
+                logger.Save();
             }
             return ret;
         }

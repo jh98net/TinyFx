@@ -98,8 +98,11 @@ namespace TinyFx.Logging
         }
         #endregion
 
-        public void Save()
+        public void Save(bool saveWhenContext = false)
         {
+            if (IsContext && !saveWhenContext)
+                return;
+
             var msg = string.Empty;
             var args = new List<object>(Fields.Count + 2);
             msg += "[{Flag}]";
