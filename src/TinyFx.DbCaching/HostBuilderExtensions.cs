@@ -60,7 +60,7 @@ namespace TinyFx
                         var provider = Activator.CreateInstance(type) as IDbCachePreloadProvider;
                         foreach (var preload in provider.GetPreloadList())
                         {
-                            DbCachingUtil.PreloadCache(preload.EntityType, preload.SplitDbKeys);
+                            DbCachingUtil.PreloadCache(preload.EntityType, preload.SplitDbKey);
                         }
                     }
                 }

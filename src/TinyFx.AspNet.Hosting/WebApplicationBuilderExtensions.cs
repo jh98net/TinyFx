@@ -155,7 +155,7 @@ namespace TinyFx
                 }
             }).AddJsonOptions(options =>
             {
-                SerializerUtil.ConfigJsonSerializerOptions(options.JsonSerializerOptions);
+                SerializerUtil.ConfigJsonOptions(options.JsonSerializerOptions);
             }).ConfigureApiBehaviorOptions(options =>
             {
                 // 禁用[ApiController]的自动 400 响应
@@ -172,7 +172,7 @@ namespace TinyFx
                 //options..Filters.Add(typeof(CustomExceptionFilter));
             }).AddJsonOptions(options =>
             {
-                SerializerUtil.ConfigJsonSerializerOptions(options.JsonSerializerOptions);
+                SerializerUtil.ConfigJsonOptions(options.JsonSerializerOptions);
             });
         }
         public static IServerSideBlazorBuilder AddServerSideBlazorEx(this IServiceCollection services)

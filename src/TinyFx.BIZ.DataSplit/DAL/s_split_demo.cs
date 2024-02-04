@@ -13,6 +13,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
     {
            public Ss_split_demoEO(){
 
+            this.DateNum =0;
             this.OrderNum =0;
             this.RecDate =DateTime.Now;
 
@@ -26,11 +27,18 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public string ObjectID {get;set;}
 
            /// <summary>
-           /// Desc:ObjectID时间
+           /// Desc:日期值
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int DateNum {get;set;}
+
+           /// <summary>
+           /// Desc:天
            /// Default:
            /// Nullable:False
            /// </summary>           
-           public DateTime ObjectIdDate {get;set;}
+           public DateTime DayId {get;set;}
 
            /// <summary>
            /// Desc:顺序号

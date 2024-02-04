@@ -13,11 +13,11 @@ namespace TinyFx.DbCaching
     public class DbCachePreloadItem
     {
         public Type EntityType { get; set; }
-        public object[] SplitDbKeys { get; set; }
-        public DbCachePreloadItem(Type entityType, object[] splitDbKeys = null)
+        public object SplitDbKey { get; set; }
+        public DbCachePreloadItem(Type entityType, object splitDbKey = null)
         {
             EntityType = entityType;
-            SplitDbKeys = splitDbKeys;
+            SplitDbKey = splitDbKey;
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TinyFx.Logging;
 using TinyFx.Serialization;
@@ -26,7 +27,8 @@ namespace TinyFx.Net
         internal HttpClientConfig Config { get; }
         public string ClientName => Config.Name;
         public Encoding Encoding => Config.Encoding;
-        public JsonSerializerSettings JsonOptions { get; set; }
+        public JsonSerializerSettings JsonNetSettings { get; set; }
+        public JsonSerializerOptions JsonOptions { get; set; }
         private SocketsHttpHandler _httpHandler;
         public HttpClient Client { get; }
         private string _baseUrl;
@@ -36,7 +38,8 @@ namespace TinyFx.Net
             config.Name ??= "default";
             config.Encoding ??= Encoding.UTF8;
             Config = config;
-            JsonOptions = SerializerUtil.DefaultJsonNetSettings;
+            JsonNetSettings = SerializerUtil.GetJsonNetSettings();
+            JsonOptions = SerializerUtil.GetJsonOptions();
 
             _httpHandler = new SocketsHttpHandler
             {
@@ -167,7 +170,10 @@ namespace TinyFx.Net
             switch (Config.SerializeMode)
             {
                 case SerializeMode.Json:
-                    ret = SerializerUtil.DeserializeJsonNet<T>(result, JsonOptions);
+                    ret = SerializerUtil.DeserializeJson<T>(result, JsonOptions);
+                    break;
+                case SerializeMode.JsonNet:
+                    ret = SerializerUtil.DeserializeJsonNet<T>(result, JsonNetSettings);
                     break;
                 case SerializeMode.Xml:
                     ret = SerializerUtil.DeserializeXml<T>(result, Config.Encoding);

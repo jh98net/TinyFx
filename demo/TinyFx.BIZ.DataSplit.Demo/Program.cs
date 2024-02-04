@@ -6,7 +6,7 @@ using TinyFx.Text;
 
 TinyFxHost.Start();
 
-//await new DemoHelper().InitData();
+//await new DemoHelper().InitData(); return;
 //var o = ObjectId.Parse("61cf998046740cf7058e539c");
 //Console.WriteLine(o.CreationTime.ToFormatString());
 
@@ -17,12 +17,12 @@ var list = new List<Ss_split_tableEO>
     {
         DatabaseId = "default",
         TableName = "s_split_demo",
-        HandleMode = (int)HandleMode.SplitMaxRows,
-        ColumnName = "RecDate",
-        ColumnType = 0, // 0-datetime 1-objectId
-        MoveKeepMode = (int)MoveKeepMode.None,
-        MoveKeepValue = 0,
-        MoveTableMode = (int)MoveTableMode.None,
+        HandleMode = (int)HandleMode.Backup,
+        ColumnName = "DateNum",
+        ColumnType = (int)ColumnType.NumMonth,
+        MoveKeepMode = (int)MoveKeepMode.Month,
+        MoveKeepValue = 2,
+        MoveTableMode = (int)MoveTableMode.Month,
         MoveTableValue = null,
         MoveWhere = null,
         SplitMaxRowCount = 10,

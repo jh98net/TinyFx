@@ -14,7 +14,7 @@ namespace TinyFx.AspNet.Hosting
     public abstract class DbCachingCorsProvider<TEntity> : ICorsPoliciesProvider
         where TEntity : class, new()
     {
-        protected virtual object[] GetSplitDbKeys() => null;
+        protected virtual object GetSplitDbKey() => null;
         protected abstract List<CorsPolicyElement> GetPolicies(List<TEntity> list);
 
         public List<CorsPolicyElement> GetPolicies()
@@ -29,7 +29,7 @@ namespace TinyFx.AspNet.Hosting
         {
             if (_cache == null)
             {
-                _cache = DbCachingUtil.GetCache<TEntity>(GetSplitDbKeys());
+                _cache = DbCachingUtil.GetCache<TEntity>(GetSplitDbKey());
             }
             return _cache;
         }

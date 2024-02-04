@@ -42,9 +42,6 @@ namespace TinyFx.BIZ.DataSplit
                 }
             }
             // 缓存
-
-            // 清除
-
         }
         public Task Execute(Ss_split_tableEO item)
             => Execute(new List<Ss_split_tableEO> { item });

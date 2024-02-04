@@ -11,6 +11,7 @@ namespace TinyFx.Serialization
     {
         None,
         Json,
+        JsonNet,
         Protobuf,
         Xml
     }

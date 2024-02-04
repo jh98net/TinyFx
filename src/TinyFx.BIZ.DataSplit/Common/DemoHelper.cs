@@ -18,7 +18,7 @@ namespace TinyFx.BIZ.DataSplit.Common
 
             var list = new List<Ss_split_demoEO>();
             var begin = new DateTime(2023, 2, 3, 0, 0, 0, DateTimeKind.Utc);
-            var end = new DateTime(2024, 2, 1, 0, 0, 0, DateTimeKind.Utc);
+            var end = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc);
             var idx = 1;
             var curr = begin;
             while (curr <= end)
@@ -26,7 +26,8 @@ namespace TinyFx.BIZ.DataSplit.Common
                 var eo = new Ss_split_demoEO
                 {
                     ObjectID = ObjectId.NewId(curr),
-                    ObjectIdDate = curr,
+                    DateNum = curr.ToString("yyyyMM").ToInt32(),
+                    DayId = curr,
                     OrderNum = idx,
                     RecDate = curr,
                 };
@@ -37,7 +38,8 @@ namespace TinyFx.BIZ.DataSplit.Common
                 var eo1 = new Ss_split_demoEO
                 {
                     ObjectID = ObjectId.NewId(curr1),
-                    ObjectIdDate = curr1,
+                    DateNum = curr.ToString("yyyyMM").ToInt32(),
+                    DayId = curr,
                     OrderNum = idx,
                     RecDate = curr1,
                 };

@@ -120,7 +120,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             await DbUtil.InsertAsync(_logEo);
         }
 
-        protected async Task CreateTable(string backTableName, ISqlSugarClient db=null)
+        protected async Task CreateTable(string backTableName, ISqlSugarClient db = null)
         {
             db ??= _database;
             if (db.DbMaintenance.IsAnyTable(backTableName))
@@ -159,30 +159,50 @@ namespace TinyFx.BIZ.DataSplit.DataMove
         }
         protected async Task<DateTime?> GetTableMinDate(DateTime endDate)
         {
-            var sql = string.Empty;
-            switch (_option.ColumnType)
+            var sql = $"SELECT MIN(`{_option.ColumnName}`) FROM `{_option.TableName}` WHERE `{_option.ColumnName}` < ";
+            switch ((ColumnType)_option.ColumnType)
             {
-                case 0: // DateTime
-                    sql = $"SELECT MIN(`{_option.ColumnName}`) FROM `{_option.TableName}` WHERE `{_option.ColumnName}` < '{endDate.ToString("yyyy-MM-dd")}'";
+                case ColumnType.DateTime: // DateTime
+                    sql += $"'{endDate.ToString("yyyy-MM-dd")}'";
                     break;
-                case 1: // ObjectId
+                case ColumnType.ObjectId: // ObjectId
                     // select FROM_UNIXTIME(CAST(CONV(SUBSTR(UserID, 1, 8), 16, 10) AS UNSIGNED)) from s_user
-                    sql = $"SELECT MIN(`{_option.ColumnName}`) FROM `{_option.TableName}` WHERE `{_option.ColumnName}` < '{ObjectId.TimestampId(endDate)}' AND LENGTH(`{_option.ColumnName}`)=24";
+                    sql += $"'{ObjectId.TimestampId(endDate)}' AND LENGTH(`{_option.ColumnName}`)=24";
+                    break;
+                case ColumnType.NumYear:
+                    sql += $"{endDate.Year} AND LENGTH(`{_option.ColumnName}`)=4";
+                    break;
+                case ColumnType.NumMonth:
+                    sql += $"{endDate.ToString("yyyyMM").ToInt32()} AND LENGTH(`{_option.ColumnName}`)=6";
+                    break;
+                case ColumnType.NumDay:
+                    sql += $"{endDate.ToString("yyyyMMdd").ToInt32()} AND LENGTH(`{_option.ColumnName}`)=8";
                     break;
             }
             DateTime? ret = null;
             var begin = await _database.Ado.GetScalarAsync(sql);
             if (begin != null && begin is not DBNull)
             {
-                switch (_option.ColumnType)
+                switch ((ColumnType)_option.ColumnType)
                 {
-                    case 0:
+                    case ColumnType.DateTime:
                         var dt = begin.ConvertTo<DateTime>();
                         ret = new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0, DateTimeKind.Utc);
                         break;
-                    case 1:
+                    case ColumnType.ObjectId:
                         var dt1 = ObjectId.ParseTimestamp(begin.ToString());
                         ret = new DateTime(dt1.Year, dt1.Month, dt1.Day, 0, 0, 0, DateTimeKind.Utc);
+                        break;
+                    case ColumnType.NumYear:
+                        ret = new DateTime(begin.ConvertTo<int>(), 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                        break;
+                    case ColumnType.NumMonth:
+                        var dt3 = Convert.ToString(begin).ToDateTime("yyyyMM");
+                        ret = new DateTime(dt3.Year, dt3.Month, dt3.Day, 0, 0, 0, DateTimeKind.Utc);
+                        break;
+                    case ColumnType.NumDay:
+                        var dt4 = Convert.ToString(begin).ToDateTime("yyyyMMdd");
+                        ret = new DateTime(dt4.Year, dt4.Month, dt4.Day, 0, 0, 0, DateTimeKind.Utc);
                         break;
                 }
             }
@@ -202,17 +222,20 @@ namespace TinyFx.BIZ.DataSplit.DataMove
         protected WhereByDayData GetWhereByDay(DateTime currDate)
         {
             var ret = new WhereByDayData();
-            switch (_option.ColumnType)
+            switch ((ColumnType)_option.ColumnType)
             {
-                case 0: // DateTime
+                case ColumnType.DateTime: // DateTime
                     ret.Begin = currDate.ToString("yyyy-MM-dd");
                     ret.End = currDate.AddDays(1).ToString("yyyy-MM-dd");
                     ret.Content = $"`{_option.ColumnName}`>='{ret.Begin}' AND `{_option.ColumnName}`<'{ret.End}'";
                     break;
-                case 1: // ObjectId
+                case ColumnType.ObjectId: // ObjectId
                     ret.Begin = ObjectId.TimestampId(currDate);
                     ret.End = ObjectId.TimestampId(currDate.AddDays(1));
                     ret.Content = $"`{_option.ColumnName}`>='{ret.Begin}' AND `{_option.ColumnName}`<'{ret.End}' AND LENGTH(`{_option.ColumnName}`)=24";
+                    break;
+                case ColumnType.NumYear:
+                    //ret.Begin = 
                     break;
             }
             if (!string.IsNullOrEmpty(_option.MoveWhere))

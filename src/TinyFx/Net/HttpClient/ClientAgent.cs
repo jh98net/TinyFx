@@ -103,7 +103,21 @@ namespace TinyFx.Net
         /// <param name="obj"></param>
         /// <returns></returns>
         public ClientAgent BuildJsonContent(object obj)
-            => BuildJsonContent(SerializerUtil.SerializeJsonNet(obj, _client.JsonOptions));
+        {
+            var json = string.Empty;
+            switch (_client.Config.SerializeMode)
+            {
+                case Serialization.SerializeMode.Json:
+                    json = SerializerUtil.SerializeJson(obj, _client.JsonOptions);
+                    break;
+                case Serialization.SerializeMode.JsonNet:
+                    json = SerializerUtil.SerializeJsonNet(obj, _client.JsonNetSettings);
+                    break;
+                default:
+                    throw new Exception("未知的json序列化类型");
+            }
+            return BuildJsonContent(json);
+        }
 
         /// <summary>
         /// Content-Type = text/plain

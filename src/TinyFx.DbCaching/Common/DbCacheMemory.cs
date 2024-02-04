@@ -3,11 +3,12 @@ using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 using TinyFx.Data.SqlSugar;
+using TinyFx.Logging;
 using TinyFx.Reflection;
 
 namespace TinyFx.DbCaching
 {
-    public class DbCacheMemory<TEntity> : IDbCacheMemoryUpdate
+    public class DbCacheMemory<TEntity> : IDbCacheMemory
         where TEntity : class, new()
     {
         #region Properties
@@ -260,24 +261,26 @@ namespace TinyFx.DbCaching
         {
             _isUpdating = true;
             var oldList = RowList;
+
+            RedisData = _updateData;
+            RowList = _updateList;
+            SingleDict.Clear();
+            ListDict.Clear();
+            CustomDict.Clear();
             try
             {
-                RedisData = _updateData;
-                RowList = _updateList;
-                SingleDict.Clear();
-                ListDict.Clear();
-                CustomDict.Clear();
+                Task.Run(() => {
+                    UpdateCallback?.Invoke(oldList, RowList);
+                });
             }
-            finally
+            catch(Exception ex)
             {
-                _isUpdating = false;
+                LogUtil.Error(ex, $"DbCacheMemory.EndUpdate.UpdateCallback异常,EntityType:{typeof(TEntity).FullName}");
             }
-            try
-            {
-                UpdateCallback?.Invoke(oldList, RowList);
-            }
-            catch
-            { }
+        }
+        public void Updated()
+        {
+            _isUpdating = false;
         }
         public Action<List<TEntity>, List<TEntity>> UpdateCallback;
         #endregion
@@ -288,7 +291,7 @@ namespace TinyFx.DbCaching
             return lambdaExpr.Compile().DynamicInvoke();
         }
     }
-    internal interface IDbCacheMemoryUpdate
+    internal interface IDbCacheMemory
     {
         string ConfigId { get; }
         string TableName { get; }
@@ -296,5 +299,6 @@ namespace TinyFx.DbCaching
         DbTableRedisData RedisData { get; }
         void BeginUpdate(DbTableRedisData data);
         void EndUpdate();
+        void Updated();
     }
 }

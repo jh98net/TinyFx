@@ -20,6 +20,7 @@ namespace TinyFx.DbCaching.Caching
         public string ConfigId { get; set; }
         public string TableName { get; set; }
         public int PageCount { get; set; }
+        public int PageSize { get; set; }
         public string DataHash { get; set; }
         public string UpdateDate { get; set; }
     }

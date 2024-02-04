@@ -87,7 +87,7 @@ namespace TinyFx.Net
         /// <summary>
         /// 序列化方式
         /// </summary>
-        public SerializeMode SerializeMode { get; set; } = SerializeMode.Json;
+        public SerializeMode SerializeMode { get; set; } = SerializeMode.JsonNet;
         public Dictionary<string, string> Settings;
     }
 }

@@ -3,6 +3,7 @@ using EasyNetQ;
 using SqlSugar;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using TinyFx.Collections;
@@ -14,6 +15,7 @@ using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Hosting;
 using TinyFx.Hosting.Services;
 using TinyFx.Logging;
+using TinyFx.Text;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace TinyFx.DbCaching
@@ -23,7 +25,7 @@ namespace TinyFx.DbCaching
     /// </summary>
     public static class DbCachingUtil
     {
-        // key: typename|splitDbKeys value: configId|tablename
+        // key: typename|splitDbKey value: configId|tablename
         internal static ConcurrentDictionary<string, string> CachKeyDict = new();
         // key: configId|tableName ===> [eoTypeName, memory]
         internal static ConcurrentDictionary<string, ConcurrentDictionary<string, object>> CacheDict = new();
@@ -34,11 +36,11 @@ namespace TinyFx.DbCaching
         /// </summary>
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
         /// <param name="id">主键值</param>
-        /// <param name="splitDbKeys">分库路由数据</param>
+        /// <param name="splitDbKey">分库路由数据</param>
         /// <returns></returns>
-        public static TEntity GetSingle<TEntity>(object id, params object[] splitDbKeys)
+        public static TEntity GetSingle<TEntity>(object id, object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetSingle(id);
+            => GetCache<TEntity>(splitDbKey).GetSingle(id);
 
         /// <summary>
         /// 获取单个缓存项
@@ -46,17 +48,17 @@ namespace TinyFx.DbCaching
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
         /// <param name="fieldsExpr">主键或者唯一索引值的列定义</param>
         /// <param name="valuesEntity">主键或者唯一索引值的值定义</param>
-        /// <param name="splitDbKeys">分库路由数据</param>
+        /// <param name="splitDbKey">分库路由数据</param>
         /// <returns></returns>
-        public static TEntity GetSingle<TEntity>(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity, params object[] splitDbKeys)
+        public static TEntity GetSingle<TEntity>(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity, object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetSingle(fieldsExpr, valuesEntity);
-        public static TEntity GetSingle<TEntity>(Expression<Func<TEntity>> expr, params object[] splitDbKeys)
+            => GetCache<TEntity>(splitDbKey).GetSingle(fieldsExpr, valuesEntity);
+        public static TEntity GetSingle<TEntity>(Expression<Func<TEntity>> expr, object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetSingle(expr);
-        public static TEntity GetSingleByKey<TEntity>(string fieldsKey, string valuesKey, params object[] splitDbKeys)
+            => GetCache<TEntity>(splitDbKey).GetSingle(expr);
+        public static TEntity GetSingleByKey<TEntity>(string fieldsKey, string valuesKey, object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetSingleByKey(fieldsKey, valuesKey);
+            => GetCache<TEntity>(splitDbKey).GetSingleByKey(fieldsKey, valuesKey);
         #endregion
 
         #region GetList
@@ -66,27 +68,27 @@ namespace TinyFx.DbCaching
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
         /// <param name="fieldsExpr">索引值的列定义</param>
         /// <param name="valuesEntity">索引值的值定义</param>
-        /// <param name="splitDbKeys">分库路由数据</param>
+        /// <param name="splitDbKey">分库路由数据</param>
         /// <returns></returns>
-        public static List<TEntity> GetList<TEntity>(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity, params object[] splitDbKeys)
+        public static List<TEntity> GetList<TEntity>(Expression<Func<TEntity, object>> fieldsExpr, object valuesEntity, object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetList(fieldsExpr, valuesEntity);
-        public static List<TEntity> GetList<TEntity>(Expression<Func<TEntity>> expr, params object[] splitDbKeys)
+            => GetCache<TEntity>(splitDbKey).GetList(fieldsExpr, valuesEntity);
+        public static List<TEntity> GetList<TEntity>(Expression<Func<TEntity>> expr, object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetList(expr);
-        public static List<TEntity> GetListByKey<TEntity>(string fieldsKey, string valuesKey, params object[] splitDbKeys)
+            => GetCache<TEntity>(splitDbKey).GetList(expr);
+        public static List<TEntity> GetListByKey<TEntity>(string fieldsKey, string valuesKey, object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetListByKey(fieldsKey, valuesKey);
+            => GetCache<TEntity>(splitDbKey).GetListByKey(fieldsKey, valuesKey);
 
         /// <summary>
         /// 获取所有缓存项
         /// </summary>
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
-        /// <param name="splitDbKeys">分库路由数据</param>
+        /// <param name="splitDbKey">分库路由数据</param>
         /// <returns></returns>
-        public static List<TEntity> GetAllList<TEntity>(params object[] splitDbKeys)
+        public static List<TEntity> GetAllList<TEntity>(object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetAllList();
+            => GetCache<TEntity>(splitDbKey).GetAllList();
         #endregion
 
         #region GetOrAddCustom
@@ -96,22 +98,22 @@ namespace TinyFx.DbCaching
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="name"></param>
         /// <param name="func"></param>
-        /// <param name="splitDbKeys"></param>
+        /// <param name="splitDbKey"></param>
         /// <returns></returns>
-        public static Dictionary<string, TEntity> GetOrAddCustom<TEntity>(string name, Func<List<TEntity>, Dictionary<string, TEntity>> func, params object[] splitDbKeys)
+        public static Dictionary<string, TEntity> GetOrAddCustom<TEntity>(string name, Func<List<TEntity>, Dictionary<string, TEntity>> func, object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetOrAddCustom(name, func);
+            => GetCache<TEntity>(splitDbKey).GetOrAddCustom(name, func);
         /// <summary>
         /// 自定义列表缓存，name唯一
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="name"></param>
         /// <param name="func"></param>
-        /// <param name="splitDbKeys"></param>
+        /// <param name="splitDbKey"></param>
         /// <returns></returns>
-        public static Dictionary<string, List<TEntity>> GetOrAddCustom<TEntity>(string name, Func<List<TEntity>, Dictionary<string, List<TEntity>>> func, params object[] splitDbKeys)
+        public static Dictionary<string, List<TEntity>> GetOrAddCustom<TEntity>(string name, Func<List<TEntity>, Dictionary<string, List<TEntity>>> func, object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetOrAddCustom(name, func);
+            => GetCache<TEntity>(splitDbKey).GetOrAddCustom(name, func);
         /// <summary>
         /// 自定义对象缓存，name唯一
         /// </summary>
@@ -119,25 +121,25 @@ namespace TinyFx.DbCaching
         /// <typeparam name="TCache"></typeparam>
         /// <param name="name"></param>
         /// <param name="func"></param>
-        /// <param name="splitDbKeys"></param>
+        /// <param name="splitDbKey"></param>
         /// <returns></returns>
-        public static TCache GetOrAddCustom<TEntity, TCache>(string name, Func<List<TEntity>, TCache> func, params object[] splitDbKeys)
+        public static TCache GetOrAddCustom<TEntity, TCache>(string name, Func<List<TEntity>, TCache> func, object splitDbKey = null)
           where TEntity : class, new()
-            => GetCache<TEntity>(splitDbKeys).GetOrAddCustom(name, func);
+            => GetCache<TEntity>(splitDbKey).GetOrAddCustom(name, func);
 
         /// <summary>
         /// 获取缓存对象DbCacheMemory
         /// </summary>
         /// <typeparam name="TEntity">有SugarTableAttribute的数据库实体类</typeparam>
-        /// <param name="splitDbKeys">分库路由数据</param>
+        /// <param name="splitDbKey">分库路由数据</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static DbCacheMemory<TEntity> GetCache<TEntity>(params object[] splitDbKeys)
+        public static DbCacheMemory<TEntity> GetCache<TEntity>(object splitDbKey = null)
           where TEntity : class, new()
         {
-            var key = splitDbKeys == null || splitDbKeys.Length == 0
+            var key = splitDbKey == null
                 ? typeof(TEntity).FullName
-                : $"{typeof(TEntity).FullName}|{string.Join('|', splitDbKeys)}";
+                : $"{typeof(TEntity).FullName}|{splitDbKey}";
 
             // configId|tableName
             var cacheKey = CachKeyDict.GetOrAdd(key, k =>
@@ -146,7 +148,7 @@ namespace TinyFx.DbCaching
                 if (attr == null)
                     throw new Exception($"内存缓存类型仅支持有SugarTableAttribute的类。type: {typeof(TEntity).FullName}");
                 var routingProvider = DIUtil.GetRequiredService<IDbSplitProvider>();
-                var configId = routingProvider.SplitDb<TEntity>(splitDbKeys);
+                var configId = routingProvider.SplitDb<TEntity>(splitDbKey);
                 return GetCacheKey(configId, attr.TableName);
             });
             // configId|tableName => dict
@@ -157,11 +159,11 @@ namespace TinyFx.DbCaching
             var ret = dict.GetOrAdd(cacheName, (k) => new DbCacheMemory<TEntity>(cacheKeys.configId, cacheKeys.tableName));
             return (DbCacheMemory<TEntity>)ret;
         }
-        internal static object PreloadCache(Type entityType, params object[] splitDbKeys)
+        internal static object PreloadCache(Type entityType, object splitDbKey = null)
         {
-            var key = splitDbKeys == null || splitDbKeys.Length == 0
+            var key = splitDbKey == null
                 ? entityType.FullName
-                : $"{entityType.FullName}|{string.Join('|', splitDbKeys)}";
+                : $"{entityType.FullName}|{splitDbKey}";
 
             // configId|tableName
             var cacheKey = CachKeyDict.GetOrAdd(key, k =>
@@ -171,7 +173,8 @@ namespace TinyFx.DbCaching
                     throw new Exception($"内存缓存类型仅支持有SugarTableAttribute的类。type: {entityType.FullName}");
                 var routingProvider = DIUtil.GetRequiredService<IDbSplitProvider>();
                 var method = routingProvider.GetType().GetMethod("SplitDb").MakeGenericMethod(entityType);
-                var configId = method.Invoke(routingProvider, new object[] { splitDbKeys }) as string;
+                var paras = splitDbKey == null ? null : new object[] { splitDbKey };
+                var configId = method.Invoke(routingProvider, paras) as string;
                 return GetCacheKey(configId, attr.TableName);
             });
             // configId|tableName => dict
@@ -236,6 +239,8 @@ namespace TinyFx.DbCaching
         /// <returns></returns>
         public static async Task PublishUpdate(DbCacheChangeMessage message)
         {
+            if (message.Changed == null || message.Changed.Count == 0)
+                throw new Exception("DbCachingUtil.PublishUpdate时message.Changed必须有值");
             foreach (var item in message.Changed)
             {
                 if (!await ContainsCacheItem(item.ConfigId, item.TableName, message.RedisConnectionStringName))
@@ -253,6 +258,28 @@ namespace TinyFx.DbCaching
                     break;
             }
         }
+        /// <summary>
+        /// 发布更新全部通知
+        /// </summary>
+        /// <param name="redisConnectionStringName"></param>
+        /// <returns></returns>
+        public static async Task<bool> PublishUpdateAll(string redisConnectionStringName = null)
+        {
+            var msg = new DbCacheChangeMessage
+            {
+                RedisConnectionStringName = redisConnectionStringName,
+                PublishMode = DbCachingPublishMode.Redis,
+                Changed = await GetAllCacheItem(redisConnectionStringName)
+            };
+
+            if (msg.Changed?.Count > 0)
+            {
+                await PublishUpdate(msg);
+                return true;
+            }
+            else
+                return false;
+        }
 
         internal const string DB_CACHING_CHECK_KEY = "DB_CACHING_CHECK_KEY";
         internal const string DB_CACHING_CHECK_DATA = "DB_CACHING_CHECK_DATA";
@@ -260,20 +287,56 @@ namespace TinyFx.DbCaching
         /// <summary>
         /// 发送验证消息
         /// </summary>
+        /// <param name="items">验证的缓存项，null为全部</param>
         /// <param name="redisConnectionStringName"></param>
         /// <param name="timeoutSeconds">单个host验证的timeout秒</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<List<DbCacheCheckResult>> PublishCheck(string redisConnectionStringName = null, int timeoutSeconds = 5)
+        public static async Task<DbCacheCheckResult> PublishCheck(List<DbCacheItem> items = null, string redisConnectionStringName = null, int timeoutSeconds = 5)
         {
-            var ret = new List<DbCacheCheckResult>();
+            var ret = new DbCacheCheckResult();
+            if (items == null || items.Count == 0)
+                items = await GetAllCacheItem(redisConnectionStringName);
+
+            // 1)验证数据库与redis是否一致
+            var checkItems = new Dictionary<string, DbCacheCheckItem>();
+            foreach (var item in items)
+            {
+                var dataProvider = new PageDataProvider(item.ConfigId, item.TableName, redisConnectionStringName);
+                var dbData = await dataProvider.GetDbTableData();
+                var redisData = await dataProvider.GetRedisValues();
+                if (redisData.DataHash != dbData.DataHash)
+                {
+                    ret.RedisAndDbDiffs.Add(item);
+                }
+                else
+                {
+                    var key = GetCacheKey(item.ConfigId, item.TableName);
+                    checkItems.Add(key, new DbCacheCheckItem
+                    {
+                        ConfigId = item.ConfigId,
+                        TableName = item.TableName,
+                        DbHash = dbData.DataHash,
+                    });
+                }
+            }
+            if (ret.RedisAndDbDiffs.Count > 0)
+            {
+                ret.Error = "存在redis缓存与数据库数据不一致的项";
+                return ret;
+            }
+
+            // 发送验证消息
             var msg = new DbCacheCheckMessage
             {
-                TraceId = StringUtil.GetGuidString(),
+                TraceId = ObjectId.NewId(),
                 RedisConnectionStringName = redisConnectionStringName,
-                CheckDate = DateTime.Now.ToFormatString()
+                CheckDate = DateTime.Now.ToFormatString(),
+                CheckItems = checkItems,
             };
             await RedisUtil.PublishAsync(msg, redisConnectionStringName);
+
+            // 获取服务信息
             var registerService = DIUtil.GetService<ITinyFxHostRegisterService>();
             if (registerService == null)
                 throw new Exception("获取所有host的DbCaching缓存检查数据异常，ITinyFxHostRegisterService不存在");
@@ -292,13 +355,13 @@ namespace TinyFx.DbCaching
 
                 if (waitTime > maxTime)
                 {
-                    ret.Add(new DbCacheCheckResult
+                    ret.CacheAndDbDiffs.Add(new DbCacheCheckServiceCache
                     {
                         ServiceId = serviceId,
-                        Success = false
+                        Success = false,
+                        Error = "服务未收到验证消息"
                     });
                     continue;
-                    //throw new Exception($"DbCachingUtil.PublishCheck操作超时，serviceId:{serviceId}");
                 }
                 var traceId = await registerService.GetHostData<string>(serviceId, DB_CACHING_CHECK_KEY, redisConnectionStringName);
                 if (!traceId.HasValue || traceId.Value != msg.TraceId)
@@ -306,16 +369,21 @@ namespace TinyFx.DbCaching
                     idQueue.Enqueue((serviceId, waitTime));
                     continue;
                 }
-                var items = await registerService.GetHostData<List<DbCacheCheckItem>>(serviceId
+                var serviceItems = await registerService.GetHostData<List<DbCacheCheckServiceItem>>(serviceId
                     , DB_CACHING_CHECK_DATA, redisConnectionStringName);
-                var result = new DbCacheCheckResult
-                {
-                    ServiceId = serviceId,
-                    Success = true,
-                    Items = items.HasValue ? items.Value : null
-                };
-                ret.Add(result);
+
+                var result = new DbCacheCheckServiceCache();
+                result.ServiceId = serviceId;
+                if (serviceItems != null && serviceItems.HasValue)
+                    result.Items = serviceItems.Value;
+                result.Success = result.Items == null || result.Items.Count == 0;
+                if (!result.Success)
+                    result.Error = "服务存在缓存不一致";
+                ret.CacheAndDbDiffs.Add(result);
             }
+            ret.Success = ret.CacheAndDbDiffs.TrueForAll(x => x.Success);
+            if (!ret.Success)
+                ret.Error = "存在服务缓存和服务内存缓存不一致的项";
             return ret;
         }
 

@@ -21,7 +21,7 @@ namespace TinyFx.DbCaching.ChangeConsumers
             var logger = new LogBuilder(Microsoft.Extensions.Logging.LogLevel.Warning, "内存缓存更新通知消费")
                 .AddField("DbCaching.PublishMode", _mode.ToString())
                 .AddField("DbCaching.Message", SerializerUtil.SerializeJson(message));
-            var list = new List<(IDbCacheMemoryUpdate cache, DbTableRedisData data)>();
+            var list = new List<(IDbCacheMemory cache, DbTableRedisData data)>();
             try
             {
                 foreach (var item in message.Changed)
@@ -43,7 +43,7 @@ namespace TinyFx.DbCaching.ChangeConsumers
                     {
                         dict.Values.ForEach(x =>
                         {
-                            list.Add(((IDbCacheMemoryUpdate)x, redisValues));
+                            list.Add(((IDbCacheMemory)x, redisValues));
                         });
                     }
                 }
@@ -51,6 +51,10 @@ namespace TinyFx.DbCaching.ChangeConsumers
                 list.ForEach(x =>
                 {
                     x.cache.EndUpdate();
+                });
+                list.ForEach(x =>
+                {
+                    x.cache.Updated();
                     logger.AddMessage($"更新成功: {x.cache.ConfigId}.{x.cache.TableName} count:{x.cache.RowCount}");
                 });
             }

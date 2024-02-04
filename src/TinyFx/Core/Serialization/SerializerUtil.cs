@@ -143,7 +143,7 @@ namespace TinyFx
         /// 设置System.Text.Json的Options
         /// </summary>
         /// <param name="options"></param>
-        public static JsonSerializerOptions ConfigJsonSerializerOptions(JsonSerializerOptions options)
+        public static JsonSerializerOptions ConfigJsonOptions(JsonSerializerOptions options)
         {
             // 属性名称不区分大小写
             options.PropertyNameCaseInsensitive = true;
@@ -181,7 +181,7 @@ namespace TinyFx
         /// <returns></returns>
         public static JsonSerializerOptions GetJsonOptions()
         {
-            return ConfigJsonSerializerOptions(new JsonSerializerOptions());
+            return ConfigJsonOptions(new JsonSerializerOptions());
         }
         /// <summary>
         /// 提供与System.Text.Json.JsonSerializer一起使用的选项。
@@ -192,7 +192,7 @@ namespace TinyFx
             {
                 if (_jsonOptions == null)
                 {
-                    _jsonOptions = ConfigJsonSerializerOptions(new JsonSerializerOptions());
+                    _jsonOptions = ConfigJsonOptions(new JsonSerializerOptions());
                 }
                 return _jsonOptions;
             }
@@ -292,7 +292,7 @@ namespace TinyFx
                 return _defaultJsonNetSettings;
             }
         }
-        public static Newtonsoft.Json.JsonSerializerSettings GetJsonSerializerSettings()
+        public static Newtonsoft.Json.JsonSerializerSettings GetJsonNetSettings()
         {
             return ConfigJsonNetSettings(new Newtonsoft.Json.JsonSerializerSettings());
         }

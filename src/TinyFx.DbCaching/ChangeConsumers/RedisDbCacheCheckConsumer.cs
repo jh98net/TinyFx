@@ -18,26 +18,27 @@ namespace TinyFx.DbCaching.ChangeConsumers
         {
             if (!ConfigUtil.Host.RegisterEnabled)
                 return;
-            var list = new List<DbCacheCheckItem>();
-            var listDCache = new DbCacheListDCache(message.RedisConnectionStringName);
+            var list = new List<DbCacheCheckServiceItem>();
+            //var listDCache = new DbCacheListDCache(message.RedisConnectionStringName);
             var values = DbCachingUtil.CacheDict.Values.ToArray();
             foreach (var dict in values)
             {
                 dict.Values.ForEach(async (x) =>
                 {
-                    var cacheData = ((IDbCacheMemoryUpdate)x).RedisData;
+                    var cacheData = ((IDbCacheMemory)x).RedisData;
                     var key = DbCachingUtil.GetCacheKey(cacheData.ConfigId, cacheData.TableName);
-                    var redisData = (await listDCache.GetAsync(key)).Value;
-                    if (redisData.DataHash != cacheData.DataHash || redisData.UpdateDate != cacheData.UpdateDate)
+                    if (!message.CheckItems.ContainsKey(key))
+                        return;
+                    var dbHash = message.CheckItems[key].DbHash;
+                    if (cacheData.DataHash != dbHash)
                     {
-                        list.Add(new DbCacheCheckItem
+                        list.Add(new DbCacheCheckServiceItem
                         {
                             ConfigId = cacheData.ConfigId,
                             TableName = cacheData.TableName,
-                            RedisHash = redisData.DataHash,
                             CacheHash = cacheData.DataHash,
-                            RedisUpdate = redisData.UpdateDate,
                             CacheUpdate = cacheData.UpdateDate,
+                            DbHash = dbHash
                         });
                     }
                 });

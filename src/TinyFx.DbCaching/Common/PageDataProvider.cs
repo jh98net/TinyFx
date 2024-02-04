@@ -30,9 +30,6 @@ namespace TinyFx.DbCaching
         public async Task<DbTableRedisData> SetRedisValues()
         {
             var listDCache = new DbCacheListDCache(ConnectionStringName);
-            var dataDCache = new DbCacheDataDCache(_configId, _tableName, ConnectionStringName);
-            var ret = await GetDbTableData();
-
             var key = DbCachingUtil.GetCacheKey(_configId, _tableName);
             var listDo1 = await listDCache.GetAsync(key);
             // 避免并发
@@ -42,12 +39,14 @@ namespace TinyFx.DbCaching
                 redLock.Release();
                 throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
             }
+            var ret = await GetDbTableData();
             var listDo2 = await listDCache.GetAsync(key);
             if (listDo1.Value?.UpdateDate != listDo2.Value?.UpdateDate) //已更新
                 return ret;
 
             // 装载数据
             int i = 0;
+            var dataDCache = new DbCacheDataDCache(_configId, _tableName, ConnectionStringName);
             await dataDCache.KeyDeleteAsync();
             foreach (var pageString in ret.PageList)
             {
@@ -58,6 +57,7 @@ namespace TinyFx.DbCaching
             {
                 ConfigId = _configId,
                 TableName = _tableName,
+                PageSize = ret.PageSize,
                 PageCount = ret.PageCount,
                 DataHash = ret.DataHash,
                 UpdateDate = ret.UpdateDate
@@ -76,10 +76,19 @@ namespace TinyFx.DbCaching
                 return await SetRedisValues();
             }
 
+            // 避免并发
+            using var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{key}", 180);
+            if (!redLock.IsLocked)
+            {
+                redLock.Release();
+                throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
+            }
+
             var ret = new DbTableRedisData()
             {
                 ConfigId = listDo.Value.ConfigId,
                 TableName = listDo.Value.TableName,
+                PageSize = listDo.Value.PageSize,
                 PageCount = listDo.Value.PageCount,
                 DataHash = listDo.Value.DataHash,
                 UpdateDate = listDo.Value.UpdateDate,
@@ -92,17 +101,18 @@ namespace TinyFx.DbCaching
             }
             return ret;
         }
-        private async Task<DbTableRedisData> GetDbTableData()
+        public async Task<DbTableRedisData> GetDbTableData()
         {
             var ret = new DbTableRedisData()
             {
                 ConfigId = _configId,
                 TableName = _tableName,
+                PageSize = DATA_PAGE_SIZE,
                 UpdateDate = DateTime.UtcNow.ToFormatString()
             };
             var totalList = await DbUtil.GetDbById(_configId).Queryable<object>()
                 .AS(_tableName).ToListAsync();
-            var pageList = totalList.ToPage(DATA_PAGE_SIZE);
+            var pageList = totalList.ToPage(ret.PageSize);
             ret.PageCount = pageList.Count;
             string dataString = null;
             foreach (var item in pageList)
@@ -119,6 +129,7 @@ namespace TinyFx.DbCaching
     {
         public string ConfigId { get; set; }
         public string TableName { get; set; }
+        public int PageSize { get; set; }
         public int PageCount { get; set; }
         public string DataHash { get; set; }
         public string UpdateDate { get; set; }
