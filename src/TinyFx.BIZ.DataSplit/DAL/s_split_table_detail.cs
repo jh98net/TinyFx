@@ -15,7 +15,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
 
             this.ColumnType =0;
             this.HandleMode =0;
-            this.RowCount =0;
+            this.RowNum =0;
             this.Status =0;
             this.RecDate =DateTime.Now;
 
@@ -57,7 +57,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public string ColumnName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId)
+           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId2-数值天3-周4-月5-季6-年)
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -65,11 +65,10 @@ namespace TinyFx.BIZ.DataSplit.DAL
 
            /// <summary>
            /// Desc:处理模式
-			///              0-未知
-			///              1-迁移-删除 ==> 保留天数: MoveKeepMode + MoveKeepValue
-			///              2-迁移-备份 ==> 保留天数: MoveKeepMode + MoveKeepValue
-			///                                          目标表名: MoveTableMode + MoveTableValue
-			///              3-分表-按最大行数 ==> SplitMaxRowCount=最大行数
+			///              0-无
+			///              1-迁移-删除 ==> MoveMode + MoveKeepValue
+			///              2-迁移-备份 ==> MoveMode + MoveKeepValue
+			///              3-分表-按最大行数 ==> SplitMaxRowCount + SplitMaxRowHours
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -83,32 +82,46 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public string SplitTableName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段最小值(包含)
+           /// Desc:起始值(包含)
            /// Default:
            /// Nullable:True
            /// </summary>           
-           public string? ColumnMin {get;set;}
+           public string? BeginValue {get;set;}
 
            /// <summary>
-           /// Desc:分表字段最大值(不包含)
+           /// Desc:结束值(不包含)
            /// Default:
            /// Nullable:True
            /// </summary>           
-           public string? ColumnMax {get;set;}
+           public string? EndValue {get;set;}
+
+           /// <summary>
+           /// Desc:起始日期(包含)
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public DateTime? BeginDate {get;set;}
+
+           /// <summary>
+           /// Desc:结束日期(不包含)
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public DateTime? EndDate {get;set;}
 
            /// <summary>
            /// Desc:记录数
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int RowCount {get;set;}
+           public int RowNum {get;set;}
 
            /// <summary>
            /// Desc:备份待删除执行数据
            /// Default:
            /// Nullable:True
            /// </summary>           
-           public string? BackupDeleteData {get;set;}
+           public string? WaitDeleteData {get;set;}
 
            /// <summary>
            /// Desc:状态(0-无效1-有效2-备份待删除)

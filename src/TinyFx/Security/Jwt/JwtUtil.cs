@@ -121,7 +121,7 @@ namespace TinyFx.Security
             // iat
             var iat = claims.FirstOrDefault(item => item.Type == "iat")?.Value;
             if (iat != null)
-                ret.IssuedAt = TinyFxUtil.TimestampToDateTime(iat);
+                ret.IssuedAt = DateTimeUtil.TimestampToDateTime(iat);
             // userIp
             ret.UserIp = claims.FirstOrDefault(item => item.Type == "uip")?.Value;
             // customData
@@ -129,7 +129,7 @@ namespace TinyFx.Security
             // exp
             var exp = claims.FirstOrDefault(item => item.Type == "exp")?.Value;
             if (exp != null)
-                ret.Expires = TinyFxUtil.TimestampToUtcDateTime(exp);
+                ret.Expires = DateTimeUtil.TimestampToUtcDateTime(exp);
             return ret;
         }
         private static JwtAuthSection GetSection(string signingKey = null)

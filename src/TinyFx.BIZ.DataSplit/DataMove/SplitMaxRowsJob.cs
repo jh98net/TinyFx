@@ -58,9 +58,9 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 ColumnType = _option.ColumnType,
                 HandleMode = _option.HandleMode,
                 SplitTableName = _option.TableName,
-                ColumnMin = tableData.MinValue,
-                ColumnMax = null,
-                RowCount = count,
+                BeginValue = tableData.MinValue,
+                EndValue = null,
+                RowNum = count,
                 Status = 1,
                 RecDate = DateTime.UtcNow
             });
@@ -75,9 +75,9 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 ColumnType = _option.ColumnType,
                 HandleMode = _option.HandleMode,
                 SplitTableName = tableData.SplitTableName,
-                ColumnMin = tableData.NextMinValue,
-                ColumnMax = null,
-                RowCount = count,
+                BeginValue = tableData.NextMinValue,
+                EndValue = null,
+                RowNum = count,
                 Status = 1,
                 RecDate = DateTime.UtcNow
             });
@@ -99,7 +99,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             var count = await _database.Queryable<object>().AS(lastEo.SplitTableName).CountAsync();
             if (count == 0 || count < _option.SplitMaxRowCount)
                 return;
-            lastEo.RowCount = count;
+            lastEo.RowNum = count;
 
             var tableData = await GetTableData(lastEo.SplitTableName);
             var newEo = new Ss_split_table_detailEO
@@ -112,9 +112,9 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 ColumnType = _option.ColumnType,
                 HandleMode = _option.HandleMode,
                 SplitTableName = tableData.SplitTableName,
-                ColumnMin = tableData.NextMinValue,
-                ColumnMax = null,
-                RowCount = 0,
+                BeginValue = tableData.NextMinValue,
+                EndValue = null,
+                RowNum = 0,
                 Status = 1,
                 RecDate = DateTime.UtcNow
             };
@@ -123,7 +123,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             try
             {
                 await tm.GetDb().Updateable(lastEo)
-                    .UpdateColumns(it => new { it.RowCount })
+                    .UpdateColumns(it => new { it.RowNum })
                     .ExecuteCommandAsync();
                 await tm.GetDb().Insertable(newEo).ExecuteCommandAsync();
                 await CreateTable(tableData.SplitTableName, GetDb(tm));

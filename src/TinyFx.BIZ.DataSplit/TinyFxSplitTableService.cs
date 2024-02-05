@@ -28,7 +28,7 @@ namespace TinyFx.BIZ.DataSplit
                     ret.Add(new SplitTableInfo
                     {
                         TableName = item.SplitTableName,
-                        String = item.ColumnMin
+                        String = item.BeginValue
                     });
                 }
             }

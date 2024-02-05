@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using TinyFx.ChineseCalendar;
 
 namespace TinyFx
 {
-    /// <summary>
-    /// 提供TinyFx辅助方法
-    /// </summary>
-    public static partial class TinyFxUtil
+    public static class DateTimeUtil
     {
         #region 日期
 
@@ -78,6 +77,13 @@ namespace TinyFx
             DateTime start = new DateTime(date.Year, 1, 1);
             return WeekCount(start, date);
         }
+        public static int ToYearWeek(this DateTime date)
+            => date.ToYearWeekString().ToInt32();
+        public static string ToYearWeekString(this DateTime date)
+        {
+            var week = WeekOfYear(date).ToString().PadLeft(2, '0');
+            return $"{date.Year}{week}";
+        }
 
         /// <summary>
         /// 获取指定日期在这一月的第几周中
@@ -145,6 +151,13 @@ namespace TinyFx
         public static DateTime LastDayOfPrdviousMonth(this DateTime dateTime)
             => dateTime.AddDays(1 - dateTime.Day).AddDays(-1);
 
+        public static int ToYearQuarter(this DateTime date)
+        {
+            var ret = Math.DivRem(date.Month, 3, out var r);
+            if (r > 0)
+                ret++;
+            return ret;
+        }
         #endregion
 
         #region DateTime和TimeStamp (又叫Unix时间戳, Unix epoch, Unix time, Unix timestamp)
@@ -161,7 +174,7 @@ namespace TinyFx
         }
         public static long UtcDateTimeToTimestamp(this DateTime date, bool toSeconds = true)
         {
-            date =DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
             return DateTimeToTimestamp(date, toSeconds);
         }
 

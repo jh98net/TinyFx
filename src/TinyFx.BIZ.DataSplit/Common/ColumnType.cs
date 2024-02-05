@@ -10,8 +10,10 @@ namespace TinyFx.BIZ.DataSplit.Common
     {
         DateTime = 0,
         ObjectId = 1,
-        NumYear = 2,
-        NumMonth = 3,
-        NumDay = 4
+        NumDay = 2,
+        NumWeek = 3,
+        NumMonth = 4,
+        NumQuarter = 5,
+        NumYear = 6,
     }
 }

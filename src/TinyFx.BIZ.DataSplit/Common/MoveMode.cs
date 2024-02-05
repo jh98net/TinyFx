@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TinyFx.BIZ.DataSplit.Common
 {
-    public enum MoveTableMode
+    public enum MoveMode
     {
         None = 0,
         Day = 1,
@@ -14,6 +14,5 @@ namespace TinyFx.BIZ.DataSplit.Common
         Month = 3,
         Quarter = 4,
         Year = 5,
-        Custom = 6
     }
 }

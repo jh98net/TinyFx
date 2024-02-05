@@ -1,4 +1,5 @@
-﻿using SqlSugar;
+﻿using Org.BouncyCastle.Ocsp;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,6 +25,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
         protected DateTime _execTime;
         protected Ss_split_table_logEO _logEo;
         protected ISqlSugarClient _database;
+        protected ColumnValueHelper _columnHelper;
         public BaseDataMoveJob(Ss_split_tableEO option, DateTime execTime)
         {
             _logger = new LogBuilder("DataMove")
@@ -36,6 +38,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 BATCH_PAGE_SIZE = option.BathPageSize;
 
             _database = GetDb();
+            _columnHelper = new ColumnValueHelper(option);
         }
         protected ISqlSugarClient GetDb(DbTransactionManager tm = null)
         {
@@ -56,7 +59,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             if (oldLogEo?.Count > 0)
             {
                 LogUtil.Debug($"DataMove时当天有正在执行的任务。databaseId:{_option.DatabaseId} tableName:{_option.TableName}");
-                //return;
+                return;
             }
 
             await InsertLogEo();
@@ -103,19 +106,20 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 ColumnName = _option.ColumnName,
                 ColumnType = _option.ColumnType,
                 HandleMode = _option.HandleMode,
-                MoveKeepMode = _option.MoveKeepMode,
+                MoveMode = _option.MoveMode,
                 MoveKeepValue = _option.MoveKeepValue,
-                MoveTableMode = _option.MoveTableMode,
-                MoveTableValue = _option.MoveTableValue,
                 MoveWhere = _option.MoveWhere,
                 SplitMaxRowCount = _option.SplitMaxRowCount,
+                SplitMaxRowHours = _option.SplitMaxRowHours,
                 HandleOrder = _option.HandleOrder,
                 DbTimeout = DB_TIMEOUT_SECONDS,
                 BathPageSize = BATCH_PAGE_SIZE,
                 ExecTime = _execTime,
                 Status = 0, //状态 0-运行中1-成功2-失败
                 RecDate = oid.UtcDate, //当天仅运行一条
-                HandleLog = string.Empty
+                HandleLog = string.Empty,
+                Exception = string.Empty,
+                HandleTables = string.Empty,
             };
             await DbUtil.InsertAsync(_logEo);
         }
@@ -135,121 +139,12 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             LogUtil.Debug(msg);
             _logEo.HandleLog += msg + Environment.NewLine;
         }
-        protected DateTime GetKeepEndDate()
+
+        protected async Task<ColumnValue> GetBeginValue(ColumnValue endValue)
         {
-            switch ((MoveKeepMode)_option.MoveKeepMode)
-            {
-                case MoveKeepMode.Day:
-                    return _execTime.AddDays(-_option.MoveKeepValue).Date;
-                case MoveKeepMode.Week:
-                    var weekDate = _execTime.AddDays(-_option.MoveKeepValue * 7).Date;
-                    return TinyFxUtil.BeginDayOfWeek(weekDate);
-                case MoveKeepMode.Month:
-                    var monthDate = _execTime.AddMonths(-_option.MoveKeepValue).Date;
-                    return new DateTime(monthDate.Year, monthDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-                case MoveKeepMode.Quarter:
-                    var quarterDate = _execTime.AddMonths(-_option.MoveKeepValue * 3);
-                    var quarterMonth = Math.DivRem(quarterDate.Month - 1, 3, out int _) * 3 + 1;
-                    return new DateTime(quarterDate.Year, quarterMonth, 1, 0, 0, 0, DateTimeKind.Utc);
-                case MoveKeepMode.Year:
-                    return new DateTime(_execTime.Year - _option.MoveKeepValue, 1, 1);
-                default:
-                    throw new Exception("未知的MoveKeepMode");
-            }
+            var sql = $"SELECT MIN(`{_option.ColumnName}`) FROM `{_option.TableName}` WHERE {_columnHelper.GetColumnWhere(null, endValue.Value)}";
+            var value = await _database.Ado.GetScalarAsync(sql);
+            return _columnHelper.ParseColumnValue(value);
         }
-        protected async Task<DateTime?> GetTableMinDate(DateTime endDate)
-        {
-            var sql = $"SELECT MIN(`{_option.ColumnName}`) FROM `{_option.TableName}` WHERE `{_option.ColumnName}` < ";
-            switch ((ColumnType)_option.ColumnType)
-            {
-                case ColumnType.DateTime: // DateTime
-                    sql += $"'{endDate.ToString("yyyy-MM-dd")}'";
-                    break;
-                case ColumnType.ObjectId: // ObjectId
-                    // select FROM_UNIXTIME(CAST(CONV(SUBSTR(UserID, 1, 8), 16, 10) AS UNSIGNED)) from s_user
-                    sql += $"'{ObjectId.TimestampId(endDate)}' AND LENGTH(`{_option.ColumnName}`)=24";
-                    break;
-                case ColumnType.NumYear:
-                    sql += $"{endDate.Year} AND LENGTH(`{_option.ColumnName}`)=4";
-                    break;
-                case ColumnType.NumMonth:
-                    sql += $"{endDate.ToString("yyyyMM").ToInt32()} AND LENGTH(`{_option.ColumnName}`)=6";
-                    break;
-                case ColumnType.NumDay:
-                    sql += $"{endDate.ToString("yyyyMMdd").ToInt32()} AND LENGTH(`{_option.ColumnName}`)=8";
-                    break;
-            }
-            DateTime? ret = null;
-            var begin = await _database.Ado.GetScalarAsync(sql);
-            if (begin != null && begin is not DBNull)
-            {
-                switch ((ColumnType)_option.ColumnType)
-                {
-                    case ColumnType.DateTime:
-                        var dt = begin.ConvertTo<DateTime>();
-                        ret = new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0, DateTimeKind.Utc);
-                        break;
-                    case ColumnType.ObjectId:
-                        var dt1 = ObjectId.ParseTimestamp(begin.ToString());
-                        ret = new DateTime(dt1.Year, dt1.Month, dt1.Day, 0, 0, 0, DateTimeKind.Utc);
-                        break;
-                    case ColumnType.NumYear:
-                        ret = new DateTime(begin.ConvertTo<int>(), 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                        break;
-                    case ColumnType.NumMonth:
-                        var dt3 = Convert.ToString(begin).ToDateTime("yyyyMM");
-                        ret = new DateTime(dt3.Year, dt3.Month, dt3.Day, 0, 0, 0, DateTimeKind.Utc);
-                        break;
-                    case ColumnType.NumDay:
-                        var dt4 = Convert.ToString(begin).ToDateTime("yyyyMMdd");
-                        ret = new DateTime(dt4.Year, dt4.Month, dt4.Day, 0, 0, 0, DateTimeKind.Utc);
-                        break;
-                }
-            }
-            return ret;
-        }
-        protected List<DateTime> GetDayList(DateTime beginDate, DateTime endDate)
-        {
-            var ret = new List<DateTime>();
-            var currDate = beginDate;
-            while (currDate < endDate)
-            {
-                ret.Add(currDate);
-                currDate = currDate.AddDays(1);
-            }
-            return ret;
-        }
-        protected WhereByDayData GetWhereByDay(DateTime currDate)
-        {
-            var ret = new WhereByDayData();
-            switch ((ColumnType)_option.ColumnType)
-            {
-                case ColumnType.DateTime: // DateTime
-                    ret.Begin = currDate.ToString("yyyy-MM-dd");
-                    ret.End = currDate.AddDays(1).ToString("yyyy-MM-dd");
-                    ret.Content = $"`{_option.ColumnName}`>='{ret.Begin}' AND `{_option.ColumnName}`<'{ret.End}'";
-                    break;
-                case ColumnType.ObjectId: // ObjectId
-                    ret.Begin = ObjectId.TimestampId(currDate);
-                    ret.End = ObjectId.TimestampId(currDate.AddDays(1));
-                    ret.Content = $"`{_option.ColumnName}`>='{ret.Begin}' AND `{_option.ColumnName}`<'{ret.End}' AND LENGTH(`{_option.ColumnName}`)=24";
-                    break;
-                case ColumnType.NumYear:
-                    //ret.Begin = 
-                    break;
-            }
-            if (!string.IsNullOrEmpty(_option.MoveWhere))
-            {
-                var where = _option.MoveWhere.ToUpper().Trim().TrimStart("AND ");
-                ret.Content = $"{ret.Content} AND {where}";
-            }
-            return ret;
-        }
-    }
-    internal class WhereByDayData
-    {
-        public string Content { get; set; }
-        public string Begin { get; set; }
-        public string End { get; set; }
     }
 }

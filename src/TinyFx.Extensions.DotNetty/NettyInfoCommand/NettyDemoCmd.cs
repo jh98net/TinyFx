@@ -20,7 +20,7 @@ namespace TinyFx.Extensions.DotNetty.NettyInfoCommand
         public override async Task<NettyDemoAck> Respond(RequestContext ctx, NettyDemoReq request)
         {
             return await Task.Run(() => {
-                var date = TinyFxUtil.TimestampToDateTime(request.DateTime);
+                var date = DateTimeUtil.TimestampToDateTime(request.DateTime);
                 Console.WriteLine($"收到DateTime: {date.ToString("yyyy-MM-dd HH:mm:ss")}");
                 var dt = DateTime.UtcNow;
                 Console.WriteLine($"发送DateTime: {dt.ToString("yyyy-MM-dd HH:mm:ss")}");

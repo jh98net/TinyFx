@@ -11,6 +11,7 @@ TinyFx.Extensions.DotNetty
 TinyFx.Extensions.Serilog
 TinyFx.Extensions.SshNet
 TinyFx.Extensions.StackExchangeRedis
+TinyFx.HCaptcha
 TinyFx.IP2Country
 TinyFx.OAuth
 

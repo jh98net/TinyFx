@@ -13,7 +13,11 @@ namespace TinyFx.BIZ.DataSplit.DAL
     {
            public Ss_split_demoEO(){
 
-            this.DateNum =0;
+            this.NumDay =0;
+            this.NumWeek =0;
+            this.NumMonth =0;
+            this.NumQuarter =0;
+            this.NumYear =0;
             this.OrderNum =0;
             this.RecDate =DateTime.Now;
 
@@ -27,18 +31,39 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public string ObjectID {get;set;}
 
            /// <summary>
-           /// Desc:日期值
+           /// Desc:数值天
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int DateNum {get;set;}
+           public int NumDay {get;set;}
 
            /// <summary>
-           /// Desc:天
-           /// Default:
+           /// Desc:数值周
+           /// Default:0
            /// Nullable:False
            /// </summary>           
-           public DateTime DayId {get;set;}
+           public int NumWeek {get;set;}
+
+           /// <summary>
+           /// Desc:数值月
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int NumMonth {get;set;}
+
+           /// <summary>
+           /// Desc:数值季
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int NumQuarter {get;set;}
+
+           /// <summary>
+           /// Desc:数值年
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int NumYear {get;set;}
 
            /// <summary>
            /// Desc:顺序号

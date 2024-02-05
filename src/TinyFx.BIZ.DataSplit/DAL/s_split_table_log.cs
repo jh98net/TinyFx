@@ -15,17 +15,17 @@ namespace TinyFx.BIZ.DataSplit.DAL
 
             this.ColumnType =0;
             this.HandleMode =0;
-            this.MoveKeepMode =0;
+            this.MoveMode =0;
             this.MoveKeepValue =0;
-            this.MoveTableMode =0;
             this.SplitMaxRowCount =0;
+            this.SplitMaxRowHours =12;
             this.HandleOrder =0;
             this.DbTimeout =0;
             this.BathPageSize =0;
             this.Status =0;
+            this.RecDate =DateTime.Now;
             this.RowNum =0;
             this.HandleSeconds =0;
-            this.RecDate =DateTime.Now;
 
            }
            /// <summary>
@@ -58,7 +58,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public string ColumnName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId)
+           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId2-数值天3-周4-月5-季6-年)
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -66,22 +66,21 @@ namespace TinyFx.BIZ.DataSplit.DAL
 
            /// <summary>
            /// Desc:处理模式
-			///              0-未知
-			///              1-迁移-删除 ==> 保留天数: MoveKeepMode + MoveKeepValue
-			///              2-迁移-备份 ==> 保留天数: MoveKeepMode + MoveKeepValue
-			///                                  目标表名: MoveTableMode + MoveTableValue
-			///              3-分表-按最大行数 ==> SplitMaxRowCount=最大行数 表名=xxx_yyyyMMddHHmmss_3_
+			///              0-无
+			///              1-迁移-删除 ==> MoveMode + MoveKeepValue
+			///              2-迁移-备份 ==> MoveMode + MoveKeepValue
+			///              3-分表-按最大行数 ==> SplitMaxRowCount + SplitMaxRowHours
            /// Default:0
            /// Nullable:False
            /// </summary>           
            public int HandleMode {get;set;}
 
            /// <summary>
-           /// Desc:迁移保留模式(0-天1-月)
+           /// Desc:迁移保留模式(0-无1-天2-周3-月4-季5-年)
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int MoveKeepMode {get;set;}
+           public int MoveMode {get;set;}
 
            /// <summary>
            /// Desc:迁移保留模式的值
@@ -89,20 +88,6 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Nullable:False
            /// </summary>           
            public int MoveKeepValue {get;set;}
-
-           /// <summary>
-           /// Desc:迁移目标表名模式(0-天1-月2-指定表名)
-           /// Default:0
-           /// Nullable:False
-           /// </summary>           
-           public int MoveTableMode {get;set;}
-
-           /// <summary>
-           /// Desc:迁移目标表名模式的值
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? MoveTableValue {get;set;}
 
            /// <summary>
            /// Desc:迁移数据的条件
@@ -119,6 +104,13 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public int SplitMaxRowCount {get;set;}
 
            /// <summary>
+           /// Desc:分表最大记录数时下一个表的间隔小时数
+           /// Default:12
+           /// Nullable:False
+           /// </summary>           
+           public int SplitMaxRowHours {get;set;}
+
+           /// <summary>
            /// Desc:处理顺序(小到大)
            /// Default:0
            /// Nullable:False
@@ -126,7 +118,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public int HandleOrder {get;set;}
 
            /// <summary>
-           /// Desc:数据库执超时（秒）
+           /// Desc:数据库超时（秒）
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -154,14 +146,35 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public int Status {get;set;}
 
            /// <summary>
-           /// Desc:起始时间
+           /// Desc:记录时间
+           /// Default:CURRENT_TIMESTAMP
+           /// Nullable:False
+           /// </summary>           
+           public DateTime RecDate {get;set;}
+
+           /// <summary>
+           /// Desc:起始值
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string? BeginValue {get;set;}
+
+           /// <summary>
+           /// Desc:结束值
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string? EndValue {get;set;}
+
+           /// <summary>
+           /// Desc:起始日期
            /// Default:
            /// Nullable:True
            /// </summary>           
            public DateTime? BeginDate {get;set;}
 
            /// <summary>
-           /// Desc:结束时间
+           /// Desc:结束日期
            /// Default:
            /// Nullable:True
            /// </summary>           
@@ -201,13 +214,6 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Nullable:True
            /// </summary>           
            public string? HandleTables {get;set;}
-
-           /// <summary>
-           /// Desc:记录时间
-           /// Default:CURRENT_TIMESTAMP
-           /// Nullable:False
-           /// </summary>           
-           public DateTime RecDate {get;set;}
 
     }
 }

@@ -15,11 +15,10 @@ namespace TinyFx.BIZ.DataSplit.DAL
 
             this.ColumnType =0;
             this.HandleMode =0;
-            this.MoveKeepMode =0;
+            this.MoveMode =0;
             this.MoveKeepValue =0;
-            this.MoveTableMode =0;
             this.SplitMaxRowCount =0;
-            this.SplitMaxRowHours =0;
+            this.SplitMaxRowHours =12;
             this.HandleOrder =0;
             this.DbTimeout =0;
             this.BathPageSize =0;
@@ -51,7 +50,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public string ColumnName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId)
+           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId2-数值天3-周4-月5-季6-年)
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -60,10 +59,9 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// <summary>
            /// Desc:处理模式
 			///              0-无
-			///              1-迁移-删除 ==> 保留天数: MoveKeepMode + MoveKeepValue
-			///              2-迁移-备份 ==> 保留天数: MoveKeepMode + MoveKeepValue
-			///                                          目标表名: MoveTableMode + MoveTableValue
-			///              3-分表-按最大行数 ==> SplitMaxRowCount=最大行数
+			///              1-迁移-删除 ==> MoveMode + MoveKeepValue
+			///              2-迁移-备份 ==> MoveMode + MoveKeepValue
+			///              3-分表-按最大行数 ==> SplitMaxRowCount + SplitMaxRowHours
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -74,7 +72,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int MoveKeepMode {get;set;}
+           public int MoveMode {get;set;}
 
            /// <summary>
            /// Desc:迁移保留模式的值
@@ -82,20 +80,6 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Nullable:False
            /// </summary>           
            public int MoveKeepValue {get;set;}
-
-           /// <summary>
-           /// Desc:迁移目标表名模式(0-无1-天2-周3-月3-季4-年5-指定表名)
-           /// Default:0
-           /// Nullable:False
-           /// </summary>           
-           public int MoveTableMode {get;set;}
-
-           /// <summary>
-           /// Desc:迁移目标表名模式的值
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? MoveTableValue {get;set;}
 
            /// <summary>
            /// Desc:迁移数据的条件
@@ -113,7 +97,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
 
            /// <summary>
            /// Desc:分表最大记录数时下一个表的间隔小时数
-           /// Default:0
+           /// Default:12
            /// Nullable:False
            /// </summary>           
            public int SplitMaxRowHours {get;set;}
@@ -126,7 +110,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public int HandleOrder {get;set;}
 
            /// <summary>
-           /// Desc:数据库执超时（秒）
+           /// Desc:数据库超时（秒）
            /// Default:0
            /// Nullable:False
            /// </summary>           

@@ -17,8 +17,8 @@ namespace TinyFx.BIZ.DataSplit.Common
             db.DbMaintenance.TruncateTable<Ss_split_demoEO>();
 
             var list = new List<Ss_split_demoEO>();
-            var begin = new DateTime(2023, 2, 3, 0, 0, 0, DateTimeKind.Utc);
-            var end = new DateTime(2024, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+            var begin = new DateTime(2023, 12, 30, 0, 0, 0, DateTimeKind.Utc);
+            var end = DateTime.UtcNow;
             var idx = 1;
             var curr = begin;
             while (curr <= end)
@@ -26,8 +26,11 @@ namespace TinyFx.BIZ.DataSplit.Common
                 var eo = new Ss_split_demoEO
                 {
                     ObjectID = ObjectId.NewId(curr),
-                    DateNum = curr.ToString("yyyyMM").ToInt32(),
-                    DayId = curr,
+                    NumDay = curr.ToString("yyyyMMdd").ToInt32(),
+                    NumWeek = DateTimeUtil.ToYearWeek(curr),
+                    NumMonth = curr.ToString("yyyyMM").ToInt32(),
+                    NumQuarter = $"{curr.Year}{(curr.Month + 2) / 3}".ToInt32(),
+                    NumYear = curr.Year,
                     OrderNum = idx,
                     RecDate = curr,
                 };
@@ -38,8 +41,11 @@ namespace TinyFx.BIZ.DataSplit.Common
                 var eo1 = new Ss_split_demoEO
                 {
                     ObjectID = ObjectId.NewId(curr1),
-                    DateNum = curr.ToString("yyyyMM").ToInt32(),
-                    DayId = curr,
+                    NumDay = curr.ToString("yyyyMMdd").ToInt32(),
+                    NumWeek = DateTimeUtil.ToYearWeek(curr),
+                    NumMonth = curr.ToString("yyyyMM").ToInt32(),
+                    NumQuarter = $"{curr.Year}{(curr.Month + 2) / 3}".ToInt32(),
+                    NumYear = curr.Year,
                     OrderNum = idx,
                     RecDate = curr1,
                 };
@@ -49,6 +55,8 @@ namespace TinyFx.BIZ.DataSplit.Common
                 curr = curr.AddDays(1);
             }
             await db.Fastest<Ss_split_demoEO>().BulkCopyAsync(list);
+            await db.Deleteable<Ss_split_table_logEO>().ExecuteCommandAsync();
+            await db.Deleteable<Ss_split_table_detailEO>().ExecuteCommandAsync();
         }
     }
 }
