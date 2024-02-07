@@ -30,15 +30,8 @@ namespace TinyFx.DbCaching.ChangeConsumers
                     var key = DbCachingUtil.GetCacheKey(item.ConfigId, item.TableName);
                     if (!DbCachingUtil.CacheDict.ContainsKey(key))
                         continue;
-                    DbTableRedisData redisValues = null;
-                    // 等5分钟，1秒申请一次
-                    using (var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{key}", 300))
-                    {
-                        if (!redLock.IsLocked)
-                            throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
-                        redisValues = await new PageDataProvider(item.ConfigId, item.TableName)
+                    var redisValues = await new PageDataProvider(item.ConfigId, item.TableName)
                             .GetRedisValues();
-                    }
                     if (DbCachingUtil.CacheDict.TryGetValue(key, out var dict))
                     {
                         dict.Values.ForEach(x =>

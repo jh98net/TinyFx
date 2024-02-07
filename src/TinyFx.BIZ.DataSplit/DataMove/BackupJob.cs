@@ -265,7 +265,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 begin.Value = _columnHelper.ColumnDateToValue(begin.Date);
                 var item = new BackupData
                 {
-                    BackupTableName = $"{_option.TableName}_{beginDate:yyyyMMddHHmmss}",
+                    BackupTableName = $"{_option.TableName}_{beginDate:yyyyMMdd}",
                     Begin = begin,
                     End = end
                 };

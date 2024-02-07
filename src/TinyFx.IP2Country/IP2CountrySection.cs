@@ -10,11 +10,11 @@ namespace TinyFx.IP2Country
 {
     public class IP2CountrySection : ConfigSection
     {
+        public override string SectionName => "IP2Country";
         public bool Enabled { get; set; }
         public string DbIpSource { get; set; }
         public string AllowIps { get; set; }
         public HashSet<string> AllowIpDict = new();
-        public override string SectionName => "IP2Country";
         public override void Bind(IConfiguration configuration)
         {
             base.Bind(configuration);

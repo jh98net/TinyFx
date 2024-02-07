@@ -20,40 +20,48 @@ namespace TinyFx.DbCaching
         private string _configId { get; }
         private string _tableName { get; }
         public string ConnectionStringName { get; }
+
+        private string _cacheKey;
+        private DbCacheListDCache _listDCache;
+        private DbCacheDataDCache _dataDCache;
         public PageDataProvider(string configId, string tableName, string connectionStringName = null)
         {
             _configId = configId ?? DbUtil.DefaultConfigId;
             _tableName = tableName;
             ConnectionStringName = connectionStringName;
+            //
+            _cacheKey = DbCachingUtil.GetCacheKey(_configId, _tableName);
+            _listDCache = new DbCacheListDCache(ConnectionStringName);
+            _dataDCache = new DbCacheDataDCache(_configId, _tableName, ConnectionStringName);
         }
 
         public async Task<DbTableRedisData> SetRedisValues()
         {
-            var listDCache = new DbCacheListDCache(ConnectionStringName);
-            var key = DbCachingUtil.GetCacheKey(_configId, _tableName);
-            var listDo1 = await listDCache.GetAsync(key);
             // 避免并发
-            using var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{key}", 180);
+            using var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{_cacheKey}", 180);
             if (!redLock.IsLocked)
             {
                 redLock.Release();
-                throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
+                throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{_cacheKey}");
             }
-            var ret = await GetDbTableData();
-            var listDo2 = await listDCache.GetAsync(key);
-            if (listDo1.Value?.UpdateDate != listDo2.Value?.UpdateDate) //已更新
-                return ret;
 
             // 装载数据
-            int i = 0;
-            var dataDCache = new DbCacheDataDCache(_configId, _tableName, ConnectionStringName);
-            await dataDCache.KeyDeleteAsync();
-            foreach (var pageString in ret.PageList)
+            var ret = await GetDbTableData();
+
+            var listDo = await _listDCache.GetAsync(_cacheKey);
+            // 数据不相同
+            if (!listDo.HasValue || listDo.Value.DataHash != ret.DataHash 
+                || listDo.Value.PageSize != ret.PageSize || listDo.Value.PageCount != ret.PageCount)
             {
-                await dataDCache.SetAsync($"{++i}", pageString);
-                await Task.Delay(100);
+                int i = 0;
+                await _dataDCache.KeyDeleteAsync();
+                foreach (var pageString in ret.PageList)
+                {
+                    await _dataDCache.SetAsync($"{++i}", pageString);
+                }
             }
-            await listDCache.SetAsync(key, new DbCacheListDO()
+            await _dataDCache.SetAsync("0", ret.UpdateDate);
+            await _listDCache.SetAsync(_cacheKey, new DbCacheListDO()
             {
                 ConfigId = _configId,
                 TableName = _tableName,
@@ -67,23 +75,22 @@ namespace TinyFx.DbCaching
 
         public async Task<DbTableRedisData> GetRedisValues()
         {
-            var listDCache = new DbCacheListDCache(ConnectionStringName);
-            var dataDCache = new DbCacheDataDCache(_configId, _tableName, ConnectionStringName);
-            var key = DbCachingUtil.GetCacheKey(_configId, _tableName);
-            var listDo = await listDCache.GetAsync(key);
-            if (!listDo.HasValue || !await dataDCache.KeyExistsAsync())
+            var listDo = await _listDCache.GetAsync(_cacheKey);
+            if (!listDo.HasValue || !await _dataDCache.KeyExistsAsync())
             {
                 return await SetRedisValues();
             }
 
             // 避免并发
-            using var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{key}", 180);
+            using var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{_cacheKey}", 180);
             if (!redLock.IsLocked)
             {
                 redLock.Release();
-                throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{key}");
+                throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{_cacheKey}");
             }
-
+            var updateDate = await _dataDCache.GetOrDefaultAsync("0", null);
+            if (updateDate != listDo.Value.UpdateDate)
+                throw new Exception($"DbCacheDataDCache.GetRedisValues()时，DbCacheListDCache的UpdateDate与DbCacheDataDCache的不同。key:{_cacheKey}");
             var ret = new DbTableRedisData()
             {
                 ConfigId = listDo.Value.ConfigId,
@@ -95,9 +102,8 @@ namespace TinyFx.DbCaching
             };
             for (int i = 1; i <= listDo.Value.PageCount; i++)
             {
-                var pageString = await dataDCache.GetOrExceptionAsync(i.ToString());
+                var pageString = await _dataDCache.GetOrExceptionAsync(i.ToString());
                 ret.PageList.Add(pageString);
-                await Task.Delay(100);
             }
             return ret;
         }
@@ -121,7 +127,9 @@ namespace TinyFx.DbCaching
                 ret.PageList.Add(pageString);
                 dataString += pageString;
             }
-            ret.DataHash = SecurityUtil.MD5Hash(dataString);
+            ret.DataHash = !string.IsNullOrEmpty(dataString)
+                ? SecurityUtil.MD5Hash(dataString)
+                : null;
             return ret;
         }
     }

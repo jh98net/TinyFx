@@ -33,6 +33,20 @@ namespace TinyFx
         }
 
         /// <summary>
+        /// 日期下一个星期的第一天
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
+        public static DateTime BeginDayOfNextWeek(DateTime date)
+        {
+            var count = WeekCountOfYear(date.Year);
+            var week = WeekOfYear(date);
+            return week + 1 > count
+                ? BeginDayOfWeek(date.Year + 1, 1)
+                : BeginDayOfWeek(date.Year, week + 1);
+        }
+
+        /// <summary>
         /// 获取指定日期所在周的终止日期，时分秒和传入日期相同
         /// </summary>
         /// <param name="date">指定日期</param>
@@ -151,7 +165,11 @@ namespace TinyFx
         public static DateTime LastDayOfPrdviousMonth(this DateTime dateTime)
             => dateTime.AddDays(1 - dateTime.Day).AddDays(-1);
 
-        public static int ToYearQuarter(this DateTime date)
+        public static string ToYearQuarter(DateTime date)
+        {
+            return $"{date.Year}{QuarterOfYear(date)}";
+        }
+        public static int QuarterOfYear(this DateTime date)
         {
             var ret = Math.DivRem(date.Month, 3, out var r);
             if (r > 0)

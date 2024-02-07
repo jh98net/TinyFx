@@ -42,7 +42,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
         }
         protected ISqlSugarClient GetDb(DbTransactionManager tm = null)
         {
-            var ret = tm == null ? DbUtil.GetDb(_option.DatabaseId) : tm.GetDbById(_option.DatabaseId);
+            var ret = tm == null ? DbUtil.GetDbById(_option.DatabaseId) : tm.GetDbById(_option.DatabaseId);
             ret.Ado.CommandTimeOut = DB_TIMEOUT_SECONDS;
             return ret;
         }

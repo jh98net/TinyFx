@@ -9,6 +9,7 @@ namespace TinyFx.Configuration
     public class HCaptchaSection : ConfigSection
     {
         public override string SectionName => "HCaptcha";
+        public bool Enabled { get; set; } = true;
         /// <summary>
         /// hCaptcha Site Key
         /// </summary>

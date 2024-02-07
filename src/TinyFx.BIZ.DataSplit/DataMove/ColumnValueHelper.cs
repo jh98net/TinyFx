@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Ocsp;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -100,6 +102,38 @@ namespace TinyFx.BIZ.DataSplit.DataMove
 
             return ret;
         }
+        public DateTime ColumnValueToDate(string value)
+        {
+            switch ((ColumnType)_option.ColumnType)
+            {
+                case ColumnType.DateTime:
+                    var dt = value.ToDateTime();
+                    return new DateTime(dt.Year, dt.Month, dt.Day, 0, 0, 0, DateTimeKind.Utc);
+                case ColumnType.ObjectId:
+                    var dt1 = ObjectId.ParseTimestamp(value);
+                    return new DateTime(dt1.Year, dt1.Month, dt1.Day, 0, 0, 0, DateTimeKind.Utc);
+                case ColumnType.NumDay:
+                    var dt2 = value.ToDateTime("yyyyMMdd");
+                    return new DateTime(dt2.Year, dt2.Month, dt2.Day, 0, 0, 0, DateTimeKind.Utc);
+                case ColumnType.NumWeek:
+                    var year = value.Substring(0, 4).ToInt32();
+                    var week = value.Substring(4).ToInt32();
+                    var dt3 = DateTimeUtil.BeginDayOfWeek(year, week);
+                    return new DateTime(dt3.Year, dt3.Month, dt3.Day, 0, 0, 0, DateTimeKind.Utc);
+                case ColumnType.NumMonth:
+                    var dt4 =value.ToDateTime("yyyyMM");
+                    return new DateTime(dt4.Year, dt4.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                case ColumnType.NumQuarter:
+                    var y = value.Substring(0, 4).ToInt32();
+                    var q = value.Substring(4).ToInt32();
+                    var m = q * 3 - 2;
+                    return new DateTime(y, m, 1, 0, 0, 0, DateTimeKind.Utc);
+                case ColumnType.NumYear:
+                    return new DateTime(value.ConvertTo<int>(), 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                default:
+                    throw new Exception($"未知的值。value:{value} columnType:{_option.ColumnType} columnName:{_option.ColumnName}");
+            }
+        }
         public string ColumnDateToValue(DateTime date)
         {
             switch ((ColumnType)_option.ColumnType)
@@ -115,7 +149,7 @@ namespace TinyFx.BIZ.DataSplit.DataMove
                 case ColumnType.NumMonth:
                     return date.ToString("yyyyMM");
                 case ColumnType.NumQuarter:
-                    return date.ToYearQuarter().ToString();
+                    return DateTimeUtil.ToYearQuarter(date);
                 case ColumnType.NumYear:
                     return date.Year.ToString();
                 default:
