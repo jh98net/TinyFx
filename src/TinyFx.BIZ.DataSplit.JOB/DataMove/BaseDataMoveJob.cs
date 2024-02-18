@@ -27,7 +27,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 
         protected Ss_split_table_logEO _logEo;
         protected ColumnValueHelper _columnHelper;
-        public BaseDataMoveJob(Ss_split_tableEO item, DateTime execTime, string defaultConfigId = null)
+        public BaseDataMoveJob(Ss_split_tableEO item, string defaultConfigId, DateTime execTime)
         {
             _logger = new LogBuilder("DataMove")
                 .AddField("DataMove.Option", item);
@@ -130,7 +130,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
                 Exception = string.Empty,
                 HandleTables = string.Empty,
             };
-            await GetMainDb().Insertable<Ss_split_tableEO>(_logEo).ExecuteCommandAsync();
+            await GetMainDb().Insertable(_logEo).ExecuteCommandAsync();
         }
 
         protected async Task CreateTable(string backTableName, DbTransactionManager tm = null)

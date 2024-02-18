@@ -17,7 +17,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 {
     internal class BackupJob : BaseDataMoveJob
     {
-        public BackupJob(Ss_split_tableEO item, DateTime execTime, string defaultConfigId = null) : base(item, execTime, defaultConfigId)
+        public BackupJob(Ss_split_tableEO item, string defaultConfigId, DateTime execTime) : base(item, defaultConfigId, execTime)
         {
             if ((HandleMode)item.HandleMode != HandleMode.Backup)
                 throw new Exception("DataMove.BackupJob时HandleMode必须是Backup");

@@ -17,7 +17,7 @@ namespace TinyFx.BIZ.DataSplit
     /// </summary>
     public class DataSplitJob
     {
-        public async Task Execute(List<Ss_split_tableEO> list = null, string defaultConfigId=null)
+        public async Task Execute(List<Ss_split_tableEO> list = null, string defaultConfigId = null)
         {
             if (list == null || list.Count == 0)
             {
@@ -32,13 +32,16 @@ namespace TinyFx.BIZ.DataSplit
                 switch (mode)
                 {
                     case HandleMode.Delete:
-                        await new DeleteJob(item, execTime).Execute();
+                        await new DeleteJob(item, defaultConfigId, execTime).Execute();
                         break;
                     case HandleMode.Backup:
-                        await new BackupJob(item, execTime).Execute();
+                        await new BackupJob(item, defaultConfigId, execTime).Execute();
+                        break;
+                    case HandleMode.Partition:
+                        await new PartitionJob(item, defaultConfigId, execTime).Execute();
                         break;
                     case HandleMode.SplitMaxRows:
-                        await new SplitMaxRowsJob(item, execTime).Execute();
+                        await new SplitMaxRowsJob(item, defaultConfigId, execTime).Execute();
                         break;
                 }
             }

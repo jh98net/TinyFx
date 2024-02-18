@@ -8,12 +8,13 @@ namespace TinyFx.BIZ.DataSplit
 {
     public enum ColumnType
     {
-        DateTime = 0,
-        ObjectId = 1,
-        NumDay = 2,
-        NumWeek = 3,
-        NumMonth = 4,
-        NumQuarter = 5,
-        NumYear = 6,
+        None = 0,
+        DateTime = 1,
+        ObjectId = 2,
+        NumDay = 3,
+        NumWeek = 4,
+        NumMonth = 5,
+        NumQuarter = 6,
+        NumYear = 7,
     }
 }

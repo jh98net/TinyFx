@@ -13,11 +13,12 @@ namespace TinyFx.BIZ.DataSplit.DAL
     {
            public Ss_split_tableEO(){
 
-            this.ColumnType =0;
             this.HandleMode =0;
+            this.ColumnType =0;
             this.MoveKeepMode =0;
             this.MoveKeepValue =0;
             this.MoveTableMode =0;
+            this.PartitionMethod =0;
             this.SplitMaxRowCount =0;
             this.SplitMaxRowHours =1;
             this.HandleOrder =0;
@@ -44,29 +45,30 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public string TableName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段名
-           /// Default:
-           /// Nullable:False
-           /// </summary>           
-           public string ColumnName {get;set;}
-
-           /// <summary>
-           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId2-数值天3-周4-月5-季6-年)
-           /// Default:0
-           /// Nullable:False
-           /// </summary>           
-           public int ColumnType {get;set;}
-
-           /// <summary>
            /// Desc:处理模式
 			///              0-无
 			///              1-迁移-删除 ==> MoveMode + MoveKeepValue
 			///              2-迁移-备份 ==> MoveMode + MoveKeepValue
+			///              3-分区 => PatitionMethod + PatitionExpr + PatitionValue
 			///              3-分表-按最大行数 ==> SplitMaxRowCount + SplitMaxRowHours
            /// Default:0
            /// Nullable:False
            /// </summary>           
            public int HandleMode {get;set;}
+
+           /// <summary>
+           /// Desc:分表字段名
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string? ColumnName {get;set;}
+
+           /// <summary>
+           /// Desc:分表字段类型(0-未知1-DateTime(UTC)2-ObjectId3-数值天4-周5-月6-季7-年)
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int ColumnType {get;set;}
 
            /// <summary>
            /// Desc:迁移模式(0-无1-天2-周3-月4-季5-年)
@@ -95,6 +97,27 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Nullable:True
            /// </summary>           
            public string? MoveWhere {get;set;}
+
+           /// <summary>
+           /// Desc:分区方式0-未知1-range2-list3-hash4-key5-range columns6-list columns7-custom
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int PartitionMethod {get;set;}
+
+           /// <summary>
+           /// Desc:分区表达式
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string? PartitionExpr {get;set;}
+
+           /// <summary>
+           /// Desc:分区值(范围值|分割)
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string? PartitionValue {get;set;}
 
            /// <summary>
            /// Desc:分表最大记录数

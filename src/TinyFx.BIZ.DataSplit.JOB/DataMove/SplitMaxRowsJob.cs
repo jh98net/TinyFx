@@ -15,7 +15,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 {
     internal class SplitMaxRowsJob : BaseDataMoveJob
     {
-        public SplitMaxRowsJob(Ss_split_tableEO item, DateTime execTime, string defaultConfigId = null) : base(item, execTime, defaultConfigId)
+        public SplitMaxRowsJob(Ss_split_tableEO item, string defaultConfigId, DateTime execTime) : base(item, defaultConfigId, execTime)
         {
             if ((HandleMode)item.HandleMode != HandleMode.SplitMaxRows)
                 throw new Exception("DataMove.SplitMaxRowsJob时HandleMode必须是SplitMaxRows");

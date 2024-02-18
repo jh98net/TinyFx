@@ -10,7 +10,8 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 {
     internal class DeleteJob : BaseDataMoveJob
     {
-        public DeleteJob(Ss_split_tableEO item, DateTime execTime, string defaultConfigId = null) : base(item, execTime, defaultConfigId)
+        public DeleteJob(Ss_split_tableEO item, string defaultConfigId, DateTime execTime) 
+            : base(item, defaultConfigId, execTime)
         {
             if ((HandleMode)item.HandleMode != HandleMode.Delete)
                 throw new Exception($"{GetType().FullName}时HandleMode必须是Delete");

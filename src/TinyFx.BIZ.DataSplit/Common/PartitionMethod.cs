@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TinyFx.BIZ.DataSplit.JOB.Partition
+namespace TinyFx.BIZ.DataSplit
 {
     public enum PartitionMethod
     {
