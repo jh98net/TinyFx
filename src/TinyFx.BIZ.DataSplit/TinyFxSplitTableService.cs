@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.BIZ.DataSplit.Caching;
-using TinyFx.BIZ.DataSplit.Common;
 using TinyFx.BIZ.DataSplit.DAL;
 using TinyFx.Reflection;
 using TinyFx.Text;

@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TinyFx.BIZ.DataSplit.Common;
+using TinyFx.BIZ.DataSplit;
 using TinyFx.BIZ.DataSplit.DAL;
 using TinyFx.Text;
 
-namespace TinyFx.BIZ.DataSplit.DataMove
+namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 {
     internal class ColumnValueHelper
     {
@@ -21,28 +21,28 @@ namespace TinyFx.BIZ.DataSplit.DataMove
         public ColumnValue GetKeepEndValue(DateTime execTime)
         {
             var ret = new ColumnValue();
-            switch ((MoveMode)_option.MoveMode)
+            switch ((MoveKeepMode)_option.MoveKeepMode)
             {
-                case MoveMode.None:
+                case MoveKeepMode.None:
                     ret.Date = execTime.Date;
                     break;
-                case MoveMode.Day:
+                case MoveKeepMode.Day:
                     ret.Date = execTime.AddDays(-_option.MoveKeepValue).Date;
                     break;
-                case MoveMode.Week:
+                case MoveKeepMode.Week:
                     var weekDate = execTime.AddDays(-_option.MoveKeepValue * 7).Date;
                     ret.Date = DateTimeUtil.BeginDayOfWeek(weekDate);
                     break;
-                case MoveMode.Month:
+                case MoveKeepMode.Month:
                     var monthDate = execTime.AddMonths(-_option.MoveKeepValue).Date;
                     ret.Date = new DateTime(monthDate.Year, monthDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                     break;
-                case MoveMode.Quarter:
+                case MoveKeepMode.Quarter:
                     var quarterDate = execTime.AddMonths(-_option.MoveKeepValue * 3);
                     var quarterMonth = Math.DivRem(quarterDate.Month - 1, 3, out int _) * 3 + 1;
                     ret.Date = new DateTime(quarterDate.Year, quarterMonth, 1, 0, 0, 0, DateTimeKind.Utc);
                     break;
-                case MoveMode.Year:
+                case MoveKeepMode.Year:
                     ret.Date = new DateTime(execTime.Year - _option.MoveKeepValue, 1, 1);
                     break;
                 default:

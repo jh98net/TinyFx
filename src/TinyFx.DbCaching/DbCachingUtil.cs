@@ -4,8 +4,10 @@ using SqlSugar;
 using StackExchange.Redis;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using TinyFx.Collections;
 using TinyFx.Configuration;
 using TinyFx.Data.SqlSugar;
@@ -292,7 +294,7 @@ namespace TinyFx.DbCaching
         /// <param name="timeoutSeconds">单个host验证的timeout秒</param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<DbCacheCheckResult> PublishCheck(List<DbCacheItem> items = null, string redisConnectionStringName = null, int timeoutSeconds = 5)
+        public static async Task<DbCacheCheckResult> PublishCheck(List<DbCacheItem> items = null, string redisConnectionStringName = null, int timeoutSeconds = 10)
         {
             var ret = new DbCacheCheckResult();
             if (items == null || items.Count == 0)
@@ -386,7 +388,38 @@ namespace TinyFx.DbCaching
                 ret.Error = "存在服务缓存和服务内存缓存不一致的项";
             return ret;
         }
+        public static async Task LogPublishCheck(string redisConnectionStringName = null, int timeoutSeconds = 300)
+        {
+            var begin = DateTime.UtcNow;
+            DbCacheCheckResult ret = null;
+            while (true)
+            {
+                ret = await PublishCheck(null, redisConnectionStringName);
+                if (ret.Success || (DateTime.UtcNow - begin).TotalSeconds > timeoutSeconds)
+                    break;
+            }
+            if (ret == null || ret.Success)
+                return;
 
+            var logger = LogUtil.GetContextLogger()
+                .SetFlag("DbCaching.Check")
+                .SetLevel(Microsoft.Extensions.Logging.LogLevel.Error)
+                .AddMessage(ret.Error);
+            foreach (var item in ret.RedisAndDbDiffs)
+            {
+                logger.AddMessage($"redis和数据库不一致：configId:{item.ConfigId} tableName:{item.TableName}");
+            }
+            foreach (var item in ret.CacheAndDbDiffs)
+            {
+                if (item.Success)
+                    continue;
+                foreach (var item2 in item.Items)
+                {
+                    logger.AddMessage($"内存和数据库不一致：serviceId:{item.ServiceId} configId:{item2.ConfigId} tableName:{item2.TableName} cacheUpdate:{item2.CacheUpdate}");
+                }
+            }
+            logger.Save();
+        }
         #endregion
 
         #region Utils

@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\TinyFx.BIZ.DataSplit\TinyFx.BIZ.DataSplit.csproj" />
+    <ProjectReference Include="..\..\src\TinyFx.BIZ.DataSplit.JOB\TinyFx.BIZ.DataSplit.JOB.csproj" />
     <ProjectReference Include="..\..\src\TinyFx.Hosting\TinyFx.Hosting.csproj" />
   </ItemGroup>
 

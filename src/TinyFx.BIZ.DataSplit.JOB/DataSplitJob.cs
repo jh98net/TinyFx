@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TinyFx.BIZ.DataSplit.Common;
+using TinyFx.BIZ.DataSplit;
 using TinyFx.BIZ.DataSplit.DAL;
-using TinyFx.BIZ.DataSplit.DataMove;
+using TinyFx.BIZ.DataSplit.JOB.DataMove;
 using TinyFx.Data.SqlSugar;
+using TinyFx.DbCaching;
 
 
 namespace TinyFx.BIZ.DataSplit
@@ -16,7 +17,7 @@ namespace TinyFx.BIZ.DataSplit
     /// </summary>
     public class DataSplitJob
     {
-        public async Task Execute(List<Ss_split_tableEO> list = null)
+        public async Task Execute(List<Ss_split_tableEO> list = null, string defaultConfigId=null)
         {
             if (list == null || list.Count == 0)
             {
@@ -42,8 +43,20 @@ namespace TinyFx.BIZ.DataSplit
                 }
             }
             // 缓存
+            var msg = new DbCacheChangeMessage();
+            msg.Changed.Add(new DbCacheItem
+            {
+                ConfigId = DbUtil.DefaultConfigId,
+                TableName = "s_split_table"
+            });
+            msg.Changed.Add(new DbCacheItem
+            {
+                ConfigId = DbUtil.DefaultConfigId,
+                TableName = "s_split_table_detail"
+            });
+            await DbCachingUtil.PublishUpdate(msg);
         }
-        public Task Execute(Ss_split_tableEO item)
-            => Execute(new List<Ss_split_tableEO> { item });
+        public Task Execute(Ss_split_tableEO item, string defaultConfigId = null)
+            => Execute(new List<Ss_split_tableEO> { item }, defaultConfigId);
     }
 }

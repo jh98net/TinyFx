@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TinyFx.BIZ.DataSplit.Common;
+using TinyFx.BIZ.DataSplit;
 using TinyFx.BIZ.DataSplit.DAL;
 
-namespace TinyFx.BIZ.DataSplit.DataMove
+namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 {
     internal class DeleteJob : BaseDataMoveJob
     {
-        public DeleteJob(Ss_split_tableEO option, DateTime execTime) : base(option, execTime)
+        public DeleteJob(Ss_split_tableEO item, DateTime execTime, string defaultConfigId = null) : base(item, execTime, defaultConfigId)
         {
-            if ((HandleMode)option.HandleMode != HandleMode.Delete)
+            if ((HandleMode)item.HandleMode != HandleMode.Delete)
                 throw new Exception($"{GetType().FullName}时HandleMode必须是Delete");
         }
         protected override async Task ExecuteJob()
@@ -27,21 +27,21 @@ namespace TinyFx.BIZ.DataSplit.DataMove
             _logEo.EndDate = end.Date;
             _logEo.EndValue = end.Value;
 
-            AddHandleLog($"==> 删除开始{_option.TableName} {begin.Date.ToString("yyyy-MM-dd")} => {end.Date.ToString("yyyy-MM-dd")}");
+            AddHandleLog($"==> 删除开始{_item.TableName} {begin.Date.ToString("yyyy-MM-dd")} => {end.Date.ToString("yyyy-MM-dd")}");
             var where = _columnHelper.GetColumnWhere(null, end.Value);
-            var sql = $"DELETE FROM `{_option.TableName}` WHERE {where}";
+            var sql = $"DELETE FROM `{_item.TableName}` WHERE {where}";
             AddHandleLog($"SQL: {sql}");
             if (BATCH_PAGE_SIZE > 0)
                 sql += $" LIMIT {BATCH_PAGE_SIZE}";
             while (true)
             {
                 //var rows = 0;
-                var rows = await _database.Ado.ExecuteCommandAsync(sql);
+                var rows = await GetItemDb().Ado.ExecuteCommandAsync(sql);
                 if (rows == 0) break;
                 _logEo.RowNum += rows;
                 await Task.Delay(200);
             }
-            AddHandleLog($"==> 删除完成{_option.TableName} {begin.Date.ToString("yyyy-MM-dd")} => {end.Date.ToString("yyyy-MM-dd")} count: {_logEo.RowNum}");
+            AddHandleLog($"==> 删除完成{_item.TableName} {begin.Date.ToString("yyyy-MM-dd")} => {end.Date.ToString("yyyy-MM-dd")} count: {_logEo.RowNum}");
         }
     }
 }

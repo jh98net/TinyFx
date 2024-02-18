@@ -115,6 +115,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.BIZ.DataSplit.Demo",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyFx.HCaptcha", "src\TinyFx.HCaptcha\TinyFx.HCaptcha.csproj", "{2573CCCB-7476-4D20-A335-FCD25DCE62AC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyFx.BIZ.DataSplit.JOB", "src\TinyFx.BIZ.DataSplit.JOB\TinyFx.BIZ.DataSplit.JOB.csproj", "{898B7190-7451-4241-A8C6-D702C3CE5AF0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -281,6 +283,10 @@ Global
 		{2573CCCB-7476-4D20-A335-FCD25DCE62AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2573CCCB-7476-4D20-A335-FCD25DCE62AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2573CCCB-7476-4D20-A335-FCD25DCE62AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{898B7190-7451-4241-A8C6-D702C3CE5AF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{898B7190-7451-4241-A8C6-D702C3CE5AF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{898B7190-7451-4241-A8C6-D702C3CE5AF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{898B7190-7451-4241-A8C6-D702C3CE5AF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -330,6 +336,7 @@ Global
 		{96A0FC76-F5F4-44F4-A13C-3381DB5A8457} = {38EC6A5A-A374-4BCC-A5C7-2D2CD2D19D91}
 		{CA67E2C7-1E28-42CE-88D7-5B224FF729D7} = {38EC6A5A-A374-4BCC-A5C7-2D2CD2D19D91}
 		{2573CCCB-7476-4D20-A335-FCD25DCE62AC} = {1FF166BB-BDA2-4A20-8EE9-209B210B1185}
+		{898B7190-7451-4241-A8C6-D702C3CE5AF0} = {38EC6A5A-A374-4BCC-A5C7-2D2CD2D19D91}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6FDC92E-FBF2-40CE-9A71-2A4B6A4E6F3E}

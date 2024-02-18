@@ -7,7 +7,7 @@ using TinyFx.BIZ.DataSplit.DAL;
 using TinyFx.Data.SqlSugar;
 using TinyFx.Text;
 
-namespace TinyFx.BIZ.DataSplit.Common
+namespace TinyFx.BIZ.DataSplit
 {
     public class DemoHelper
     {

@@ -80,6 +80,15 @@ namespace TinyFx.DbCaching
             {
                 return await SetRedisValues();
             }
+            var ret = new DbTableRedisData()
+            {
+                ConfigId = listDo.Value.ConfigId,
+                TableName = listDo.Value.TableName,
+                PageSize = listDo.Value.PageSize,
+                PageCount = listDo.Value.PageCount,
+                DataHash = listDo.Value.DataHash,
+                UpdateDate = listDo.Value.UpdateDate,
+            };
 
             // 避免并发
             using var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{_cacheKey}", 180);
@@ -91,15 +100,6 @@ namespace TinyFx.DbCaching
             var updateDate = await _dataDCache.GetOrDefaultAsync("0", null);
             if (updateDate != listDo.Value.UpdateDate)
                 throw new Exception($"DbCacheDataDCache.GetRedisValues()时，DbCacheListDCache的UpdateDate与DbCacheDataDCache的不同。key:{_cacheKey}");
-            var ret = new DbTableRedisData()
-            {
-                ConfigId = listDo.Value.ConfigId,
-                TableName = listDo.Value.TableName,
-                PageSize = listDo.Value.PageSize,
-                PageCount = listDo.Value.PageCount,
-                DataHash = listDo.Value.DataHash,
-                UpdateDate = listDo.Value.UpdateDate,
-            };
             for (int i = 1; i <= listDo.Value.PageCount; i++)
             {
                 var pageString = await _dataDCache.GetOrExceptionAsync(i.ToString());

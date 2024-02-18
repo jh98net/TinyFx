@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TinyFx.BIZ.DataSplit.Common
+namespace TinyFx.BIZ.DataSplit
 {
-    public enum MoveMode
+    public enum MoveKeepMode
     {
         None = 0,
         Day = 1,

@@ -11,7 +11,7 @@ namespace TinyFx.DbCaching
         public DbCachingPublishMode PublishMode { get; set; } = DbCachingPublishMode.Redis;
         public string RedisConnectionStringName { get; set; }
         public string MQConnectionStringName { get; set; }
-        public List<DbCacheItem> Changed { get; set; }
+        public List<DbCacheItem> Changed { get; set; } = new();
     }
     public class DbCacheItem
     {
