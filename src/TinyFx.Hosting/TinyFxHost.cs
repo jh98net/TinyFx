@@ -32,7 +32,7 @@ namespace TinyFx
             ConfigUtil.HostType = TinyFxHostType.Console;
             SerilogUtil.CreateBootstrapLogger();
             var builder = Host.CreateDefaultBuilder(args)
-                .AddTinyFx(envString)
+                .AddTinyFxEx(envString)
                 .AddSerilogEx()
                 .AddAutoMapperEx()
                 .AddRedisEx()
@@ -40,7 +40,8 @@ namespace TinyFx
                 .AddRabbitMQEx()
                 .AddSnowflakeIdEx()
                 .AddDbCachingEx()
-                .AddTinyFxHost();
+                .AddIP2CountryEx()
+                .AddTinyFxHostEx();
             return builder;
         }
 

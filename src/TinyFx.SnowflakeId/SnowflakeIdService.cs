@@ -51,6 +51,8 @@ namespace TinyFx.SnowflakeId
         public int WorkerId => (int)_workerId;
         private int _sequence = 0;
         private long _lastgen = -1L;
+
+        private bool _isInited = false;
         #endregion
 
         public SnowflakeIdService()
@@ -84,9 +86,12 @@ namespace TinyFx.SnowflakeId
         public async Task Init()
         {
             _workerId = await _provider.GetNextWorkId();
+            _isInited = true;
         }
         public long NextId()
         {
+            if (!_isInited)
+                throw new Exception("没有初始化设置WorkId值");
             lock (_async)
             {
                 var ticks = GetTicks();

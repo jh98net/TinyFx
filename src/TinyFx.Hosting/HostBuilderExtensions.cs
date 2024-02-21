@@ -22,7 +22,7 @@ namespace TinyFx
         /// <param name="builder"></param>
         /// <param name="envString"></param>
         /// <returns></returns>
-        public static IHostBuilder AddTinyFx(this IHostBuilder builder, string envString = null)
+        public static IHostBuilder AddTinyFxEx(this IHostBuilder builder, string envString = null)
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
@@ -71,7 +71,7 @@ namespace TinyFx
             return builder;
         }
 
-        public static IHostBuilder AddTinyFxHost(this IHostBuilder builder)
+        public static IHostBuilder AddTinyFxHostEx(this IHostBuilder builder)
         {
             builder.ConfigureServices(services =>
             {

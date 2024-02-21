@@ -27,9 +27,9 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// </summary>
         public const string MQ_SUB_QUEUE = "_TINYFX:MQSubQueue";
         /// <summary>
-        /// TinyFx.Extensions.IDGenerator使用
+        /// TinyFx.SnowflakeId使用
         /// </summary>
-        public const string ID_GENERATOR = "_TINYFX:IDGenerator";
+        public const string SNOWFLAKE_ID = "_TINYFX:SnowflakeId";
         /// <summary>
         /// TinyFx.DbCaching.DbCacheDataDCache使用
         /// </summary>

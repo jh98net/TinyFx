@@ -15,6 +15,7 @@
     <ProjectReference Include="..\TinyFx.Extensions.RabbitMQ\TinyFx.Extensions.RabbitMQ.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.Serilog\TinyFx.Extensions.Serilog.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.StackExchangeRedis\TinyFx.Extensions.StackExchangeRedis.csproj" />
+    <ProjectReference Include="..\TinyFx.IP2Country\TinyFx.IP2Country.csproj" />
     <ProjectReference Include="..\TinyFx.SnowflakeId\TinyFx.SnowflakeId.csproj" />
   </ItemGroup>
 </Project>

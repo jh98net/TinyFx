@@ -9,6 +9,7 @@ namespace TinyFx.Configuration
     public class OAuthSection : ConfigSection
     {
         public override string SectionName => "OAuth";
+        public bool Enabled { get; set; }
         public string ProvidersProvider { get; set; }
         /// <summary>
         /// OAuth服务提供商

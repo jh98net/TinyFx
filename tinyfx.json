@@ -477,6 +477,7 @@
 
   // OAuth验证
   "OAuth": {
+    "Enabled": false,
     "ProvidersProvider": null,
     "Providers": {
       "Google": {
@@ -492,19 +493,33 @@
 
   // HCaptcha验证码
   "HCaptcha": {
+    "Enabled": true,
     "SiteKey": "9459ee20-43d9-4777-af5d-b1fbe89b403e",
     "Secret": "ES_01c1e11250f54abc8d90248733f370db",
     "ApiBaseUrl": "https://api.hcaptcha.com/",
     "VerifyRemoteIp": false
   },
 
-  // 访问验证
-  "AccessVerify": {
+  // api访问签名验证
+  "AccessSignFilter": {
     "Enabled": true,
     "AccessKeySeed": "vMjV3VFW3SyklQeQ",
     "AccessKeyIndexes": "8, 11, 13, 12, 9, 7, 3, 14, 5, 2, 1, 0, 4, 6, 15, 10",
     "BothKeySeed": "hNMmcYykGdCluYqe",
     "BothKeyIndexes": "7, 1, 4, 15, 5, 2, 0, 8, 13, 14, 9, 12, 11, 10, 6, 3"
+  },
+
+  // api访问ip验证
+  "AccessIpFilter": {
+    "DefaultFilterName": "default",
+    "FiltersProvider": "", //TinyFx.Configuration.IApiAccessFiltersProvider
+    "Filters": {
+      "default": {
+        "Enabled": true, // 是否启用
+        "EnableIntranet": true, // 是否允许所有内网ip
+        "AllowIps": "" // 允许ip列表，;分割。
+      }
+    }
   },
 
   // 请求日志配置
@@ -542,19 +557,6 @@
         "Methods": "*", // 允许的HTTP方法
         "Headers": "*", // 允许的请求标头
         "MaxAge": 86400 // Access-Control-Max-Age 时间(秒)
-      }
-    }
-  },
-
-  // api访问过滤
-  "ApiAccessFilter": {
-    "DefaultFilterName": "default",
-    "FiltersProvider": "", //TinyFx.Configuration.IApiAccessFiltersProvider
-    "Filters": {
-      "default": {
-        "Enabled": true, // 是否启用
-        "EnableIntranet": true, // 是否允许所有内网ip
-        "AllowIps": "" // 允许ip列表，;分割。
       }
     }
   },

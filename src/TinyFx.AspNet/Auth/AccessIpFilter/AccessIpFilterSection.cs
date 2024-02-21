@@ -8,12 +8,13 @@ using System.Xml.Linq;
 using TinyFx.Collections;
 using static System.Collections.Specialized.BitVector32;
 using TinyFx.Reflection;
+using TinyFx.AspNet;
 
 namespace TinyFx.Configuration
 {
-    public class ApiAccessFilterSection : ConfigSection
+    public class AccessIpFilterSection : ConfigSection
     {
-        public override string SectionName => "ApiAccessFilter";
+        public override string SectionName => "AccessIpFilter";
         public string DefaultFilterName { get; set; }
         public string FiltersProvider { get; set; }
         public Dictionary<string, ApiAccessFilterElement> Filters { get; set; } = new Dictionary<string, ApiAccessFilterElement>();
@@ -23,9 +24,9 @@ namespace TinyFx.Configuration
             base.Bind(configuration);
             if (!string.IsNullOrEmpty(FiltersProvider))
             {
-                var provider = ReflectionUtil.CreateInstance(FiltersProvider) as IApiAccessFiltersProvider;
+                var provider = ReflectionUtil.CreateInstance(FiltersProvider) as IAccessIpFiltersProvider;
                 if (provider == null)
-                    throw new Exception($"配置中ApiAccessFilter:FiltersProvider不存在或未实现IApiAccessFiltersProvider: {FiltersProvider}");
+                    throw new Exception($"配置中AccessIpFilter:FiltersProvider不存在或未实现IAccessIpFiltersProvider: {FiltersProvider}");
                 var list = provider.Build();
                 list.ForEach(x => Filters.Add(x.Name, x));
             }
@@ -39,10 +40,6 @@ namespace TinyFx.Configuration
                 });
             }
         }
-    }
-    public interface IApiAccessFiltersProvider
-    {
-        List<ApiAccessFilterElement> Build();
     }
     public class ApiAccessFilterElement
     {

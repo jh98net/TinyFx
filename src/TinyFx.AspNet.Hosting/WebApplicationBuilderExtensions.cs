@@ -58,7 +58,7 @@ namespace TinyFx
             TinyFxHostingStartupLoader.Instance.ConfigureServices(builder);
 
             // 注册Host
-            builder.Host.AddTinyFxHost();
+            builder.Host.AddTinyFxHostEx();
             return builder;
         }
         private static IServiceCollection AddAspNetExDetail(this IServiceCollection services, AspNetType type)
@@ -470,7 +470,7 @@ namespace TinyFx
             //{
             //    services.AddSingleton<IAccessVerifyService>(new AccessVerifyService());
             //}
-            services.AddSingleton<IAccessVerifyService>(new AccessVerifyService());
+            services.AddSingleton<IAccessSignFilterService>(new AccessSignFilterService());
             return services;
         }
         public static IServiceCollection AddSyncNotifyEx(this IServiceCollection services)

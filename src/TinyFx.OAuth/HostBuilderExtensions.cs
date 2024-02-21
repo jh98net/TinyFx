@@ -11,7 +11,8 @@ namespace TinyFx
         public static IHostBuilder AddOAuthEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<OAuthSection>();
-            if (section == null) return builder;
+            if (section == null || !section.Enabled) 
+                return builder;
 
             builder.ConfigureServices((context, services) =>
             {

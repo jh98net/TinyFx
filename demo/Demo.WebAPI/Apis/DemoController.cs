@@ -31,6 +31,7 @@ using TinyFx.Logging;
 using TinyFx.Net;
 using TinyFx.Randoms;
 using TinyFx.Security;
+using TinyFx.SnowflakeId;
 
 namespace Demo.WebAPI.Apis
 {
@@ -68,7 +69,7 @@ namespace Demo.WebAPI.Apis
             var sourceKey = "80150420F2885ECC2867209112D4E745lobby";
             var sourceData = $"1704188983585{sourceKey}";
             var sign = "I7XObb8dHk78D/Oe/Ec0pD42CqvgbVZdb9beJ8oXx7Y=";
-            var helper = new AccessVerifyService();
+            var helper = new AccessSignFilterService();
             // true
             //08yC0b81GC2k8DN5 bothKey
             var result = helper.VerifyBothKey(sourceKey, sourceData, sign);
@@ -134,6 +135,14 @@ namespace Demo.WebAPI.Apis
         public JwtTokenInfo ReadJwtToken()
         {
             return HttpContextEx.GetJwtToken();
+        }
+
+
+        [HttpGet]
+        [AllowAnonymous]
+        public long GetSnowflakeId()
+        {
+            return SnowflakeIdUtil.NextId();
         }
 
         [HttpPost]

@@ -17,11 +17,11 @@ namespace TinyFx.AspNet
     /// <summary>
     /// Api访问过滤器(限制访问api的ip)
     /// </summary>
-    public class ApiAccessFilterAttribute : ActionFilterAttribute
+    public class AccessIpFilterAttribute : ActionFilterAttribute
     {
         private string _name;
 
-        public ApiAccessFilterAttribute(string name = null)
+        public AccessIpFilterAttribute(string name = null)
         {
             _name = name;
         }
@@ -34,9 +34,9 @@ namespace TinyFx.AspNet
                 context.Result = new UnauthorizedResult();
                 LogUtil.GetContextLogger()
                     .SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning)
-                    .AddField("ApiAccessFilter.UserIp", userIp)
-                    .AddField("ApiAccessFilter.FilterName", _name)
-                    .AddMessage("ApiAccessFilterAttribute禁止访问。");
+                    .AddField("AccessIpFilter.UserIp", userIp)
+                    .AddField("AccessIpFilter.FilterName", _name)
+                    .AddMessage("AccessIpFilterAttribute禁止访问。");
                 return;
             }
             await base.OnActionExecutionAsync(context, next);
@@ -47,9 +47,9 @@ namespace TinyFx.AspNet
             if (userIp == null || string.IsNullOrEmpty(userIp))
                 return false;
 
-            var section = ConfigUtil.GetSection<ApiAccessFilterSection>();
+            var section = ConfigUtil.GetSection<AccessIpFilterSection>();
             if (section == null || !section.Filters.TryGetValue(_name ?? section.DefaultFilterName, out var element))
-                throw new Exception($"配置中ApiAccessFilter:Filters未定义。name:{_name}");
+                throw new Exception($"配置中AccessIpFilter:Filters未定义。name:{_name}");
             // 不限制
             if (!element.Enabled)
                 return true;

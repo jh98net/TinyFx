@@ -18,7 +18,7 @@ namespace TinyFx.SnowflakeId.Caching
         public WorkerIdCurrentDCache()
         {
             _section = ConfigUtil.GetSection<SnowflakeIdSection>();
-            RedisKey = $"{RedisPrefixConst.ID_GENERATOR}:WorkerIdNumber";
+            RedisKey = $"{RedisPrefixConst.SNOWFLAKE_ID}:WorkerIdNumber";
             Options.ConnectionStringName = _section.RedisConnectionStringName;
         }
 

@@ -29,9 +29,11 @@ namespace TinyFx.SnowflakeId.Common
             _idDCache = WorkerIdCurrentDCache.Create();
             _workerDo = new WorkerIdsDO()
             {
-                ip = NetUtil.GetLocalIP(),
-                pid = Process.GetCurrentProcess().Id,
-                env = ConfigUtil.EnvironmentString
+                Ip = NetUtil.GetLocalIP(),
+                Pid = Process.GetCurrentProcess().Id,
+                Env = ConfigUtil.EnvironmentString,
+                ProjectId = ConfigUtil.Project.ProjectId,
+                ServiceId = ConfigUtil.ServiceId
             };
         }
 

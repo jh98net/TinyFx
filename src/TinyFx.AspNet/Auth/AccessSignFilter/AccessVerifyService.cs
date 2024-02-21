@@ -16,7 +16,7 @@ using TinyFx.Text;
 
 namespace TinyFx.AspNet
 {
-    public interface IAccessVerifyService
+    public interface IAccessSignFilterService
     {
         bool Enabled { get; set; }
         string BothKeySeed { get; set; }
@@ -30,7 +30,7 @@ namespace TinyFx.AspNet
         Task VerifyAccessKeyByHeader(HttpContext context = null);
     }
 
-    public class AccessVerifyService : IAccessVerifyService
+    public class AccessSignFilterService : IAccessSignFilterService
     {
         public const string HEADER_NAME = "tinyfx-sign";
         public bool Enabled { get; set; }
@@ -39,9 +39,9 @@ namespace TinyFx.AspNet
 
         public string AccessKeySeed { get; set; } = "vMjV3VFW3SyklQeQ";
         public int[] AccessKeyIndexes { get; set; } = { 8, 11, 13, 12, 9, 7, 3, 14, 5, 2, 1, 0, 4, 6, 15, 10 };
-        public AccessVerifyService()
+        public AccessSignFilterService()
         {
-            var section = ConfigUtil.GetSection<AccessVerifySection>();
+            var section = ConfigUtil.GetSection<AccessSignFilterSection>();
             Enabled = section?.Enabled ?? false;
             if (!string.IsNullOrEmpty(section?.BothKeySeed))
                 BothKeySeed = section.BothKeySeed;
@@ -73,7 +73,7 @@ namespace TinyFx.AspNet
         {
             if (!Enabled)
                 return true;
-            TinyFxUtil.ThrowIfNullOrEmpty("AccessVerifyService.VerifyBothKey时,sourceKey,sourceData,sign不能为空", sourceKey, sourceData, sign);
+            TinyFxUtil.ThrowIfNullOrEmpty("IAccessSignFilterService.VerifyBothKey时,sourceKey,sourceData,sign不能为空", sourceKey, sourceData, sign);
             var bothKey = GetBothKey(sourceKey);
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(bothKey));
             var hash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(sourceData)));
@@ -113,7 +113,7 @@ namespace TinyFx.AspNet
         {
             if (!Enabled)
                 return true;
-            TinyFxUtil.ThrowIfNullOrEmpty("AccessVerifyService.VerifyAccessKey时,sourceKey,sourceData,sign不能为空", sourceKey, sourceData, sign);
+            TinyFxUtil.ThrowIfNullOrEmpty("IAccessSignFilterService.VerifyAccessKey时,sourceKey,sourceData,sign不能为空", sourceKey, sourceData, sign);
             var accessKey = GetAccessKey(sourceKey);
             var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(accessKey));
             var hash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(sourceData)));

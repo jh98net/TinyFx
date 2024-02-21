@@ -31,7 +31,7 @@ namespace TinyFx
             SerilogUtil.CreateBootstrapLogger();
             var builder = WebApplication.CreateBuilder(args);
             // 设置启动Serilog
-            builder.Host.AddTinyFx(envString)
+            builder.Host.AddTinyFxEx(envString)
                 .AddSerilogEx()
                 .AddAutoMapperEx()
                 .AddRedisEx()
@@ -39,7 +39,9 @@ namespace TinyFx
                 .AddRabbitMQEx()
                 .AddSnowflakeIdEx()
                 .AddDbCachingEx()
-                .AddOAuthEx();
+                .AddIP2CountryEx()
+                .AddOAuthEx()
+                .AddHCaptchaEx();
             return builder;
         }
         internal static async Task<string> MapEnvPath()

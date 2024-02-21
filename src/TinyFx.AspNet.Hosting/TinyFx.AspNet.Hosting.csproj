@@ -11,6 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TinyFx.AspNet\TinyFx.AspNet.csproj" />
+    <ProjectReference Include="..\TinyFx.HCaptcha\TinyFx.HCaptcha.csproj" />
     <ProjectReference Include="..\TinyFx.Hosting\TinyFx.Hosting.csproj" />
     <ProjectReference Include="..\TinyFx.OAuth\TinyFx.OAuth.csproj" />
   </ItemGroup>
