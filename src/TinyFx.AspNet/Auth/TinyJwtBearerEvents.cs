@@ -36,7 +36,7 @@ namespace TinyFx.AspNet
               )
             {
                 if (section.DebugToken.Length < 100)
-                    context.Token = JwtUtil.GenerateJwtToken(section.DebugToken);
+                    context.Token = JwtUtil.CreateJwtToken(section.DebugToken);
                 else if (JwtUtil.ReadJwtToken(section.DebugToken).Status == JwtTokenStatus.Success)
                     context.Token = section.DebugToken;
             }
@@ -68,13 +68,12 @@ namespace TinyFx.AspNet
         /// <returns></returns>
         public override Task TokenValidated(TokenValidatedContext context)
         {
-            /*
             var token = context.SecurityToken as JwtSecurityToken;
             if (token != null)
             {
                 var jwt = JwtUtil.ReadJwtToken(context.Principal);
+                HttpContextEx.SetJwtToken(jwt);
             }
-            */
             return base.TokenValidated(context);
         }
         public override Task AuthenticationFailed(AuthenticationFailedContext context)

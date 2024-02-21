@@ -17,11 +17,11 @@ namespace TinyFx.BIZ.DataSplit
     /// </summary>
     public class DataSplitJob
     {
-        public async Task Execute(List<Ss_split_tableEO> list = null, string defaultConfigId = null)
+        public async Task Execute(List<Stfx_split_tableEO> list = null, string defaultConfigId = null)
         {
             if (list == null || list.Count == 0)
             {
-                list = await DbUtil.GetRepository<Ss_split_tableEO>().AsQueryable()
+                list = await DbUtil.GetDbById(defaultConfigId).Queryable<Stfx_split_tableEO>()
                     .Where(it => it.Status == 1).OrderBy(it => it.HandleOrder).ToListAsync();
             }
             var execTime = DateTime.UtcNow;
@@ -36,9 +36,6 @@ namespace TinyFx.BIZ.DataSplit
                         break;
                     case HandleMode.Backup:
                         await new BackupJob(item, defaultConfigId, execTime).Execute();
-                        break;
-                    case HandleMode.Partition:
-                        await new PartitionJob(item, defaultConfigId, execTime).Execute();
                         break;
                     case HandleMode.SplitMaxRows:
                         await new SplitMaxRowsJob(item, defaultConfigId, execTime).Execute();
@@ -59,7 +56,7 @@ namespace TinyFx.BIZ.DataSplit
             });
             await DbCachingUtil.PublishUpdate(msg);
         }
-        public Task Execute(Ss_split_tableEO item, string defaultConfigId = null)
-            => Execute(new List<Ss_split_tableEO> { item }, defaultConfigId);
+        public Task Execute(Stfx_split_tableEO item, string defaultConfigId = null)
+            => Execute(new List<Stfx_split_tableEO> { item }, defaultConfigId);
     }
 }

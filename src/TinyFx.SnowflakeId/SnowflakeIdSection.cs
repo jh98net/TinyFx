@@ -7,11 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
 
-namespace TinyFx.IDGenerator
+namespace TinyFx.Configuration
 {
-    public class IDGeneratorSection : ConfigSection
+    public class SnowflakeIdSection : ConfigSection
     {
-        public override string SectionName => "IDGenerator";
+        public override string SectionName => "SnowflakeId";
 
         public bool Enabled { get; set; }
         public bool UseRedis { get; set; }

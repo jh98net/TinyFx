@@ -38,7 +38,7 @@ namespace TinyFx
                 .AddRedisEx()
                 .AddSqlSugarEx()
                 .AddRabbitMQEx()
-                .AddIDGenerator()
+                .AddSnowflakeIdEx()
                 .AddDbCachingEx()
                 .AddTinyFxHost();
             return builder;

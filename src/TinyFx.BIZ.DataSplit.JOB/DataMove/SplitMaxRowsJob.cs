@@ -15,7 +15,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 {
     internal class SplitMaxRowsJob : BaseDataMoveJob
     {
-        public SplitMaxRowsJob(Ss_split_tableEO item, string defaultConfigId, DateTime execTime) : base(item, defaultConfigId, execTime)
+        public SplitMaxRowsJob(Stfx_split_tableEO item, string defaultConfigId, DateTime execTime) : base(item, defaultConfigId, execTime)
         {
             if ((HandleMode)item.HandleMode != HandleMode.SplitMaxRows)
                 throw new Exception("DataMove.SplitMaxRowsJob时HandleMode必须是SplitMaxRows");
@@ -28,7 +28,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 
         protected override async Task ExecuteJob()
         {
-            var lastItem = await GetMainDb().Queryable<Ss_split_table_detailEO>()
+            var lastItem = await GetMainDb().Queryable<Stfx_split_table_detailEO>()
                 .Where(it => it.DatabaseId == _item.DatabaseId && it.TableName == _item.TableName && it.Status == 1)
                 .OrderBy(it => it.RecDate, OrderByType.Desc)
                 .FirstAsync();
@@ -50,9 +50,9 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
             _logEo.RowNum = count;
 
             var tableData = await GetTableData(_item.TableName);
-            var detailList = new List<Ss_split_table_detailEO>();
+            var detailList = new List<Stfx_split_table_detailEO>();
             // 原始表
-            detailList.Add(new Ss_split_table_detailEO
+            detailList.Add(new Stfx_split_table_detailEO
             {
                 DetailID = ObjectId.NewId(),
                 LogID = _logEo.LogID,
@@ -71,7 +71,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
                 RecDate = DateTime.UtcNow
             });
             // 新分表
-            detailList.Add(new Ss_split_table_detailEO
+            detailList.Add(new Stfx_split_table_detailEO
             {
                 DetailID = ObjectId.NewId(),
                 LogID = _logEo.LogID,
@@ -107,7 +107,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
             }
         }
 
-        private async Task ExecNext(Ss_split_table_detailEO lastEo)
+        private async Task ExecNext(Stfx_split_table_detailEO lastEo)
         {
             var count = await GetItemDb().Queryable<object>().AS(lastEo.SplitTableName).With(SqlWith.NoLock).CountAsync();
             if (count == 0 || count < _item.SplitMaxRowCount)
@@ -116,7 +116,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
             lastEo.RowNum = count;
 
             var tableData = await GetTableData(lastEo.SplitTableName);
-            var newEo = new Ss_split_table_detailEO
+            var newEo = new Stfx_split_table_detailEO
             {
                 DetailID = ObjectId.NewId(),
                 LogID = _logEo.LogID,

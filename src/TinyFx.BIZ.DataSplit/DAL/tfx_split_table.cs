@@ -6,15 +6,15 @@ using SqlSugar;
 namespace TinyFx.BIZ.DataSplit.DAL
 {
     ///<summary>
-    ///分表执行日志
+    ///分表
     ///</summary>
-    [SugarTable("s_split_table_log")]
-    public partial class Ss_split_table_logEO
+    [SugarTable("tfx_split_table")]
+    public partial class Stfx_split_tableEO
     {
-           public Ss_split_table_logEO(){
+           public Stfx_split_tableEO(){
 
-            this.ColumnType =0;
             this.HandleMode =0;
+            this.ColumnType =0;
             this.MoveKeepMode =0;
             this.MoveKeepValue =0;
             this.MoveTableMode =0;
@@ -25,23 +25,14 @@ namespace TinyFx.BIZ.DataSplit.DAL
             this.BathPageSize =0;
             this.Status =0;
             this.RecDate =DateTime.Now;
-            this.RowNum =0;
-            this.HandleSeconds =0;
 
            }
-           /// <summary>
-           /// Desc:日志编码(GUID)
-           /// Default:
-           /// Nullable:False
-           /// </summary>           
-           [SugarColumn(IsPrimaryKey=true)]
-           public string LogID {get;set;}
-
            /// <summary>
            /// Desc:数据库标识
            /// Default:
            /// Nullable:False
            /// </summary>           
+           [SugarColumn(IsPrimaryKey=true)]
            public string DatabaseId {get;set;}
 
            /// <summary>
@@ -49,21 +40,8 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Default:
            /// Nullable:False
            /// </summary>           
+           [SugarColumn(IsPrimaryKey=true)]
            public string TableName {get;set;}
-
-           /// <summary>
-           /// Desc:分表字段名
-           /// Default:
-           /// Nullable:False
-           /// </summary>           
-           public string ColumnName {get;set;}
-
-           /// <summary>
-           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId2-数值天3-周4-月5-季6-年)
-           /// Default:0
-           /// Nullable:False
-           /// </summary>           
-           public int ColumnType {get;set;}
 
            /// <summary>
            /// Desc:处理模式
@@ -75,6 +53,20 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Nullable:False
            /// </summary>           
            public int HandleMode {get;set;}
+
+           /// <summary>
+           /// Desc:分表字段类型(0-未知1-DateTime(UTC)2-ObjectId3-数值天4-周5-月6-季7-年)
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int ColumnType {get;set;}
+
+           /// <summary>
+           /// Desc:分表字段名
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string? ColumnName {get;set;}
 
            /// <summary>
            /// Desc:迁移模式(0-无1-天2-周3-月4-季5-年)
@@ -140,14 +132,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public int BathPageSize {get;set;}
 
            /// <summary>
-           /// Desc:执行基础UTC时间
-           /// Default:
-           /// Nullable:False
-           /// </summary>           
-           public DateTime ExecTime {get;set;}
-
-           /// <summary>
-           /// Desc:状态(0-进行中1-成功2-失败)
+           /// Desc:状态(0-无效1-有效)
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -159,69 +144,6 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Nullable:False
            /// </summary>           
            public DateTime RecDate {get;set;}
-
-           /// <summary>
-           /// Desc:起始值
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? BeginValue {get;set;}
-
-           /// <summary>
-           /// Desc:结束值
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? EndValue {get;set;}
-
-           /// <summary>
-           /// Desc:起始日期
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public DateTime? BeginDate {get;set;}
-
-           /// <summary>
-           /// Desc:结束日期
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public DateTime? EndDate {get;set;}
-
-           /// <summary>
-           /// Desc:处理记录数
-           /// Default:0
-           /// Nullable:False
-           /// </summary>           
-           public int RowNum {get;set;}
-
-           /// <summary>
-           /// Desc:执行时长（秒）
-           /// Default:0
-           /// Nullable:False
-           /// </summary>           
-           public int HandleSeconds {get;set;}
-
-           /// <summary>
-           /// Desc:执行日志
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? HandleLog {get;set;}
-
-           /// <summary>
-           /// Desc:异常消息
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? Exception {get;set;}
-
-           /// <summary>
-           /// Desc:分表后的表名,|分割
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? HandleTables {get;set;}
 
     }
 }

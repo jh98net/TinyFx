@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TinyFx.IDGenerator.Common
+namespace TinyFx.SnowflakeId.Common
 {
     internal class DefaultTimeSource
     {

@@ -9,17 +9,17 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Hosting;
-using TinyFx.IDGenerator;
-using TinyFx.IDGenerator.Common;
+using TinyFx.SnowflakeId.Common;
 using TinyFx.Logging;
+using TinyFx.SnowflakeId;
 
 namespace TinyFx
 {
     public static class IDGeneratorHostBuilderExtensions
     {
-        public static IHostBuilder AddIDGenerator(this IHostBuilder builder)
+        public static IHostBuilder AddSnowflakeIdEx(this IHostBuilder builder)
         {
-            var section = ConfigUtil.GetSection<IDGeneratorSection>();
+            var section = ConfigUtil.GetSection<SnowflakeIdSection>();
             if (section == null || !section.Enabled)
                 return builder;
 
@@ -33,14 +33,19 @@ namespace TinyFx
                 if (!redisSecion.ConnectionStrings.ContainsKey(section.RedisConnectionStringName))
                     throw new Exception($"启动IDGenerator时不存在redisConnectionName: {section.RedisConnectionStringName}");
             }
+            var service = new SnowflakeIdService();
+            builder.ConfigureServices(services => 
+            {
+                services.AddSingleton<ISnowflakeIdService>(service);
+            });
             HostingUtil.RegisterStarting(async () => 
             {
-                IDGeneratorUtil.Init();
+                await service.Init();
                 LogUtil.Info("启动 => 雪花ID服务[IDGenerator]");
             });
             HostingUtil.RegisterStopped(async () => 
-            { 
-                IDGeneratorUtil.WorkerIdProvider.Dispose();
+            {
+                await service.Dispose();
                 LogUtil.Info("停止 => 雪花ID服务[IDGenerator]");
             });
             if (section.UseRedis)
@@ -52,7 +57,7 @@ namespace TinyFx
                     Title = "IDGenerator心跳",
                     Interval = section.RedisExpireMinutes * 60 * 1000 / 3,
                     TryCount = 5,
-                    Callback = async (_) => await IDGeneratorUtil.WorkerIdProvider.Active()
+                    Callback = async (_) => await service.Active()
                 });
             }
             LogUtil.Info($"配置 => [IDGenerator]");

@@ -30,9 +30,9 @@
     "src\\TinyFx.Extensions.SshNet\\TinyFx.Extensions.SshNet.csproj",
     "src\\TinyFx.Extensions.StackExchangeRedis\\TinyFx.Extensions.StackExchangeRedis.csproj",
     "src\\TinyFx.Hosting\\TinyFx.Hosting.csproj",
-    "src\\TinyFx.IDGenerator\\TinyFx.IDGenerator.csproj",
     "src\\TinyFx.IP2Country\\TinyFx.IP2Country.csproj",
-    "src\\TinyFx.OAuth\\TinyFx.OAuth.csproj"
+    "src\\TinyFx.OAuth\\TinyFx.OAuth.csproj",
+    "src\\TinyFx.SnowflakeId\\TinyFx.SnowflakeId.csproj"
   ],
   "VsixItem": {
     "ProjectPath": null,

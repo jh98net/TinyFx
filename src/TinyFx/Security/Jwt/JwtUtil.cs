@@ -9,40 +9,46 @@ using System.Linq;
 using TinyFx;
 using TinyFx.Security;
 using Microsoft.AspNetCore.DataProtection;
+using StackExchange.Redis;
 
 namespace TinyFx.Security
 {
     public static class JwtUtil
     {
         /// <summary>
-        /// 创建JWT Token
+        /// 生成JWT Token
         /// </summary>
-        /// <param name="userId">用户ID</param>
-        /// <param name="role">角色UserRole</param>
-        /// <param name="userIp">用户IP</param>
-        /// <param name="customData">自定义数据</param>
-        /// <param name="signingKey">签名秘钥</param>
+        /// <param name="userId"></param>
+        /// <param name="role"></param>
+        /// <param name="userIp"></param>
+        /// <param name="splitDbKey"></param>
+        /// <param name="meta"></param>
         /// <returns></returns>
-        public static string GenerateJwtToken(object userId, UserRole role, string userIp = null, string customData = null, string signingKey = null)
-            => GenerateJwtToken(userId, Convert.ToString(role), userIp, customData, signingKey);
-
-        /// <summary>
-        /// 创建JWT Token
-        /// </summary>
-        /// <param name="userId">用户ID</param>
-        /// <param name="role">角色UserRole</param>
-        /// <param name="userIp">用户IP</param>
-        /// <param name="customData">自定义数据</param>
-        /// <param name="signingKey">签名秘钥</param>
-        /// <returns></returns>
-        public static string GenerateJwtToken(object userId, string role = null, string userIp = null, string customData = null, string signingKey = null)
+        public static string CreateJwtToken(object userId, string role = null, string userIp = null, string splitDbKey = null, string meta = null)
         {
-            var section = GetSection(signingKey);
+            return CreateJwtToken(new JwtTokenData
+            {
+                UserId = Convert.ToString(userId),
+                Role = role,
+                UserIp = userIp,
+                SplitDbKey = splitDbKey,
+                Meta = meta
+            });
+        }
+        /// <summary>
+        /// 生成JWT Token
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static string CreateJwtToken(JwtTokenData data)
+        {
+            var section = GetSection(data.SigningKey);
             var signKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(section.SigningKey));
             //
-            var uid = Convert.ToString(userId);
+            var uid = Convert.ToString(data.UserId);
             if (string.IsNullOrEmpty(uid))
-                throw new Exception("获取Jwt Token时userId不能为空");
+                throw new Exception("生成Jwt Token时userId不能为空");
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -55,13 +61,18 @@ namespace TinyFx.Security
                 IssuedAt = DateTime.UtcNow,
                 SigningCredentials = new SigningCredentials(signKey, SecurityAlgorithms.HmacSha256Signature)
             };
-            if (!string.IsNullOrEmpty(role))
-                tokenDescriptor.Subject.AddClaim(new Claim(ClaimTypes.Role, role));
-            if (!string.IsNullOrEmpty(userIp))
-                tokenDescriptor.Subject.AddClaim(new Claim("uip", userIp));
-            if (!string.IsNullOrEmpty(customData))
-                tokenDescriptor.Subject.AddClaim(new Claim("custom", customData));
-            var expire = (section?.ExpireMinutes) ?? 0;
+            if (!string.IsNullOrEmpty(data.Role))
+                tokenDescriptor.Subject.AddClaim(new Claim(ClaimTypes.Role, data.Role));
+            if (!string.IsNullOrEmpty(data.UserIp))
+                tokenDescriptor.Subject.AddClaim(new Claim("uip", data.UserIp));
+            if (!string.IsNullOrEmpty(data.Meta))
+                tokenDescriptor.Subject.AddClaim(new Claim("meta", data.Meta));
+            if (!string.IsNullOrEmpty(data.SplitDbKey))
+                tokenDescriptor.Subject.AddClaim(new Claim("splitdbkey", data.SplitDbKey));
+
+            var expire = data.Expires.HasValue
+                ? data.Expires.Value.TotalMinutes
+                : (section?.ExpireMinutes) ?? 0;
             if (expire > 0)
                 tokenDescriptor.Expires = DateTime.UtcNow.AddMinutes(expire);
 
@@ -111,26 +122,24 @@ namespace TinyFx.Security
                 Status = JwtTokenStatus.Success,
                 Principal = principal,
             };
+            var claimDict = ret.Principal.Claims.ToDictionary(x => x.Type);
+
             // userId
             ret.UserId = principal.Identity.Name;
-            var claims = ret.Principal.Claims;
-            // role
-            var role = claims.FirstOrDefault(item => item.Type == ClaimTypes.Role);
-            ret.Role = role == null ? UserRole.Unknow : role.Value.ToEnum(UserRole.Unknow);
-            ret.RoleString = role?.Value;
-            // iat
-            var iat = claims.FirstOrDefault(item => item.Type == "iat")?.Value;
-            if (iat != null)
-                ret.IssuedAt = DateTimeUtil.TimestampToDateTime(iat);
-            // userIp
-            ret.UserIp = claims.FirstOrDefault(item => item.Type == "uip")?.Value;
-            // customData
-            ret.CustomData = claims.FirstOrDefault(item => item.Type == "custom")?.Value;
-            // exp
-            var exp = claims.FirstOrDefault(item => item.Type == "exp")?.Value;
-            if (exp != null)
-                ret.Expires = DateTimeUtil.TimestampToUtcDateTime(exp);
-            return ret;
+            ret.RoleString = claimDict.TryGetValue(ClaimTypes.Role, out var v1) && v1 != null ? v1.Value : null;
+            ret.Role = !string.IsNullOrEmpty(ret.RoleString) ? ret.RoleString.ToEnum(UserRole.Unknow) : UserRole.Unknow;
+            ret.UserIp = claimDict.TryGetValue("uip", out var v3) && v3 != null
+                ? v3.Value : null;
+            ret.SplitDbKey = claimDict.TryGetValue("splitdbkey", out var v4) && v4 != null
+                ? v4.Value : null;
+            ret.Meta = claimDict.TryGetValue("meta", out var v5) && v5 != null
+                ? v5.Value : null;
+
+            ret.IssuedAt = claimDict.TryGetValue("iat", out var v2) && v2 != null
+                ? DateTimeUtil.TimestampToDateTime(v2.Value) : null;
+            ret.Expires = claimDict.TryGetValue("exp", out var v6) && v6 != null
+                ? DateTimeUtil.TimestampToUtcDateTime(v6.Value) : null;
+             return ret;
         }
         private static JwtAuthSection GetSection(string signingKey = null)
         {
@@ -138,7 +147,7 @@ namespace TinyFx.Security
             if (!string.IsNullOrEmpty(signingKey))
                 section.SigningKey = signingKey;
             if (string.IsNullOrEmpty(section.SigningKey))
-                throw new Exception("请在配置文件中配置JwtAuth:SignSecret"); 
+                throw new Exception("请在配置文件中配置JwtAuth:SignSecret");
             return section;
         }
 

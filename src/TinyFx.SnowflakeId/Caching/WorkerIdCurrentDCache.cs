@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis;
 
-namespace TinyFx.IDGenerator.Caching
+namespace TinyFx.SnowflakeId.Caching
 {
     internal class WorkerIdCurrentDCache : RedisStringClient<int>
     {
         private static WorkerIdCurrentDCache _instance = new WorkerIdCurrentDCache();
         public static WorkerIdCurrentDCache Create() => _instance;
 
-        private IDGeneratorSection _section;
+        private SnowflakeIdSection _section;
         public WorkerIdCurrentDCache()
         {
-            _section = ConfigUtil.GetSection<IDGeneratorSection>();
+            _section = ConfigUtil.GetSection<SnowflakeIdSection>();
             RedisKey = $"{RedisPrefixConst.ID_GENERATOR}:WorkerIdNumber";
             Options.ConnectionStringName = _section.RedisConnectionStringName;
         }

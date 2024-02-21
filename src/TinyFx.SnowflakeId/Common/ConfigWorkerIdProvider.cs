@@ -4,16 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
-using TinyFx.IDGenerator.Caching;
 
-namespace TinyFx.IDGenerator.Common
+namespace TinyFx.SnowflakeId.Common
 {
     internal class ConfigWorkerIdProvider : IWorkerIdProvider
     {
-        private IDGeneratorSection _section;
+        private SnowflakeIdSection _section;
         public ConfigWorkerIdProvider() 
         {
-            _section = ConfigUtil.GetSection<IDGeneratorSection>();
+            _section = ConfigUtil.GetSection<SnowflakeIdSection>();
         }
         public Task Active()
         {
@@ -25,8 +24,9 @@ namespace TinyFx.IDGenerator.Common
             return Task.FromResult(_section.WorkerId);
         }
 
-        public void Dispose()
+        public Task Dispose()
         {
+            return Task.CompletedTask;
         }
     }
 }

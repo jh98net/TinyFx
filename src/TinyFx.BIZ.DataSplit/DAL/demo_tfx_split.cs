@@ -6,74 +6,71 @@ using SqlSugar;
 namespace TinyFx.BIZ.DataSplit.DAL
 {
     ///<summary>
-    ///分库日志
+    ///
     ///</summary>
-    [SugarTable("s_split_db_log")]
-    public partial class Ss_split_db_logEO
+    [SugarTable("demo_tfx_split")]
+    public partial class Sdemo_tfx_splitEO
     {
-           public Ss_split_db_logEO(){
+           public Sdemo_tfx_splitEO(){
 
-            this.HandlerTime =0;
-            this.Status =0;
+            this.NumDay =0;
+            this.NumWeek =0;
+            this.NumMonth =0;
+            this.NumQuarter =0;
+            this.NumYear =0;
+            this.OrderNum =0;
             this.RecDate =DateTime.Now;
 
            }
            /// <summary>
-           /// Desc:日志编码(GUID)
+           /// Desc:ObjectID
            /// Default:
            /// Nullable:False
            /// </summary>           
            [SugarColumn(IsPrimaryKey=true)]
-           public string LogID {get;set;}
+           public string ObjectID {get;set;}
 
            /// <summary>
-           /// Desc:分库表名
-           /// Default:
-           /// Nullable:False
-           /// </summary>           
-           public string TableName {get;set;}
-
-           /// <summary>
-           /// Desc:分库字段名
-           /// Default:
-           /// Nullable:False
-           /// </summary>           
-           public string ColumnName {get;set;}
-
-           /// <summary>
-           /// Desc:分库字段的值
-           /// Default:
-           /// Nullable:False
-           /// </summary>           
-           public string ColumnValue {get;set;}
-
-           /// <summary>
-           /// Desc:数据库标识
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? DatabaseId {get;set;}
-
-           /// <summary>
-           /// Desc:执行时长（秒）
+           /// Desc:数值天
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int HandlerTime {get;set;}
+           public int NumDay {get;set;}
 
            /// <summary>
-           /// Desc:执行日志
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? HandlerLog {get;set;}
-
-           /// <summary>
-           /// Desc:状态(0-未同步1-已同步)
+           /// Desc:数值周
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int Status {get;set;}
+           public int NumWeek {get;set;}
+
+           /// <summary>
+           /// Desc:数值月
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int NumMonth {get;set;}
+
+           /// <summary>
+           /// Desc:数值季
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int NumQuarter {get;set;}
+
+           /// <summary>
+           /// Desc:数值年
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int NumYear {get;set;}
+
+           /// <summary>
+           /// Desc:顺序号
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int OrderNum {get;set;}
 
            /// <summary>
            /// Desc:记录时间

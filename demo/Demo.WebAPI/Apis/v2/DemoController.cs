@@ -15,7 +15,6 @@ using System.Text;
 using TinyFx;
 using TinyFx.AspNet;
 using TinyFx.Configuration;
-using TinyFx.IDGenerator;
 using TinyFx.Logging;
 using TinyFx.Randoms;
 using TinyFx.Security;

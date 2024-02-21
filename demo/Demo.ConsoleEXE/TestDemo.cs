@@ -1,7 +1,6 @@
 ﻿using Demo.ConsoleEXE;
 using Demo.ConsoleEXE.DAL;
 using TinyFx.BIZ.DataSplit;
-using TinyFx.BIZ.DataSplit.Common;
 using TinyFx.BIZ.DataSplit.DAL;
 using TinyFx.Common;
 using TinyFx.Data;
@@ -20,7 +19,7 @@ namespace TinyFx.Demos
         {
             //var helper = new DemoHelper();
             //await helper.InitData("demo");
-            var item = new Ss_split_tableEO
+            var item = new Stfx_split_tableEO
             {
                 DatabaseId = "default",
                 TableName = "s_split_demo",
@@ -30,11 +29,10 @@ namespace TinyFx.Demos
                 MoveKeepMode = 0, // 0-天1-月
                 MoveKeepValue = 3,
                 MoveTableMode = 0,
-                MoveTableValue = null,
                 MoveWhere = null,
                 SplitMaxRowCount = 0,
             };
-            await new DataSplitJob().Execute(item);
+            //await new DataSplitJob().Execute(item);
             Console.WriteLine("OK");
         }
     }

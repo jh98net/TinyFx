@@ -55,92 +55,92 @@ drop table if exists demo_user_course;
 /*==============================================================*/
 create table admin_dicts
 (
-   DictID               varchar(40) not null  comment '±àÂëGUID',
-   Category             varchar(50)  comment 'Àà±ğ',
-   Name                 varchar(200)  comment 'ÃèÊö',
-   Value                text  comment 'Öµ',
-   Type                 int not null default 0  comment 'ÀàĞÍ0-ÏµÍ³1-ÓÃ»§¶¨Òå',
+   DictID               varchar(40) not null  comment 'ç¼–ç GUID',
+   Category             varchar(50)  comment 'ç±»åˆ«',
+   Name                 varchar(200)  comment 'æè¿°',
+   Value                text  comment 'å€¼',
+   Type                 int not null default 0  comment 'ç±»å‹0-ç³»ç»Ÿ1-ç”¨æˆ·å®šä¹‰',
    primary key (DictID)
 );
 
-alter table admin_dicts comment 'ºóÌ¨×Öµä';
+alter table admin_dicts comment 'åå°å­—å…¸';
 
 /*==============================================================*/
 /* Table: admin_group                                           */
 /*==============================================================*/
 create table admin_group
 (
-   GroupID              int not null  comment '±àÂë',
-   GroupName            varchar(100)  comment 'Ãû³Æ',
-   `Desc`               text  comment 'ÃèÊö',
-   ParentID             int  comment '¸¸±àÂë',
+   GroupID              int not null  comment 'ç¼–ç ',
+   GroupName            varchar(100)  comment 'åç§°',
+   `Desc`               text  comment 'æè¿°',
+   ParentID             int  comment 'çˆ¶ç¼–ç ',
    primary key (GroupID)
 );
 
-alter table admin_group comment '²¿ÃÅ»ò×é';
+alter table admin_group comment 'éƒ¨é—¨æˆ–ç»„';
 
 /*==============================================================*/
 /* Table: admin_listedit                                        */
 /*==============================================================*/
 create table admin_listedit
 (
-   GenID                bigint not null auto_increment  comment '±àÂë',
-   ConnectionStringName varchar(50)  comment '²éÑ¯Á¬½Ó×Ö·û´®Ãû',
-   QuerySQLSource       text  comment 'Ô­Ê¼SQL',
-   QuerySQL             text  comment 'SQL½âÎöºóSelectStatementµÄjson',
-   QueryTitle           varchar(100)  comment '²éÑ¯Ò³ÃæTitle',
-   PageSize             int not null default 20  comment 'GridÒ³´óĞ¡',
-   GridHeight           int not null default 600  comment 'Grid¸ß¶È',
-   TableName            varchar(100)  comment 'É¾³ı±íÃû',
-   PrimaryKeys          varchar(2000)  comment 'Ö÷¼ü¼¯ºÏjsonĞòÁĞ»¯',
-   HasDelete            bool not null default 0  comment 'ÊÇ·ñÓĞÉ¾³ı',
-   DeleteSQL            varchar(1000)  comment 'É¾³ıSQL',
-   HasAdd               bool not null default 0  comment 'ÊÇ·ñÓĞÌí¼Ó',
-   AddSQL               text  comment 'Ìí¼ÓSQL',
-   HasEdit              bool not null default 0  comment 'ÊÇ·ñÓĞ±à¼­',
-   HasView              bool not null default 0  comment 'ÊÇ·ñÓĞ²é¿´',
-   SelectSQL            text  comment '±à¼­»ñÈ¡Êı¾İSQL',
-   EditSQL              text  comment '±à¼­SQL',
-   EditTitle            varchar(100)  comment 'Ìí¼Ó±à¼­Ò³ÃæTitle',
-   EditWidth            int not null default 0  comment 'Ìí¼Ó±à¼­Ò³Ãæ¿í¶È',
-   HasDialog            bool not null default 0  comment 'ÊÇ·ñÓĞDialog¹¦ÄÜ£¨Ö»Ö§³Öµ¥Ò»Ö÷¼ü£©',
-   DialogSQL            varchar(1000)  comment '¶Ô»°¿òSQL',
-   DialogFieldName      varchar(50)  comment '¶Ô»°¿òÁĞÃû',
-   DialogWidth          int not null default 0  comment '¶Ô»°¿ò¿í¶È',
-   DialogHeight         int not null default 0  comment '¶Ô»°¿ò¸ß¶È',
-   Status               tinyint not null default 1  comment '×´Ì¬ 0-³õÊ¼ 1-ÓĞĞ§ 2-ÎŞĞ§',
-   RecDate              datetime not null default CURRENT_TIMESTAMP  comment '¼ÇÂ¼ÈÕÆÚ',
+   GenID                bigint not null auto_increment  comment 'ç¼–ç ',
+   ConnectionStringName varchar(50)  comment 'æŸ¥è¯¢è¿æ¥å­—ç¬¦ä¸²å',
+   QuerySQLSource       text  comment 'åŸå§‹SQL',
+   QuerySQL             text  comment 'SQLè§£æåSelectStatementçš„json',
+   QueryTitle           varchar(100)  comment 'æŸ¥è¯¢é¡µé¢Title',
+   PageSize             int not null default 20  comment 'Gridé¡µå¤§å°',
+   GridHeight           int not null default 600  comment 'Gridé«˜åº¦',
+   TableName            varchar(100)  comment 'åˆ é™¤è¡¨å',
+   PrimaryKeys          varchar(2000)  comment 'ä¸»é”®é›†åˆjsonåºåˆ—åŒ–',
+   HasDelete            bool not null default 0  comment 'æ˜¯å¦æœ‰åˆ é™¤',
+   DeleteSQL            varchar(1000)  comment 'åˆ é™¤SQL',
+   HasAdd               bool not null default 0  comment 'æ˜¯å¦æœ‰æ·»åŠ ',
+   AddSQL               text  comment 'æ·»åŠ SQL',
+   HasEdit              bool not null default 0  comment 'æ˜¯å¦æœ‰ç¼–è¾‘',
+   HasView              bool not null default 0  comment 'æ˜¯å¦æœ‰æŸ¥çœ‹',
+   SelectSQL            text  comment 'ç¼–è¾‘è·å–æ•°æ®SQL',
+   EditSQL              text  comment 'ç¼–è¾‘SQL',
+   EditTitle            varchar(100)  comment 'æ·»åŠ ç¼–è¾‘é¡µé¢Title',
+   EditWidth            int not null default 0  comment 'æ·»åŠ ç¼–è¾‘é¡µé¢å®½åº¦',
+   HasDialog            bool not null default 0  comment 'æ˜¯å¦æœ‰DialogåŠŸèƒ½ï¼ˆåªæ”¯æŒå•ä¸€ä¸»é”®ï¼‰',
+   DialogSQL            varchar(1000)  comment 'å¯¹è¯æ¡†SQL',
+   DialogFieldName      varchar(50)  comment 'å¯¹è¯æ¡†åˆ—å',
+   DialogWidth          int not null default 0  comment 'å¯¹è¯æ¡†å®½åº¦',
+   DialogHeight         int not null default 0  comment 'å¯¹è¯æ¡†é«˜åº¦',
+   Status               tinyint not null default 1  comment 'çŠ¶æ€ 0-åˆå§‹ 1-æœ‰æ•ˆ 2-æ— æ•ˆ',
+   RecDate              datetime not null default CURRENT_TIMESTAMP  comment 'è®°å½•æ—¥æœŸ',
    primary key (GenID)
 );
 
-alter table admin_listedit comment '×Ô¶¨ÒåSQL²éÑ¯Ìí¼Ó±à¼­Ä£°åÊı¾İ';
+alter table admin_listedit comment 'è‡ªå®šä¹‰SQLæŸ¥è¯¢æ·»åŠ ç¼–è¾‘æ¨¡æ¿æ•°æ®';
 
 /*==============================================================*/
 /* Table: admin_listedit_edititem                               */
 /*==============================================================*/
 create table admin_listedit_edititem
 (
-   EditItemID           bigint not null auto_increment  comment '±àÂë',
-   GenID                bigint not null  comment 'Gen±àÂë',
-   ColumnName           varchar(50)  comment 'ÁĞÃû',
-   IsPrimaryKey         bool not null default 0  comment 'ÊÇ·ñÖ÷¼ü',
-   ControlType          varchar(50)  comment '¿Ø¼şÀàĞÍ',
-   ControlID            varchar(50)  comment '¿Ø¼şID',
+   EditItemID           bigint not null auto_increment  comment 'ç¼–ç ',
+   GenID                bigint not null  comment 'Genç¼–ç ',
+   ColumnName           varchar(50)  comment 'åˆ—å',
+   IsPrimaryKey         bool not null default 0  comment 'æ˜¯å¦ä¸»é”®',
+   ControlType          varchar(50)  comment 'æ§ä»¶ç±»å‹',
+   ControlID            varchar(50)  comment 'æ§ä»¶ID',
    FieldLabel           varchar(50)  comment 'Label',
-   RowIndex             int not null default 0  comment 'ËùÔÚĞĞ',
-   ColumnIndex          int not null default 0  comment 'ËùÔÚÁĞ',
-   WidthNum             int not null default 0  comment '¿í¶È',
-   EditParameterName    varchar(50)  comment '²ÎÊıÃû',
-   EditDbType           varchar(50)  comment '²ÎÊıÀàĞÍ',
-   EditDotNetType       varchar(100)  comment '²ÎÊıDotNetÀàĞÍ',
-   DefaultValueSet      varchar(50)  comment 'Ä¬ÈÏÖµÀàĞÍ',
-   DefaultValueString   varchar(50)  comment 'Ä¬ÈÏÖµ×Ö·û´®',
-   JsonData             text  comment 'JsonÏµÁĞ»¯',
-   RecDate              datetime not null default CURRENT_TIMESTAMP  comment '¼ÇÂ¼ÈÕÆÚ',
+   RowIndex             int not null default 0  comment 'æ‰€åœ¨è¡Œ',
+   ColumnIndex          int not null default 0  comment 'æ‰€åœ¨åˆ—',
+   WidthNum             int not null default 0  comment 'å®½åº¦',
+   EditParameterName    varchar(50)  comment 'å‚æ•°å',
+   EditDbType           varchar(50)  comment 'å‚æ•°ç±»å‹',
+   EditDotNetType       varchar(100)  comment 'å‚æ•°DotNetç±»å‹',
+   DefaultValueSet      varchar(50)  comment 'é»˜è®¤å€¼ç±»å‹',
+   DefaultValueString   varchar(50)  comment 'é»˜è®¤å€¼å­—ç¬¦ä¸²',
+   JsonData             text  comment 'Jsonç³»åˆ—åŒ–',
+   RecDate              datetime not null default CURRENT_TIMESTAMP  comment 'è®°å½•æ—¥æœŸ',
    primary key (EditItemID)
 );
 
-alter table admin_listedit_edititem comment 'Ìí¼Ó±à¼­¿Ø¼ş¶¨Òå';
+alter table admin_listedit_edititem comment 'æ·»åŠ ç¼–è¾‘æ§ä»¶å®šä¹‰';
 
 /*==============================================================*/
 /* Index: Index_1                                               */
@@ -155,31 +155,31 @@ create index Index_1 on admin_listedit_edititem
 /*==============================================================*/
 create table admin_listedit_gridcolumn
 (
-   GridColumnID         bigint not null auto_increment  comment '±àÂë',
-   GenID                bigint not null  comment '±àÂë',
-   OrderNum             int not null default 0  comment 'ÅÅĞò',
-   ColumnType           varchar(50)  comment 'ÁĞÀàĞÍ',
-   IsPrimaryKey         bool not null default 0  comment 'ÊÇ·ñÖ÷¼ü',
-   FieldName            varchar(50)  comment 'Êı¾İ×Ö¶ÎÃû',
-   ColumnName           varchar(50)  comment 'Êı¾İ±íÁĞÃû',
-   Text                 varchar(50)  comment 'ÏÔÊ¾ÁĞÃû',
-   Align                varchar(50)  comment '¶ÔÆë·½Ê½',
-   Width                varchar(10)  comment 'ÁĞ¿í',
-   Flex                 int  comment 'ÁĞ¿íflex',
-   Locked               bool not null default 0  comment 'ÊÇ·ñËø¶¨',
-   Visible              bool not null default 1  comment 'ÊÇ·ñ¿É¼û',
-   Format               varchar(50)  comment 'ÏÔÊ¾¸ñÊ½',
-   TrueText             varchar(50)  comment 'BooleanColumn trueÎÄ±¾',
-   FalseText            varchar(50)  comment 'BooleanColumn falseÎÄ±¾',
-   FilterType           varchar(50)  comment '¹ıÂËÀàĞÍ',
-   RenderFn             varchar(50)  comment 'Êä³öÏÔÊ¾º¯ÊıÃû',
-   RenderFnContent      text  comment 'Êä³öÏÔÊ¾º¯ÊıÄÚÈİ',
-   RenderHandler        varchar(1000)  comment 'Êä³öÏÔÊ¾handler',
-   RecDate              datetime not null default CURRENT_TIMESTAMP  comment '¼ÇÂ¼ÈÕÆÚ',
+   GridColumnID         bigint not null auto_increment  comment 'ç¼–ç ',
+   GenID                bigint not null  comment 'ç¼–ç ',
+   OrderNum             int not null default 0  comment 'æ’åº',
+   ColumnType           varchar(50)  comment 'åˆ—ç±»å‹',
+   IsPrimaryKey         bool not null default 0  comment 'æ˜¯å¦ä¸»é”®',
+   FieldName            varchar(50)  comment 'æ•°æ®å­—æ®µå',
+   ColumnName           varchar(50)  comment 'æ•°æ®è¡¨åˆ—å',
+   Text                 varchar(50)  comment 'æ˜¾ç¤ºåˆ—å',
+   Align                varchar(50)  comment 'å¯¹é½æ–¹å¼',
+   Width                varchar(10)  comment 'åˆ—å®½',
+   Flex                 int  comment 'åˆ—å®½flex',
+   Locked               bool not null default 0  comment 'æ˜¯å¦é”å®š',
+   Visible              bool not null default 1  comment 'æ˜¯å¦å¯è§',
+   Format               varchar(50)  comment 'æ˜¾ç¤ºæ ¼å¼',
+   TrueText             varchar(50)  comment 'BooleanColumn trueæ–‡æœ¬',
+   FalseText            varchar(50)  comment 'BooleanColumn falseæ–‡æœ¬',
+   FilterType           varchar(50)  comment 'è¿‡æ»¤ç±»å‹',
+   RenderFn             varchar(50)  comment 'è¾“å‡ºæ˜¾ç¤ºå‡½æ•°å',
+   RenderFnContent      text  comment 'è¾“å‡ºæ˜¾ç¤ºå‡½æ•°å†…å®¹',
+   RenderHandler        varchar(1000)  comment 'è¾“å‡ºæ˜¾ç¤ºhandler',
+   RecDate              datetime not null default CURRENT_TIMESTAMP  comment 'è®°å½•æ—¥æœŸ',
    primary key (GridColumnID)
 );
 
-alter table admin_listedit_gridcolumn comment '²éÑ¯gridÁĞ¶¨Òå';
+alter table admin_listedit_gridcolumn comment 'æŸ¥è¯¢gridåˆ—å®šä¹‰';
 
 /*==============================================================*/
 /* Index: Index_1                                               */
@@ -195,23 +195,23 @@ create index Index_1 on admin_listedit_gridcolumn
 /*==============================================================*/
 create table admin_listedit_queryitem
 (
-   QueryItemID          bigint not null auto_increment  comment '±àÂë',
-   GenID                bigint not null  comment 'Gen±àÂë',
-   QueryBlock           varchar(255)  comment '²éÑ¯Óï¾ä¿é',
-   QueryParameterName   varchar(50)  comment '²éÑ¯²ÎÊıÃû',
-   QueryDbType          varchar(50)  comment '²ÎÊıDbTypeÀàĞÍ',
-   QueryDotNetType      varchar(100)  comment '²ÎÊıDotNetÀàĞÍ',
-   ControlType          varchar(50)  comment '¿Ø¼şÀàĞÍ',
-   ControlID            varchar(50)  comment '¿Ø¼şID',
+   QueryItemID          bigint not null auto_increment  comment 'ç¼–ç ',
+   GenID                bigint not null  comment 'Genç¼–ç ',
+   QueryBlock           varchar(255)  comment 'æŸ¥è¯¢è¯­å¥å—',
+   QueryParameterName   varchar(50)  comment 'æŸ¥è¯¢å‚æ•°å',
+   QueryDbType          varchar(50)  comment 'å‚æ•°DbTypeç±»å‹',
+   QueryDotNetType      varchar(100)  comment 'å‚æ•°DotNetç±»å‹',
+   ControlType          varchar(50)  comment 'æ§ä»¶ç±»å‹',
+   ControlID            varchar(50)  comment 'æ§ä»¶ID',
    FieldLabel           varchar(50)  comment 'Label',
-   RowIndex             int not null default 0  comment 'ËùÔÚĞĞ',
-   ColumnIndex          int not null default 0  comment 'ËùÔÚÁĞ',
-   JsonData             text  comment 'JsonÏµÁĞ»¯',
-   RecDate              datetime not null default CURRENT_TIMESTAMP  comment '¼ÇÂ¼ÈÕÆÚ',
+   RowIndex             int not null default 0  comment 'æ‰€åœ¨è¡Œ',
+   ColumnIndex          int not null default 0  comment 'æ‰€åœ¨åˆ—',
+   JsonData             text  comment 'Jsonç³»åˆ—åŒ–',
+   RecDate              datetime not null default CURRENT_TIMESTAMP  comment 'è®°å½•æ—¥æœŸ',
    primary key (QueryItemID)
 );
 
-alter table admin_listedit_queryitem comment '²éÑ¯Ìõ¼ş¿Ø¼ş¶¨Òå';
+alter table admin_listedit_queryitem comment 'æŸ¥è¯¢æ¡ä»¶æ§ä»¶å®šä¹‰';
 
 /*==============================================================*/
 /* Index: Index_1                                               */
@@ -226,66 +226,66 @@ create index Index_1 on admin_listedit_queryitem
 /*==============================================================*/
 create table admin_menu
 (
-   MenuID               varchar(40) not null  comment '²Ëµ¥±àÂëGUID',
-   SiteID               varchar(50)  comment 'Õ¾µã±àÂë',
-   ParentId             varchar(40) default '0'  comment '¸¸²Ëµ¥±àÂë 0-¸ù²Ëµ¥',
-   Title                varchar(50)  comment '²Ëµ¥ÏÔÊ¾±êÌâ',
-   OrderNum             int not null default 0  comment 'ÅÅĞò£¬´ÓĞ¡µ½´ó',
-   Icon                 varchar(250)  comment 'Í¼±ê',
-   LinkMode             int not null default 0  comment 'Á´½ÓÀàĞÍ0-Ä¿Â¼1-rul 2-siteid+url 3-GenID',
-   Url                  varchar(250)  comment '²Ëµ¥URL£¬¾¡Á¿Ê¹ÓÃÏà¶ÔÂ·¾¶',
-   GenID                varchar(50)  comment 'GenID±àÂë',
-   UrlTarget            tinyint not null default 0  comment 'Á´½ÓÄ£Ê½ 0-TAB´ò¿ª 1-ĞÂ´°¿Ú´ò¿ª',
-   PrivParams           varchar(250)  comment '¹¦ÄÜºÍÊı¾İÈ¨ÏŞ²ÎÊı¡£¸ñÊ½£ºÀàĞÍ-²ÎÊı| ÀàĞÍ-²ÎÊı
-             ÓÃÓÚÔÚ¶¨ÒåÒ³ÃæÄÚÈ¨ÏŞÊ±¿ÉÉèÖÃµÄÈ¨ÏŞÑ¡ÏîÁĞ±í
-             Èç£ºControlID-btnOk|ControlID-btnCancle',
-   Pinyin               varchar(20)  comment 'Æ´Òô',
-   `Desc`               varchar(500)  comment 'ÃèÊö',
-   Status               tinyint not null default 0  comment '×´Ì¬ 0-ÎŞĞ§ 1-ÓĞĞ§',
+   MenuID               varchar(40) not null  comment 'èœå•ç¼–ç GUID',
+   SiteID               varchar(50)  comment 'ç«™ç‚¹ç¼–ç ',
+   ParentId             varchar(40) default '0'  comment 'çˆ¶èœå•ç¼–ç  0-æ ¹èœå•',
+   Title                varchar(50)  comment 'èœå•æ˜¾ç¤ºæ ‡é¢˜',
+   OrderNum             int not null default 0  comment 'æ’åºï¼Œä»å°åˆ°å¤§',
+   Icon                 varchar(250)  comment 'å›¾æ ‡',
+   LinkMode             int not null default 0  comment 'é“¾æ¥ç±»å‹0-ç›®å½•1-rul 2-siteid+url 3-GenID',
+   Url                  varchar(250)  comment 'èœå•URLï¼Œå°½é‡ä½¿ç”¨ç›¸å¯¹è·¯å¾„',
+   GenID                varchar(50)  comment 'GenIDç¼–ç ',
+   UrlTarget            tinyint not null default 0  comment 'é“¾æ¥æ¨¡å¼ 0-TABæ‰“å¼€ 1-æ–°çª—å£æ‰“å¼€',
+   PrivParams           varchar(250)  comment 'åŠŸèƒ½å’Œæ•°æ®æƒé™å‚æ•°ã€‚æ ¼å¼ï¼šç±»å‹-å‚æ•°| ç±»å‹-å‚æ•°
+             ç”¨äºåœ¨å®šä¹‰é¡µé¢å†…æƒé™æ—¶å¯è®¾ç½®çš„æƒé™é€‰é¡¹åˆ—è¡¨
+             å¦‚ï¼šControlID-btnOk|ControlID-btnCancle',
+   Pinyin               varchar(20)  comment 'æ‹¼éŸ³',
+   `Desc`               varchar(500)  comment 'æè¿°',
+   Status               tinyint not null default 0  comment 'çŠ¶æ€ 0-æ— æ•ˆ 1-æœ‰æ•ˆ',
    primary key (MenuID)
 );
 
-alter table admin_menu comment '¹ÜÀí²Ëµ¥';
+alter table admin_menu comment 'ç®¡ç†èœå•';
 
 /*==============================================================*/
 /* Table: admin_msg                                             */
 /*==============================================================*/
 create table admin_msg
 (
-   MsgID                varchar(40) not null  comment '±àÂëGUID',
-   UserID               varchar(40)  comment 'ÓÃ»§',
-   Flag                 int not null  comment '±êÊ¶',
-   `From`               varchar(50)  comment 'À´Ô´',
-   Title                varchar(100)  comment '±êÌâ',
-   Content              text  comment 'ÄÚÈİ',
+   MsgID                varchar(40) not null  comment 'ç¼–ç GUID',
+   UserID               varchar(40)  comment 'ç”¨æˆ·',
+   Flag                 int not null  comment 'æ ‡è¯†',
+   `From`               varchar(50)  comment 'æ¥æº',
+   Title                varchar(100)  comment 'æ ‡é¢˜',
+   Content              text  comment 'å†…å®¹',
    `Label`              varchar(50)  comment '',
-   Status               int not null  comment '×´Ì¬0-Î´Öª1-ÓĞĞ§2-É¾³ı',
-   SendDate             datetime not null  comment '·¢ËÍÊ±¼ä',
+   Status               int not null  comment 'çŠ¶æ€0-æœªçŸ¥1-æœ‰æ•ˆ2-åˆ é™¤',
+   SendDate             datetime not null  comment 'å‘é€æ—¶é—´',
    primary key (MsgID)
 );
 
-alter table admin_msg comment 'ÏûÏ¢';
+alter table admin_msg comment 'æ¶ˆæ¯';
 
 /*==============================================================*/
 /* Table: admin_oper_log                                        */
 /*==============================================================*/
 create table admin_oper_log
 (
-   LogID                varchar(40) not null  comment 'ÈÕÖ¾±àÂëGUID',
-   OperType             varchar(150) default '0'  comment '²Ù×÷µÄÖÖÀà£¨¸ù¾İÒµÎñ×ÔĞĞÔ¼¶¨£©
-             sql --Êı¾İ¿â²Ù×÷
+   LogID                varchar(40) not null  comment 'æ—¥å¿—ç¼–ç GUID',
+   OperType             varchar(150) default '0'  comment 'æ“ä½œçš„ç§ç±»ï¼ˆæ ¹æ®ä¸šåŠ¡è‡ªè¡Œçº¦å®šï¼‰
+             sql --æ•°æ®åº“æ“ä½œ
              ',
-   Title                varchar(255)  comment '²Ù×÷ÃèÊö',
-   Content              text  comment 'ÄÚÈİ',
-   Tag1                 varchar(100)  comment '±ê¼Ç1',
-   Tag2                 varchar(100)  comment '±ê¼Ç2',
-   Tag3                 varchar(100)  comment '±ê¼Ç3',
-   Tag4                 varchar(100)  comment '±ê¼Ç3',
-   RecDate              datetime not null default CURRENT_TIMESTAMP  comment '¼ÇÂ¼Ê±¼ä',
+   Title                varchar(255)  comment 'æ“ä½œæè¿°',
+   Content              text  comment 'å†…å®¹',
+   Tag1                 varchar(100)  comment 'æ ‡è®°1',
+   Tag2                 varchar(100)  comment 'æ ‡è®°2',
+   Tag3                 varchar(100)  comment 'æ ‡è®°3',
+   Tag4                 varchar(100)  comment 'æ ‡è®°3',
+   RecDate              datetime not null default CURRENT_TIMESTAMP  comment 'è®°å½•æ—¶é—´',
    primary key (LogID)
 );
 
-alter table admin_oper_log comment 'ºóÌ¨¹ÜÀí²Ù×÷ÈÕÖ¾';
+alter table admin_oper_log comment 'åå°ç®¡ç†æ“ä½œæ—¥å¿—';
 
 /*==============================================================*/
 /* Index: Index_1                                               */
@@ -301,108 +301,108 @@ create index Index_1 on admin_oper_log
 /*==============================================================*/
 create table admin_req_log
 (
-   LogID                varchar(40) not null  comment '±àÂëGUID',
-   UserID               varchar(40)  comment '¹ÜÀíÓÃ»§ID',
-   Type                 int not null  comment 'ÀàĞÍ0-µÇÂ¼1-ÇëÇó',
-   Result               varchar(50)  comment '½á¹û',
-   RequestUrl           varchar(255)  comment 'ÇëÇóµØÖ·',
-   IP                   varchar(50)  comment 'IPµØÖ·',
-   OS                   varchar(50)  comment 'ÏµÍ³',
-   Browser              varchar(50)  comment 'ä¯ÀÀÆ÷',
-   Location             varchar(100)  comment 'µØÖ·',
-   UserAgent            text  comment 'ÆäËû',
-   RecDate              datetime not null default CURRENT_TIMESTAMP  comment '¼ÇÂ¼ÈÕÆÚ',
+   LogID                varchar(40) not null  comment 'ç¼–ç GUID',
+   UserID               varchar(40)  comment 'ç®¡ç†ç”¨æˆ·ID',
+   Type                 int not null  comment 'ç±»å‹0-ç™»å½•1-è¯·æ±‚',
+   Result               varchar(50)  comment 'ç»“æœ',
+   RequestUrl           varchar(255)  comment 'è¯·æ±‚åœ°å€',
+   IP                   varchar(50)  comment 'IPåœ°å€',
+   OS                   varchar(50)  comment 'ç³»ç»Ÿ',
+   Browser              varchar(50)  comment 'æµè§ˆå™¨',
+   Location             varchar(100)  comment 'åœ°å€',
+   UserAgent            text  comment 'å…¶ä»–',
+   RecDate              datetime not null default CURRENT_TIMESTAMP  comment 'è®°å½•æ—¥æœŸ',
    primary key (LogID)
 );
 
-alter table admin_req_log comment 'µÇÂ¼ÇëÇóÈÕÖ¾';
+alter table admin_req_log comment 'ç™»å½•è¯·æ±‚æ—¥å¿—';
 
 /*==============================================================*/
 /* Table: admin_role                                            */
 /*==============================================================*/
 create table admin_role
 (
-   RoleID               int not null  comment '½ÇÉ«±êÊ¶',
-   RoleName             varchar(50)  comment '½ÇÉ«Ãû³Æ',
-   `Desc`               varchar(255)  comment 'ÃèÊö',
-   Status               tinyint not null default 0  comment '×´Ì¬ 0-ÎŞĞ§ 1-ÓĞĞ§',
+   RoleID               int not null  comment 'è§’è‰²æ ‡è¯†',
+   RoleName             varchar(50)  comment 'è§’è‰²åç§°',
+   `Desc`               varchar(255)  comment 'æè¿°',
+   Status               tinyint not null default 0  comment 'çŠ¶æ€ 0-æ— æ•ˆ 1-æœ‰æ•ˆ',
    primary key (RoleID)
 );
 
-alter table admin_role comment '½ÇÉ«±í';
+alter table admin_role comment 'è§’è‰²è¡¨';
 
 /*==============================================================*/
 /* Table: admin_role_menu                                       */
 /*==============================================================*/
 create table admin_role_menu
 (
-   RoleID               int not null  comment 'È¨ÏŞ±êÊ¶',
-   MenuID               varchar(40) not null  comment '²Ëµ¥±àÂëGUID',
-   PrivParamsValue      text  comment '¹¦ÄÜºÍÊı¾İÈ¨ÏŞ²ÎÊı¡£
-             ÀàĞÍ-²ÎÊı-ÊÇ·ñÓĞÈ¨ÏŞ| ÀàĞÍ-²ÎÊı-ÊÇ·ñÓĞÈ¨ÏŞ
-             Èç£ºControlID-btnOk-true|ControlID-btnCancle-false
+   RoleID               int not null  comment 'æƒé™æ ‡è¯†',
+   MenuID               varchar(40) not null  comment 'èœå•ç¼–ç GUID',
+   PrivParamsValue      text  comment 'åŠŸèƒ½å’Œæ•°æ®æƒé™å‚æ•°ã€‚
+             ç±»å‹-å‚æ•°-æ˜¯å¦æœ‰æƒé™| ç±»å‹-å‚æ•°-æ˜¯å¦æœ‰æƒé™
+             å¦‚ï¼šControlID-btnOk-true|ControlID-btnCancle-false
              
              ',
    primary key (RoleID, MenuID)
 );
 
-alter table admin_role_menu comment 'ÓÃ»§²Ëµ¥È¨ÏŞ£¬¶Ôµ¥¸ö²Ëµ¥ÊÚÈ¨£¬²»Õë¶ÔÄ¿Â¼';
+alter table admin_role_menu comment 'ç”¨æˆ·èœå•æƒé™ï¼Œå¯¹å•ä¸ªèœå•æˆæƒï¼Œä¸é’ˆå¯¹ç›®å½•';
 
 /*==============================================================*/
 /* Table: admin_site                                            */
 /*==============================================================*/
 create table admin_site
 (
-   SiteID               varchar(50) not null  comment 'Õ¾µã±àÂë',
-   SiteName             varchar(50)  comment 'Õ¾µãÃû³Æ',
-   BaseUrl              varchar(255)  comment '»ù´¡Â·¾¶',
-   `Desc`               text  comment 'ÃèÊö',
-   Status               tinyint not null default 0  comment '×´Ì¬ 0-ÎŞĞ§ 1-ÓĞĞ§',
+   SiteID               varchar(50) not null  comment 'ç«™ç‚¹ç¼–ç ',
+   SiteName             varchar(50)  comment 'ç«™ç‚¹åç§°',
+   BaseUrl              varchar(255)  comment 'åŸºç¡€è·¯å¾„',
+   `Desc`               text  comment 'æè¿°',
+   Status               tinyint not null default 0  comment 'çŠ¶æ€ 0-æ— æ•ˆ 1-æœ‰æ•ˆ',
    primary key (SiteID)
 );
 
-alter table admin_site comment 'ºóÌ¨¹ÜÀíÕ¾µã';
+alter table admin_site comment 'åå°ç®¡ç†ç«™ç‚¹';
 
 /*==============================================================*/
 /* Table: admin_user                                            */
 /*==============================================================*/
 create table admin_user
 (
-   UserID               varchar(40) not null  comment 'ÓÃ»§ID GUID',
-   UserName             varchar(50)  comment 'µÇÂ¼ÓÃ»§Ãû',
-   Password             varchar(255)  comment 'µÇÂ¼ÃÜÂë',
-   PasswordSalt         varchar(40)  comment 'ÃÜÂë¹şÏ£Salt',
-   Mobile               varchar(20)  comment 'ÊÖ»úºÅ',
-   DisplayName          varchar(20)  comment 'ÏÔÊ¾ÓÃ»§Ãû',
-   `Desc`               text  comment 'ÃèÊö',
-   GroupID              int  comment '·Ö×é±àÂë',
-   IsAdmin              bool not null default 0  comment 'ÊÇ·ñ¹ÜÀíÔ±',
-   RegisterDate         datetime not null  comment '×¢²áÊ±¼ä',
-   ApprovedDate         datetime  comment 'ÉóÅúÊ±¼ä',
-   ApprovedBy           varchar(50)  comment 'ÉóÅúÕß',
-   RejectDate           datetime  comment '¾Ü¾øÊ±¼ä',
-   RejectBy             varchar(50)  comment '¾Ü¾øÕß',
-   Status               tinyint not null default 0  comment '×´Ì¬ 0-ÎŞĞ§ 1-ÓĞĞ§',
-   RecDate              datetime not null default CURRENT_TIMESTAMP  comment '¼ÇÂ¼ÈÕÆÚ',
-   Icon                 varchar(255)  comment 'Í·Ïñ',
+   UserID               varchar(40) not null  comment 'ç”¨æˆ·ID GUID',
+   UserName             varchar(50)  comment 'ç™»å½•ç”¨æˆ·å',
+   Password             varchar(255)  comment 'ç™»å½•å¯†ç ',
+   PasswordSalt         varchar(40)  comment 'å¯†ç å“ˆå¸ŒSalt',
+   Mobile               varchar(20)  comment 'æ‰‹æœºå·',
+   DisplayName          varchar(20)  comment 'æ˜¾ç¤ºç”¨æˆ·å',
+   `Desc`               text  comment 'æè¿°',
+   GroupID              int  comment 'åˆ†ç»„ç¼–ç ',
+   IsAdmin              bool not null default 0  comment 'æ˜¯å¦ç®¡ç†å‘˜',
+   RegisterDate         datetime not null  comment 'æ³¨å†Œæ—¶é—´',
+   ApprovedDate         datetime  comment 'å®¡æ‰¹æ—¶é—´',
+   ApprovedBy           varchar(50)  comment 'å®¡æ‰¹è€…',
+   RejectDate           datetime  comment 'æ‹’ç»æ—¶é—´',
+   RejectBy             varchar(50)  comment 'æ‹’ç»è€…',
+   Status               tinyint not null default 0  comment 'çŠ¶æ€ 0-æ— æ•ˆ 1-æœ‰æ•ˆ',
+   RecDate              datetime not null default CURRENT_TIMESTAMP  comment 'è®°å½•æ—¥æœŸ',
+   Icon                 varchar(255)  comment 'å¤´åƒ',
    primary key (UserID)
 );
 
-alter table admin_user comment 'ºóÌ¨ÓÃ»§±í
-where status=1 Ê± usernameÎ¨Ò»';
+alter table admin_user comment 'åå°ç”¨æˆ·è¡¨
+where status=1 æ—¶ usernameå”¯ä¸€';
 
 /*==============================================================*/
 /* Table: admin_user_priv                                       */
 /*==============================================================*/
 create table admin_user_priv
 (
-   UserID               varchar(40) not null  comment '¹ÜÀíÓÃ»§ID',
-   PrivType             int not null default 0  comment 'È¨ÏŞÀàĞÍ 0-site 1-role 2-menu',
-   PrivID               varchar(100) not null  comment '½ÇÉ«±àÂë»ò²Ëµ¥±àÂë',
-   IsEnabled            bool not null default 1  comment 'ÊÇ·ñÔÊĞí',
-   PrivParamsValue      text  comment '¹¦ÄÜºÍÊı¾İÈ¨ÏŞ²ÎÊı¡£¸ñÊ½£ºÀàĞÍ-²ÎÊı| ÀàĞÍ-²ÎÊı
-             ÓÃÓÚÔÚ¶¨ÒåÒ³ÃæÄÚÈ¨ÏŞÊ±¿ÉÉèÖÃµÄÈ¨ÏŞÑ¡ÏîÁĞ±í
-             Èç£ºControlID-btnOk|ControlID-btnCancle',
+   UserID               varchar(40) not null  comment 'ç®¡ç†ç”¨æˆ·ID',
+   PrivType             int not null default 0  comment 'æƒé™ç±»å‹ 0-site 1-role 2-menu',
+   PrivID               varchar(100) not null  comment 'è§’è‰²ç¼–ç æˆ–èœå•ç¼–ç ',
+   IsEnabled            bool not null default 1  comment 'æ˜¯å¦å…è®¸',
+   PrivParamsValue      text  comment 'åŠŸèƒ½å’Œæ•°æ®æƒé™å‚æ•°ã€‚æ ¼å¼ï¼šç±»å‹-å‚æ•°| ç±»å‹-å‚æ•°
+             ç”¨äºåœ¨å®šä¹‰é¡µé¢å†…æƒé™æ—¶å¯è®¾ç½®çš„æƒé™é€‰é¡¹åˆ—è¡¨
+             å¦‚ï¼šControlID-btnOk|ControlID-btnCancle',
    primary key (UserID, PrivType, PrivID)
 );
 
@@ -411,15 +411,15 @@ create table admin_user_priv
 /*==============================================================*/
 create table demo_class
 (
-   ClassID              varchar(10) not null  comment 'Àà±ğ±àÂë',
-   Name                 varchar(10)  comment 'Àà±ğ',
+   ClassID              varchar(10) not null  comment 'ç±»åˆ«ç¼–ç ',
+   Name                 varchar(10)  comment 'ç±»åˆ«',
    Sort1                int not null  comment '',
    Sort2                int not null  comment '',
    primary key (ClassID)
 );
 
-alter table demo_class comment 'Àà±ğ
-ÕâÀïÓĞºÜ¶àËµÃ÷';
+alter table demo_class comment 'ç±»åˆ«
+è¿™é‡Œæœ‰å¾ˆå¤šè¯´æ˜';
 
 /*==============================================================*/
 /* Index: index_1                                               */
@@ -435,14 +435,14 @@ create unique index index_1 on demo_class
 /*==============================================================*/
 create table demo_course
 (
-   Year                 year(4) not null  comment 'Ñ§Äê',
-   CourseID             char(36) not null  comment '¿Î³Ì±àÂë£¨GUID£©',
-   Name                 varchar(10)  comment 'Ãû³Æ',
+   Year                 year(4) not null  comment 'å­¦å¹´',
+   CourseID             char(36) not null  comment 'è¯¾ç¨‹ç¼–ç ï¼ˆGUIDï¼‰',
+   Name                 varchar(10)  comment 'åç§°',
    OrderNum             int not null  comment '',
    primary key (Year, CourseID)
 );
 
-alter table demo_course comment '¿Î³Ì';
+alter table demo_course comment 'è¯¾ç¨‹';
 
 /*==============================================================*/
 /* Index: index_1                                               */
@@ -457,11 +457,11 @@ create unique index index_1 on demo_course
 /*==============================================================*/
 create table demo_user
 (
-   UserID               bigint not null auto_increment  comment 'ÓÃ»§±àÂë£¨×ÔÔö×Ö¶Î£©',
-   ClassID              varchar(10) not null  comment 'Àà±ğ±àÂë',
-   FBit                 bit not null default 1  comment '×Ö¶Î1
-                     ¶àĞĞ1
-                     ¶àĞĞ2',
+   UserID               bigint not null auto_increment  comment 'ç”¨æˆ·ç¼–ç ï¼ˆè‡ªå¢å­—æ®µï¼‰',
+   ClassID              varchar(10) not null  comment 'ç±»åˆ«ç¼–ç ',
+   FBit                 bit not null default 1  comment 'å­—æ®µ1
+                     å¤šè¡Œ1
+                     å¤šè¡Œ2',
    FBit_Max             bit(64)  comment '',
    FTinyInt             tinyint not null default 127  comment '',
    FTinyInt_Unsigned    tinyint unsigned default 255  comment '',
@@ -510,7 +510,7 @@ create table demo_user
    primary key (UserID)
 );
 
-alter table demo_user comment 'ÓÃ»§±í';
+alter table demo_user comment 'ç”¨æˆ·è¡¨';
 
 /*==============================================================*/
 /* Index: index_1                                               */
@@ -534,14 +534,14 @@ create index index_3 on demo_user
 /*==============================================================*/
 create table demo_user_course
 (
-   UserID               bigint not null  comment 'ÓÃ»§±àÂë£¨×ÔÔö×Ö¶Î£©',
-   Year                 year(4) not null  comment 'Ñ§Äê',
-   CourseID             char(36) not null  comment '¿Î³Ì±àÂë£¨GUID£©',
-   Note                 text  comment 'ËµÃ÷',
+   UserID               bigint not null  comment 'ç”¨æˆ·ç¼–ç ï¼ˆè‡ªå¢å­—æ®µï¼‰',
+   Year                 year(4) not null  comment 'å­¦å¹´',
+   CourseID             char(36) not null  comment 'è¯¾ç¨‹ç¼–ç ï¼ˆGUIDï¼‰',
+   Note                 text  comment 'è¯´æ˜',
    primary key (UserID, CourseID, Year)
 );
 
-alter table demo_user_course comment 'ÓÃ»§·ÖÀà±í';
+alter table demo_user_course comment 'ç”¨æˆ·åˆ†ç±»è¡¨';
 
 /*==============================================================*/
 /* View: v_admin_user_owner_priv                                */
@@ -572,14 +572,14 @@ where a1.PrivType=1;
 /*==============================================================*/
 create VIEW  v_demo_user_course
  as
-select t2.UserID, t2.ClassID, t3.CourseID, t3.Name, t1.Note, '²âÊÔÁĞ' as TestColumn
+select t2.UserID, t2.ClassID, t3.CourseID, t3.Name, t1.Note, 'æµ‹è¯•åˆ—' as TestColumn
 from demo_user_course as t1
 	left join demo_user as t2 on t1.UserID = t2.UserID
 	left join demo_course as t3 on t1.CourseID = t3.CourseID;
 
 
 create procedure p_demo_get_user_course(in pUserID bigint,out pPageCount int)
-comment '´æ´¢¹ı³ÌÃèÊö'
+comment 'å­˜å‚¨è¿‡ç¨‹æè¿°'
 begin
 	select count(0) into pPageCount from demo_user_course where UserID = pUserID;
 	select * from demo_user_course where UserID = pUserID;

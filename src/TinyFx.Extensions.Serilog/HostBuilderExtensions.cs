@@ -34,6 +34,7 @@ namespace TinyFx
                 .Enrich.FromLogContext()
                 .Enrich.WithProperty(SerilogUtil.EnvironmentNamePropertyName, ConfigUtil.EnvironmentString)
                 .Enrich.WithProperty(SerilogUtil.ProjectIdPropertyName, ConfigUtil.Project?.ProjectId ?? "未知程序")
+                .Enrich.WithProperty(SerilogUtil.ServiceIdPropertyName, ConfigUtil.ServiceId ?? "未知服务")
                 .Enrich.WithProperty(SerilogUtil.MachineIPPropertyName, NetUtil.GetLocalIP())
                 //.Enrich.WithProperty(SerilogUtil.IndexNamePropertyName, ConfigUtil.Project?.ProjectId.Replace('.', '_').ToLowerInvariant())
                 .Enrich.WithTemplateHash()

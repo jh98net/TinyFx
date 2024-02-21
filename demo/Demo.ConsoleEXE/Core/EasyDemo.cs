@@ -109,7 +109,7 @@ namespace TinyFx.Demos.Core
 
             Console.WriteLine(SecurityUtil.MD5Hash("abc"));
 
-            Console.WriteLine(JwtUtil.GenerateJwtToken(123));
+            Console.WriteLine(JwtUtil.CreateJwtToken(123));
 
             var filter = new DirtyStringFilter();
             Console.WriteLine(filter.HasDirty("哈哈你大爷操二hi"));

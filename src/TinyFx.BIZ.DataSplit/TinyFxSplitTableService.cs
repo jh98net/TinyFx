@@ -100,7 +100,7 @@ namespace TinyFx.BIZ.DataSplit
         public string DatabaseId { get; set; }
         public string TableName { get; set; }
         public bool IsSplitTable { get; set; }
-        public Ss_split_tableEO TableEo { get; set; }
-        public List<Ss_split_table_detailEO> MyProperty { get; set; }
+        public Stfx_split_tableEO TableEo { get; set; }
+        public List<Stfx_split_table_detailEO> MyProperty { get; set; }
     }
 }

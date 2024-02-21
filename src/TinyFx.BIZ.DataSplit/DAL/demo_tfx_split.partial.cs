@@ -5,7 +5,7 @@ using SqlSugar;
 
 namespace TinyFx.BIZ.DataSplit.DAL
 {
-    public partial class Ss_split_dbEO
+    public partial class Sdemo_tfx_splitEO
     {
     }
 }

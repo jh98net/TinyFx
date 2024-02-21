@@ -6,12 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
-using TinyFx.IDGenerator.Caching;
+using TinyFx.SnowflakeId.Caching;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Net;
 using TinyFx.Logging;
 
-namespace TinyFx.IDGenerator.Common
+namespace TinyFx.SnowflakeId.Common
 {
     internal class RedisWorkerIdProvider : IWorkerIdProvider
     {
@@ -19,12 +19,12 @@ namespace TinyFx.IDGenerator.Common
         private WorkerIdCurrentDCache _idDCache;
         private WorkerIdsDO _workerDo;
 
-        private IDGeneratorSection _section;
+        private SnowflakeIdSection _section;
 
         public int WorkerId;
         public RedisWorkerIdProvider()
         {
-            _section = ConfigUtil.GetSection<IDGeneratorSection>();
+            _section = ConfigUtil.GetSection<SnowflakeIdSection>();
             _maxWorkerId = 1 << _section.WorkerIdBits;
             _idDCache = WorkerIdCurrentDCache.Create();
             _workerDo = new WorkerIdsDO()
@@ -62,15 +62,14 @@ namespace TinyFx.IDGenerator.Common
             }
             throw new Exception("Redis没有足够的WorkerId分配");
         }
-        public Task Active()
+        public async Task Active()
         {
-            new WorkerIdsDCache(WorkerId).Active();
-            return Task.CompletedTask;
+            await new WorkerIdsDCache(WorkerId).Active();
         }
 
-        public void Dispose()
+        public async Task Dispose()
         {
-            new WorkerIdsDCache(WorkerId).KeyDeleteAsync().GetTaskResult();
+            await new WorkerIdsDCache(WorkerId).KeyDeleteAsync();
         }
     }
 }

@@ -5,17 +5,29 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
-using static System.Collections.Specialized.BitVector32;
-using TinyFx.IDGenerator.Caching;
+using TinyFx.SnowflakeId.Caching;
+using TinyFx.SnowflakeId.Common;
 
-namespace TinyFx.IDGenerator.Common
+namespace TinyFx.SnowflakeId
 {
-    internal class SnowflakeIdGenerator
+    public interface ISnowflakeIdService
     {
+        long DataCenterId { get; }
+        int MaxDataCenterId { get; }
+        int MaxSequence { get; }
+        int MaxWorkerId { get; }
+        int WorkerId { get; }
+
+        long NextId();
+    }
+
+    internal class SnowflakeIdService : ISnowflakeIdService
+    {
+        #region Properties
         private readonly object _async = new object();
-        private IDGeneratorSection _section;
+        private SnowflakeIdSection _section;
         private IWorkerIdProvider _provider;
-        public static readonly DateTime DefaultEpoch = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        public static readonly DateTime DefaultEpoch = new(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly DefaultTimeSource _timeSource = new DefaultTimeSource(DefaultEpoch, TimeSpan.FromMilliseconds(1));
 
         private byte _timestampBits = 41;
@@ -23,9 +35,9 @@ namespace TinyFx.IDGenerator.Common
         private byte _workerIdBits;
         private byte _sequenceBits;
 
-        private int _maxDataCenterId;
-        private readonly int _maxWorkerId;
-        private int _maxSequence;
+        public int MaxDataCenterId { get; private set; }
+        public int MaxWorkerId { get; private set; }
+        public int MaxSequence { get; private set; }
 
         private readonly int _shiftWorkerId;
         private readonly int _shiftDataCenterId;
@@ -33,17 +45,22 @@ namespace TinyFx.IDGenerator.Common
 
         private readonly long MASK_TIME;
         private readonly long MASK_SEQUENCE;
-        private readonly long _dataCenterIdVal;
+        public long DataCenterId { get; private set; }
 
         private long _workerId;
         public int WorkerId => (int)_workerId;
         private int _sequence = 0;
         private long _lastgen = -1L;
+        #endregion
 
-        public SnowflakeIdGenerator(IWorkerIdProvider provider)
+        public SnowflakeIdService()
         {
-            _section = ConfigUtil.GetSection<IDGeneratorSection>();
-            _provider = provider;
+            _section = ConfigUtil.GetSection<SnowflakeIdSection>();
+            if (_section == null || !_section.Enabled)
+                throw new Exception("IDGeneratorUtil生成ID时，没有配置IDGeneratorSection或者Enabled=false");
+            _provider = _section.UseRedis
+                ? new RedisWorkerIdProvider()
+                : new ConfigWorkerIdProvider();
 
             _dataCenterIdBits = _section.DataCenterIdBits;
             _workerIdBits = _section.WorkerIdBits;
@@ -51,19 +68,22 @@ namespace TinyFx.IDGenerator.Common
             if (_sequenceBits < 1)
                 throw new Exception("TimestampBits(41)+ DataCenterBits(3) + WorkerIdBits(10) + SequenceBits(9) 不能大于63");
 
-            _maxDataCenterId = 1 << _dataCenterIdBits;
-            _maxWorkerId = 1 << _workerIdBits;
-            _maxSequence = 1 << _sequenceBits;
+            MaxDataCenterId = 1 << _dataCenterIdBits;
+            MaxWorkerId = 1 << _workerIdBits;
+            MaxSequence = 1 << _sequenceBits;
 
             _shiftWorkerId = _sequenceBits;
             _shiftDataCenterId = _sequenceBits + _workerIdBits;
             _shiftTimestamp = _sequenceBits + _workerIdBits + _dataCenterIdBits;
-            _dataCenterIdVal = _section.DataCenterId << _shiftDataCenterId;
+            DataCenterId = _section.DataCenterId << _shiftDataCenterId;
 
             MASK_TIME = GetMask(_timestampBits);
             MASK_SEQUENCE = GetMask(_sequenceBits);
+        }
 
-            _workerId =  _provider.GetNextWorkId().ConfigureAwait(false).GetAwaiter().GetResult();
+        public async Task Init()
+        {
+            _workerId = await _provider.GetNextWorkId();
         }
         public long NextId()
         {
@@ -92,11 +112,19 @@ namespace TinyFx.IDGenerator.Common
                     _sequence = 0;
                     _lastgen = timestamp;
                 }
-                return (timestamp << _shiftTimestamp) 
-                    | (_dataCenterIdVal) 
-                    | (_workerId << _shiftWorkerId) 
+                return timestamp << _shiftTimestamp
+                    | DataCenterId
+                    | _workerId << _shiftWorkerId
                     | (long)_sequence;
             }
+        }
+        public async Task Active()
+        {
+            _provider.Active();
+        }
+        public async Task Dispose()
+        {
+            await _provider.Dispose();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis;
 
-namespace TinyFx.IDGenerator.Caching
+namespace TinyFx.SnowflakeId.Caching
 {
     internal class WorkerIdsDCache : RedisStringClient<WorkerIdsDO>
     {
-        private IDGeneratorSection _section;
+        private SnowflakeIdSection _section;
         private int EXPIRE_MINUTES;
         public WorkerIdsDCache(int workerId)
         {
-            _section = ConfigUtil.GetSection<IDGeneratorSection>();
+            _section = ConfigUtil.GetSection<SnowflakeIdSection>();
             Options.ConnectionStringName = _section.RedisConnectionStringName;
             RedisKey = $"{RedisPrefixConst.ID_GENERATOR}:WorkerIds:{workerId}";
             EXPIRE_MINUTES = ConfigUtil.IsDebugEnvironment

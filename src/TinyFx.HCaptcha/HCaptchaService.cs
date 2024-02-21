@@ -10,11 +10,16 @@ using TinyFx.Net;
 
 namespace TinyFx.HCaptcha
 {
-    internal class HCaptchaProvider
+    public interface IHCaptchaService
+    {
+        Task<ApiResult<HCaptchaVerifyRsp>> Verify(string token, string? remoteIp = null);
+    }
+
+    internal class HCaptchaService : IHCaptchaService
     {
         private HCaptchaSection _section;
         private HttpClientEx _client;
-        public HCaptchaProvider()
+        public HCaptchaService()
         {
             _section = ConfigUtil.GetSection<HCaptchaSection>();
             _client = HttpClientExFactory.CreateClientEx(new HttpClientConfig

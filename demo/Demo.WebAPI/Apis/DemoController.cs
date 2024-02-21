@@ -27,7 +27,6 @@ using TinyFx.Data.SqlSugar;
 using TinyFx.DbCaching;
 using TinyFx.Hosting;
 using TinyFx.Hosting.Services;
-using TinyFx.IDGenerator;
 using TinyFx.Logging;
 using TinyFx.Net;
 using TinyFx.Randoms;
@@ -121,8 +120,22 @@ namespace Demo.WebAPI.Apis
         public string GetJwtToken()
         {
             var uip = AspNetUtil.GetRemoteIpString();
-            return JwtUtil.GenerateJwtToken(RandomUtil.NextInt(10), UserRole.User, uip);
+            return JwtUtil.CreateJwtToken(new JwtTokenData
+            {
+                UserId = RandomUtil.NextInt(10).ToString(),
+                Expires = TimeSpan.FromMinutes(20),
+                Role = "User",
+                Meta = "abc",
+                SplitDbKey = "112233",
+                UserIp = "192.168.1.1"
+            });
         }
+        [HttpGet]
+        public JwtTokenInfo ReadJwtToken()
+        {
+            return HttpContextEx.GetJwtToken();
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public DemoIpo2 PostIpo(DemoIpo ipo)

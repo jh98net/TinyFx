@@ -191,6 +191,10 @@ namespace TinyFx.AspNet
             SetItem(JWT_CONTEXT_KEY, ret);
             return ret;
         }
+        internal static void SetJwtToken(JwtTokenInfo info)
+        {
+            SetItem(JWT_CONTEXT_KEY, info);
+        }
         #endregion
     }
 }

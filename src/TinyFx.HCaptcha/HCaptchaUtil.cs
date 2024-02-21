@@ -9,8 +9,6 @@ namespace TinyFx.HCaptcha
 {
     public static class HCaptchaUtil
     {
-        private static HCaptchaProvider _provider = new();
-
         /// <summary>
         /// 验证HCaptcha返回的token
         /// </summary>
@@ -19,7 +17,7 @@ namespace TinyFx.HCaptcha
         /// <returns></returns>
         public static async Task<ApiResult<HCaptchaVerifyRsp>> Verify(string token, string? remoteIp = null)
         {
-            return await _provider.Verify(token,remoteIp);
+            return await DIUtil.GetRequiredService<IHCaptchaService>().Verify(token,remoteIp);
         }
     }
 }

@@ -10,12 +10,12 @@ TinyFxHost.Start();
 //await new DemoHelper().InitData();
 
 //
-var list = new List<Ss_split_tableEO>
+var list = new List<Stfx_split_tableEO>
 {
-    new Ss_split_tableEO()
+    new Stfx_split_tableEO()
     {
         DatabaseId = "default",
-        TableName = "s_split_demo",
+        TableName = "demo_tfx_split",
         HandleMode = (int)HandleMode.SplitMaxRows,
         ColumnName = "ObjectID",
         ColumnType = (int)ColumnType.ObjectId,

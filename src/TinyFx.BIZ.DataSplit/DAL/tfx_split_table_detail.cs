@@ -8,13 +8,13 @@ namespace TinyFx.BIZ.DataSplit.DAL
     ///<summary>
     ///分表明细
     ///</summary>
-    [SugarTable("s_split_table_detail")]
-    public partial class Ss_split_table_detailEO
+    [SugarTable("tfx_split_table_detail")]
+    public partial class Stfx_split_table_detailEO
     {
-           public Ss_split_table_detailEO(){
+           public Stfx_split_table_detailEO(){
 
-            this.ColumnType =0;
             this.HandleMode =0;
+            this.ColumnType =0;
             this.RowNum =0;
             this.Status =0;
             this.RecDate =DateTime.Now;
@@ -50,20 +50,6 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public string TableName {get;set;}
 
            /// <summary>
-           /// Desc:分表字段名
-           /// Default:
-           /// Nullable:False
-           /// </summary>           
-           public string ColumnName {get;set;}
-
-           /// <summary>
-           /// Desc:分表字段类型(0-DateTime(UTC)1-ObjectId2-数值天3-周4-月5-季6-年)
-           /// Default:0
-           /// Nullable:False
-           /// </summary>           
-           public int ColumnType {get;set;}
-
-           /// <summary>
            /// Desc:处理模式
 			///              0-无
 			///              1-迁移-删除 ==> MoveMode + MoveKeepValue
@@ -73,6 +59,20 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Nullable:False
            /// </summary>           
            public int HandleMode {get;set;}
+
+           /// <summary>
+           /// Desc:分表字段类型(0-未知1-DateTime(UTC)2-ObjectId3-数值天4-周5-月6-季7-年)
+           /// Default:0
+           /// Nullable:False
+           /// </summary>           
+           public int ColumnType {get;set;}
+
+           /// <summary>
+           /// Desc:分表字段名
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string? ColumnName {get;set;}
 
            /// <summary>
            /// Desc:分表后的表名

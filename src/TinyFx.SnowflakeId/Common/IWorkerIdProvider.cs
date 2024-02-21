@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TinyFx.IDGenerator.Common
+namespace TinyFx.SnowflakeId.Common
 {
-    internal interface IWorkerIdProvider : IDisposable
+    internal interface IWorkerIdProvider
     {
         Task<int> GetNextWorkId();
         Task Active();
+        Task Dispose();
     }
 }

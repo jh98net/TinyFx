@@ -17,7 +17,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 {
     internal class BackupJob : BaseDataMoveJob
     {
-        public BackupJob(Ss_split_tableEO item, string defaultConfigId, DateTime execTime) : base(item, defaultConfigId, execTime)
+        public BackupJob(Stfx_split_tableEO item, string defaultConfigId, DateTime execTime) : base(item, defaultConfigId, execTime)
         {
             if ((HandleMode)item.HandleMode != HandleMode.Backup)
                 throw new Exception("DataMove.BackupJob时HandleMode必须是Backup");
@@ -120,7 +120,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 
                 // 5) 保存detail记录
                 var oid = ObjectId.NextId();
-                var detailEo = new Ss_split_table_detailEO
+                var detailEo = new Stfx_split_table_detailEO
                 {
                     DetailID = oid.Id,
                     LogID = _logEo.LogID,
@@ -158,7 +158,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 
         private async Task DeleteWaitData()
         {
-            var list = GetMainDb().Queryable<Ss_split_table_detailEO>()
+            var list = GetMainDb().Queryable<Stfx_split_table_detailEO>()
                 .Where(it => it.DatabaseId == _item.DatabaseId && it.TableName == _item.TableName && it.Status == 2)
                 .ToList();
             if (list == null || list.Count == 0)
@@ -188,7 +188,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
                     if (deleteCount != data.Count)
                         throw new Exception($"DataMove删除记录数不等于插入记录数。{_item.TableName} => {item.SplitTableName} insertCount: {data.Count} deleteCount: {deleteCount}");
 
-                    await GetMainDb(tm).Updateable<Ss_split_table_detailEO>()
+                    await GetMainDb(tm).Updateable<Stfx_split_table_detailEO>()
                         .SetColumns(it => it.Status == 1)
                         .Where(it => it.DetailID == item.DetailID)
                         .ExecuteCommandAsync();

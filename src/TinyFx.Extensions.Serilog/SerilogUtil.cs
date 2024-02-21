@@ -21,6 +21,7 @@ namespace TinyFx.Extensions.Serilog
     public static class SerilogUtil
     {
         public const string ProjectIdPropertyName = "ProjectId";
+        public const string ServiceIdPropertyName = "ServiceId";
         public const string EnvironmentNamePropertyName = "EnvironmentName";
         public const string MachineIPPropertyName = "MachineIP";
         public const string IndexNamePropertyName = "IndexName";

@@ -21,13 +21,13 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
         public int BATCH_PAGE_SIZE = 1000000; //100万
 
         protected ILogBuilder _logger;
-        protected Ss_split_tableEO _item;
+        protected Stfx_split_tableEO _item;
         protected DateTime _execTime;
         private string _defaultConfigId;
 
-        protected Ss_split_table_logEO _logEo;
+        protected Stfx_split_table_logEO _logEo;
         protected ColumnValueHelper _columnHelper;
-        public BaseDataMoveJob(Ss_split_tableEO item, string defaultConfigId, DateTime execTime)
+        public BaseDataMoveJob(Stfx_split_tableEO item, string defaultConfigId, DateTime execTime)
         {
             _logger = new LogBuilder("DataMove")
                 .AddField("DataMove.Option", item);
@@ -60,7 +60,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
         public async Task Execute()
         {
             // 有正在执行的任务就退出
-            var oldLogEo = GetMainDb().Queryable<Ss_split_table_logEO>()
+            var oldLogEo = GetMainDb().Queryable<Stfx_split_table_logEO>()
                 .Where(it => it.DatabaseId == _item.DatabaseId && it.TableName == _item.TableName && it.Status == 0)
                 .Where("DATE_FORMAT(recdate,'%Y-%m-%d')=DATE_FORMAT(UTC_DATE(),'%Y-%m-%d')")
                 .ToList();
@@ -73,7 +73,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
             await InsertLogEo();
             var sw = new Stopwatch();
             sw.Start();
-            var logRo = new Repository<Ss_split_table_logEO>(GetMainDb());
+            var logRo = new Repository<Stfx_split_table_logEO>(GetMainDb());
             try
             {
                 if (!GetItemDb().DbMaintenance.IsAnyTable(_item.TableName))
@@ -106,7 +106,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
         private async Task InsertLogEo()
         {
             var oid = ObjectId.NextId();
-            _logEo = new Ss_split_table_logEO()
+            _logEo = new Stfx_split_table_logEO()
             {
                 LogID = oid.Id,
                 DatabaseId = _item.DatabaseId,

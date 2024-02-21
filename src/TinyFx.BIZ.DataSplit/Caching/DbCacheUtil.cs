@@ -10,17 +10,17 @@ namespace TinyFx.BIZ.DataSplit.Caching
 {
     internal class DbCacheUtil
     {
-        public static Ss_split_tableEO GetSplitTable(string databaseId, string tableName)
+        public static Stfx_split_tableEO GetSplitTable(string databaseId, string tableName)
         {
-            return DbCachingUtil.GetSingle(() => new Ss_split_tableEO
+            return DbCachingUtil.GetSingle(() => new Stfx_split_tableEO
             {
                 DatabaseId = databaseId,
                 TableName = tableName
             });
         }
-        public static List<Ss_split_table_detailEO> GetSplitDetails(string databaseId, string tableName)
+        public static List<Stfx_split_table_detailEO> GetSplitDetails(string databaseId, string tableName)
         {
-            return DbCachingUtil.GetList(() => new Ss_split_table_detailEO
+            return DbCachingUtil.GetList(() => new Stfx_split_table_detailEO
             {
                 DatabaseId = databaseId,
                 TableName = tableName

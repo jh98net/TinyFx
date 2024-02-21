@@ -21,14 +21,9 @@ namespace TinyFx.BIZ.DataSplit
         /// </summary>
         Backup = 2,
         /// <summary>
-        /// 3-分区
-        ///     PatitionMethod + PatitionExpr + PatitionValue
+        /// 3-分表(按最大行数分)
         /// </summary>
-        Partition = 3,
-        /// <summary>
-        /// 4-分表(按最大行数分)
-        /// </summary>
-        SplitMaxRows = 4
+        SplitMaxRows = 3
     }
 
 }

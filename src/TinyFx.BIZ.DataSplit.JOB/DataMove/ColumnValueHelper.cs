@@ -13,8 +13,8 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 {
     internal class ColumnValueHelper
     {
-        private Ss_split_tableEO _option;
-        public ColumnValueHelper(Ss_split_tableEO option) 
+        private Stfx_split_tableEO _option;
+        public ColumnValueHelper(Stfx_split_tableEO option) 
         {
             _option = option;
         }

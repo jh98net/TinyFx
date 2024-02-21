@@ -14,16 +14,16 @@ namespace TinyFx.BIZ.DataSplit
         public async Task InitData(string dbId = null)
         {
             var db = DbUtil.GetDbById(dbId);
-            db.DbMaintenance.TruncateTable<Ss_split_demoEO>();
+            db.DbMaintenance.TruncateTable<Sdemo_tfx_splitEO>();
 
-            var list = new List<Ss_split_demoEO>();
+            var list = new List<Sdemo_tfx_splitEO>();
             var begin = new DateTime(2023, 12, 29, 0, 0, 0, DateTimeKind.Utc);
             var end = DateTime.UtcNow;
             var idx = 1;
             var curr = begin;
             while (curr <= end)
             {
-                var eo = new Ss_split_demoEO
+                var eo = new Sdemo_tfx_splitEO
                 {
                     ObjectID = ObjectId.NewId(curr),
                     NumDay = curr.ToString("yyyyMMdd").ToInt32(),
@@ -38,7 +38,7 @@ namespace TinyFx.BIZ.DataSplit
                 idx++;
 
                 var curr1 = curr.AddHours(new Random().Next(23));
-                var eo1 = new Ss_split_demoEO
+                var eo1 = new Sdemo_tfx_splitEO
                 {
                     ObjectID = ObjectId.NewId(curr1),
                     NumDay = curr.ToString("yyyyMMdd").ToInt32(),
@@ -54,9 +54,9 @@ namespace TinyFx.BIZ.DataSplit
                 //
                 curr = curr.AddDays(1);
             }
-            await db.Fastest<Ss_split_demoEO>().BulkCopyAsync(list);
-            await db.Deleteable<Ss_split_table_logEO>().ExecuteCommandAsync();
-            await db.Deleteable<Ss_split_table_detailEO>().ExecuteCommandAsync();
+            await db.Fastest<Sdemo_tfx_splitEO>().BulkCopyAsync(list);
+            await db.Deleteable<Stfx_split_table_logEO>().ExecuteCommandAsync();
+            await db.Deleteable<Stfx_split_table_detailEO>().ExecuteCommandAsync();
         }
     }
 }
