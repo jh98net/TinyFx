@@ -7,7 +7,7 @@ using TinyFx.Text;
 
 TinyFxHost.Start();
 
-//await new DemoHelper().InitData();
+await new DemoHelper().InitData();
 
 //
 var list = new List<Stfx_split_tableEO>

@@ -54,24 +54,18 @@ namespace TinyFx.Hosting
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            if (_lifetimeService != null)
+            foreach (var item in _lifetimeService?.StartingEvents)
             {
-                foreach (var item in _lifetimeService.StartingEvents)
-                {
-                    await item.Invoke();
-                }
+                await item.Invoke();
             }
             await base.StartAsync(cancellationToken);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (_lifetimeService != null)
+            foreach (var item in _lifetimeService?.StartedEvents)
             {
-                foreach (var item in _lifetimeService.StartedEvents)
-                {
-                    await item.Invoke();
-                }
+                await item.Invoke();
             }
             await _timerService?.StartAsync(stoppingToken);
         }
@@ -81,12 +75,9 @@ namespace TinyFx.Hosting
             if (ConfigUtil.Host.RegisterEnabled)
                 await _registerService?.Unregister();
             await _timerService?.StopAsync();
-            if (_lifetimeService != null)
+            foreach (var item in _lifetimeService?.StoppingEvents)
             {
-                foreach (var item in _lifetimeService.StoppingEvents)
-                {
-                    await item.Invoke();
-                }
+                await item.Invoke();
             }
             await base.StopAsync(cancellationToken);
         }

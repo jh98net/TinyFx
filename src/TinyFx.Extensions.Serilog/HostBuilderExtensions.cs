@@ -61,7 +61,7 @@ namespace TinyFx
                         ? $"-{ConfigUtil.EnvironmentString.ToLower().Replace('.', '_')}"
                         : null;
                     config["Serilog:WriteTo:ELKSink:Args:indexFormat"]
-                        = $"idx-{projectId}{env}-{{0:yyyy.MM.dd}}";
+                        = $"idx-{projectId}{env}-{{0:yyyyMMdd}}";
                 }
                 return true;
             }
