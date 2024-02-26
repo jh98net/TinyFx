@@ -23,7 +23,7 @@ namespace TinyFx.BIZ.DataSplit
         /// <summary>
         /// 3-分表(按最大行数分)
         /// </summary>
-        SplitMaxRows = 3
+        MaxRows = 3
     }
 
 }

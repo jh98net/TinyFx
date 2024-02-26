@@ -16,15 +16,15 @@ var list = new List<Stfx_split_tableEO>
     {
         DatabaseId = "default",
         TableName = "demo_tfx_split",
-        HandleMode = (int)HandleMode.SplitMaxRows,
-        ColumnName = "ObjectID",
+        HandleMode = (int)HandleMode.MaxRows,
         ColumnType = (int)ColumnType.ObjectId,
+        ColumnName = "ObjectId",
         MoveKeepMode = (int)MoveKeepMode.None,
         MoveKeepValue = 0,
         MoveTableMode = (int)MoveTableMode.None,
         MoveWhere = null,
-        SplitMaxRowCount = 2,
-        SplitMaxRowHours = 2
+        MaxRowCount = 100,
+        MaxRowInterval = 2
     },
 };
 await new DataSplitJob().Execute(list);

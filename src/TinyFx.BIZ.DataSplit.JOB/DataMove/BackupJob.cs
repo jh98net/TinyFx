@@ -163,6 +163,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
                 .ToList();
             if (list == null || list.Count == 0)
                 return;
+            _isRetainLogEo = true;
             for (int i = 0; i < list.Count; i++)
             {
                 AddHandleLog($"[任务{i + 1}]-开始删除原始表待删除数据: [{_item.TableName}");

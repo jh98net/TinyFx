@@ -18,8 +18,8 @@ namespace TinyFx.BIZ.DataSplit.DAL
             this.MoveKeepMode =0;
             this.MoveKeepValue =0;
             this.MoveTableMode =0;
-            this.SplitMaxRowCount =0;
-            this.SplitMaxRowHours =1;
+            this.MaxRowCount =0;
+            this.MaxRowInterval =1;
             this.HandleOrder =0;
             this.DbTimeout =0;
             this.BathPageSize =0;
@@ -48,7 +48,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
 			///              0-无
 			///              1-迁移-删除 ==> MoveMode + MoveKeepValue
 			///              2-迁移-备份 ==> MoveMode + MoveKeepValue
-			///              3-分表-按最大行数 ==> SplitMaxRowCount + SplitMaxRowHours
+			///              3-分表-按最大行数 ==> MaxRowCount + MaxRowHours
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -101,14 +101,14 @@ namespace TinyFx.BIZ.DataSplit.DAL
            /// Default:0
            /// Nullable:False
            /// </summary>           
-           public int SplitMaxRowCount {get;set;}
+           public int MaxRowCount {get;set;}
 
            /// <summary>
            /// Desc:分表最大记录数时下一个表的间隔
            /// Default:1
            /// Nullable:False
            /// </summary>           
-           public int SplitMaxRowHours {get;set;}
+           public int MaxRowInterval {get;set;}
 
            /// <summary>
            /// Desc:处理顺序(小到大)

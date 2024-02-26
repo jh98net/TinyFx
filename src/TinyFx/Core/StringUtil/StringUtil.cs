@@ -79,7 +79,7 @@ namespace TinyFx
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static string CamelCase(this string name) 
+        public static string CamelCase(this string name)
             => char.ToLower(name[0]) + name.Substring(1);
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace TinyFx
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static string PascalCase(this string name) 
+        public static string PascalCase(this string name)
             => char.ToUpper(name[0]) + name.Substring(1);
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace TinyFx
         /// </summary>
         /// <param name="src"></param>
         /// <returns></returns>
-        public static bool IsCSharpReserved(this string src) 
+        public static bool IsCSharpReserved(this string src)
             => CSharpReserved.IsMatch(src);
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace TinyFx
         /// </summary>
         /// <param name="n"></param>
         /// <returns></returns>
-        public static string Tab(int n) 
+        public static string Tab(int n)
             => (n == 0) ? string.Empty : new string('\t', n);
 
         /// <summary>
@@ -214,6 +214,15 @@ namespace TinyFx
             var start = src.Substring(0, beginReservedLen);
             var end = src.Substring(src.Length - endReservedLen);
             return start.PadRight(toFixedLength - endReservedLen, paddingChar) + end;
+        }
+
+        public static string Max(string s1, string s2)
+        {
+            return s1.CompareTo(s2) > 0 ? s1 : s2;
+        }
+        public static string Min(string s1, string s2)
+        {
+            return s1.CompareTo(s2) < 0 ? s1 : s2;
         }
     }
 }

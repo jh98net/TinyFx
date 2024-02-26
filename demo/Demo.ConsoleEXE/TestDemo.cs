@@ -17,29 +17,18 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            //var helper = new DemoHelper();
-            //await helper.InitData("demo");
-            var item = new Stfx_split_tableEO
+            var json = SerializerUtil.SerializeJson(new UserInfo 
             {
-                DatabaseId = "default",
-                TableName = "s_split_demo",
-                ColumnName = "ObjectID",
-                ColumnType = 2, // 1-datetime 2-objectId
-                HandleMode = (int)HandleMode.Delete,
-                MoveKeepMode = 0, // 0-天1-月
-                MoveKeepValue = 3,
-                MoveTableMode = 0,
-                MoveWhere = null,
-                SplitMaxRowCount = 0,
-            };
-            //await new DataSplitJob().Execute(item);
+                Name = "aaa"
+            });
+            var u = SerializerUtil.DeserializeJson<UserInfo>(json);
             Console.WriteLine("OK");
         }
     }
 
     public class UserInfo
     {
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         public string Name { get; set; }
     }
 }

@@ -26,6 +26,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
         private string _defaultConfigId;
 
         protected Stfx_split_table_logEO _logEo;
+        protected bool _isRetainLogEo = false;
         protected ColumnValueHelper _columnHelper;
         public BaseDataMoveJob(Stfx_split_tableEO item, string defaultConfigId, DateTime execTime)
         {
@@ -83,7 +84,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
 
                 _logEo.Status = 1;
                 _logEo.HandleSeconds = (int)sw.Elapsed.TotalSeconds;
-                if (_logEo.RowNum == 0)
+                if (_logEo.RowNum == 0 && !_isRetainLogEo)
                     await logRo.DeleteByIdAsync(_logEo.LogID);
                 else
                     await logRo.UpdateAsync(_logEo);
@@ -118,14 +119,15 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
                 MoveKeepValue = _item.MoveKeepValue,
                 MoveTableMode = _item.MoveTableMode,
                 MoveWhere = _item.MoveWhere,
-                SplitMaxRowCount = _item.SplitMaxRowCount,
-                SplitMaxRowHours = _item.SplitMaxRowHours,
+                MaxRowCount = _item.MaxRowCount,
+                MaxRowInterval = _item.MaxRowInterval,
                 HandleOrder = _item.HandleOrder,
                 DbTimeout = DB_TIMEOUT_SECONDS,
                 BathPageSize = BATCH_PAGE_SIZE,
                 ExecTime = _execTime,
                 Status = 0, //状态 0-运行中1-成功2-失败
                 RecDate = oid.UtcDate, //当天仅运行一条
+                RowNum = 0,
                 HandleLog = string.Empty,
                 Exception = string.Empty,
                 HandleTables = string.Empty,

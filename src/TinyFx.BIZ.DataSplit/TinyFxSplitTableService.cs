@@ -1,4 +1,5 @@
-﻿using SqlSugar;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,93 +15,90 @@ namespace TinyFx.BIZ.DataSplit
 {
     public class TinyFxSplitTableService : ISplitTableService
     {
+        //返回数据库中所有分表
         public List<SplitTableInfo> GetAllTables(ISqlSugarClient db, EntityInfo entityInfo, List<DbTableInfo> tableInfos)
         {
             var ret = new List<SplitTableInfo>();
-            var databaseId = GetDatabaseId(db);
-            var tableName = GetTableName(entityInfo);
-            var list = DbCacheUtil.GetSplitDetails(databaseId, tableName);
-            if (list?.Count > 0)
-            {
-                foreach (var item in list)
-                {
-                    ret.Add(new SplitTableInfo
-                    {
-                        TableName = item.SplitTableName,
-                        String = item.BeginValue
-                    });
-                }
-            }
-            else
+            var data = GetSplitTableData(db, entityInfo);
+            foreach (var item in data.GetItems())
             {
                 ret.Add(new SplitTableInfo
                 {
-                    TableName = tableName,
-                    String = null
+                    TableName = item.SplitTableName
                 });
             }
-            ret = ret.OrderByDescending(it=>it.String).ToList();
+            ret = ret.OrderBy(it => it.TableName).ToList();
             return ret;
         }
-
-        public string GetTableName(ISqlSugarClient db, EntityInfo EntityInfo)
-        {
-
-            throw new NotImplementedException();
-        }
-
-        public string GetTableName(ISqlSugarClient db, EntityInfo EntityInfo, SplitType type)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string GetTableName(ISqlSugarClient db, EntityInfo entityInfo, SplitType splitType, object fieldValue)
-        {
-            throw new NotImplementedException();
-        }
+        //获取分表字段的值
         public object GetFieldValue(ISqlSugarClient db, EntityInfo entityInfo, SplitType splitType, object entityValue)
         {
             if (entityValue == null)
                 return null;
-
-            var databaseId = GetDatabaseId(db);
-            var tableName = GetTableName(entityInfo);
-            var splitTable = DbCacheUtil.GetSplitTable(databaseId, tableName);
-            if (!ReflectionUtil.TryGetPropertyValue(entityValue, splitTable.ColumnName, out var value))
-                throw new Exception("");
-            switch ((ColumnType)splitTable.ColumnType)
-            {
-                case ColumnType.DateTime:
-                    return (value == null || Convert.ToDateTime(value) == DateTime.MinValue)
-                        ? DateTime.UtcNow : value;
-                case ColumnType.ObjectId:
-                    var v = Convert.ToString(value);
-                    return string.IsNullOrEmpty(v)
-                        ? ObjectId.NewId(DateTime.UtcNow) : v;
-                default:
-                    throw new Exception("");
-            }
+            var data = GetSplitTableData(db, entityInfo);
+            if (!ReflectionUtil.TryGetPropertyValue(entityValue, data.ColumnName, out var ret))
+                throw new Exception("Entity没有ColumnName");
+            return ret;
         }
 
+        //默认表名
+        public string GetTableName(ISqlSugarClient db, EntityInfo entityInfo)
+        {
+            return entityInfo.DbTableName;
+        }
 
+        public string GetTableName(ISqlSugarClient db, EntityInfo entityInfo, SplitType type)
+        {
+            return entityInfo.DbTableName;
+        }
+
+        public string GetTableName(ISqlSugarClient db, EntityInfo entityInfo, SplitType splitType, object fieldValue)
+        {
+            var fvalue = Convert.ToString(fieldValue);
+            var data = GetSplitTableData(db, entityInfo);
+            var items = data.GetItems();
+            string ret = data.TableName;
+            switch (data.HandleMode)
+            {
+                case HandleMode.Backup:
+                    foreach (var item in items.OrderBy(x=>x.EndDate))
+                    {
+                        if (fvalue.CompareTo(item.EndValue) < 0)
+                        {
+                            ret = item.SplitTableName; 
+                            break;
+                        }
+                    }
+                    break;
+                case HandleMode.MaxRows:
+                    foreach (var item in items.OrderByDescending(x => x.BeginValue))
+                    {
+                        if (fvalue.CompareTo(item.BeginValue) >= 0)
+                        {
+                            ret = item.SplitTableName;
+                            break;
+                        }
+                    }
+                    break;
+            }
+            return ret;
+        }
+
+        #region Utils
         private string GetDatabaseId(ISqlSugarClient db)
         {
             var ret = db.Ado.Context.CurrentConnectionConfig.ConfigId;
             return Convert.ToString(ret);
         }
-        private string GetTableName(EntityInfo entityInfo)
+        private SplitTableData GetSplitTableData(ISqlSugarClient db, EntityInfo entityInfo)
         {
-            return entityInfo.DbTableName;
-            //var attr = entityInfo.Type.GetCustomAttribute<SugarTable>();
-            //return attr.TableName;
+            var databaseId = GetDatabaseId(db);
+            var srcTableName = entityInfo.DbTableName;
+            var ret = DbCacheUtil.GetSplitTableData(databaseId, srcTableName); 
+            if (ret == null)
+                throw new Exception("没有分表");
+            return ret;
         }
-    }
-    class SplitTableData
-    {
-        public string DatabaseId { get; set; }
-        public string TableName { get; set; }
-        public bool IsSplitTable { get; set; }
-        public Stfx_split_tableEO TableEo { get; set; }
-        public List<Stfx_split_table_detailEO> MyProperty { get; set; }
+        #endregion
     }
 }

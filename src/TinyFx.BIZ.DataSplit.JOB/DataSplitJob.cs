@@ -37,7 +37,7 @@ namespace TinyFx.BIZ.DataSplit
                     case HandleMode.Backup:
                         await new BackupJob(item, defaultConfigId, execTime).Execute();
                         break;
-                    case HandleMode.SplitMaxRows:
+                    case HandleMode.MaxRows:
                         await new SplitMaxRowsJob(item, defaultConfigId, execTime).Execute();
                         break;
                 }
@@ -47,12 +47,12 @@ namespace TinyFx.BIZ.DataSplit
             msg.Changed.Add(new DbCacheItem
             {
                 ConfigId = DbUtil.DefaultConfigId,
-                TableName = "s_split_table"
+                TableName = "tfx_split_table"
             });
             msg.Changed.Add(new DbCacheItem
             {
                 ConfigId = DbUtil.DefaultConfigId,
-                TableName = "s_split_table_detail"
+                TableName = "tfx_split_table_detail"
             });
             await DbCachingUtil.PublishUpdate(msg);
         }

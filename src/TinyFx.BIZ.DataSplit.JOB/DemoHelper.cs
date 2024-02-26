@@ -17,7 +17,7 @@ namespace TinyFx.BIZ.DataSplit
             db.DbMaintenance.TruncateTable<Sdemo_tfx_splitEO>();
 
             var list = new List<Sdemo_tfx_splitEO>();
-            var begin = new DateTime(2023, 12, 29, 0, 0, 0, DateTimeKind.Utc);
+            var begin = new DateTime(2022, 12, 29, 0, 0, 0, DateTimeKind.Utc);
             var end = DateTime.UtcNow;
             var idx = 1;
             var curr = begin;
@@ -37,7 +37,7 @@ namespace TinyFx.BIZ.DataSplit
                 list.Add(eo);
                 idx++;
 
-                var curr1 = curr.AddHours(new Random().Next(23));
+                var curr1 = curr.AddHours(new Random().Next(23)+1);
                 var eo1 = new Sdemo_tfx_splitEO
                 {
                     ObjectID = ObjectId.NewId(curr1),

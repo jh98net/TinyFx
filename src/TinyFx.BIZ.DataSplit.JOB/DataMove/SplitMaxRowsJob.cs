@@ -17,13 +17,12 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
     {
         public SplitMaxRowsJob(Stfx_split_tableEO item, string defaultConfigId, DateTime execTime) : base(item, defaultConfigId, execTime)
         {
-            if ((HandleMode)item.HandleMode != HandleMode.SplitMaxRows)
-                throw new Exception("DataMove.SplitMaxRowsJob时HandleMode必须是SplitMaxRows");
-            if (_item.SplitMaxRowCount <= 0)
-                throw new Exception("DataMove.SplitMaxRowsJob时SplitMaxRowHours必须大于0");
-            var columnType = (ColumnType)_item.ColumnType;
-            if (_item.SplitMaxRowHours == 0 && (columnType == ColumnType.DateTime || columnType == ColumnType.ObjectId))
-                throw new Exception("DataMove.SplitMaxRowsJob时SplitMaxRowHours必须大于0");
+            if ((HandleMode)item.HandleMode != HandleMode.MaxRows)
+                throw new Exception("DataMove.SplitMaxRowsJob时HandleMode必须是MaxRows");
+            if (_item.MaxRowCount <= 0)
+                throw new Exception("DataMove.SplitMaxRowsJob时MaxRowCount必须大于0");
+            if (_item.MaxRowInterval <= 0)
+                throw new Exception("DataMove.SplitMaxRowsJob时MaxRowInterval必须大于0");
         }
 
         protected override async Task ExecuteJob()
@@ -32,118 +31,75 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
                 .Where(it => it.DatabaseId == _item.DatabaseId && it.TableName == _item.TableName && it.Status == 1)
                 .OrderBy(it => it.RecDate, OrderByType.Desc)
                 .FirstAsync();
-            if (lastItem == null)
-            {
-                await ExecFirst();
-            }
-            else
-            {
-                await ExecNext(lastItem);
-            }
+            await ExecNext(lastItem);
         }
 
-        private async Task ExecFirst()
+
+        private async Task ExecNext(Stfx_split_table_detailEO lastEo = null)
         {
-            var count = await GetItemDb().Queryable<object>().AS(_item.TableName).With(SqlWith.NoLock).CountAsync();
-            if (count == 0 || count < _item.SplitMaxRowCount)
+            var srcTableName = lastEo?.SplitTableName ?? _item.TableName;
+            var count = await GetItemDb().Queryable<object>().AS(srcTableName).With(SqlWith.NoLock).CountAsync();
+            if (count == 0 || count < _item.MaxRowCount)
                 return;
             _logEo.RowNum = count;
 
-            var tableData = await GetTableData(_item.TableName);
-            var detailList = new List<Stfx_split_table_detailEO>();
-            // 原始表
-            detailList.Add(new Stfx_split_table_detailEO
-            {
-                DetailID = ObjectId.NewId(),
-                LogID = _logEo.LogID,
-                DatabaseId = _item.DatabaseId,
-                TableName = _item.TableName,
-                ColumnName = _item.ColumnName,
-                ColumnType = _item.ColumnType,
-                HandleMode = _item.HandleMode,
-                SplitTableName = _item.TableName,
-                BeginValue = tableData.Begin.Value,
-                BeginDate = tableData.Begin.Date,
-                EndValue = null,
-                EndDate = null,
-                RowNum = count,
-                Status = 1,
-                RecDate = DateTime.UtcNow
-            });
-            // 新分表
-            detailList.Add(new Stfx_split_table_detailEO
-            {
-                DetailID = ObjectId.NewId(),
-                LogID = _logEo.LogID,
-                DatabaseId = _item.DatabaseId,
-                TableName = _item.TableName,
-                ColumnName = _item.ColumnName,
-                ColumnType = _item.ColumnType,
-                HandleMode = _item.HandleMode,
-                SplitTableName = tableData.SplitTableName,
-                BeginValue = tableData.Next.Value,
-                BeginDate = tableData.Next.Date,
-                EndValue = null,
-                EndDate = null,
-                RowNum = 0,
-                Status = 1,
-                RecDate = DateTime.UtcNow
-            });
-            _logEo.BeginDate = tableData.Next.Date;
-            _logEo.BeginValue = tableData.Next.Value;
-            _logEo.HandleTables += $"{tableData.SplitTableName}{Environment.NewLine}";
-
-            var tm = new DbTransactionManager();
-            try
-            {
-                await CreateTable(tableData.SplitTableName, tm);
-                await GetMainDb(tm).Insertable(detailList).ExecuteCommandAsync();
-                tm.Commit();
-            }
-            catch
-            {
-                tm.Rollback();
-                throw;
-            }
-        }
-
-        private async Task ExecNext(Stfx_split_table_detailEO lastEo)
-        {
-            var count = await GetItemDb().Queryable<object>().AS(lastEo.SplitTableName).With(SqlWith.NoLock).CountAsync();
-            if (count == 0 || count < _item.SplitMaxRowCount)
-                return;
-            _logEo.RowNum = count;
-            lastEo.RowNum = count;
-
-            var tableData = await GetTableData(lastEo.SplitTableName);
-            var newEo = new Stfx_split_table_detailEO
-            {
-                DetailID = ObjectId.NewId(),
-                LogID = _logEo.LogID,
-                DatabaseId = _item.DatabaseId,
-                TableName = _item.TableName,
-                ColumnName = _item.ColumnName,
-                ColumnType = _item.ColumnType,
-                HandleMode = _item.HandleMode,
-                SplitTableName = tableData.SplitTableName,
-                BeginValue = tableData.Next.Value,
-                BeginDate = tableData.Next.Date,
-                EndValue = null,
-                EndDate = null,
-                RowNum = 0,
-                Status = 1,
-                RecDate = DateTime.UtcNow
-            };
+            var tableData = await GetTableData(srcTableName);
             _logEo.BeginDate = tableData.Next.Date;
             _logEo.BeginValue = tableData.Next.Value;
             _logEo.HandleTables += $"{tableData.SplitTableName}{Environment.NewLine}";
             var tm = new DbTransactionManager();
             try
             {
-                await GetMainDb(tm).Updateable(lastEo)
-                    .UpdateColumns(it => new { it.RowNum })
-                    .ExecuteCommandAsync();
                 await CreateTable(tableData.SplitTableName, tm);
+                if (lastEo == null)
+                {
+                    var firstEo = new Stfx_split_table_detailEO
+                    {
+                        DetailID = ObjectId.NewId(),
+                        LogID = _logEo.LogID,
+                        DatabaseId = _item.DatabaseId,
+                        TableName = _item.TableName,
+                        ColumnName = _item.ColumnName,
+                        ColumnType = _item.ColumnType,
+                        HandleMode = _item.HandleMode,
+                        SplitTableName = _item.TableName,
+                        BeginValue = tableData.Begin.Value,
+                        BeginDate = tableData.Begin.Date,
+                        EndValue = tableData.Next.Value,
+                        EndDate = tableData.Next.Date,
+                        RowNum = count,
+                        Status = 1,
+                        RecDate = DateTime.UtcNow
+                    };
+                    await GetMainDb(tm).Insertable(firstEo).ExecuteCommandAsync();
+                }
+                else
+                {
+                    lastEo.EndValue = tableData.Next.Value;
+                    lastEo.EndDate = tableData.Next.Date;
+                    lastEo.RowNum = count;
+                    await GetMainDb(tm).Updateable(lastEo)
+                        .UpdateColumns(it => new { it.RowNum, it.EndDate, it.EndValue })
+                        .ExecuteCommandAsync();
+                }
+                var newEo = new Stfx_split_table_detailEO
+                {
+                    DetailID = ObjectId.NewId(),
+                    LogID = _logEo.LogID,
+                    DatabaseId = _item.DatabaseId,
+                    TableName = _item.TableName,
+                    ColumnName = _item.ColumnName,
+                    ColumnType = _item.ColumnType,
+                    HandleMode = _item.HandleMode,
+                    SplitTableName = tableData.SplitTableName,
+                    BeginValue = tableData.Next.Value,
+                    BeginDate = tableData.Next.Date,
+                    EndValue = null,
+                    EndDate = null,
+                    RowNum = 0,
+                    Status = 1,
+                    RecDate = DateTime.UtcNow
+                };
                 await GetMainDb(tm).Insertable(newEo).ExecuteCommandAsync();
                 tm.Commit();
             }
@@ -164,7 +120,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
                     ret.Begin.Value = ret.Begin.Date.ToFormatString();
                     ret.End.Date = await query.MaxAsync<DateTime>(_item.ColumnName);
                     ret.End.Value = ret.End.Date.ToFormatString();
-                    var dt = ret.End.Date.AddHours(_item.SplitMaxRowHours);
+                    var dt = ret.End.Date.AddHours(_item.MaxRowInterval);
                     ret.Next.Date = new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, 0, 0, DateTimeKind.Utc);
                     ret.Next.Value = ret.Next.Date.ToFormatString();
                     break;
@@ -174,7 +130,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
                     ret.Begin.Date = ObjectId.ParseTimestamp(ret.Begin.Value);
                     ret.End.Value = await query.MaxAsync<string>(_item.ColumnName);
                     ret.End.Date = ObjectId.ParseTimestamp(ret.End.Value);
-                    var dt1 = ret.End.Date.AddHours(_item.SplitMaxRowHours);
+                    var dt1 = ret.End.Date.AddHours(_item.MaxRowInterval);
                     ret.Next.Date = new DateTime(dt1.Year, dt1.Month, dt1.Day, dt1.Hour, 0, 0, DateTimeKind.Utc);
                     ret.Next.Value = ObjectId.TimestampId(ret.Next.Date);
                     break;
