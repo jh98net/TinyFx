@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>数据库基于SqlSugar分库分表和数据迁移方案</Description>
-    <Version>3.15.1</Version>
+    <Version>3.15.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\TinyFx.DbCaching\TinyFx.DbCaching.csproj" />
