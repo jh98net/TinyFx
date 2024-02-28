@@ -50,7 +50,7 @@ namespace TinyFx.DbCaching
 
             var listDo = await _listDCache.GetAsync(_cacheKey);
             // 数据不相同
-            if (!listDo.HasValue || listDo.Value.DataHash != ret.DataHash 
+            if (!listDo.HasValue || listDo.Value.DataHash != ret.DataHash
                 || listDo.Value.PageSize != ret.PageSize || listDo.Value.PageCount != ret.PageCount)
             {
                 int i = 0;
@@ -98,7 +98,7 @@ namespace TinyFx.DbCaching
                 throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{_cacheKey}");
             }
             var updateDate = await _dataDCache.GetOrDefaultAsync("0", null);
-            if (updateDate != listDo.Value.UpdateDate)
+            if (updateDate != null && updateDate != listDo.Value.UpdateDate)
                 throw new Exception($"DbCacheDataDCache.GetRedisValues()时，DbCacheListDCache的UpdateDate与DbCacheDataDCache的不同。key:{_cacheKey}");
             for (int i = 1; i <= listDo.Value.PageCount; i++)
             {

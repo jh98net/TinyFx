@@ -475,29 +475,32 @@
     "DynamicApiAssemblies": [] // 动态加载的API所在的 xxx.dll
   },
 
-  // OAuth验证
-  "OAuth": {
-    "Enabled": false,
-    "ProvidersProvider": null,
-    "Providers": {
-      "Google": {
-        "ClientId": "",
-        "ClientSecret": ""
-      },
-      "Facebook": {
-        "ClientId": "",
-        "ClientSecret": ""
-      }
-    }
+  // 启用Session或者Cookie Identity (TinyFx.AspNet.Configuration.SessionAndCookieSection)
+  "SessionAndCookie": {
+    "UseCookieIdentity": true,
+    "CookieTimeout": 3, // cookie过期时间3天
+    "Domain": null, // cookie和session保存的domain，跨域如: .xxyy.com
+    "SameSiteMode": "Unspecified", // https使用None，其他Unspecified
+    "UseSession": false,
+    "SessionTimeout": 20 // Session过期时间,20分钟
   },
 
-  // HCaptcha验证码
-  "HCaptcha": {
-    "Enabled": true,
-    "SiteKey": "9459ee20-43d9-4777-af5d-b1fbe89b403e",
-    "Secret": "ES_01c1e11250f54abc8d90248733f370db",
-    "ApiBaseUrl": "https://api.hcaptcha.com/",
-    "VerifyRemoteIp": false
+  // Asp.net core CORS跨域请求配置 (TinyFx.AspNet.Configuration.CorsSection)
+  "Cors": {
+    "UseCors": {
+      "Enabled": true,
+      "EnabledReferer": false,
+      "PoliciesProvider": "", //策略提供程序: TinyFx.AspNet.ICorsPoliciesProvider
+      "DefaultPolicy": null
+    },
+    "Policies": {
+      "default": {
+        "Origins": "*", // 允许的来源,分号;分隔（下同）
+        "Methods": "*", // 允许的HTTP方法
+        "Headers": "*", // 允许的请求标头
+        "MaxAge": 86400 // Access-Control-Max-Age 时间(秒)
+      }
+    }
   },
 
   // api访问签名验证
@@ -533,34 +536,6 @@
     "Urls": [ "*" ] //*表示记录全部
   },
 
-  // 启用Session或者Cookie Identity (TinyFx.AspNet.Configuration.SessionAndCookieSection)
-  "SessionAndCookie": {
-    "UseCookieIdentity": true,
-    "CookieTimeout": 3, // cookie过期时间3天
-    "Domain": null, // cookie和session保存的domain，跨域如: .xxyy.com
-    "SameSiteMode": "Unspecified", // https使用None，其他Unspecified
-    "UseSession": false,
-    "SessionTimeout": 20 // Session过期时间,20分钟
-  },
-
-  // Asp.net core CORS跨域请求配置 (TinyFx.AspNet.Configuration.CorsSection)
-  "Cors": {
-    "UseCors": {
-      "Enabled": true,
-      "EnabledReferer": false,
-      "PoliciesProvider": "", //策略提供程序: TinyFx.AspNet.ICorsPoliciesProvider
-      "DefaultPolicy": null
-    },
-    "Policies": {
-      "default": {
-        "Origins": "*", // 允许的来源,分号;分隔（下同）
-        "Methods": "*", // 允许的HTTP方法
-        "Headers": "*", // 允许的请求标头
-        "MaxAge": 86400 // Access-Control-Max-Age 时间(秒)
-      }
-    }
-  },
-
   // 输出缓存 (TinyFx.AspNet.ResponseCaching.ResponseCacheEx指定)
   "ResponseCaching": {
     "Enabled": true,
@@ -571,6 +546,31 @@
         "VaryByQueryKeys": [] //
       }
     }
+  },
+
+  // OAuth验证
+  "OAuth": {
+    "Enabled": false,
+    "ProvidersProvider": null,
+    "Providers": {
+      "Google": {
+        "ClientId": "",
+        "ClientSecret": ""
+      },
+      "Facebook": {
+        "ClientId": "",
+        "ClientSecret": ""
+      }
+    }
+  },
+
+  // HCaptcha验证码
+  "HCaptcha": {
+    "Enabled": true,
+    "SiteKey": "9459ee20-43d9-4777-af5d-b1fbe89b403e",
+    "Secret": "ES_01c1e11250f54abc8d90248733f370db",
+    "ApiBaseUrl": "https://api.hcaptcha.com/",
+    "VerifyRemoteIp": false
   },
 
   "Metirc": {
