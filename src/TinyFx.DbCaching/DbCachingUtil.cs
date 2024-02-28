@@ -357,7 +357,7 @@ namespace TinyFx.DbCaching
 
                 if (waitTime > maxTime)
                 {
-                    ret.CacheAndDbDiffs.Add(new DbCacheCheckServiceCache
+                    ret.RedisAndServiceDiffs.Add(new DbCacheCheckServiceCache
                     {
                         ServiceId = serviceId,
                         Success = false,
@@ -381,9 +381,9 @@ namespace TinyFx.DbCaching
                 result.Success = result.Items == null || result.Items.Count == 0;
                 if (!result.Success)
                     result.Error = "服务存在缓存不一致";
-                ret.CacheAndDbDiffs.Add(result);
+                ret.RedisAndServiceDiffs.Add(result);
             }
-            ret.Success = ret.CacheAndDbDiffs.TrueForAll(x => x.Success);
+            ret.Success = ret.RedisAndServiceDiffs.TrueForAll(x => x.Success);
             if (!ret.Success)
                 ret.Error = "存在服务缓存和服务内存缓存不一致的项";
             return ret;
@@ -409,7 +409,7 @@ namespace TinyFx.DbCaching
             {
                 logger.AddMessage($"redis和数据库不一致：configId:{item.ConfigId} tableName:{item.TableName}");
             }
-            foreach (var item in ret.CacheAndDbDiffs)
+            foreach (var item in ret.RedisAndServiceDiffs)
             {
                 if (item.Success)
                     continue;

@@ -11,13 +11,13 @@ namespace TinyFx.DbCaching
         public bool Success { get; set; }
         public string Error { get; set; }
         /// <summary>
-        /// 数据库和redis缓存不一致列表
+        /// redis缓存和数据库不一致列表
         /// </summary>
         public List<DbCacheItem> RedisAndDbDiffs { get; set; } = new();
         /// <summary>
-        /// 数据库和服务内缓存不一致列表
+        /// redis缓存和服务内缓存不一致列表
         /// </summary>
-        public List<DbCacheCheckServiceCache> CacheAndDbDiffs { get; set; } = new();
+        public List<DbCacheCheckServiceCache> RedisAndServiceDiffs { get; set; } = new();
     }
 
     public class DbCacheCheckServiceCache
