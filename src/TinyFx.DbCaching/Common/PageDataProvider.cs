@@ -98,7 +98,7 @@ namespace TinyFx.DbCaching
                 throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{_cacheKey}");
             }
             var updateDate = await _dataDCache.GetOrDefaultAsync("0", null);
-            if (updateDate != null && updateDate != listDo.Value.UpdateDate)
+            if (!string.IsNullOrEmpty(updateDate) && updateDate != listDo.Value.UpdateDate)
                 throw new Exception($"DbCacheDataDCache.GetRedisValues()时，DbCacheListDCache的UpdateDate与DbCacheDataDCache的不同。key:{_cacheKey}");
             for (int i = 1; i <= listDo.Value.PageCount; i++)
             {

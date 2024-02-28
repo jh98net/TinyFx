@@ -17,11 +17,7 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            var json = SerializerUtil.SerializeJson(new UserInfo 
-            {
-                Name = "aaa"
-            });
-            var u = SerializerUtil.DeserializeJson<UserInfo>(json);
+            var ret = await DbCachingUtil.PublishCheck();
             Console.WriteLine("OK");
         }
     }
