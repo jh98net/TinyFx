@@ -168,10 +168,13 @@ namespace TinyFx.DbCaching
         private List<TEntity> GetEntities(DbTableRedisData redisData)
         {
             List<TEntity> ret = new List<TEntity>();
-            foreach (var item in redisData.PageList)
+            if (redisData?.PageList?.Count > 0)
             {
-                var value = SerializerUtil.DeserializeJson<List<TEntity>>(item);
-                ret.AddRange(value);
+                foreach (var item in redisData.PageList)
+                {
+                    var value = SerializerUtil.DeserializeJson<List<TEntity>>(item);
+                    ret.AddRange(value);
+                }
             }
             return ret;
         }
