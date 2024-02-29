@@ -20,12 +20,9 @@ namespace TinyFx.OAuth
             {
                 var type = $"TinyFx.OAuth.Providers.{item.Name}Provider";
                 var obj = ReflectionUtil.CreateInstance(Type.GetType(type)) as IOAuthProvider;
-                //var s2 = ReflectionUtil.CreateInstance(type,null);
-
-                //var obj = ReflectionUtil.CreateInstance(type) as IOAuthProvider;
-                if (obj == null)
-                    throw new Exception($"创建IOAuthProvider失败: {type}");
-                _dict.TryAdd((OAuthProviders)item.Value, obj);
+                if (obj == null || obj.Provider != (OAuthProviders)item.Value)
+                    throw new Exception($"创建IOAuthProvider失败: {type} enum:{(OAuthProviders)item.Value} provider:{obj?.Provider}");
+                _dict.TryAdd(obj.Provider, obj);
             }
         }
         public async Task<string> GetOAuthUrl(OAuthProviders provider, string redirectUri, string uuid = null)

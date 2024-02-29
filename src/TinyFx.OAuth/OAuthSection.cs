@@ -1,8 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using TinyFx.Collections;
 using TinyFx.OAuth;
 using TinyFx.Reflection;
+using static System.Collections.Specialized.BitVector32;
 
 namespace TinyFx.Configuration
 {
@@ -28,9 +31,16 @@ namespace TinyFx.Configuration
             }
             else
             {
-                Providers = configuration
+                Providers = configuration?.GetSection("Providers")?
                     .Get<Dictionary<string, OAuthProviderElement>>() ?? new();
             }
+        }
+        public IOAuthProviderElement GetProviderElement(OAuthProviders provider)
+        {
+            var key = provider.ToString();
+            if (!Providers.TryGetValue(key, out var ret))
+                throw new Exception($"配置文件OAuth:Providers不存在key: {provider}");
+            return ret;
         }
     }
 }

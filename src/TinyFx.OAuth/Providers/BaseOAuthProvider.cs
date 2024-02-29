@@ -5,33 +5,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Caching;
+using TinyFx.Configuration;
 using TinyFx.Logging;
 using TinyFx.Net;
+using TinyFx.OAuth.Common;
 
 namespace TinyFx.OAuth.Providers
 {
     internal interface IOAuthProvider
     {
+        OAuthProviders Provider { get; }
         Task<string> GetOAuthUrl(string redirectUri, string uuid);
         Task<ResponseResult<OAuthUserDto>> GetUserInfo(OAuthUserIpo ipo);
     }
 
     internal abstract class BaseOAuthProvider : IOAuthProvider
     {
-        private const int EXPIRY_SECONDS = 600;
+        public abstract OAuthProviders Provider { get; }
         protected abstract string OAuthUrl { get; }
         protected abstract string TokenUrl { get; }
         protected abstract string UserInfoUrl { get; }
 
-        private IDistributedCache _dcache;
         public IOAuthProviderElement Config { get; }
+        private OAuthDCache _dcache;
         private HttpClientEx _client;
 
         public BaseOAuthProvider()
         {
-            _dcache = DIUtil.GetRequiredService<IDistributedCache>();
-            var provider = EnumUtil.ToEnum<OAuthProviders>(GetType().Name.TrimEnd("Provider"));
-            Config = OAuthUtil.GetProviderElement(provider);
+            var section = ConfigUtil.GetSection<OAuthSection>();
+            Config = section.GetProviderElement(Provider);
+            _dcache = new();
             _client = HttpClientExFactory.CreateClientEx(GetType().FullName);
         }
 
@@ -39,10 +42,7 @@ namespace TinyFx.OAuth.Providers
         public async Task<string> GetOAuthUrl(string redirectUri, string uuid)
         {
             var state = StringUtil.GetGuidString();
-            await _dcache.SetAsync(state, Encoding.UTF8.GetBytes(uuid ?? "default"), new DistributedCacheEntryOptions
-            {
-                SlidingExpiration = TimeSpan.FromSeconds(EXPIRY_SECONDS)
-            });
+            await _dcache.SetState(state, uuid);
             var ret = $"{OAuthUrl}?response_type=code%20token&client_id={Config.ClientId}&redirect_uri={redirectUri}&state={state}";
             var append = AppendOAuthUrl();
             if (!string.IsNullOrEmpty(append))
@@ -58,9 +58,8 @@ namespace TinyFx.OAuth.Providers
 
             var log = LogUtil.GetContextLogger();
             log.AddField("oauth.ipo", SerializerUtil.SerializeJson(ipo));
-            var value = await _dcache.GetStringAsync(ipo.State);
+            var value = await _dcache.GetState(ipo.State);
             log.AddField("oauth.uuid", value);
-            await _dcache.RemoveAsync(ipo.State);
             if (string.IsNullOrEmpty(value) || (!string.IsNullOrEmpty(ipo.Uuid) && value != "default" && ipo.Uuid != value))
             {
                 ret.Success = false;

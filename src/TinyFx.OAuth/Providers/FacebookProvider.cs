@@ -5,6 +5,7 @@ namespace TinyFx.OAuth.Providers
 {
     internal class FaceBookProvider : BaseOAuthProvider
     {
+        public override OAuthProviders Provider => OAuthProviders.Facebook;
         protected override string OAuthUrl => "https://www.facebook.com/v17.0/dialog/oauth";
 
         protected override string TokenUrl => "https://graph.facebook.com/oauth/access_token";

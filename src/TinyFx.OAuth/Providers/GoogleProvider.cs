@@ -9,6 +9,7 @@ namespace TinyFx.OAuth.Providers
 {
     internal class GoogleProvider : BaseOAuthProvider
     {
+        public override OAuthProviders Provider => OAuthProviders.Google;
         protected override string OAuthUrl => "https://accounts.google.com/o/oauth2/v2/auth";
 
         protected override string TokenUrl => "https://www.googleapis.com/oauth2/v3/token";

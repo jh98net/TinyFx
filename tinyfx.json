@@ -550,16 +550,16 @@
 
   // OAuth验证
   "OAuth": {
-    "Enabled": false,
+    "Enabled": true,
     "ProvidersProvider": null,
     "Providers": {
       "Google": {
-        "ClientId": "",
-        "ClientSecret": ""
+        "ClientId": "453912735249-j7k3subq64jbntcgn3pjtnpnbkheka74.apps.googleusercontent.com",
+        "ClientSecret": "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"
       },
       "Facebook": {
-        "ClientId": "",
-        "ClientSecret": ""
+        "ClientId": "1500613440708250",
+        "ClientSecret": "4a4f2c86f00dd771440164076f734ffd"
       }
     }
   },

@@ -15,8 +15,8 @@ namespace TinyFx.OAuth
         /// <summary>
         ///  Facebook = 1,
         /// </summary>
-        [Description("FaceBook")]
-        FaceBook = 1,
+        [Description("Facebook")]
+        Facebook = 1,
         /// <summary>
         ///   Google = 2
         /// </summary>

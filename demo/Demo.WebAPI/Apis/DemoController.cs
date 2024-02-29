@@ -29,6 +29,7 @@ using TinyFx.Hosting;
 using TinyFx.Hosting.Services;
 using TinyFx.Logging;
 using TinyFx.Net;
+using TinyFx.OAuth;
 using TinyFx.Randoms;
 using TinyFx.Security;
 using TinyFx.SnowflakeId;
@@ -66,20 +67,20 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public async Task<string> Test1()
         {
-            var sourceKey = "80150420F2885ECC2867209112D4E745lobby";
-            var sourceData = $"1704188983585{sourceKey}";
-            var sign = "I7XObb8dHk78D/Oe/Ec0pD42CqvgbVZdb9beJ8oXx7Y=";
-            var helper = new AccessSignFilterService();
-            // true
-            //08yC0b81GC2k8DN5 bothKey
-            var result = helper.VerifyBothKey(sourceKey, sourceData, sign);
+            //var sourceKey = "80150420F2885ECC2867209112D4E745lobby";
+            //var sourceData = $"1704188983585{sourceKey}";
+            //var sign = "I7XObb8dHk78D/Oe/Ec0pD42CqvgbVZdb9beJ8oXx7Y=";
+            //var helper = new AccessSignFilterService();
+            //// true
+            ////08yC0b81GC2k8DN5 bothKey
+            //var result = helper.VerifyBothKey(sourceKey, sourceData, sign);
 
-            //F89F733B671176B6072034C3CA87E57923A9890C0701E09099CD8739699B51D6
-            var accessKey = helper.GetAccessKeyDecrypt(sourceKey, "F89F733B671176B6072034C3CA87E57923A9890C0701E09099CD8739699B51D6");
+            ////F89F733B671176B6072034C3CA87E57923A9890C0701E09099CD8739699B51D6
+            //var accessKey = helper.GetAccessKeyDecrypt(sourceKey, "F89F733B671176B6072034C3CA87E57923A9890C0701E09099CD8739699B51D6");
 
-            //80150420F2885ECC2867209112D4E745|HgLHd+fXmCvkS7Uclt+wjUAJTorKNwjQpor6ux3iY+g=
-            sourceData = "{\"appId\":\"lobby\",\"operatorId\":\"own_lobby_bra\",\"langId\":\"pt\",\"countryId\":\"BRA\",\"currencyId\":\"BRL\"}";
-            result = helper.VerifyAccessKey("80150420F2885ECC2867209112D4E745", sourceData, "HgLHd+fXmCvkS7Uclt+wjUAJTorKNwjQpor6ux3iY+g=");
+            ////80150420F2885ECC2867209112D4E745|HgLHd+fXmCvkS7Uclt+wjUAJTorKNwjQpor6ux3iY+g=
+            //sourceData = "{\"appId\":\"lobby\",\"operatorId\":\"own_lobby_bra\",\"langId\":\"pt\",\"countryId\":\"BRA\",\"currencyId\":\"BRL\"}";
+            //result = helper.VerifyAccessKey("80150420F2885ECC2867209112D4E745", sourceData, "HgLHd+fXmCvkS7Uclt+wjUAJTorKNwjQpor6ux3iY+g=");
 
             return "";
         }
