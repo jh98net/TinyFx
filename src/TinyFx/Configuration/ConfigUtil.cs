@@ -225,11 +225,4 @@ namespace TinyFx.Configuration
         }
         #endregion
     }
-    public enum TinyFxHostType
-    {
-        Unknow = 0,
-        Console = 1,
-        AspNet = 2,
-        DotNetty = 3
-    }
 }

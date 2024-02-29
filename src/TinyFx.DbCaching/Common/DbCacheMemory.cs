@@ -118,7 +118,7 @@ namespace TinyFx.DbCaching
                 });
                 return value;
             });
-            return dict.TryGetValue(valuesKey, out List<TEntity> ret) ? ret : null;
+            return dict.TryGetValue(valuesKey, out List<TEntity> ret) ? ret : new List<TEntity>();
         }
         #endregion
 
