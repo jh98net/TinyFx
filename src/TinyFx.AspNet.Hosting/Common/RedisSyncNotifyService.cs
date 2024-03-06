@@ -18,11 +18,19 @@ namespace TinyFx.AspNet.Hosting
         }
         public async Task SetNotify(string id, bool value)
         {
-            await _client.SetBitAsync(id, value);
+            var offset = GetOffset(id);
+            await _client.SetBitAsync(offset, value);
         }
         public async Task<bool> GetNotify(string id)
         {
-            return await _client.GetBitAsync(id);
+            var offset = GetOffset(id);
+            return await _client.GetBitAsync(offset);
+        }
+        private long GetOffset(string id)
+        {
+            var code = id.GetHashCode();
+            var offset = (long)code + int.MaxValue + 1;
+            return offset;
         }
     }
 }

@@ -24,12 +24,12 @@ namespace TinyFx.Configuration
         /// </summary>
         public static readonly ConcurrentDictionary<string, object> Sections = new ConcurrentDictionary<string, object>();
 
+        #region Environment
         /// <summary>
         /// 配置的程序运行环境：Development/Testing/....
         /// </summary>
         public static string EnvironmentString { get; private set; }
 
-        private static EnvironmentNameParser _envParser = new();
         private static EnvironmentNames? _env;
         /// <summary>
         /// 当前程序运行环境
@@ -42,10 +42,11 @@ namespace TinyFx.Configuration
                     return _env.Value;
 
                 var ret = EnvironmentNames.Unknown;
+                var envParser = new EnvironmentNameParser();
                 if (!string.IsNullOrEmpty(Project.Environment))
-                    ret = _envParser.Parse(Project.Environment);
+                    ret = envParser.Parse(Project.Environment);
                 if (ret == EnvironmentNames.Unknown)
-                    ret = _envParser.Parse(EnvironmentString);
+                    ret = envParser.Parse(EnvironmentString);
                 if (ret == EnvironmentNames.Unknown)
                     ret = EnvironmentNames.Production;
                 _env = ret;
@@ -65,21 +66,12 @@ namespace TinyFx.Configuration
         /// </summary>
         public static bool IsStagingEnvironment
             => Environment == EnvironmentNames.Staging;
+        #endregion
 
         /// <summary>
-        /// 服务启动时分配的GUID
+        /// Host服务信息
         /// </summary>
-        public static readonly string ServiceGuid = ObjectId.NewId();
-        /// <summary>
-        /// 服务的唯一标识，默认: projectId|guid
-        /// </summary>
-        public static string ServiceId { get; set; }
-        /// <summary>
-        /// 服务外部访问地址，服务启动后人工设置
-        /// </summary>
-        public static string ServiceUrl { get; set; }
-
-        public static TinyFxHostType HostType { get; set; } = TinyFxHostType.Unknow;
+        public static readonly ServiceInfo ServiceInfo = new();
         #endregion
 
         #region Init
@@ -90,20 +82,14 @@ namespace TinyFx.Configuration
             configuration.GetReloadToken().RegisterChangeCallback((_) =>
             {
                 LogUtil.Warning("配置更新: {changeTime}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                OnConfigChange();
+                ClearCacheData();
+                ConfigChanged?.Invoke(null, null);
             }, null);
             Configuration = configuration;
             ClearCacheData();
 
-            // 设置服务唯一标识
-            ServiceId ??= $"{Project.ProjectId}:{ServiceGuid}";
-            // 当前服务地址
-            ServiceUrl ??= Project.ServiceUrl;
-        }
-        private static void OnConfigChange()
-        {
-            ClearCacheData();
-            ConfigChanged?.Invoke(null, null);
+            ServiceInfo.ServiceId = $"{Project.ProjectId}:{ServiceInfo.ServiceGuid}";
+            ServiceInfo.ServiceUrl ??= Project.ServiceUrl;
         }
         private static void ClearCacheData()
         {

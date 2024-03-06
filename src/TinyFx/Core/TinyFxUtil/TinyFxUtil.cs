@@ -115,28 +115,6 @@ namespace TinyFx
         }
 
         /// <summary>
-        /// 获取应用程序Assembly所在目录,Web获取bin，其他获取执行程序当前目录
-        /// </summary>
-        /// <returns></returns>
-        public static string GetAssemblyDirectory(bool isWebApp = false)
-        {
-            //string ret = Environment.CurrentDirectory;
-            string ret = AppContext.BaseDirectory;
-            if (isWebApp)
-                ret = Path.Combine(ret, "bin");
-            return ret;
-        }
-
-        /// <summary>
-        /// 获取应用程序目录，web获取根目录，应用程序获取入口目录
-        /// </summary>
-        /// <returns></returns>
-        public static string GetAppDirectory()
-        {
-            return AppContext.BaseDirectory;
-        }
-
-        /// <summary>
         /// 是否是Windows系统
         /// </summary>
         /// <returns></returns>
@@ -158,11 +136,6 @@ namespace TinyFx
                 Task.Run(() => task).ConfigureAwait(continueOnCapturedContext).GetAwaiter().GetResult();
             else
                 task.ConfigureAwait(false).GetAwaiter().GetResult();
-        }
-
-        public static void ClearCaching()
-        {
-            HttpClientExFactory.ClearClientCaching();
         }
     }
 }

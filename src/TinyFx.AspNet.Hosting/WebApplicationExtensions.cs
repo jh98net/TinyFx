@@ -33,7 +33,6 @@ namespace TinyFx
     {
         public static WebApplication UseAspNetEx(this WebApplication app)
         {
-            ConfigUtil.ServiceUrl ??= string.Join('|', app.Urls);
             // 中间件顺序
             // https://learn.microsoft.com/zh-cn/aspnet/core/fundamentals/middleware/?view=aspnetcore-7.0#middleware-order
             app.UseEnableBufferingEx();
@@ -70,9 +69,9 @@ namespace TinyFx
                     , ConfigUtil.EnvironmentString
                     , ConfigUtil.IsDebugEnvironment
                     , ConfigUtil.IsStagingEnvironment
-                    , ConfigUtil.ServiceUrl
+                    , ConfigUtil.ServiceInfo.ServiceUrl
                     , ConfigUtil.GetSection<AspNetSection>()?.PathBase
-                    , ConfigUtil.ServiceId);
+                    , ConfigUtil.ServiceInfo.ServiceId);
             });
             app.Lifetime.ApplicationStopped.Register(() =>
             {
@@ -82,9 +81,9 @@ namespace TinyFx
                  , ConfigUtil.EnvironmentString
                  , ConfigUtil.IsDebugEnvironment
                  , ConfigUtil.IsStagingEnvironment
-                 , ConfigUtil.ServiceUrl
+                 , ConfigUtil.ServiceInfo.ServiceUrl
                  , ConfigUtil.GetSection<AspNetSection>()?.PathBase
-                 , ConfigUtil.ServiceId);
+                 , ConfigUtil.ServiceInfo.ServiceId);
             });
             return app;
         }

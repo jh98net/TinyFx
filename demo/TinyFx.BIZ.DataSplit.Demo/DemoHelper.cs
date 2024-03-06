@@ -9,7 +9,7 @@ using TinyFx.Text;
 
 namespace TinyFx.BIZ.DataSplit
 {
-    public class DemoHelper
+    internal class DemoHelper
     {
         public async Task InitData(string dbId = null)
         {

@@ -33,7 +33,7 @@ namespace TinyFx.SnowflakeId.Common
                 Pid = Process.GetCurrentProcess().Id,
                 Env = ConfigUtil.EnvironmentString,
                 ProjectId = ConfigUtil.Project.ProjectId,
-                ServiceId = ConfigUtil.ServiceId
+                ServiceId = ConfigUtil.ServiceInfo.ServiceId
             };
         }
 

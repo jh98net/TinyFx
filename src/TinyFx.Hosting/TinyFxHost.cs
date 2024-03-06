@@ -29,7 +29,6 @@ namespace TinyFx
         /// <returns></returns>
         public static IHostBuilder CreateBuilder(string envString = null, string[] args = null)
         {
-            ConfigUtil.HostType = TinyFxHostType.Console;
             SerilogUtil.CreateBootstrapLogger();
             var builder = Host.CreateDefaultBuilder(args)
                 .AddTinyFxEx(envString)

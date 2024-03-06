@@ -27,7 +27,6 @@ namespace TinyFx
     {
         public static WebApplicationBuilder CreateBuilder(string envString = null, string[] args = null)
         {
-            ConfigUtil.HostType = TinyFxHostType.AspNet;
             SerilogUtil.CreateBootstrapLogger();
             var builder = WebApplication.CreateBuilder(args);
             // 设置启动Serilog
@@ -52,7 +51,7 @@ namespace TinyFx
                        .Select(o => { return $"id:{o.Id} name:{o.ProcessName} threads:{o.Threads.Count}"; })
                        .ToList();
             var lastBuildTime = File.GetLastWriteTimeUtc(Assembly.GetEntryAssembly().Location).AddHours(8).ToString("yyyy-MM-dd HH:mm:ss");
-            var startTime = ((long)ObjectId.Parse(ConfigUtil.ServiceGuid).Timestamp).TimestampToUtcDateTime().ToFormatString();
+            var startTime = ((long)ObjectId.Parse(ConfigUtil.ServiceInfo.ServiceGuid).Timestamp).TimestampToUtcDateTime().ToFormatString();
             string outputIp = null;
             try
             {
@@ -62,9 +61,9 @@ namespace TinyFx
             var dict = new Dictionary<string, object>
             {
                 { "服务启动UTC时间", startTime },
-                { "ConfigUtil.ServiceId", ConfigUtil.ServiceId },
-                { "ConfigUtil.ServiceUrl", ConfigUtil.ServiceUrl },
-                { "ConfigUtil.ServiceGuid", ConfigUtil.ServiceGuid },
+                { "ConfigUtil.ServiceId", ConfigUtil.ServiceInfo.ServiceId },
+                { "ConfigUtil.ServiceUrl", ConfigUtil.ServiceInfo.ServiceUrl },
+                { "ConfigUtil.ServiceGuid", ConfigUtil.ServiceInfo.ServiceGuid },
                 { "ConfigUtil.EnvironmentString", ConfigUtil.EnvironmentString },
                 { "ConfigUtil.Environment", ConfigUtil.Environment.ToString() },
                 { "header:Host", HttpContextEx.GetHeaderValue("Host") },

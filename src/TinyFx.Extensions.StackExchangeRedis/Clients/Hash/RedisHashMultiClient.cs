@@ -91,6 +91,8 @@ namespace TinyFx.Extensions.StackExchangeRedis
         private T GetEntityByHashEntry<T>(HashEntry[] entries)
             where T : new()
         {
+            if (entries == null || entries.Length == 0)
+                return default(T);
             T ret = new T();
             var props = ReflectionUtil.GetPropertyDic<T>();
             foreach (var entry in entries)

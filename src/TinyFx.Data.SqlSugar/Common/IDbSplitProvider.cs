@@ -16,7 +16,7 @@ namespace TinyFx.Data.SqlSugar
         ///     2) 按指定值分库，如splitDbKey参数传入合作商ID
         ///     3) 按指定表和值分库，即T+splitDbKey
         /// </summary>
-        /// <typeparam name="T">如果是object，则表示所有表按约定的值分库</typeparam>
+        /// <typeparam name="T"></typeparam>
         /// <param name="splitDbKey"></param>
         /// <returns></returns>
         string SplitDb<T>(object splitDbKey = null);

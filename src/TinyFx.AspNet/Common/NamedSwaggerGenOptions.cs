@@ -38,7 +38,7 @@ namespace TinyFx.AspNet.Common
         {
             var sbDesc = new StringBuilder();
             sbDesc.Append("<pre><b>");
-            sbDesc.Append(GetDesc("ServiceId", ConfigUtil.ServiceId));
+            sbDesc.Append(GetDesc("ServiceId", ConfigUtil.ServiceInfo.ServiceId));
             sbDesc.Append(GetDesc("Env", $"{ConfigUtil.Environment}({ConfigUtil.EnvironmentString})"));
             sbDesc.Append(GetDesc("IsDebug", ConfigUtil.IsDebugEnvironment));
             sbDesc.Append(GetDesc("IsStaging", ConfigUtil.IsStagingEnvironment));

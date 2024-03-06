@@ -48,6 +48,8 @@ namespace TinyFx
             });
 
             // InitConfiguration
+            ConfigUtil.ServiceInfo.HostIp = new HostIpGetter().Get();
+            ConfigUtil.ServiceInfo.HostPort = new HostPortGetter().Get();
             var configHelper = new ConfigSourceBuilder(builder, envString);
             var configuration = configHelper.Build();
             ConfigUtil.InitConfiguration(configuration, configHelper.EnvString);

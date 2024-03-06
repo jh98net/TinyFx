@@ -19,11 +19,11 @@ namespace TinyFx.Configuration
         /// <summary>
         /// 主机注册心跳间隔，默认5秒
         /// </summary>
-        public int HeartbeatInterval { get; set; }
+        public int HeartbeatInterval { get; set; } = 5000;
         /// <summary>
         /// 主机检查间隔，默认10分钟
         /// </summary>
-        public int HeathInterval { get; set; }
+        public int HeathInterval { get; set; } = 600000;
         /// <summary>
         /// 主机数据有效期，默认心跳间隔3倍
         /// ConfigUtil.IsDebugEnvironment=true时有效期为10分钟
@@ -33,7 +33,7 @@ namespace TinyFx.Configuration
         /// <summary>
         /// 主机Timer最小Delay时间, 默认200最小100
         /// </summary>
-        public int TimerMinDelay { get; set; }
+        public int TimerMinDelay { get; set; } = 200;
         /// <summary>
         /// 主机Timer关闭等待超时，默认20000最小5000
         /// </summary>
@@ -49,11 +49,11 @@ namespace TinyFx.Configuration
                 DataExpire = HeartbeatInterval * 3;
             if (HeathInterval <= 0)
                 HeathInterval = 600000;
-            if (TimerMinDelay == 0)
+            if (TimerMinDelay <= 0)
                 TimerMinDelay = 200;
             else
                 TimerMinDelay = Math.Max(TimerMinDelay, 100);
-            if (TimerWaitTimeout == 0)
+            if (TimerWaitTimeout <= 0)
                 TimerWaitTimeout = 20000;
             else
                 TimerWaitTimeout = Math.Max(TimerWaitTimeout, 5000);
