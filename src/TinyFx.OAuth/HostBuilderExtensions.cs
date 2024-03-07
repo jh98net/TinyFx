@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Diagnostics;
 using TinyFx.Configuration;
 using TinyFx.Logging;
 using TinyFx.OAuth;
@@ -14,12 +15,15 @@ namespace TinyFx
             if (section == null || !section.Enabled) 
                 return builder;
 
+            var watch = new Stopwatch();
+            watch.Start();
             builder.ConfigureServices((context, services) =>
             {
                 services.AddSingleton<OAuthService>();
             });
 
-            LogUtil.Info($"配置 => [OAuth]");
+            watch.Stop();
+            LogUtil.Info("配置 => [OAuth] [{ElapsedMilliseconds} 毫秒]", watch.ElapsedMilliseconds);
             return builder;
         }
     }

@@ -25,6 +25,7 @@ using TinyFx.AspNet.ResponseCaching;
 using TinyFx.Configuration;
 using TinyFx.Data.SqlSugar;
 using TinyFx.DbCaching;
+using TinyFx.Extensions.Nacos;
 using TinyFx.Hosting;
 using TinyFx.Hosting.Services;
 using TinyFx.Logging;
@@ -67,6 +68,7 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public async Task<string> Test1()
         {
+
             //var sourceKey = "80150420F2885ECC2867209112D4E745lobby";
             //var sourceData = $"1704188983585{sourceKey}";
             //var sign = "I7XObb8dHk78D/Oe/Ec0pD42CqvgbVZdb9beJ8oXx7Y=";

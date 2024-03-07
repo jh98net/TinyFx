@@ -2,7 +2,24 @@
     "AppOptions": {
         "AppId": "xxyy",
         "ServerUrl": "http://192.168.1.121:9009",
-        "UseVerifyClientRequest": true
+        "UseVerifyClientRequest": false
+    },
+    "Project": {
+        "ProjectId": "xxyy",
+        "Description": "休闲应用平台-WebAPI"
+    },
+    "AutoMapper": {
+        "Assemblies": [
+            "Xxyy.BLL.dll"
+        ]
+    },
+    "RabbitMQ": {
+        "ConsumerAssemblies": [
+            "Xxyy.BLL.dll"
+        ]
+    },
+    "AspNet": {
+        "PathBase": "/xxyy"
     },
     "OAuth": {
         "FaceBookConfig": {
@@ -14,41 +31,51 @@
             "ClientSecret": "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"
         }
     },
-    "Project": {
-        "ProjectId": "xxyy",
-        "Description": "休闲应用平台-WebAPI"
+    "HCaptcha": {
+        "Enabled": true,
+        "SiteKey": "9459ee20-43d9-4777-af5d-b1fbe89b403e",
+        "Secret": "ES_01c1e11250f54abc8d90248733f370db",
+        "ApiBaseUrl": "https://api.hcaptcha.com/",
+        "VerifyRemoteIp": false
     },
-     "Metirc": {
+    "IP2Country": {
+        "Enabled": false,
+        "DbIpSource": null,
+        "AllowIps": ""
+    },
+    "Metirc": {
         "AppMetrics": {
             "ReportingEnabled": true
         },
         "AspNetMetrics": {
-            "IgnoredHttpStatusCodes": [ 404 ],
+            "IgnoredHttpStatusCodes": [
+                404
+            ],
             "HealthEndpointEnabled": false,
             "MetricsEndpointEnabled": true,
             "MetricsTextEndpointEnabled": true,
             "PingEndpointEnabled": false,
             "DefaultTrackingEnabled": false,
             "OAuth2TrackingEnabled": false,
-            "IgnoredRoutesRegexPatterns": [ "/^test/" ],
+            "IgnoredRoutesRegexPatterns": [
+                "/^test/"
+            ],
             "FilterRoute": {
-                "ForNameSpace": ["Caching"],
-                "ForService": [ "*DCache", "*Consumer","*Client","*Service","*ClientBase","LoginCacheUtil" ],
-                "ForMethod": ["*SetState"]
+                "ForNameSpace": [
+                    "Caching"
+                ],
+                "ForService": [
+                    "*DCache",
+                    "*Consumer",
+                    "*Client",
+                    "*Service",
+                    "*ClientBase",
+                    "LoginCacheUtil"
+                ],
+                "ForMethod": [
+                    "*SetState"
+                ]
             }
         }
-    },
-    "RabbitMQ": {
-        "ConsumerAssemblies": [
-            "Xxyy.BLL.dll"
-        ]
-    },
-    "AutoMapper": {
-        "Assemblies": [
-            "Xxyy.BLL.dll"
-        ]
-    },
-    "AspNet": {
-        "PathBase": "/xxyy"
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using SqlSugar;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,6 +21,10 @@ namespace TinyFx
             var section = ConfigUtil.GetSection<SqlSugarSection>();
             if (section == null || !section.Enabled)
                 return builder;
+
+
+            var watch = new Stopwatch();
+            watch.Start();
             builder.ConfigureServices((context, services) =>
             {
                 // IDbConfigProvider
@@ -55,7 +60,8 @@ namespace TinyFx
                     return ret;
                 });
             });
-            LogUtil.Info("配置 => [SqlSugar]");
+            watch.Stop();
+            LogUtil.Info("配置 => [SqlSugar] [{ElapsedMilliseconds} 毫秒]", watch.ElapsedMilliseconds);
             return builder;
         }
     }

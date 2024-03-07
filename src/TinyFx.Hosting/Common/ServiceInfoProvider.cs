@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.Net;
 
 namespace TinyFx.Hosting.Common
 {
@@ -24,6 +25,9 @@ namespace TinyFx.Hosting.Common
             }
             if (string.IsNullOrEmpty(ret))
                 ret = GetECSHostIp().GetTaskResult();
+
+            if (string.IsNullOrEmpty(ret))
+                ret = NetUtil.GetLocalIP();
             return ret;
         }
 

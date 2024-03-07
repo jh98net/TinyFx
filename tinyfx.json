@@ -40,25 +40,25 @@
       }
     ],
     "ConfigUseRpc": true, // 是否启用RPC调用配置文件，否则轮训
-    "NamingUseRpc": true, // 是否启用PRC作为服务发现，否则轮训
     "DefaultTimeOut": 15000, // 请求超时时间
     "ListenInterval": 1000,
-    "NamingLoadCacheAtStart": "",
     "EndPoint": "",
     "AccessKey": "",
     "SecretKey": "",
 
     "RegisterEnabled": true, // 是否注册到服务中心
     "InstanceEnabled": true, // 服务注册后是否马上上线
+    "NamingUseRpc": true, // 是否启用PRC作为服务发现，否则轮训
+    "NamingLoadCacheAtStart": "",
+    "NamingCacheRegistryDir": null,
     "ServiceName": "demo_app", // 服务名称
     "ClusterName": "DEFAULT",
     "Secure": false, // 协议true: https
-    "Ip": "",
+    "Ip": "", // 注册服务的IP地址
     "PreferredNetworks": "192.", // 匹配本机IP作为服务注册IP。如: 10.0.
-    "Port": 0, // 注册服务端口。0表示启动服务时的端口
-    "LBStrategy": "WeightRoundRobin", // WeightRandom WeightRoundRobin
+    "Port": 0, // 注册服务的端口。0表示启动服务时的端口
     "Weight": 100, // 负载均衡权重
-    "Ephemeral": true,
+    "Ephemeral": true, //如果实例是短暂的。默认值为 true
     "Metadata": {},
 
     "Clients": {

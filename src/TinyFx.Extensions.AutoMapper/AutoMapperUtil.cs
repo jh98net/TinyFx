@@ -45,7 +45,7 @@ namespace TinyFx.Extensions.AutoMapper
                 else
                 {
                     var msg = $"配置文件AutoMapper:Assemblies中不存在。name: {asm}";
-                  if (!ignoreAssemblyError)
+                    if (!ignoreAssemblyError)
                         throw new Exception(msg);
                     LogUtil.Warning(msg);
                 }

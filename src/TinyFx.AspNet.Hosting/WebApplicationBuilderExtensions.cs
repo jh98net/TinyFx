@@ -88,7 +88,6 @@ namespace TinyFx
             services.AddHealthChecks();         // health
             return services
                 .AddRequestLoggingEx()          // LogBuilder
-                .AddNacosAspNetEx()
                 .AddCorsEx()                    // Cors
                 .AddApiVersioningEx()           // ApiVersion
                 .AddSwaggerGenEx()              // Swagger
@@ -98,11 +97,12 @@ namespace TinyFx
                 .AddResponseCompressionEx()     // ResponseCompression
                 .AddForwardedHeaders()          // ForwardedHeaders
 
-                .AddOptions()                   // IOptions
                 .AddHttpClient()                // IHttpClientFactory
                 .AddHttpContextAccessor()       // .AddOAuth();      // IHttpContextAccessor
                 .AddAccessVerifyEx()            // AccessVerify
-                .AddSyncNotifyEx();             // SyncNotify
+                .AddSyncNotifyEx()              // SyncNotify
+                
+                .AddNacosAspNetEx();            // Nacos
         }
         public static IServiceCollection AddRequestLoggingEx(this IServiceCollection services)
         {
@@ -117,14 +117,13 @@ namespace TinyFx
         public static IServiceCollection AddNacosAspNetEx(this IServiceCollection services)
         {
             var section = NacosUtil.Section;
-            if (section != null && section.Enabled && !string.IsNullOrEmpty(section.ServiceName))
+            if (section != null && section.Enabled)
             {
+                if (string.IsNullOrEmpty(section.ServiceName))
+                    throw new Exception("配置Nacos:ServiceName不能为空且必须与ProjectId相同");
                 if (section.ServiceName != ConfigUtil.Project.ProjectId)
                     LogUtil.Warning($"Nacose ServiceName 和 ProjectId 不相同。ServiceName: {section.ServiceName} ProjectId: {ConfigUtil.Project.ProjectId}");
                 services.AddNacosAspNet(ConfigUtil.Configuration, "Nacos");
-                //services.Configure<NacosAspNetOptions>(ConfigUtil.Configuration.GetSection("Nacos"));
-                //services.AddNacosV2Naming(ConfigUtil.Configuration, sectionName: "Nacos");
-                //services.AddHostedService<RegSvcBgTask>();
             }
             return services;
         }

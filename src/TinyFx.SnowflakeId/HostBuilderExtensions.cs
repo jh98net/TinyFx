@@ -12,6 +12,7 @@ using TinyFx.Hosting;
 using TinyFx.SnowflakeId.Common;
 using TinyFx.Logging;
 using TinyFx.SnowflakeId;
+using System.Diagnostics;
 
 namespace TinyFx
 {
@@ -23,6 +24,8 @@ namespace TinyFx
             if (section == null || !section.Enabled)
                 return builder;
 
+            var watch = new Stopwatch();
+            watch.Start();
             if (section.UseRedis)
             {
                 var redisSecion = ConfigUtil.GetSection<RedisSection>();
@@ -34,16 +37,16 @@ namespace TinyFx
                     throw new Exception($"启动IDGenerator时不存在redisConnectionName: {section.RedisConnectionStringName}");
             }
             var service = new SnowflakeIdService();
-            builder.ConfigureServices(services => 
+            builder.ConfigureServices(services =>
             {
                 services.AddSingleton<ISnowflakeIdService>(service);
             });
-            HostingUtil.RegisterStarting(async () => 
+            HostingUtil.RegisterStarting(async () =>
             {
                 await service.Init();
                 LogUtil.Info("启动 => 雪花ID服务[IDGenerator]");
             });
-            HostingUtil.RegisterStopped(async () => 
+            HostingUtil.RegisterStopped(async () =>
             {
                 await service.Dispose();
                 LogUtil.Info("停止 => 雪花ID服务[IDGenerator]");
@@ -60,7 +63,9 @@ namespace TinyFx
                     Callback = async (_) => await service.Active()
                 });
             }
-            LogUtil.Info($"配置 => [IDGenerator]");
+
+            watch.Stop();
+            LogUtil.Info("配置 => [IDGenerator] [{ElapsedMilliseconds} 毫秒]", watch.ElapsedMilliseconds);
             return builder;
         }
     }

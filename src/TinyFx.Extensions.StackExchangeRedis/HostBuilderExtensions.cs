@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,6 +27,8 @@ namespace TinyFx
             var section = ConfigUtil.GetSection<RedisSection>();
             var useRedis = section?.ConnectionStrings?.Count > 0;
 
+            var watch = new Stopwatch();
+            watch.Start();
             //ConnectionMultiplexer.SetFeatureFlag("preventthreadtheft", true);
             builder.ConfigureServices((context, services) =>
             {
@@ -73,10 +76,14 @@ namespace TinyFx
                     }
                 }
             });
+            watch.Stop();
             if (useRedis)
             {
-                LogUtil.Info("配置 => [Redis] ConsumerAssemblies: {ConsumerAssemblies}"
-                    , string.Join('|', section.ConsumerAssemblies));
+                var asm = section.ConsumerAssemblies?.Count > 0
+                    ? string.Join('|', section.ConsumerAssemblies)
+                    : "NULL";
+                LogUtil.Info("配置 => [Redis] ConsumerAssemblies: {ConsumerAssemblies} [{ElapsedMilliseconds} 毫秒]"
+                    , asm, watch.ElapsedMilliseconds);
             }
             return builder;
         }

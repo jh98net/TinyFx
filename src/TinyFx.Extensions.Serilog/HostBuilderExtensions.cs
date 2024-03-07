@@ -27,6 +27,8 @@ namespace TinyFx
             if (section == null)
                 return builder;
 
+            var watch = new Stopwatch();
+            watch.Start();
             // 配置Log.Logger
             SetELKSinkIndexFormat(ConfigUtil.Configuration);
             Log.Logger = new LoggerConfiguration()
@@ -45,7 +47,8 @@ namespace TinyFx
             // 启动Serilog内部调试
             //Serilog.Debugging.SelfLog.Enable(msg => System.Diagnostics.Debug.WriteLine(msg));
             //Serilog.Debugging.SelfLog.Enable(Console.Error);
-            LogUtil.Info("配置 => [Serilog]");
+            watch.Stop();
+            LogUtil.Info("配置 => [Serilog] [{ElapsedMilliseconds} 毫秒]", watch.ElapsedMilliseconds);
             return builder;
         }
         private static bool SetELKSinkIndexFormat(IConfiguration config)

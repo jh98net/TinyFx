@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,13 +20,17 @@ namespace TinyFx
             if (section == null || !section.Enabled)
                 return builder;
 
+            var watch = new Stopwatch();
+            watch.Start();
             var service = new IP2CountryService();
             builder.ConfigureServices(services => 
             {
                 service.Init();
                 services.AddSingleton<IIP2CountryService>(service);
             });
-            LogUtil.Info($"配置 => [IP2Country]");
+
+            watch.Stop();
+            LogUtil.Info("配置 => [IP2Country] [{ElapsedMilliseconds} 毫秒]", watch.ElapsedMilliseconds);
             return builder;
         }
     }

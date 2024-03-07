@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using TinyFx.Configuration;
 using TinyFx.Extensions.AutoMapper;
@@ -12,13 +13,16 @@ namespace TinyFx
 {
     public static class AutoMapperHostBuilderExtensions
     {
-        public static IHostBuilder AddAutoMapperEx(this IHostBuilder builder) 
+        public static IHostBuilder AddAutoMapperEx(this IHostBuilder builder)
         {
             var section = ConfigUtil.GetSection<AutoMapperSection>();
             if (section == null || section.Assemblies == null || section.Assemblies.Count == 0)
                 return builder;
 
-            builder.ConfigureServices((context, services) => {
+            var watch = new Stopwatch();
+            watch.Start();
+            builder.ConfigureServices((context, services) =>
+            {
                 var registered = AutoMapperUtil.Register();
                 if (registered)
                 {
@@ -27,7 +31,10 @@ namespace TinyFx
                     services.TryAddSingleton(AutoMapperUtil.Mapper);
                 }
             });
-            LogUtil.Info("配置 => [AutoMapper] Assemblies: {Assemblies}", string.Join('|', section.Assemblies));
+
+            watch.Stop();
+            LogUtil.Info("配置 => [AutoMapper] Assemblies: {Assemblies} [{ElapsedMilliseconds} 毫秒]"
+                , string.Join('|', section.Assemblies), watch.ElapsedMilliseconds);
             return builder;
         }
     }

@@ -8,17 +8,28 @@
     "Project": {
         "ProjectId": "demo",
         "Description": "demo-WebAPI",
+        "ApplicationName": "tinyfx",
         "ConsoleLogLevel": "Debug",
         "MinThreads": 0,
         "ResponseErrorMessage": true,
         "ResponseErrorDetail": true,
-        "IsDebugEnvironment": true
+        "IsDebugEnvironment": true,
+        "Environment": "dev",
+        "ServiceUrl": null
     },
+    "Host": {
+        "RegisterEnabled": true,
+        "HeartbeatInterval": 5000,
+        "HeathInterval": 600000,
+        "TimerMinDelay": 200,
+        "TimerWaitTimeout": 20000
+    },
+    "AppSettings": {},
+    "AppConfigs": {},
     "Serilog": {
         "Using": [
             "Serilog.Sinks.Console",
-            "Serilog.Sinks.File",
-            "Serilog.Sinks.Async"
+            "Serilog.Sinks.File"
         ],
         "MinimumLevel": {
             "Default": "Verbose",
@@ -31,7 +42,7 @@
             "ConsoleSink": {
                 "Name": "Console",
                 "Args": {
-                    "restrictedToMinimumLevel": "Debug",
+                    "restrictedToMinimumLevel": "Verbose",
                     "theme": "Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme::Code, Serilog.Sinks.Console",
                     "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
                 }
@@ -55,20 +66,20 @@
     "SqlSugar": {
         "Enabled": true,
         "DbConfigProvider": null,
-        "DbRoutingProvider": null,
+        "DbSplitProvider": null,
         "DefaultConnectionStringName": "default",
         "ConnectionStrings": {
             "default": {
                 "DbType": "MySql",
                 "ConnectionString": "server=192.168.1.120;port=3306;database=ing;uid=root;pwd=root;sslmode=Disabled;allowuservariables=True;AllowLoadLocalInfile=true;Pooling=false",
-                "LogEnabled": false,
+                "LogEnabled": true,
                 "LogSqlMode": 2,
                 "SlaveEnabled": false
             },
             "game": {
                 "DbType": "MySql",
                 "ConnectionString": "server=192.168.1.120;port=3306;database=gdb;uid=root;pwd=root;sslmode=Disabled;allowuservariables=True;AllowLoadLocalInfile=true;Pooling=false",
-                "LogEnabled": false,
+                "LogEnabled": true,
                 "LogSqlMode": 2,
                 "SlaveEnabled": false
             }
@@ -79,14 +90,14 @@
         "ConnectionStrings": {
             "default": {
                 "ProviderName": "mysql",
-                "ConnectionString": "server=192.168.1.120;port=3306;database=ing;user id=root;password=root;sslmode=Disabled;allowuservariables=True",
+                "ConnectionString": "server=192.168.1.120;port=3306;database=ing;user id=root;password=root;sslmode=Disabled;allowuservariables=True;MaximumPoolSize=100",
                 "ReadConnectionString": "",
                 "CommandTimeout": "30",
                 "OrmMap": ""
             },
             "game": {
                 "ProviderName": "mysql",
-                "ConnectionString": "server=192.168.1.120;port=3306;database=gdb;user id=root;password=root;sslmode=Disabled;allowuservariables=True",
+                "ConnectionString": "server=192.168.1.120;port=3306;database=gdb;user id=root;password=root;sslmode=Disabled;allowuservariables=True;MaximumPoolSize=100",
                 "ReadConnectionString": "",
                 "CommandTimeout": "30",
                 "OrmMap": ""
@@ -95,14 +106,14 @@
     },
     "Redis": {
         "DefaultConnectionStringName": "default",
-        "RunNewTaskWhenSync": false,
         "ConnectionStrings": {
             "default": {
                 "ConnectionString": "192.168.1.120:6379,password=root,defaultDatabase=0,keepAlive=-1",
                 "SerializeMode": "json",
                 "NamespaceMap": ""
             }
-        }
+        },
+        "ConsumerAssemblies": []
     },
     "RabbitMQ": {
         "Enabled": true,
@@ -115,11 +126,18 @@
                 "UseShortNaming": false,
                 "UseEnvironmentVirtualHost": false,
                 "UseQuorum": false,
-                "ConnectionString": "host=192.168.1.120:5672;username=root;password=root;publisherConfirms=true;timeout=60"
+                "ConnectionString": "host=192.168.1.120:5672;username=guest;password=guest;publisherConfirms=true;timeout=60"
             }
         },
-        "MessageAssemblies": [],
         "ConsumerAssemblies": []
+    },
+    "DbCaching": {
+        "Enabled": true,
+        "PublishMode": "Redis",
+        "RedisConnectionStringName": "default",
+        "MQConnectionStringName": "default",
+        "PreloadProviders": [],
+        "RefleshTables": []
     },
     "AutoMapper": {
         "Assemblies": []
@@ -127,15 +145,13 @@
     "JwtAuth": {
         "Enabled": true,
         "DebugToken": null,
-        "SignSecret": "ABASDfasfwe@#45346dfg",
-        "DynamicSignSecret": false,
-        "EncryptSecret": "",
+        "SigningKey": "NoiA32QqU0elJ0FW5qgnILF7M3WpP7fS",
         "Issuer": "tinyfx.com",
         "Audience": "tinyfx.com",
         "ValidateLifetime": false,
         "ExpireMinutes": 30
     },
-    "IDGenerator": {
+    "SnowflakeId": {
         "Enabled": false,
         "UseRedis": true,
         "RedisConnectionStringName": "default",
@@ -143,22 +159,6 @@
         "DataCenterId": 0,
         "WorkerId": 0,
         "WorkerIdBits": 10
-    },
-    "Random": {
-        "DefaultProviderName": "default",
-        "Providers": {
-            "default": {
-                "RandomType": "TinyFx.Randoms.RNGReader,TinyFx",
-                "Options": {
-                    "Enabled": false,
-                    "RouletteSamplingCount": 100000,
-                    "ShuffleSamplingCount": 100000,
-                    "RouletteDeviation": 20,
-                    "ShuffleDeviation": 20,
-                    "CheckInterval": 10000
-                }
-            }
-        }
     },
     "Smtp": {
         "DefaultClientName": "default",
@@ -182,6 +182,45 @@
             }
         }
     },
+    "HttpClient": {
+        "Clients": {
+            "xxyy.banks": {
+                "BaseAddress": "http://192.168.1.121:9008",
+                "RequestHeaders": [],
+                "Timeout": 100000,
+                "RetryCount": 3,
+                "Settings": []
+            },
+            "xxyy.server": {
+                "BaseAddress": "http://192.168.1.121:9009",
+                "RequestHeaders": [],
+                "Timeout": 100000,
+                "RetryCount": 3,
+                "Settings": []
+            },
+            "xxyy.partners": {
+                "BaseAddress": "http://192.168.1.121:9010",
+                "RequestHeaders": [],
+                "Timeout": 100000,
+                "RetryCount": 3,
+                "Settings": []
+            },
+            "xxyy_partners": {
+                "BaseAddress": "http://192.168.1.121:9010",
+                "RequestHeaders": [],
+                "Timeout": 100000,
+                "RetryCount": 3,
+                "Settings": []
+            },
+            "xxyy_partners_https": {
+                "BaseAddress": "https://192.168.1.121:8443",
+                "RequestHeaders": [],
+                "Timeout": 100000,
+                "RetryCount": 3,
+                "Settings": []
+            }
+        }
+    },
     "AspNet": {
         "UseRequestBuffering": true,
         "UseApiActionResultFilter": true,
@@ -190,32 +229,22 @@
         "UseApiVersioning": true,
         "RequestPeriodSecond": 15,
         "RequestBytesPerSecond": 100,
+        "UseSyncNotify": true,
         "Swagger": {
             "Enabled": true,
             "UseSchemaFullName": false
         },
         "PathBase": null,
+        "HostingStartupAssemblies": [],
         "DynamicApiAssemblies": []
     },
-    "RequestLogging": {
-        "Enabled": true,
-        "LogLevel": "Debug",
-        "CustomeExceptionLevel": "Information",
-        "LogRequestHeaders": false,
-        "LogRequestBody": true,
-        "LogResponseBody": true,
-        "Urls": [
-            "*"
-        ]
-    },
     "SessionAndCookie": {
-        "UseSession": true,
         "UseCookieIdentity": true,
-        "ApplicationName": "xxyy",
+        "CookieTimeout": 3,
         "Domain": null,
-        "ConnectionStringName": "default",
-        "IdleTimeout": 180,
-        "SameSiteMode": "None"
+        "SameSiteMode": "Unspecified",
+        "UseSession": false,
+        "SessionTimeout": 20
     },
     "Cors": {
         "UseCors": {
@@ -232,7 +261,14 @@
             }
         }
     },
-    "ApiAccessFilter": {
+    "AccessSignFilter": {
+        "Enabled": true,
+        "AccessKeySeed": "vMjV3VFW3SyklQeQ",
+        "AccessKeyIndexes": "8, 11, 13, 12, 9, 7, 3, 14, 5, 2, 1, 0, 4, 6, 15, 10",
+        "BothKeySeed": "hNMmcYykGdCluYqe",
+        "BothKeyIndexes": "7, 1, 4, 15, 5, 2, 0, 8, 13, 14, 9, 12, 11, 10, 6, 3"
+    },
+    "AccessIpFilter": {
         "DefaultFilterName": "default",
         "FiltersProvider": "",
         "Filters": {
@@ -242,6 +278,17 @@
                 "AllowIps": ""
             }
         }
+    },
+    "RequestLogging": {
+        "Enabled": true,
+        "LogLevel": "Debug",
+        "CustomeExceptionLevel": "Information",
+        "LogRequestHeaders": false,
+        "LogRequestBody": true,
+        "LogResponseBody": false,
+        "Urls": [
+            "*"
+        ]
     },
     "ResponseCaching": {
         "Enabled": false,

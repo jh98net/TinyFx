@@ -216,35 +216,5 @@ namespace TinyFx
             app.MapGet("/dump", (DumpType? t) => AspNetHost.MapDumpPath(t ?? DumpType.WithHeap));
             return app;
         }
-
-        //public static WebApplication UseSerilogRequestLoggingEx(this WebApplication app)
-        //{
-        //    if (SerilogUtil.ExistSection && SerilogUtil.GetCustomProperty<bool>("RequestLogging"))
-        //    {
-        //        app.UseSerilogRequestLogging((opts =>
-        //        {
-        //            opts.GetLevel = (ctx, _, ex) =>
-        //            {
-        //                if (ex == null)
-        //                {
-        //                    if (ctx.Response.StatusCode <= 499)
-        //                    {
-        //                        return LogEventLevel.Information;
-        //                    }
-
-        //                    return LogEventLevel.Error;
-        //                }
-
-        //                return LogEventLevel.Error;
-        //            };
-        //            opts.EnrichDiagnosticContext = async (diagnostic, httpContext) =>
-        //            {
-        //                diagnostic.Set("request.body", await httpContext.Request.GetRawBodyAsync());
-        //                diagnostic.Set("response.body", await httpContext.Request.GetRawBodyAsync());
-        //            };
-        //        }));
-        //    }
-        //    return app;
-        //}
     }
 }

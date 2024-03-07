@@ -2,8 +2,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Refit;
 using Serilog;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using TinyFx.Configuration;
 using TinyFx.Extensions.Serilog;
@@ -26,6 +28,7 @@ namespace TinyFx
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
+
             if (Serilog.Log.Logger == null)
                 SerilogUtil.CreateBootstrapLogger();
             builder.ConfigureLogging(logger => logger.ClearProviders());
@@ -34,9 +37,9 @@ namespace TinyFx
             {
                 // DI
                 DIUtil.InitServices(services);
-                // ILoggerFactory
-                services.AddSingleton(new LoggerFactory().AddSerilog(Log.Logger));
-                services.AddScoped<ILogBuilder>((sp) =>
+                services.AddOptions();
+                services.AddSingleton(new LoggerFactory().AddSerilog(Log.Logger)); // ILoggerFactory
+                services.AddScoped<ILogBuilder>((sp) => // ILogBuilder
                 {
                     var ret = new LogBuilder("TINYFX_CONTEXT");
                     ret.IsContext = true;
@@ -47,7 +50,7 @@ namespace TinyFx
                 services.AddDistributedMemoryCache();
             });
 
-            // InitConfiguration
+            // Configuration
             ConfigUtil.ServiceInfo.HostIp = new HostIpGetter().Get();
             ConfigUtil.ServiceInfo.HostPort = new HostPortGetter().Get();
             var configHelper = new ConfigSourceBuilder(builder, envString);
