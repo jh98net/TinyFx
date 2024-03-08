@@ -22,7 +22,7 @@ namespace TinyFx.Hosting
         /// <param name="value"></param>
         /// <returns></returns>
         public static Task SetHostData<T>(string key, T value)
-            => GetRegisterService().SetData<T>(key, value);
+            => GetDataService().SetData<T>(key, value);
 
         /// <summary>
         /// 获取主机数据
@@ -31,12 +31,12 @@ namespace TinyFx.Hosting
         /// <param name="key"></param>
         /// <returns></returns>
         public static Task<CacheValue<T>> GetHostData<T>(string key)
-            => GetRegisterService().GetData<T>(key);
-        public static ITinyFxHostRegisterService GetRegisterService()
+            => GetDataService().GetData<T>(key);
+        public static ITinyFxHostDataService GetDataService()
         {
-            var ret = DIUtil.GetService<ITinyFxHostRegisterService>();
+            var ret = DIUtil.GetService<ITinyFxHostDataService>();
             if (ret == null)
-                throw new Exception("ITinyFxHostRegisterService没有注入服务，请配置Host.RegisterEnabled=true");
+                throw new Exception("ITinyFxHostDataService没有注入服务");
             return ret;
         }
         #endregion

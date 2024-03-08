@@ -24,11 +24,6 @@ namespace TinyFx.Configuration
         /// 主机检查间隔，默认10分钟
         /// </summary>
         public int HeathInterval { get; set; } = 600000;
-        /// <summary>
-        /// 主机数据有效期，默认心跳间隔3倍
-        /// ConfigUtil.IsDebugEnvironment=true时有效期为10分钟
-        /// </summary>
-        public int DataExpire { get; set; }
 
         /// <summary>
         /// 主机Timer最小Delay时间, 默认200最小100
@@ -45,8 +40,6 @@ namespace TinyFx.Configuration
 
             if (HeartbeatInterval <= 0)
                 HeartbeatInterval = 5000;
-            if (DataExpire <= 0)
-                DataExpire = HeartbeatInterval * 3;
             if (HeathInterval <= 0)
                 HeathInterval = 600000;
             if (TimerMinDelay <= 0)

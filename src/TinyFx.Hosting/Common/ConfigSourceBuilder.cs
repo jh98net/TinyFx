@@ -13,6 +13,7 @@ namespace TinyFx.Hosting.Common
 {
     internal class ConfigSourceBuilder
     {
+        public ConfigSourceFrom From { get; private set; } = ConfigSourceFrom.File;
         private IHostBuilder _builder { get; }
         public string EnvString { get; }
         private FileConfigBuilder _fileConfigBuilder = new();
@@ -37,12 +38,20 @@ namespace TinyFx.Hosting.Common
             // nacos
             ret = new NacosConfigBuilder().Build(sourceConfig, _builder);
             if (ret != null)
+            {
+                From = ConfigSourceFrom.Nacos;
                 return ret;
+            }
             //
 
             // file
             LogUtil.Info($"配置管理 [加载文件配置源] appsettings.{EnvString}.json");
             return sourceConfig;
         }
+    }
+    internal enum ConfigSourceFrom
+    {
+        File,
+        Nacos
     }
 }

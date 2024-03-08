@@ -339,7 +339,7 @@ namespace TinyFx.DbCaching
             await RedisUtil.PublishAsync(msg, redisConnectionStringName);
 
             // 获取服务信息
-            var registerService = DIUtil.GetService<ITinyFxHostRegisterService>();
+            var registerService = DIUtil.GetService<ITinyFxHostDataService>();
             if (registerService == null)
                 throw new Exception("获取所有host的DbCaching缓存检查数据异常，ITinyFxHostRegisterService不存在");
 

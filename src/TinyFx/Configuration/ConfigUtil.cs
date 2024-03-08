@@ -88,7 +88,12 @@ namespace TinyFx.Configuration
             Configuration = configuration;
             ClearCacheData();
 
-            ServiceInfo.ServiceId = $"{Project.ProjectId}:{ServiceInfo.ServiceGuid}";
+            if (!string.IsNullOrEmpty(ServiceInfo.HostIp) && ServiceInfo.HostPort > 0)
+            {
+                ServiceInfo.ServiceId = $"{Project.ProjectId}:{ServiceInfo.ServiceGuid}";
+            }
+            else
+                ServiceInfo.ServiceId = $"{Project.ProjectId}:{ServiceInfo.ServiceGuid}";
             ServiceInfo.ServiceUrl ??= Project.ServiceUrl;
         }
         private static void ClearCacheData()

@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace TinyFx.Hosting.Services
 {
+    /// <summary>
+    /// host生命周期服务
+    /// </summary>
     public interface ITinyFxHostLifetimeService
     {
         List<Func<Task>> StartingEvents { get; }

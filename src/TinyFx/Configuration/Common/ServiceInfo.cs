@@ -26,7 +26,7 @@ namespace TinyFx.Configuration
         /// <summary>
         /// 服务的唯一标识，默认: projectId|guid
         /// </summary>
-        public string ServiceId { get; set; }
+        public string ServiceId { get; internal set; }
         /// <summary>
         /// 服务外部访问地址
         /// </summary>

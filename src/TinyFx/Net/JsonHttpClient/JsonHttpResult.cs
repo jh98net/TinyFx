@@ -1,0 +1,50 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+using TinyFx.Logging;
+
+namespace TinyFx.Net
+{
+    public class JsonHttpResult<TResult>
+    {
+        #region Request & Response
+        public HttpMethod Method { get; set; }
+        public string RequestUrl { get; set; }
+        public HttpRequestHeaders RequestHeaders { get; set; }
+        public string RequestContent { get; set; }
+        public DateTime RequestUtcTime { get; set; }
+
+        public string ResponseContent { get; set; }
+        public HttpResponseHeaders ResponseHeaders { get; set; }
+        public HttpStatusCode ResponseStatusCode { get; set; }
+        public DateTime ResponseUtcTime { get; set; }
+        #endregion
+
+        public bool Success { get; set; }
+        public TResult Result { get; set; }
+        public Exception Exception { get; set; }
+
+        [JsonIgnore]
+        public JsonSerializerOptions JsonOptions { get; set; }
+        public TError GetErrorResult<TError>()
+        {
+            var ret = default(TError);
+            try
+            {
+                ret = SerializerUtil.DeserializeJson<TError>(ResponseContent, JsonOptions);
+            }
+            catch (Exception ex)
+            {
+                LogUtil.Error(ex, "JsonHttpResult.GetErrorResult()时反序列化出错");
+            }
+            return ret;
+        }
+    }
+}

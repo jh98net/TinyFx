@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Refit;
 using System.Buffers;
 using System.ComponentModel;
 using System.IO.Pipelines;
@@ -68,6 +69,13 @@ namespace Demo.WebAPI.Apis
         [AllowAnonymous]
         public async Task<string> Test1()
         {
+            var api = new NacosOpenApiService();
+            var rsp = await api.GetInstanceInfo();
+            await api.SetInstanceMetadata("aa", new Random().Next(1000).ToString());
+            var cc = await api.GetInstanceMetadata("aa");
+
+            var services = await api.GetServices();
+            //await api.SetInstanceEnabled();
 
             //var sourceKey = "80150420F2885ECC2867209112D4E745lobby";
             //var sourceData = $"1704188983585{sourceKey}";

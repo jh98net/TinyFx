@@ -1,5 +1,6 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TinyFx.Caching;
 using TinyFx.Configuration;
@@ -19,14 +20,20 @@ namespace TinyFx.Hosting.Services
             ServiceId = serviceId;
             Options.ConnectionStringName = connectionStringName;
             RedisKey = $"{RedisPrefixConst.HOSTS}:Data:{serviceId}";
-            _expireSpan = ConfigUtil.Host.DataExpire == 0 || ConfigUtil.IsDebugEnvironment
+            _expireSpan = ConfigUtil.IsDebugEnvironment
                 ? TimeSpan.FromMinutes(10) // 没有设置或Debug时10分钟
-                : TimeSpan.FromMilliseconds(ConfigUtil.Host.DataExpire);
+                : TimeSpan.FromMilliseconds(ConfigUtil.Host.HeathInterval * 3);
         }
 
         public async Task RegisterData()
         {
-            await SetAsync("ServiceId", ServiceId);
+            var dict = new Dictionary<string, object>();
+            dict.Add("ServiceId", ServiceId);
+            dict.Add("HostIp", ConfigUtil.ServiceInfo.HostIp);
+            dict.Add("HostPort", ConfigUtil.ServiceInfo.HostPort);
+            dict.Add("HostUrl", $"{ConfigUtil.ServiceInfo.HostIp}:{ConfigUtil.ServiceInfo.HostPort}");
+            dict.Add("RegisterDate", DateTime.UtcNow);
+            await SetAsync(dict);
             await ActiveData();
         }
         /// <summary>

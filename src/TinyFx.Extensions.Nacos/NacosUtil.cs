@@ -16,57 +16,27 @@ namespace TinyFx.Extensions.Nacos
         public static readonly NacosSection Section = new();
 
         /// <summary>
-        /// 获取指定nacos服务地址
+        /// 从nacos获取指定服务地址
         /// </summary>
-        /// <param name="clientName">配置文件Nacos:Clients:ServiceName</param>
+        /// <param name="serviceName">注册的服务名</param>
+        /// <param name="isWebsocket"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<string> GetClientServiceUrl(string clientName)
+        public static async Task<string> GetClientServiceUrl(string serviceName, bool isWebsocket = false)
         {
-            var element = GetClientElement(clientName);
-            var instance = await GetNamingService().SelectOneHealthyInstance(element.ServiceName, element.GroupName
-                , element.Clusters ?? new List<string>(), element.Subscribe);
+            var instance = await DIUtil.GetRequiredService<INacosNamingService>()
+                .SelectOneHealthyInstance(serviceName, Section.GroupName);
             if (instance == null)
-                throw new Exception($"NacosClient创建时没有找到有效的服务实例。name:{clientName}");
+                throw new Exception($"NacosUtil.GetClientServiceUrl时没有有效实例。serviceName:{serviceName}");
             var host = $"{instance.Ip}:{instance.Port}";
-            //var host = instance.ToInetAddr();
-            var ret = instance.Metadata.TryGetValue("secure", out _)
-                ? $"https://{host}"
-                : $"http://{host}";
+            var secure = instance.Metadata.TryGetValue("secure", out var value)
+                ? value.ToBoolean(false) : false;
+            string ret = null;
+            if (isWebsocket)
+                ret = secure ? $"wss://{host}" : $"ws://{host}";
+            else
+                ret = secure ? $"https://{host}" : $"http://{host}";
             return ret;
         }
-
-        /// <summary>
-        /// 获取指定nacos服务的HttpClient
-        /// </summary>
-        /// <param name="clientName">配置文件Nacos:Clients:ServiceName</param>
-        /// <returns></returns>
-        public static async Task<HttpClientEx> CreateHttpClient(string clientName)
-        {
-            var serviceUrl = await GetClientServiceUrl(clientName);
-            var config = new HttpClientConfig
-            {
-                Name = $"nacos_clients_{clientName}",
-                BaseAddress = serviceUrl
-            };
-            var ret = HttpClientExFactory.CreateClientEx(config);
-            return ret;
-        }
-
-        #region Utils
-        private static INacosNamingService _namingService;
-        private static INacosNamingService GetNamingService()
-        {
-            if (_namingService == null)
-                _namingService = DIUtil.GetRequiredService<INacosNamingService>();
-            return _namingService;
-        }
-        private static NacosClientElement GetClientElement(string name)
-        {
-            if (!Section.Enabled || Section.Clients == null || !Section.Clients.TryGetValue(name, out var ret))
-                throw new Exception($"Nacos配置文件没找到ClientElement。name:{name}");
-            return ret;
-        }
-        #endregion
     }
 }

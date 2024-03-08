@@ -89,7 +89,7 @@ namespace TinyFx
         /// <param name="totalRecord">总记录数</param>
         /// <param name="pageSize">页大小</param>
         /// <returns></returns>
-        public static long GetPageCount(long totalRecord, long pageSize)
+        public static int GetPageCount(int totalRecord, int pageSize)
             => (totalRecord % pageSize == 0) ? totalRecord / pageSize : totalRecord / pageSize + 1;
         #endregion
 

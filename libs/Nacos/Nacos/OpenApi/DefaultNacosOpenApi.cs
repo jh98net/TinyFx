@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Net.Http;
+    using System.Net.Http.Json;
     using System.Threading.Tasks;
 
     public class DefaultNacosOpenApi : INacosOpenApi
@@ -70,7 +71,6 @@
         public async Task<NacosMetrics> GetMetricsAsync(bool onlyStatus)
         {
             var client = _httpClientFactory.CreateClient(Constants.HttpClientName);
-
             var req = new HttpRequestMessage(HttpMethod.Get, $"{_options.ServerAddresses.First().TrimEnd('/')}/{_metricsPath}?onlyStatus={onlyStatus.ToString().ToLower()}");
 
             var resp = await client.SendAsync(req).ConfigureAwait(false);

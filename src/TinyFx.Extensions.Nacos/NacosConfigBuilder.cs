@@ -18,6 +18,7 @@ using TinyFx.Configuration;
 using TinyFx.Logging;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 using static System.Collections.Specialized.BitVector32;
+using Nacos.V2;
 
 namespace TinyFx.Extensions.Nacos
 {
@@ -38,9 +39,9 @@ namespace TinyFx.Extensions.Nacos
             section = NacosUtil.Section;
 
             var builder = new ConfigurationBuilder();
+            builder.AddEnvironmentVariables();
             builder.AddNacosV2Configuration(nacosConfig);
             builder.AddConfiguration(sourceConfig, false);
-            builder.AddEnvironmentVariables();
 
             var ret = builder.Build();
             SetReturnConfig(section, ret);

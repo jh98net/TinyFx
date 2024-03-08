@@ -101,7 +101,7 @@ namespace TinyFx
                 .AddHttpContextAccessor()       // .AddOAuth();      // IHttpContextAccessor
                 .AddAccessVerifyEx()            // AccessVerify
                 .AddSyncNotifyEx()              // SyncNotify
-                
+
                 .AddNacosAspNetEx();            // Nacos
         }
         public static IServiceCollection AddRequestLoggingEx(this IServiceCollection services)
@@ -123,6 +123,9 @@ namespace TinyFx
                     throw new Exception("配置Nacos:ServiceName不能为空且必须与ProjectId相同");
                 if (section.ServiceName != ConfigUtil.Project.ProjectId)
                     LogUtil.Warning($"Nacose ServiceName 和 ProjectId 不相同。ServiceName: {section.ServiceName} ProjectId: {ConfigUtil.Project.ProjectId}");
+
+                ConfigUtil.Configuration["Nacos:Metadata:tinyfx.SERVICE_ID"] = ConfigUtil.ServiceInfo.ServiceId;
+                ConfigUtil.Configuration["Nacos:Metadata:tinyfx.REGISTER_DATE"] = DateTime.UtcNow.ToFormatString();
                 services.AddNacosAspNet(ConfigUtil.Configuration, "Nacos");
             }
             return services;

@@ -2,17 +2,23 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Polly;
+using Polly.Extensions.Http;
+using Polly.Timeout;
 using Refit;
 using Serilog;
 using System;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Threading;
 using TinyFx.Configuration;
+using TinyFx.Extensions.Nacos;
 using TinyFx.Extensions.Serilog;
 using TinyFx.Hosting;
 using TinyFx.Hosting.Common;
 using TinyFx.Hosting.Services;
 using TinyFx.Logging;
+using TinyFx.Net;
 
 namespace TinyFx
 {
@@ -28,11 +34,11 @@ namespace TinyFx
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
-
+            
+            // Logger
             if (Serilog.Log.Logger == null)
                 SerilogUtil.CreateBootstrapLogger();
             builder.ConfigureLogging(logger => logger.ClearProviders());
-            //
             builder.ConfigureServices((context, services) =>
             {
                 // DI
@@ -70,8 +76,56 @@ namespace TinyFx
             {
                 services.AddSingleton<ITinyFxHostLifetimeService>(HostingUtil.LifetimeService);
                 services.AddSingleton<ITinyFxHostTimerService>(new DefaultTinyFxHostTimerService());
-                services.AddSingleton<ITinyFxHostRegisterService>(new RedisTinyFxHostRegisterService());
+                services.AddSingleton<ITinyFxHostDataService>(new RedisHostDataService());
+                services.AddSingleton<ITinyFxHostRegisterService>(new RedisHostRegisterService());
+                //switch (configHelper.From)
+                //{
+                //    case ConfigSourceFrom.File:
+                //        services.AddSingleton<ITinyFxHostDataService>(new RedisHostDataService());
+                //        services.AddSingleton<ITinyFxHostRegisterService>(new RedisHostRegisterService());
+                //        break;
+                //    case ConfigSourceFrom.Nacos:
+                //        services.AddSingleton<ITinyFxHostDataService>(new NacosHostDataService());
+                //        services.AddSingleton<ITinyFxHostRegisterService>(new NacosHostRegisterService());
+                //        break;
+                //}
             });
+
+            // HttpClient
+            builder.ConfigureServices(services =>
+            {
+                var clientSection = ConfigUtil.GetSection<JsonHttpClientSection>();
+                if (clientSection == null || clientSection.Clients.Count == 0)
+                    return;
+                foreach (var client in clientSection.Clients)
+                {
+                    var builder = services.AddHttpClient(client.Key, c =>
+                    {
+                        if (!string.IsNullOrEmpty(client.Value.BaseAddress))
+                            c.BaseAddress = new Uri(client.Value.BaseAddress);
+                        if (client.Value.RequestHeaders.Count > 0)
+                        {
+                            foreach (var header in client.Value.RequestHeaders)
+                            {
+                                c.DefaultRequestHeaders.Add(header.Key, header.Value);
+                            }
+                        }
+                        if (client.Value.Timeout > 0)
+                            c.Timeout = TimeSpan.FromSeconds(client.Value.Timeout);
+                    }).SetHandlerLifetime(TimeSpan.FromMinutes(5));
+
+                    if (client.Value.Retry > 0)
+                    {
+                        builder.AddPolicyHandler(HttpPolicyExtensions
+                            .HandleTransientHttpError()
+                            .Or<TimeoutRejectedException>() // 若超时则抛出此异常
+                            .WaitAndRetryAsync(client.Value.Retry, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt))));
+                        builder.AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(10));
+
+                    }
+                }
+            });
+
             LogUtil.Info("配置 => [TinyFx]");
             return builder;
         }
