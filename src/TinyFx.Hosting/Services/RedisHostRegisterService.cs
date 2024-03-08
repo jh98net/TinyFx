@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TinyFx.Caching;
 using TinyFx.Configuration;
 using TinyFx.Logging;
+using TinyFx.Net;
 
 namespace TinyFx.Hosting.Services
 {
@@ -43,6 +44,16 @@ namespace TinyFx.Hosting.Services
         public async Task Health()
         {
             await _healthDCache.HealthHosts();
+        }
+
+        public async Task<string> GetServiceUrl(string serviceName, bool isWebsocket = false)
+        {
+            var section = ConfigUtil.GetSection<JsonHttpClientSection>();
+            if (section?.Clients?.TryGetValue(serviceName, out var element) ?? false)
+            {
+                return element.BaseAddress;
+            }
+            return null;
         }
     }
 }

@@ -60,16 +60,7 @@
     "Port": 0, // 注册服务的端口。0表示启动服务时的端口
     "Weight": 100, // 负载均衡权重
     "Ephemeral": true, //如果实例是短暂的。默认值为 true
-    "Metadata": {},
-
-    "Clients": {
-      "Default": {
-        "ServiceName": "demo_app", // 服务名称
-        "GroupName": "DEFAULT_GROUP", // 配置组名
-        "Clusters": [],
-        "Subscribe": true //是否广播服务变更到本地
-      }
-    }
+    "Metadata": {} //元数据
   },
 
   // #region ******** Common ********

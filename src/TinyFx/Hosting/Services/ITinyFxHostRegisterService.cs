@@ -17,5 +17,7 @@ namespace TinyFx.Hosting.Services
         Task Unregister();
         Task Heartbeat();
         Task Health();
+
+        Task<string> GetServiceUrl(string serviceName, bool isWebsocket = false);
     }
 }

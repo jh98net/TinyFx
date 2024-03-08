@@ -90,7 +90,7 @@ namespace TinyFx.Configuration
 
             if (!string.IsNullOrEmpty(ServiceInfo.HostIp) && ServiceInfo.HostPort > 0)
             {
-                ServiceInfo.ServiceId = $"{Project.ProjectId}:{ServiceInfo.ServiceGuid}";
+                ServiceInfo.ServiceId = $"{Project.ProjectId}:{ServiceInfo.HostIp}_{ServiceInfo.HostPort}";
             }
             else
                 ServiceInfo.ServiceId = $"{Project.ProjectId}:{ServiceInfo.ServiceGuid}";
