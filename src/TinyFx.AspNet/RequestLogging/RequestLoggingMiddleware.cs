@@ -47,7 +47,7 @@ namespace TinyFx.AspNet.RequestLogging
             logger.AddField("Request.Method", context.Request.Method);
             logger.AddField("Request.Url", context.Request.Path.ToString());
             logger.AddField("Request.TraceId", context.GetTraceId());
-            logger.AddField("Request.StartTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+            logger.AddField("Request.StartTime", DateTime.UtcNow.UtcToBeijingDateTime().ToFormatString(true));
             if (logger.LogRequestHeaders)
                 logger.AddField("Request.Headers", context.Request.Headers.ToDictionary(x => x.Key, v => string.Join(";", v.Value.ToList())));
             if (logger.LogRequestBody)
@@ -58,7 +58,7 @@ namespace TinyFx.AspNet.RequestLogging
             logger.AddField("Request.Referer", AspNetUtil.GetRefererUrl());
             logger.AddField("Request.RemoteIp", AspNetUtil.GetRemoteIpString());
             logger.AddField("Request.UserId", context?.User?.Identity?.Name);
-            logger.AddField("Request.EndTime", DateTimeOffset.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+            //logger.AddField("Request.EndTime", DateTime.UtcNow.UtcToBeijingDateTime().ToFormatString(true));
             stopwatch.Stop();
             logger.AddField("Request.ElaspedTime", stopwatch.ElapsedMilliseconds);
 

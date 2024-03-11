@@ -262,7 +262,7 @@
         }
     },
     "AccessSignFilter": {
-        "Enabled": true,
+        "Enabled": false,
         "AccessKeySeed": "vMjV3VFW3SyklQeQ",
         "AccessKeyIndexes": "8, 11, 13, 12, 9, 7, 3, 14, 5, 2, 1, 0, 4, 6, 15, 10",
         "BothKeySeed": "hNMmcYykGdCluYqe",

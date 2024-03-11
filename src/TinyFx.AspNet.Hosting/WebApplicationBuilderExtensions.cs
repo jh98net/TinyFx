@@ -126,7 +126,7 @@ namespace TinyFx
                     LogUtil.Warning($"Nacose ServiceName 和 ProjectId 不相同。ServiceName: {section.ServiceName} ProjectId: {ConfigUtil.Project.ProjectId}");
 
                 ConfigUtil.Configuration["Nacos:Metadata:tinyfx.SERVICE_ID"] = ConfigUtil.ServiceInfo.ServiceId;
-                ConfigUtil.Configuration["Nacos:Metadata:tinyfx.REGISTER_DATE"] = DateTime.UtcNow.ToFormatString();
+                ConfigUtil.Configuration["Nacos:Metadata:tinyfx.REGISTER_DATE"] = DateTime.Now.ToFormatString(true);
                 services.AddNacosAspNet(ConfigUtil.Configuration, "Nacos");
             }
             return services;

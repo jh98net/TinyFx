@@ -9,6 +9,8 @@ namespace TinyFx
 {
     public static class DateTimeUtil
     {
+        public static readonly TimeZoneInfo BeijingTZ = TimeZoneInfo.CreateCustomTimeZone("GMT+8", TimeSpan.FromHours(8), "China Standard Time", "(UTC+8)China Standard Time");
+
         #region 日期
 
         /// <summary>
@@ -221,12 +223,24 @@ namespace TinyFx
         #endregion
 
         /// <summary>
-        /// 日期字符串标准格式 yyyy-MM-dd HH:mm:ss
+        /// 日期字符串标准格式 yyyy-MM-dd HH:mm:ss 或yyyy-MM-ddTHH:mm:sszzz
         /// </summary>
         /// <param name="dateTime"></param>
+        /// <param name="isIso"></param>
         /// <returns></returns>
-        public static string ToFormatString(this DateTime dateTime)
-            => dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+        public static string ToFormatString(this DateTime dateTime, bool isIso = false)
+            => isIso 
+            ? dateTime.ToString("yyyy-MM-dd'T'HH:mm:sszzz") 
+            : dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+
+        
+        /// <summary>
+        /// Utc时间转北京时间
+        /// </summary>
+        /// <param name="utcTime"></param>
+        /// <returns></returns>
+        public static DateTime UtcToBeijingDateTime(this DateTime utcTime)
+            => TimeZoneInfo.ConvertTimeFromUtc(utcTime, BeijingTZ);
 
         #region 星座
         /// <summary>

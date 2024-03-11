@@ -32,9 +32,9 @@ namespace TinyFx.Hosting.Services
             dict.Add("HostIp", ConfigUtil.ServiceInfo.HostIp);
             dict.Add("HostPort", ConfigUtil.ServiceInfo.HostPort);
             dict.Add("HostUrl", $"{ConfigUtil.ServiceInfo.HostIp}:{ConfigUtil.ServiceInfo.HostPort}");
-            dict.Add("RegisterDate", DateTime.UtcNow);
+            dict.Add("RegisterDate", DateTime.UtcNow.UtcToBeijingDateTime().ToFormatString(true));
             await SetAsync(dict);
-            await ActiveData();
+            await KeyExpireAsync(_expireSpan);
         }
         /// <summary>
         /// 激活服务
@@ -42,7 +42,7 @@ namespace TinyFx.Hosting.Services
         /// <returns></returns>
         public async Task ActiveData()
         {
-            await SetAsync("ActiveDate", DateTime.UtcNow.ToFormatString());
+            await SetAsync("ActiveDate", DateTime.UtcNow.UtcToBeijingDateTime().ToFormatString(true));
             await KeyExpireAsync(_expireSpan);
         }
 
