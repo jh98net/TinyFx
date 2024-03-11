@@ -339,11 +339,11 @@ namespace TinyFx.DbCaching
             await RedisUtil.PublishAsync(msg, redisConnectionStringName);
 
             // 获取服务信息
-            var registerService = DIUtil.GetService<ITinyFxHostDataService>();
+            var registerService = DIUtil.GetService<ITinyFxHostRegisterService>();
             if (registerService == null)
                 throw new Exception("获取所有host的DbCaching缓存检查数据异常，ITinyFxHostRegisterService不存在");
 
-            var serviceIds = await registerService.GetHosts(redisConnectionStringName);
+            var serviceIds = await registerService.GetAllServiceIds(redisConnectionStringName);
             var idQueue = new Queue<(string serviceId, long waitTime)>();
             serviceIds.ForEach(x => idQueue.Enqueue((x, 0)));
             var maxTime = timeoutSeconds * 1000;
@@ -365,14 +365,15 @@ namespace TinyFx.DbCaching
                     });
                     continue;
                 }
-                var traceId = await registerService.GetHostData<string>(serviceId, DB_CACHING_CHECK_KEY, redisConnectionStringName);
+                var traceId = await registerService.GetHostData<string>(DB_CACHING_CHECK_KEY
+                    , serviceId, redisConnectionStringName);
                 if (!traceId.HasValue || traceId.Value != msg.TraceId)
                 {
                     idQueue.Enqueue((serviceId, waitTime));
                     continue;
                 }
-                var serviceItems = await registerService.GetHostData<List<DbCacheCheckServiceItem>>(serviceId
-                    , DB_CACHING_CHECK_DATA, redisConnectionStringName);
+                var serviceItems = await registerService.GetHostData<List<DbCacheCheckServiceItem>>(DB_CACHING_CHECK_DATA
+                    , serviceId, redisConnectionStringName);
 
                 var result = new DbCacheCheckServiceCache();
                 result.ServiceId = serviceId;

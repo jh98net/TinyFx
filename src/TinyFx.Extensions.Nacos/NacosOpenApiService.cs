@@ -24,8 +24,8 @@ namespace TinyFx.Extensions.Nacos
         public NacosOpenApiService()
         {
             _namingService = DIUtil.GetService<INacosNamingService>();
-            _section = NacosUtil.Section;
-            _serverUrl = NacosUtil.Section.ServerAddresses.First();
+            _section = DIUtil.GetService<NacosSection>();
+            _serverUrl = _section.ServerAddresses.First();
         }
 
         private JsonHttpClient GetClient()

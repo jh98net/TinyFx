@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace TinyFx.Hosting
 {
     public static class HostingUtil
     {
-        #region ITinyFxHostDataService
+        #region ITinyFxHostRegisterService
         /// <summary>
         /// 设置主机数据
         /// </summary>
@@ -22,7 +23,7 @@ namespace TinyFx.Hosting
         /// <param name="value"></param>
         /// <returns></returns>
         public static Task SetHostData<T>(string key, T value)
-            => GetDataService().SetData<T>(key, value);
+            => GetDataService().SetHostData<T>(key, value);
 
         /// <summary>
         /// 获取主机数据
@@ -31,12 +32,12 @@ namespace TinyFx.Hosting
         /// <param name="key"></param>
         /// <returns></returns>
         public static Task<CacheValue<T>> GetHostData<T>(string key)
-            => GetDataService().GetData<T>(key);
-        public static ITinyFxHostDataService GetDataService()
+            => GetDataService().GetHostData<T>(key);
+        public static ITinyFxHostRegisterService GetDataService()
         {
-            var ret = DIUtil.GetService<ITinyFxHostDataService>();
+            var ret = DIUtil.GetService<ITinyFxHostRegisterService>();
             if (ret == null)
-                throw new Exception("ITinyFxHostDataService没有注入服务");
+                throw new Exception("ITinyFxHostRegisterService没有注入服务");
             return ret;
         }
         #endregion
@@ -129,6 +130,20 @@ namespace TinyFx.Hosting
             //    throw new Exception("ITinyFxHostLifetimeService没有注入服务，请在配置服务ConfigureServices()里调用");
             //return ret;
         }
+        #endregion
+
+        #region ITinyFxHostMicroService
+        public static async Task<List<string>> GetAllServiceNames()
+            => await DIUtil.GetRequiredService<ITinyFxHostMicroService>().GetAllServiceNames();
+
+        /// <summary>
+        /// 获取指定服务地址
+        /// </summary>
+        /// <param name="serviceName"></param>
+        /// <param name="isWebsocket"></param>
+        /// <returns></returns>
+        public static Task<string> SelectOneServiceUrl(string serviceName, bool isWebsocket = false)
+            => DIUtil.GetRequiredService<ITinyFxHostMicroService>().SelectOneServiceUrl(serviceName, isWebsocket);
         #endregion
     }
 }

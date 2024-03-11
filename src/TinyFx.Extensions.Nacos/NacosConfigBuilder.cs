@@ -35,8 +35,7 @@ namespace TinyFx.Extensions.Nacos
                 return null;
 
             SetNacosConfig(section, nacosConfig);
-            NacosUtil.Section.Bind(nacosConfig);
-            section = NacosUtil.Section;
+            section.Bind(nacosConfig);
 
             var builder = new ConfigurationBuilder();
             builder.AddEnvironmentVariables();
@@ -48,6 +47,7 @@ namespace TinyFx.Extensions.Nacos
 
             hostBuilder.ConfigureServices(services =>
             {
+                services.AddSingleton(section);
                 services.AddHttpClient(NacosOpenApiService.HTTP_CLIENT_NAME)
                     .ConfigurePrimaryHttpMessageHandler(() =>
                         new HttpClientHandler()

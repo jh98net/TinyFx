@@ -12,12 +12,12 @@ namespace TinyFx.Hosting.Services
     /// </summary>
     public interface ITinyFxHostRegisterService
     {
-        bool UseHeartbeat { get; }
         Task Register();
         Task Unregister();
         Task Heartbeat();
         Task Health();
-
-        Task<string> GetServiceUrl(string serviceName, bool isWebsocket = false);
+        Task<List<string>> GetAllServiceIds(string connectionStringName = null);
+        Task SetHostData<T>(string key, T value, string serviceId = null, string connectionStringName = null);
+        Task<CacheValue<T>> GetHostData<T>(string key, string serviceId = null, string connectionStringName = null);
     }
 }

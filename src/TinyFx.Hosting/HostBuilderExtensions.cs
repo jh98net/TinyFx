@@ -76,19 +76,16 @@ namespace TinyFx
             {
                 services.AddSingleton<ITinyFxHostLifetimeService>(HostingUtil.LifetimeService);
                 services.AddSingleton<ITinyFxHostTimerService>(new DefaultTinyFxHostTimerService());
-                services.AddSingleton<ITinyFxHostDataService>(new RedisHostDataService());
                 services.AddSingleton<ITinyFxHostRegisterService>(new RedisHostRegisterService());
-                //switch (configHelper.From)
-                //{
-                //    case ConfigSourceFrom.File:
-                //        services.AddSingleton<ITinyFxHostDataService>(new RedisHostDataService());
-                //        services.AddSingleton<ITinyFxHostRegisterService>(new RedisHostRegisterService());
-                //        break;
-                //    case ConfigSourceFrom.Nacos:
-                //        services.AddSingleton<ITinyFxHostDataService>(new NacosHostDataService());
-                //        services.AddSingleton<ITinyFxHostRegisterService>(new NacosHostRegisterService());
-                //        break;
-                //}
+                switch (configHelper.From)
+                {
+                    case ConfigSourceFrom.File:
+                        services.AddSingleton<ITinyFxHostMicroService>(new RedisHostMicroService());
+                        break;
+                    case ConfigSourceFrom.Nacos:
+                        services.AddSingleton<ITinyFxHostMicroService>(new NacosHostMicroService());
+                        break;
+                }
             });
 
             // HttpClient

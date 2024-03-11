@@ -27,6 +27,7 @@ using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;
 using TinyFx.Reflection;
 using TinyFx.Security;
+using static System.Collections.Specialized.BitVector32;
 using static System.Net.WebRequestMethods;
 
 namespace TinyFx
@@ -116,7 +117,7 @@ namespace TinyFx
         }
         public static IServiceCollection AddNacosAspNetEx(this IServiceCollection services)
         {
-            var section = NacosUtil.Section;
+            var section = DIUtil.GetService<NacosSection>();
             if (section != null && section.Enabled)
             {
                 if (string.IsNullOrEmpty(section.ServiceName))

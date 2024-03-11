@@ -38,18 +38,14 @@ namespace TinyFx.Configuration
         {
             base.Bind(configuration);
 
-            if (HeartbeatInterval <= 0)
+            if (HeartbeatInterval <= 1000)
                 HeartbeatInterval = 5000;
-            if (HeathInterval <= 0)
+            if (HeathInterval <= 60000)
                 HeathInterval = 600000;
-            if (TimerMinDelay <= 0)
+            if (TimerMinDelay <= 100)
                 TimerMinDelay = 200;
-            else
-                TimerMinDelay = Math.Max(TimerMinDelay, 100);
-            if (TimerWaitTimeout <= 0)
+            if (TimerWaitTimeout <= 5000)
                 TimerWaitTimeout = 20000;
-            else
-                TimerWaitTimeout = Math.Max(TimerWaitTimeout, 5000);
         }
     }
 }

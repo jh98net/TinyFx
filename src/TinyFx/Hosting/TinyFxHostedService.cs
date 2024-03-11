@@ -44,7 +44,7 @@ namespace TinyFx.Hosting
             if (ConfigUtil.Host.RegisterEnabled && _registerService != null)
             {
                 lifetime.ApplicationStarted.Register(async () => await _registerService.Register());
-                if (_timerService != null && _registerService.UseHeartbeat)
+                if (_timerService != null)
                 {
                     if (ConfigUtil.Host.HeartbeatInterval > 0)
                     {
@@ -90,9 +90,9 @@ namespace TinyFx.Hosting
 
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
+            await _timerService?.StopAsync();
             if (ConfigUtil.Host.RegisterEnabled)
                 await _registerService?.Unregister();
-            await _timerService?.StopAsync();
             foreach (var item in _lifetimeService?.StoppingEvents)
             {
                 await item.Invoke();
