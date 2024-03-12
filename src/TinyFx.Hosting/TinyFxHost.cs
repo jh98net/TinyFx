@@ -1,16 +1,20 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Nacos.V2.Naming.Dtos;
 using Serilog;
 using Serilog.Events;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx;
+using TinyFx.Caching;
 using TinyFx.Configuration;
 using TinyFx.Extensions.Serilog;
+using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Hosting;
 using TinyFx.Hosting.Services;
 using TinyFx.Logging;
@@ -20,7 +24,7 @@ namespace TinyFx
 {
     public static class TinyFxHost
     {
-        #region Host
+        #region Host启动
         /// <summary>
         /// 创建默认Host并UseTinyFx
         /// </summary>

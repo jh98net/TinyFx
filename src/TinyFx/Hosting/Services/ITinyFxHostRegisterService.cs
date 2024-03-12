@@ -16,8 +16,5 @@ namespace TinyFx.Hosting.Services
         Task Unregister();
         Task Heartbeat();
         Task Health();
-        Task<List<string>> GetAllServiceIds(string connectionStringName = null);
-        Task SetHostData<T>(string key, T value, string serviceId = null, string connectionStringName = null);
-        Task<CacheValue<T>> GetHostData<T>(string key, string serviceId = null, string connectionStringName = null);
     }
 }

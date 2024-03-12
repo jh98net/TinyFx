@@ -38,7 +38,7 @@ namespace TinyFx.DbCaching
         public async Task<DbTableRedisData> SetRedisValues()
         {
             // 避免并发
-            using var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{_cacheKey}", 180);
+            using var redLock = await RedisUtil.LockAsync($"__DbCacheDataDCache:{_cacheKey}", 180);
             if (!redLock.IsLocked)
             {
                 redLock.Release();
@@ -91,7 +91,7 @@ namespace TinyFx.DbCaching
             };
 
             // 避免并发
-            using var redLock = await RedisUtil.LockAsync($"DbCacheDataDCache:{_cacheKey}", 180);
+            using var redLock = await RedisUtil.LockAsync($"__DbCacheDataDCache:{_cacheKey}", 180);
             if (!redLock.IsLocked)
             {
                 redLock.Release();

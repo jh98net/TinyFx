@@ -14,31 +14,44 @@ namespace TinyFx.Hosting
 {
     public static class HostingUtil
     {
-        #region ITinyFxHostRegisterService
+        #region ITinyFxHostLifetimeService
         /// <summary>
-        /// 设置主机数据
+        /// 注册Host启动中事件
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static Task SetHostData<T>(string key, T value)
-            => GetDataService().SetHostData<T>(key, value);
+        /// <param name="func"></param>
+        public static void RegisterStarting(Func<Task> func)
+            => GetLifetimeService().RegisterStarting(func);
+        /// <summary>
+        /// 注册Host启动完毕事件
+        /// </summary>
+        /// <param name="func"></param>
+        public static void RegisterStarted(Func<Task> func)
+            => GetLifetimeService().RegisterStarted(func);
+        /// <summary>
+        /// 注册Host准备停止事件
+        /// </summary>
+        /// <param name="func"></param>
+        public static void RegisterStopping(Func<Task> func)
+            => GetLifetimeService().RegisterStopping(func);
+        /// <summary>
+        /// 注册Host已经停止事件
+        /// </summary>
+        /// <param name="func"></param>
+        public static void RegisterStopped(Func<Task> func)
+            => GetLifetimeService().RegisterStopped(func);
 
+        public static readonly DefaultTinyFxHostLifetimeService LifetimeService = new();
         /// <summary>
-        /// 获取主机数据
+        /// 获取Host生命周期事件注册服务
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
         /// <returns></returns>
-        public static Task<CacheValue<T>> GetHostData<T>(string key)
-            => GetDataService().GetHostData<T>(key);
-        public static ITinyFxHostRegisterService GetDataService()
+        private static ITinyFxHostLifetimeService GetLifetimeService()
         {
-            var ret = DIUtil.GetService<ITinyFxHostRegisterService>();
-            if (ret == null)
-                throw new Exception("ITinyFxHostRegisterService没有注入服务");
-            return ret;
+            return LifetimeService;
+            //var ret = DIUtil.GetService<ITinyFxHostLifetimeService>();
+            //if (ret == null)
+            //    throw new Exception("ITinyFxHostLifetimeService没有注入服务，请在配置服务ConfigureServices()里调用");
+            //return ret;
         }
         #endregion
 
@@ -91,47 +104,6 @@ namespace TinyFx.Hosting
         }
         #endregion
 
-        #region ITinyFxHostLifetimeService
-        /// <summary>
-        /// 注册Host启动中事件
-        /// </summary>
-        /// <param name="func"></param>
-        public static void RegisterStarting(Func<Task> func)
-            => GetLifetimeService().RegisterStarting(func);
-        /// <summary>
-        /// 注册Host启动完毕事件
-        /// </summary>
-        /// <param name="func"></param>
-        public static void RegisterStarted(Func<Task> func)
-            => GetLifetimeService().RegisterStarted(func);
-        /// <summary>
-        /// 注册Host准备停止事件
-        /// </summary>
-        /// <param name="func"></param>
-        public static void RegisterStopping(Func<Task> func)
-            => GetLifetimeService().RegisterStopping(func);
-        /// <summary>
-        /// 注册Host已经停止事件
-        /// </summary>
-        /// <param name="func"></param>
-        public static void RegisterStopped(Func<Task> func)
-            => GetLifetimeService().RegisterStopped(func);
-
-        public static readonly DefaultTinyFxHostLifetimeService LifetimeService = new();
-        /// <summary>
-        /// 获取Host生命周期事件注册服务
-        /// </summary>
-        /// <returns></returns>
-        private static ITinyFxHostLifetimeService GetLifetimeService()
-        {
-            return LifetimeService;
-            //var ret = DIUtil.GetService<ITinyFxHostLifetimeService>();
-            //if (ret == null)
-            //    throw new Exception("ITinyFxHostLifetimeService没有注入服务，请在配置服务ConfigureServices()里调用");
-            //return ret;
-        }
-        #endregion
-
         #region ITinyFxHostMicroService
         public static async Task<List<string>> GetAllServiceNames()
             => await DIUtil.GetRequiredService<ITinyFxHostMicroService>().GetAllServiceNames();
@@ -144,6 +116,34 @@ namespace TinyFx.Hosting
         /// <returns></returns>
         public static Task<string> SelectOneServiceUrl(string serviceName, bool isWebsocket = false)
             => DIUtil.GetRequiredService<ITinyFxHostMicroService>().SelectOneServiceUrl(serviceName, isWebsocket);
+        #endregion
+
+        #region ITinyFxHostRegDataService
+        /// <summary>
+        /// 设置主机数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static Task SetHostData<T>(string key, T value)
+            => GetDataService().SetHostData<T>(key, value);
+
+        /// <summary>
+        /// 获取主机数据
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static Task<CacheValue<T>> GetHostData<T>(string key)
+            => GetDataService().GetHostData<T>(key);
+        public static ITinyFxHostRegDataService GetDataService()
+        {
+            var ret = DIUtil.GetService<ITinyFxHostRegDataService>();
+            if (ret == null)
+                throw new Exception("ITinyFxHostRegDataService没有注入服务");
+            return ret;
+        }
         #endregion
     }
 }

@@ -39,7 +39,7 @@ namespace TinyFx.SnowflakeId.Common
 
         public async Task<int> GetNextWorkId()
         {
-            using (var redlock = await RedisUtil.LockAsync("IDGeneratorWorkerId", 20))
+            using (var redlock = await RedisUtil.LockAsync("__IDGeneratorWorkerId", 20))
             {
                 if (!redlock.IsLocked)
                 {

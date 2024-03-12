@@ -77,6 +77,7 @@ namespace TinyFx
                 services.AddSingleton<ITinyFxHostLifetimeService>(HostingUtil.LifetimeService);
                 services.AddSingleton<ITinyFxHostTimerService>(new DefaultTinyFxHostTimerService());
                 services.AddSingleton<ITinyFxHostRegisterService>(new RedisHostRegisterService());
+                services.AddSingleton<ITinyFxHostRegDataService>(new RedisHostRegDataService());
                 switch (configHelper.From)
                 {
                     case ConfigSourceFrom.File:

@@ -1,4 +1,5 @@
 ﻿using Nacos.V2.Naming.Dtos;
+using SqlSugar;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,17 +39,30 @@ namespace TinyFx.Hosting.Services
             _dataDCache = new TinyFxHostDataDCache(ServiceId);
         }
 
+        #region 注册
         public async Task Register()
         {
-            await _dataDCache.RegisterData();
-            await _idsDCache.AddAsync(ServiceId);
-            await _namesDCache.AddAsync(ServiceName);
+            using (var redLock = await GetRedLock())
+            {
+                await _dataDCache.RegisterData();
+                await _idsDCache.AddAsync(ServiceId);
+                await _namesDCache.AddAsync(ServiceName);
+            }
             LogUtil.Info($"启动 => 注册Host[{GetType().Name}] ServerId:{ServiceId}");
         }
         public async Task Unregister()
         {
-            await _idsDCache.RemoveAsync(ServiceId);
-            await _dataDCache.DeleteData();
+            using (var redLock = await GetRedLock())
+            {
+                await _dataDCache.DeleteData();
+                await _idsDCache.RemoveAsync(ServiceId);
+                var count = await _idsDCache.GetLengthAsync();
+                if (count == 0)
+                {
+                    await _idsDCache.KeyDeleteAsync();
+                    await _namesDCache.RemoveAsync(ServiceName);
+                }
+            }
             LogUtil.Info($"停止 => 注销Host[{GetType().Name}] ServerId:{ServiceId}");
         }
 
@@ -60,11 +74,20 @@ namespace TinyFx.Hosting.Services
         public async Task Health()
         {
             // 检查
-            var lastTs = await _healthDCache.GetOrDefaultAsync(0);
-            var utcTs = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
-            if (utcTs - lastTs < HEALTH_INTERVAL)
-                return;
-            await _healthDCache.SetAsync(utcTs);
+            using (var redLock = await RedisUtil.LockAsync($"__HostRegister:_HEALTH", 20))
+            {
+                if (!redLock.IsLocked)
+                {
+                    redLock.Release();
+                    throw new Exception($"RedisHostRegisterService获取缓存锁超时。key: __HostRegister:_HEALTH");
+                }
+
+                var lastTs = await _healthDCache.GetOrDefaultAsync(0);
+                var utcTs = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+                if (utcTs - lastTs < HEALTH_INTERVAL)
+                    return;
+                await _healthDCache.SetAsync(utcTs);
+            }
 
             var serviceNames = (await _namesDCache.GetAllAsync()).ToList();
             foreach (var serviceName in serviceNames)
@@ -85,37 +108,17 @@ namespace TinyFx.Hosting.Services
                 }
             }
         }
+        #endregion
 
-        public async Task<List<string>> GetAllServiceIds(string connectionStringName = null)
+        private async Task<RedLock> GetRedLock()
         {
-            var ret = new List<string>();
-            var serviceNames = (await _namesDCache.GetAllAsync()).ToList();
-            foreach (var serviceName in serviceNames)
+            var ret = await RedisUtil.LockAsync($"__HostRegister:{ServiceName}", 20);
+            if (!ret.IsLocked)
             {
-                var idsDCache = RedisUtil.CreateSetClient<string>($"{HOST_IDS_KEY}:{serviceName}");
-                var serviceIds = (await idsDCache.GetAllAsync()).ToList();
-                foreach (var serviceId in serviceIds)
-                {
-                    var isValid = await new TinyFxHostDataDCache(serviceId).IsValid();
-                    if (!isValid)
-                        await idsDCache.RemoveAsync(serviceId);
-                    else
-                        ret.Add(serviceId);
-                }
+                ret.Release();
+                throw new Exception($"RedisHostRegisterService获取缓存锁超时。key: __HostRegister:{ServiceName}");
             }
             return ret;
-        }
-        public async Task SetHostData<T>(string key, T value, string serviceId = null, string connectionStringName = null)
-        {
-            serviceId ??= ServiceId;
-            var dcache = new TinyFxHostDataDCache(serviceId, connectionStringName);
-            await dcache.SetData(key, value);
-        }
-        public async Task<CacheValue<T>> GetHostData<T>(string key, string serviceId = null, string connectionStringName = null)
-        {
-            serviceId ??= ServiceId;
-            var dcache = new TinyFxHostDataDCache(serviceId, connectionStringName);
-            return await dcache.GetData<T>(key);
         }
     }
 }
