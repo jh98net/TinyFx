@@ -32,7 +32,7 @@ namespace TinyFx.Extensions.Nacos
             var instance = await DIUtil.GetRequiredService<INacosNamingService>()
                 .SelectOneHealthyInstance(serviceName, section.GroupName);
             if (instance == null)
-                throw new Exception($"NacosUtil.GetClientServiceUrl时没有有效实例。serviceName:{serviceName}");
+                throw new Exception($"NacosHostMicroService.SelectOneServiceUrl时没有有效实例。serviceName:{serviceName}");
             var host = $"{instance.Ip}:{instance.Port}";
             var secure = instance.Metadata.TryGetValue("secure", out var value)
                 ? value.ToBoolean(false) : false;

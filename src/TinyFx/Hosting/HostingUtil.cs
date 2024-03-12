@@ -127,7 +127,7 @@ namespace TinyFx.Hosting
         /// <param name="value"></param>
         /// <returns></returns>
         public static Task SetHostData<T>(string key, T value)
-            => GetDataService().SetHostData<T>(key, value);
+            => GetRegDataService().SetHostData<T>(key, value);
 
         /// <summary>
         /// 获取主机数据
@@ -136,8 +136,8 @@ namespace TinyFx.Hosting
         /// <param name="key"></param>
         /// <returns></returns>
         public static Task<CacheValue<T>> GetHostData<T>(string key)
-            => GetDataService().GetHostData<T>(key);
-        public static ITinyFxHostRegDataService GetDataService()
+            => GetRegDataService().GetHostData<T>(key);
+        public static ITinyFxHostRegDataService GetRegDataService()
         {
             var ret = DIUtil.GetService<ITinyFxHostRegDataService>();
             if (ret == null)

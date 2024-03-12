@@ -41,7 +41,7 @@ namespace TinyFx.Hosting
                     await item.Invoke();
                 }
             });
-            if (ConfigUtil.Host.RegisterEnabled && _registerService != null)
+            if (ConfigUtil.Host.RegisterEnabled)
             {
                 lifetime.ApplicationStarted.Register(async () => await _registerService.Register());
                 if (_timerService != null)
