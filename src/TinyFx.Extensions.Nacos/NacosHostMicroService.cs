@@ -1,4 +1,4 @@
-﻿using Nacos.V2;
+﻿using Nacos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ using static System.Collections.Specialized.BitVector32;
 
 namespace TinyFx.Extensions.Nacos
 {
-    public class NacosHostMicroService: ITinyFxHostMicroService
+    public class NacosHostMicroService : ITinyFxHostMicroService
     {
         /// <summary>
         /// 获取所有服务名

@@ -1,7 +1,7 @@
 ﻿using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.CodeAnalysis;
-using Nacos.V2;
+using Nacos;
 using StackExchange.Redis;
 using System;
 using System.Collections.Generic;

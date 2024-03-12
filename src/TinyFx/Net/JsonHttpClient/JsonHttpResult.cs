@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using TinyFx.Logging;
+using TinyFx.Reflection;
 
 namespace TinyFx.Net
 {
@@ -38,7 +39,9 @@ namespace TinyFx.Net
             var ret = default(TError);
             try
             {
-                ret = SerializerUtil.DeserializeJson<TError>(ResponseContent, JsonOptions);
+                ret = ReflectionUtil.IsSimpleType(typeof(TError))
+                    ? ResponseContent.ConvertTo<TError>()
+                    : SerializerUtil.DeserializeJson<TError>(ResponseContent, JsonOptions);
             }
             catch (Exception ex)
             {

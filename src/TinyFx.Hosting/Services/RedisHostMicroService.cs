@@ -1,24 +1,19 @@
-﻿using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Extensions.Hosting;
-using Nacos.V2.Naming.Dtos;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis;
-using TinyFx.Net;
 using TinyFx.Randoms;
 
 namespace TinyFx.Hosting.Services
 {
     public class RedisHostMicroService : ITinyFxHostMicroService
     {
+        private string _connectionStringName;
         private RedisSetClient<string> _namesDCache;
-        public RedisHostMicroService()
+        public RedisHostMicroService(string connectionStringName = null)
         {
-            _namesDCache = RedisUtil.CreateSetClient<string>(RedisHostRegisterService.HOST_NAMES_KEY);
+            _connectionStringName = connectionStringName;
+            _namesDCache = RedisUtil.CreateSetClient<string>(RedisHostRegisterService.HOST_NAMES_KEY, _connectionStringName);
         }
 
         public async Task<List<string>> GetAllServiceNames()
@@ -27,13 +22,13 @@ namespace TinyFx.Hosting.Services
         public async Task<string> SelectOneServiceUrl(string serviceName, bool isWebsocket = false)
         {
             string ret = null;
-            var idsDCache = RedisUtil.CreateSetClient<string>($"{RedisHostRegisterService.HOST_IDS_KEY}:{serviceName}");
+            var idsDCache = RedisUtil.CreateSetClient<string>($"{RedisHostRegisterService.HOST_IDS_KEY}:{serviceName}", _connectionStringName);
             var serviceIds = (await idsDCache.GetAllAsync()).ToList() ?? new List<string>();
             while (serviceIds.Count > 0)
             {
                 var idx = RandomUtil.NextInt(serviceIds.Count);
                 var serviceId = serviceIds[idx];
-                var dataDCache = new TinyFxHostDataDCache(serviceId);
+                var dataDCache = new TinyFxHostDataDCache(serviceId, _connectionStringName);
                 var url = await dataDCache.GetAsync<string>("HostUrl");
                 if (url.HasValue && !string.IsNullOrEmpty(url.Value))
                 {
@@ -42,7 +37,7 @@ namespace TinyFx.Hosting.Services
                 }
                 else
                 {
-                    serviceIds.Remove(serviceId);
+                    serviceIds.RemoveAt(idx);
                 }
             }
             if (!string.IsNullOrEmpty(ret))

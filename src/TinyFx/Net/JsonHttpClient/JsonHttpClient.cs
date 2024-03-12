@@ -88,8 +88,6 @@ namespace TinyFx.Net
             where T : class
         {
             var type = query.GetType();
-            if (ReflectionUtil.IsSimpleType(type))
-                throw new Exception("简单类型无法直接给URL赋值。");
             foreach (var property in type.GetProperties())
             {
                 var value = ReflectionUtil.GetPropertyValue(query, property.Name);

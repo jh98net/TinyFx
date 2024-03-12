@@ -17,9 +17,9 @@ namespace TinyFx.Configuration
         /// </summary>
         public bool RegisterEnabled { get; set; }
         /// <summary>
-        /// 主机注册心跳间隔，默认3秒最小1秒
+        /// 主机注册心跳间隔，默认5秒最小1秒
         /// </summary>
-        public int HeartbeatInterval { get; set; } = 3000;
+        public int HeartbeatInterval { get; set; } = 5000;
         /// <summary>
         /// 主机检查间隔，默认1分钟最小10秒
         /// </summary>

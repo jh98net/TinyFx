@@ -40,7 +40,7 @@ namespace TinyFx.Logging
         #region Methods
         public ILogBuilder SetLevel(LogLevel level)
         {
-            Level = level;
+            Level = Level > level ? Level : level;
             return this;
         }
         public ILogBuilder SetLogRequestHeaders(bool isLog = true)

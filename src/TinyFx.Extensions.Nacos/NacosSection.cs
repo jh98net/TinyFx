@@ -12,10 +12,6 @@ namespace TinyFx.Configuration
     public class NacosSection : NacosAspNetOptions
     {
         public bool Enabled { get; set; }
-        /// <summary>
-        /// 故障转移目录
-        /// </summary>
-        public string FailoverDir { get; set; }
 
         public void Bind(IConfiguration configuration)
         {

@@ -1,24 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Nacos.V2.Naming.Utils;
-using Polly.Extensions.Http;
-using Polly.Retry;
-using Polly.Timeout;
-using Polly;
-using Refit;
+using Nacos.Naming.Utils;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Logging;
-using static Org.BouncyCastle.Math.EC.ECCurve;
-using static System.Collections.Specialized.BitVector32;
-using Nacos.V2;
 
 namespace TinyFx.Extensions.Nacos
 {
@@ -109,20 +97,20 @@ namespace TinyFx.Extensions.Nacos
             }
 
             // FailoverDir
-            if (!string.IsNullOrEmpty(section.FailoverDir))
-            {
-                var file = Path.Combine(section.FailoverDir, "nacos", "naming", section.Namespace, "failover", UtilAndComs.FAILOVER_SWITCH);
-                var path = Path.GetDirectoryName(file);
-                try
-                {
-                    if (!Directory.Exists(path))
-                        Directory.CreateDirectory(path);
-                    if (!File.Exists(file))
-                        File.WriteAllText(file, "0");
-                    System.Environment.SetEnvironmentVariable("JM.SNAPSHOT.PATH", section.FailoverDir);
-                }
-                catch { }
-            }
+            //if (!string.IsNullOrEmpty(section.FailoverDir))
+            //{
+            //    var file = Path.Combine(section.FailoverDir, "nacos", "naming", section.Namespace, "failover", UtilAndComs.FAILOVER_SWITCH);
+            //    var path = Path.GetDirectoryName(file);
+            //    try
+            //    {
+            //        if (!Directory.Exists(path))
+            //            Directory.CreateDirectory(path);
+            //        if (!File.Exists(file))
+            //            File.WriteAllText(file, "0");
+            //        System.Environment.SetEnvironmentVariable("JM.SNAPSHOT.PATH", section.FailoverDir);
+            //    }
+            //    catch { }
+            //}
         }
 
         private void SetReturnConfig(NacosSection section, IConfigurationRoot config)

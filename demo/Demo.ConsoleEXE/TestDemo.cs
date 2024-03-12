@@ -17,7 +17,8 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            Console.WriteLine(DateTime.UtcNow.UtcToBeijingDateTime().ToFormatString(true));
+            var dir = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            Console.WriteLine(dir);
         }
     }
 
