@@ -23,34 +23,50 @@ namespace TinyFx.Common
     public class CSharpCodeExecutor
     {
         private string _code;
-        private bool _force;
         private List<MetadataReference> _references = new List<MetadataReference>();
-        private Assembly _assembly;
+        private List<string> _usings = new List<string>();
+        public Assembly CodeAssembly { get; private set; }
+        
         public CSharpCodeExecutor(string code)
         {
             _code = code;
-            _force = true;
-            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                try
-                {
-                    _references.Add(MetadataReference.CreateFromFile(asm.Location));
-                }
-                catch { }
-            }
-        }
-        public Assembly Assembly
-        {
-            get
-            {
-                Build();
-                return _assembly;
-            }
         }
 
-        public void AddReferences(params MetadataReference[] references)
+        #region AddReference & AddUsing
+        /// <summary>
+        /// 添加引用
+        /// </summary>
+        /// <param name="dllName">dll名称，如:System.Data.SqlClient</param>
+        public void AddReferences(string dllName)
+            => _references.Add(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName(dllName)).Location));
+        public void AddReferences(List<string> dllNames)
+            => dllNames.ForEach(x => AddReferences(x));
+        public void AddReferences(MetadataReference reference)
+           => _references.Add(reference);
+
+        /// <summary>
+        /// 等同于using xxx
+        /// </summary>
+        /// <param name="usingString"></param>
+        public void AddUsing(string usingString)
+            => _usings.Add(usingString);
+        public void AddUsing(List<string> usingStrings)
+            => _usings.AddRange(usingStrings);
+        #endregion
+
+        #region Execute
+        /// <summary>
+        /// 执行动态代码中的方法
+        /// </summary>
+        /// <param name="typeName"></param>
+        /// <param name="methodName"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
+        public object ExecuteMethod(string typeName, string methodName, params object[] parameters)
         {
-            _references.AddRange(references);
+            var type = GetCodeAssembly().GetType(typeName);
+            var obj = Activator.CreateInstance(type);
+            return type.InvokeMember(methodName, BindingFlags.Default | BindingFlags.InvokeMethod, null, obj, parameters);
         }
 
         /// <summary>
@@ -62,28 +78,36 @@ namespace TinyFx.Common
         /// <returns></returns>
         public object ExecuteStaticMethod(string typeName, string methodName, params object[] parameters)
         {
-            var method = Assembly.CreateInstance(typeName).GetType().GetMethod(methodName);
+            var method = GetCodeAssembly().CreateInstance(typeName).GetType().GetMethod(methodName);
             return method.Invoke(null, parameters);
         }
-        public object ExecuteMethod(string typeName, string methodName, params object[] parameters)
-        {
-            var t = Assembly.GetType(typeName);
-            var obj = Activator.CreateInstance(t);
-            return t.InvokeMember(methodName, BindingFlags.Default | BindingFlags.InvokeMethod, null, obj, parameters);
-        }
+        #endregion
 
+        #region Utils
+        private Assembly GetCodeAssembly()
+        {
+            if (CodeAssembly == null)
+                Build();
+            return CodeAssembly;
+        }
         private void Build()
         {
-            if (!_force && _assembly != null)
-                return;
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                _references.Add(MetadataReference.CreateFromFile(asm.Location));
+            }
             // 随机程序集名称
             string assemblyName = Path.GetRandomFileName();
             // 丛代码中转换表达式树
             var syntaxTree = CSharpSyntaxTree.ParseText(_code);
-            var compiler = CSharpCompilation.Create(assemblyName,
-                new[] { syntaxTree },
-                _references,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            var compiler = CSharpCompilation.Create(
+                assemblyName,
+                syntaxTrees: new[] { syntaxTree },
+                references: _references,
+                options: new CSharpCompilationOptions(
+                    OutputKind.DynamicallyLinkedLibrary, 
+                    usings: _usings)
+                );
             using (var ms = new MemoryStream())
             {
                 var result = compiler.Emit(ms);
@@ -93,9 +117,9 @@ namespace TinyFx.Common
                     throw new Exception(msg);
                 }
                 ms.Seek(0, SeekOrigin.Begin);
-                _force = false;
-                _assembly = Assembly.Load(ms.ToArray());
+                CodeAssembly = Assembly.Load(ms.ToArray());
             }
         }
+        #endregion
     }
 }

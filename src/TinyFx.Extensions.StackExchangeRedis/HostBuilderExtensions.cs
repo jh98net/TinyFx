@@ -2,12 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis;
 using TinyFx.Logging;

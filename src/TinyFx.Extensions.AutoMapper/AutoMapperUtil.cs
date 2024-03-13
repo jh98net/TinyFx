@@ -23,6 +23,8 @@ namespace TinyFx.Extensions.AutoMapper
         public static MapperConfigurationExpression Expression { get; private set; }
         public static MapperConfiguration Configuration { get; private set; }
         public static IMapper Mapper { get; private set; }
+
+        #region Register
         /// <summary>
         /// 使用配置文件中的配置注册AutoMapper
         /// </summary>
@@ -83,7 +85,7 @@ namespace TinyFx.Extensions.AutoMapper
         /// </summary>
         /// <param name="types"></param>
         /// <returns></returns>
-        public static Action<IMapperConfigurationExpression> GetMapperConfig(List<Type> types)
+        private static Action<IMapperConfigurationExpression> GetMapperConfig(List<Type> types)
         {
             Action<IMapperConfigurationExpression> config = cfg =>
             {
@@ -136,6 +138,7 @@ namespace TinyFx.Extensions.AutoMapper
                 cfg.CreateMap(srcType, type, MemberList.None).AfterMap(afterFunc);
             }
         }
+        #endregion
 
         /// <summary>
         /// 自动映射成目标对象

@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using TinyFx.Collections;
 using TinyFx.OAuth;
 using TinyFx.Reflection;
-using static System.Collections.Specialized.BitVector32;
 
 namespace TinyFx.Configuration
 {
