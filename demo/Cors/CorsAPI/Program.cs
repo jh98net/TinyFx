@@ -8,7 +8,7 @@ using TinyFx.Logging;
 
 var builder = AspNetHost.CreateBuilder();
 // Add services to the container.
-builder.AddAspNetEx(AspNetType.Api);
+builder.AddAspNetEx();
 
 var app = builder.Build();
 

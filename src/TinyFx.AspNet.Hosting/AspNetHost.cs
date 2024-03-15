@@ -121,12 +121,4 @@ namespace TinyFx
             return Task.FromResult(file);
         }
     }
-
-    [Flags]
-    public enum AspNetType
-    {
-        Api = 1,
-        Razor = 2,
-        ServerBlazor = 4,
-    }
 }

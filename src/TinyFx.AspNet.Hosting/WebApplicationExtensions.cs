@@ -8,6 +8,7 @@ using System.ServiceModel;
 using TinyFx.AspNet;
 using TinyFx.AspNet.Auth.Cors;
 using TinyFx.AspNet.Hosting;
+using TinyFx.AspNet.Hosting.Common;
 using TinyFx.AspNet.RequestLogging;
 using TinyFx.Configuration;
 using TinyFx.Logging;
@@ -201,57 +202,8 @@ namespace TinyFx
         }
         public static WebApplication UseGrpcEx(this WebApplication app)
         {
-            var section = ConfigUtil.GetSection<GrpcSection>();
-            if (section != null && section.Enabled)
-            {
-                var grpcTypes = new List<Type>();
-                if (section.Assemblies != null && section.Assemblies.Count > 0)
-                {
-                    section.Assemblies.ForEach(x =>
-                    {
-                        var ams = DIUtil.GetService<IAssemblyContainer>().GetAssembly(x, "加载GRPC的Assemblies");
-                        grpcTypes.AddRange(GetGrpcTypes(ams));
-                    });
-                }
-                else
-                {
-                    grpcTypes.AddRange(GetGrpcTypes(Assembly.GetEntryAssembly()));
-                    grpcTypes.AddRange(GetGrpcTypes(Assembly.GetExecutingAssembly()));
-                }
-                // 注册
-                Type invokeType = typeof(GrpcEndpointRouteBuilderExtensions);
-                grpcTypes.ForEach(genericType =>
-                {
-                    // app.MapGrpcService<GreeterService>();
-                    ReflectionUtil.InvokeStaticGenericMethod(invokeType, "MapGrpcService", genericType, app);
-                });
-            }
+            GrpcRegisterUtil.UseGrpcEx(app);
             return app;
-        }
-        private static List<Type> GetGrpcTypes(Assembly? assembly)
-        {
-            var ret = new List<Type>();
-            if (assembly != null)
-            {
-                foreach (var type in assembly.GetExportedTypes())
-                {
-                    if (!type.IsClass)
-                        continue;
-                    var itypes = type.GetInterfaces();
-                    if (itypes.Length == 0)
-                        continue;
-                    foreach (var itype in itypes)
-                    {
-                        var attr = itype.GetCustomAttribute<ServiceContractAttribute>();
-                        if (attr != null)
-                        {
-                            ret.Add(type);
-                            break;
-                        }
-                    }
-                }
-            }
-            return ret;
         }
     }
 }

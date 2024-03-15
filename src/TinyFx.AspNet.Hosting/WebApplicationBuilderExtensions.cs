@@ -1,10 +1,8 @@
 ﻿using Asp.Versioning;
 using Asp.Versioning.Conventions;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -15,29 +13,23 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Nacos.AspNetCore.V2;
-using ProtoBuf.Grpc.Server;
 using System.IO.Compression;
 using System.Runtime.Loader;
 using TinyFx.AspNet;
 using TinyFx.AspNet.Common;
 using TinyFx.AspNet.Filters;
 using TinyFx.AspNet.Hosting;
+using TinyFx.AspNet.Hosting.Common;
 using TinyFx.Configuration;
-using TinyFx.Extensions.Nacos;
-using TinyFx.Extensions.StackExchangeRedis;
-using TinyFx.Hosting.Common;
 using TinyFx.Logging;
-using TinyFx.Reflection;
 using TinyFx.Security;
 using TinyFx.Xml;
-using static System.Collections.Specialized.BitVector32;
-using static System.Net.WebRequestMethods;
 
 namespace TinyFx
 {
     public static class AspNetWebApplicationBuilderExtensions
     {
-        public static WebApplicationBuilder AddAspNetEx(this WebApplicationBuilder builder, AspNetType type = AspNetType.Api)
+        public static WebApplicationBuilder AddAspNetEx(this WebApplicationBuilder builder)
         {
             // Kestrel
             var section = ConfigUtil.GetSection<AspNetSection>();
@@ -62,56 +54,28 @@ namespace TinyFx
                 });
             }
             builder.AddGrpcEx();
-            AddAspNetExDetail(builder.Services, type);
+            AddAspNetExDetail(builder.Services);
             //
             TinyFxHostingStartupLoader.Instance.ConfigureServices(builder);
             return builder;
         }
         private static WebApplicationBuilder AddGrpcEx(this WebApplicationBuilder builder)
         {
-            var section = ConfigUtil.GetSection<GrpcSection>();
-            if (section != null && section.Enabled)
-            {
-                var grpcPort = section.Port > 0
-                    ? section.Port : ConfigUtil.Service.GrpcPort;
-                if (grpcPort <= 0)
-                {
-                    grpcPort = ConfigUtil.Service.HttpPort + 1;
-                    //throw new Exception($"启动GRPC服务时端口无效: {grpcPort}");
-                }
-                ConfigUtil.Service.GrpcPort = grpcPort;
-                builder.WebHost.ConfigureKestrel(opts =>
-                {
-                    opts.ListenAnyIP(grpcPort, listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
-                });
-                builder.Services.AddCodeFirstGrpc();
-            }
+            GrpcRegisterUtil.AddGrpcEx(builder);
             return builder;
         }
-        private static IServiceCollection AddAspNetExDetail(this IServiceCollection services, AspNetType type)
+        private static IServiceCollection AddAspNetExDetail(this IServiceCollection services)
         {
-            if ((type & AspNetType.Api) != 0)
+            services.AddControllersEx()
+                .AddDynamicApi();
+            // 解决Multipart body length limit 134217728 exceeded
+            services.Configure<FormOptions>(x =>
             {
-                services.AddControllersEx()
-                    .AddDynamicApi();
-                // 解决Multipart body length limit 134217728 exceeded
-                services.Configure<FormOptions>(x =>
-                {
-                    x.ValueLengthLimit = int.MaxValue;
-                    x.MultipartBodyLengthLimit = int.MaxValue; // In case of multipart
-                });
-                LogUtil.Info($"注册 => AddControllers");
-            }
-            if ((type & AspNetType.Razor) != 0)
-            {
-                services.AddRazorPages();
-                LogUtil.Info($"注册 => AddRazorPages");
-            }
-            if ((type & AspNetType.ServerBlazor) != 0)
-            {
-                services.AddServerSideBlazorEx();
-                LogUtil.Info($"注册 => AddServerSideBlazor");
-            }
+                x.ValueLengthLimit = int.MaxValue;
+                x.MultipartBodyLengthLimit = int.MaxValue; // In case of multipart
+            });
+            LogUtil.Info($"注册 => AddControllers");
+
             services.AddHealthChecks();         // health
             return services
                 .AddRequestLoggingEx()          // LogBuilder

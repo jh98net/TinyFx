@@ -9,6 +9,11 @@ using TinyFx.Text;
 
 namespace TinyFx.Configuration
 {
+    /// <summary>
+    /// Host注册信息
+    ///     ENV_HOST_IP => HostIp
+    ///     ENV_HOST_PORT => HostPort = HttpPort = GrpcPort+1
+    /// </summary>
     public class ServiceInfo
     {
         #region Host

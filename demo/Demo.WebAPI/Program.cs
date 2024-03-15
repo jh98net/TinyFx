@@ -10,7 +10,7 @@ using TinyFx.Logging;
 var builder = AspNetHost.CreateBuilder();
 
 // Add services to the container.
-builder.AddAspNetEx(AspNetType.Api);
+builder.AddAspNetEx();
 builder.Host.ConfigureServices(services =>
 {
     services.AddSingleton(new TESTA { Name="aa"});
