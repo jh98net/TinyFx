@@ -38,7 +38,7 @@ namespace TinyFx.DbCaching
         public async Task<DbTableRedisData> SetRedisValues()
         {
             // 避免并发
-            using var redLock = await RedisUtil.LockAsync($"__DbCacheDataDCache:{_cacheKey}", 180);
+            using var redLock = await RedisUtil.LockAsync($"_DbCacheDataDCache:{_cacheKey}", 180);
             if (!redLock.IsLocked)
             {
                 redLock.Release();
@@ -91,7 +91,7 @@ namespace TinyFx.DbCaching
             };
 
             // 避免并发
-            using var redLock = await RedisUtil.LockAsync($"__DbCacheDataDCache:{_cacheKey}", 180);
+            using var redLock = await RedisUtil.LockAsync($"_DbCacheDataDCache:{_cacheKey}", 180);
             if (!redLock.IsLocked)
             {
                 redLock.Release();
@@ -114,7 +114,7 @@ namespace TinyFx.DbCaching
                 ConfigId = _configId,
                 TableName = _tableName,
                 PageSize = DATA_PAGE_SIZE,
-                UpdateDate = DateTime.UtcNow.ToFormatString()
+                UpdateDate = DateTime.UtcNow.UtcToCNString()
             };
             var totalList = await DbUtil.GetDbById(_configId).Queryable<object>()
                 .AS(_tableName).ToListAsync();

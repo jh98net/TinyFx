@@ -17,7 +17,7 @@ namespace TinyFx.SnowflakeId.Caching
             _section = ConfigUtil.GetSection<SnowflakeIdSection>();
             Options.ConnectionStringName = _section.RedisConnectionStringName;
             RedisKey = $"{RedisPrefixConst.SNOWFLAKE_ID}:WorkerIds:{workerId}";
-            EXPIRE_MINUTES = ConfigUtil.IsDebugEnvironment
+            EXPIRE_MINUTES = ConfigUtil.Environment.IsDebug
                 ? (int)TimeSpan.FromMinutes(10).TotalMinutes : _section.RedisExpireMinutes;
         }
         public async Task SetWorkerIdsDo(WorkerIdsDO value)

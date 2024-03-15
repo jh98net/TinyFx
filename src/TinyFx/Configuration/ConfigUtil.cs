@@ -18,87 +18,58 @@ namespace TinyFx.Configuration
         /// TinyFx配置IConfiguration
         /// </summary>
         public static IConfiguration Configuration { get; private set; }
-        public static event EventHandler ConfigChanged;
+        private static event EventHandler _changedEvent;
         /// <summary>
         /// TinyFx配置节集合
         /// </summary>
         public static readonly ConcurrentDictionary<string, object> Sections = new ConcurrentDictionary<string, object>();
 
-        #region Environment
         /// <summary>
-        /// 配置的程序运行环境：Development/Testing/....
+        /// 环境变量信息
         /// </summary>
-        public static string EnvironmentString { get; private set; }
-
-        private static EnvironmentNames? _env;
-        /// <summary>
-        /// 当前程序运行环境
-        /// </summary>
-        public static EnvironmentNames Environment
-        {
-            get
-            {
-                if (_env != null && _env.HasValue)
-                    return _env.Value;
-
-                var ret = EnvironmentNames.Unknown;
-                var envParser = new EnvironmentNameParser();
-                if (!string.IsNullOrEmpty(Project.Environment))
-                    ret = envParser.Parse(Project.Environment);
-                if (ret == EnvironmentNames.Unknown)
-                    ret = envParser.Parse(EnvironmentString);
-                if (ret == EnvironmentNames.Unknown)
-                    ret = EnvironmentNames.Production;
-                _env = ret;
-                return ret;
-            }
-        }
-        /// <summary>
-        /// 当前项目是否处于测试环境(Development,Testing)
-        /// </summary>
-        public static bool IsDebugEnvironment
-            => Environment != EnvironmentNames.Unknown
-            && Environment != EnvironmentNames.Production
-            && Project.IsDebugEnvironment;
-
-        /// <summary>
-        /// 是否仿真环境
-        /// </summary>
-        public static bool IsStagingEnvironment
-            => Environment == EnvironmentNames.Staging;
-        #endregion
+        public static EnvironmentInfo Environment { get; private set; }
 
         /// <summary>
         /// Host服务信息
         /// </summary>
-        public static readonly ServiceInfo ServiceInfo = new();
+        public static ServiceInfo Service { get; private set; }
         #endregion
 
         #region Init
-        public static void InitConfiguration(IConfiguration configuration, string envStr = null)
+        public static IConfiguration BuildConfiguration(string envStr = null)
         {
-            EnvironmentString = envStr;
-
-            configuration.GetReloadToken().RegisterChangeCallback((_) =>
-            {
-                LogUtil.Warning("配置更新: {changeTime}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                ClearCacheData();
-                ConfigChanged?.Invoke(null, null);
-            }, null);
+            Environment = new EnvironmentInfo(envStr);
+            Service = new ServiceInfo(Environment);
+            var ret = new AppSettingsFileConfigBuilder().Build(Environment.Name);
+            return ret;
+        }
+        public static void InitConfiguration(IConfiguration configuration)
+        {
             Configuration = configuration;
             ClearCacheData();
 
-            if (!string.IsNullOrEmpty(ServiceInfo.HostIp) && ServiceInfo.HostPort > 0)
+            // EnvironmentType
+            if (Environment.Type == EnvironmentType.Unknown)
             {
-                ServiceInfo.ServiceId = $"{Project.ProjectId}:{ServiceInfo.HostIp}_{ServiceInfo.HostPort}";
+                Environment.Type = new EnvironmentTypeParser().Parse(Project.Environment);
+                if (Environment.Type == EnvironmentType.Unknown)
+                    Environment.Type = EnvironmentType.Production;
             }
-            else
-                ServiceInfo.ServiceId = $"{Project.ProjectId}:{ServiceInfo.ServiceGuid}";
-            ServiceInfo.ServiceUrl ??= Project.ServiceUrl;
+
+            // serviceId
+            Service.ServiceId = (!string.IsNullOrEmpty(Service.HostIp) && Service.HostPort > 0)
+                ? $"{Project.ProjectId}:{Service.HostIp}_{Service.HostPort}"
+                : $"{Project.ProjectId}:{Environment.UID}";
+
+            Configuration.GetReloadToken().RegisterChangeCallback((_) =>
+            {
+                LogUtil.Warning("配置更新: {changeTime}", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                ClearCacheData();
+                _changedEvent?.Invoke(null, null);
+            }, null);
         }
         private static void ClearCacheData()
         {
-            _env = null;
             _project = null;
             _host = null;
             _appSettings = null;
@@ -215,5 +186,14 @@ namespace TinyFx.Configuration
                 throw new Exception("TinyFx应用程序配置没有初始化!");
         }
         #endregion
+
+        /// <summary>
+        /// 注册配置改变回调
+        /// </summary>
+        /// <param name="callback"></param>
+        public static void RegisterChangedCallback(Action callback)
+        {
+            _changedEvent += (_, _) => callback();
+        }
     }
 }

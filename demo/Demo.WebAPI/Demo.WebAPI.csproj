@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TinyFx.AspNet.Hosting\TinyFx.AspNet.Hosting.csproj" />
+    <ProjectReference Include="..\Demo.Shared\Demo.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

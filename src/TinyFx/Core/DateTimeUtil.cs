@@ -1,15 +1,18 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.ChineseCalendar;
+using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
 
 namespace TinyFx
 {
     public static class DateTimeUtil
     {
-        public static readonly TimeZoneInfo BeijingTZ = TimeZoneInfo.CreateCustomTimeZone("GMT+8", TimeSpan.FromHours(8), "China Standard Time", "(UTC+8)China Standard Time");
+        public static readonly TimeZoneInfo CNTZ = TimeZoneInfo.CreateCustomTimeZone("GMT+8", TimeSpan.FromHours(8), "China Standard Time", "(UTC+8)China Standard Time");
 
         #region 日期
 
@@ -19,7 +22,7 @@ namespace TinyFx
         /// <param name="date">指定日期</param>
         /// <param name="isMonday">是否以周一为每周第一天</param>
         /// <returns></returns>
-        public static DateTime BeginDayOfWeek(this DateTime date, bool isMonday = true)
+        public static DateTime BeginDayOfWeek(DateTime date, bool isMonday = true)
         {
             int days = 0;
             if (isMonday)
@@ -54,7 +57,7 @@ namespace TinyFx
         /// <param name="date">指定日期</param>
         /// <param name="isMonday">是否以周一为每周第一天</param>
         /// <returns></returns>
-        public static DateTime EndDayOfWeek(this DateTime date, bool isMonday = true)
+        public static DateTime EndDayOfWeek(DateTime date, bool isMonday = true)
             => BeginDayOfWeek(date, isMonday).AddDays(6);
 
         /// <summary>
@@ -63,7 +66,7 @@ namespace TinyFx
         /// <param name="start">起始日期</param>
         /// <param name="end">终止日期</param>
         /// <returns></returns>
-        public static int WeekCount(this DateTime start, DateTime end)
+        public static int WeekCount(DateTime start, DateTime end)
         {
             DateTime min = DateTime.MinValue;
             start = BeginDayOfWeek(start);
@@ -88,14 +91,14 @@ namespace TinyFx
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        public static int WeekOfYear(this DateTime date)
+        public static int WeekOfYear(DateTime date)
         {
             DateTime start = new DateTime(date.Year, 1, 1);
             return WeekCount(start, date);
         }
-        public static int ToYearWeek(this DateTime date)
-            => date.ToYearWeekString().ToInt32();
-        public static string ToYearWeekString(this DateTime date)
+        public static int ToYearWeek(DateTime date)
+            => ToYearWeekString(date).ToInt32();
+        public static string ToYearWeekString(DateTime date)
         {
             var week = WeekOfYear(date).ToString().PadLeft(2, '0');
             return $"{date.Year}{week}";
@@ -106,7 +109,7 @@ namespace TinyFx
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        public static int WeekOfMonth(this DateTime date)
+        public static int WeekOfMonth(DateTime date)
         {
             DateTime start = new DateTime(date.Year, date.Month, 1);
             return WeekCount(start, date);
@@ -135,7 +138,7 @@ namespace TinyFx
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        public static bool IsCurrentWeek(this DateTime date)
+        public static bool IsCurrentWeek(DateTime date)
             => IsSameWeek(date, DateTime.Now);
 
         /// <summary>
@@ -144,7 +147,7 @@ namespace TinyFx
         /// <param name="dtA">要比较的第一个日期</param>
         /// <param name="dtB">要比较的第二个日期</param>
         /// <returns></returns>
-        public static bool IsSameWeek(this DateTime dtA, DateTime dtB)
+        public static bool IsSameWeek(DateTime dtA, DateTime dtB)
         {
             DateTime dt = BeginDayOfWeek(dtA);
             int days = (int)(dtB - dt).TotalDays;
@@ -156,7 +159,7 @@ namespace TinyFx
         /// </summary>
         /// <param name="dateTime">要传入的时间</param>
         /// <returns></returns>
-        public static DateTime FirstDayOfPreviousMonth(this DateTime dateTime)
+        public static DateTime FirstDayOfPreviousMonth(DateTime dateTime)
             => dateTime.AddDays(1 - dateTime.Day).AddMonths(-1);
 
         /// <summary>
@@ -164,14 +167,14 @@ namespace TinyFx
         /// </summary>
         /// <param name="dateTime"></param>
         /// <returns></returns>
-        public static DateTime LastDayOfPrdviousMonth(this DateTime dateTime)
+        public static DateTime LastDayOfPrdviousMonth(DateTime dateTime)
             => dateTime.AddDays(1 - dateTime.Day).AddDays(-1);
 
         public static string ToYearQuarter(DateTime date)
         {
             return $"{date.Year}{QuarterOfYear(date)}";
         }
-        public static int QuarterOfYear(this DateTime date)
+        public static int QuarterOfYear(DateTime date)
         {
             var ret = Math.DivRem(date.Month, 3, out var r);
             if (r > 0)
@@ -185,62 +188,62 @@ namespace TinyFx
         /// 将DateTime转换为Unix时间戳timestamp
         /// </summary>
         /// <param name="date">转换的日期时间</param>
-        /// <param name="toSeconds">使用秒还是毫秒</param>
+        /// <param name="toMilliseconds">unix时间戳使用秒, javascript时间戳使用毫秒<</param>
+        /// <param name="isUtcKind">指定date时间是UTC时间</param>
         /// <returns></returns>
-        public static long DateTimeToTimestamp(this DateTime date, bool toSeconds = true)
+        public static long ToTimestamp(this DateTime date, bool toMilliseconds = false, bool isUtcKind = false)
         {
-            return toSeconds ? ((DateTimeOffset)date).ToUnixTimeSeconds()
-                : ((DateTimeOffset)date).ToUnixTimeMilliseconds();
-        }
-        public static long UtcDateTimeToTimestamp(this DateTime date, bool toSeconds = true)
-        {
-            date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
-            return DateTimeToTimestamp(date, toSeconds);
+            var dt = isUtcKind ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : date;
+            return toMilliseconds ? ((DateTimeOffset)dt).ToUnixTimeMilliseconds()
+                : ((DateTimeOffset)dt).ToUnixTimeSeconds();
         }
 
         /// <summary>
         /// 将Unix时间戳timestamp转换为DateTime
         /// </summary>
-        /// <param name="timeStamp">Unix时间戳</param>
-        /// <param name="isLocal">utc时间还是本地时间</param>
-        /// <param name="isSeconds">使用秒还是毫秒</param>
+        /// <param name="timeStamp">Unix时间戳或者javascript时间戳</param>
+        /// <param name="toUtc">utc时间还是本地时间</param>
         /// <returns></returns>
-        public static DateTime TimestampToDateTime(this long timeStamp, bool isLocal = true, bool? isSeconds = true)
+        public static DateTime ParseTimestamp(long timeStamp, bool toUtc = false)
         {
-            if (!isSeconds.HasValue)
-                isSeconds = timeStamp.ToString().Length == 10;
-            var offset = isSeconds.Value ? DateTimeOffset.FromUnixTimeSeconds(timeStamp)
-                : DateTimeOffset.FromUnixTimeMilliseconds(timeStamp);
-            return isLocal ? offset.LocalDateTime : offset.UtcDateTime;
+            var hasMs = timeStamp.ToString().Length > 13;
+            var offset = hasMs ? DateTimeOffset.FromUnixTimeMilliseconds(timeStamp)
+                : DateTimeOffset.FromUnixTimeSeconds(timeStamp);
+            return toUtc ? offset.UtcDateTime : offset.LocalDateTime;
         }
-        public static DateTime TimestampToDateTime(string timeStamp, bool isLocal = true, bool? isSeconds = null)
-            => TimestampToDateTime(long.Parse(timeStamp), isLocal, isSeconds.HasValue
-                ? isSeconds.Value : timeStamp.Length == 10);
-        public static DateTime TimestampToUtcDateTime(this long timeStamp, bool? isSeconds = true)
-            => TimestampToDateTime(timeStamp, false, isSeconds);
-        public static DateTime TimestampToUtcDateTime(string timeStamp, bool? isSeconds = null)
-            => TimestampToDateTime(timeStamp, false, isSeconds);
+        public static DateTime ParseTimestamp(string timeStamp, bool toUtc = false)
+            => ParseTimestamp(long.Parse(timeStamp), toUtc);
         #endregion
 
+        #region FormatString
         /// <summary>
         /// 日期字符串标准格式 yyyy-MM-dd HH:mm:ss 或yyyy-MM-ddTHH:mm:sszzz
         /// </summary>
         /// <param name="dateTime"></param>
         /// <param name="isIso"></param>
         /// <returns></returns>
-        public static string ToFormatString(this DateTime dateTime, bool isIso = false)
-            => isIso 
-            ? dateTime.ToString("yyyy-MM-dd'T'HH:mm:sszzz") 
+        public static string ToFormatString(this DateTime dateTime, bool isIso = true)
+            => isIso
+            ? dateTime.ToString("yyyy-MM-dd'T'HH:mm:sszzz")
             : dateTime.ToString("yyyy-MM-dd HH:mm:ss");
+        public static DateTime ParseFormatString(string s)
+        {
+            var isIso = s.Contains('T');
+            return isIso
+                ? DateTime.ParseExact(s, "yyyy-MM-dd'T'HH:mm:sszzz", DateTimeFormatInfo.InvariantInfo)
+                : DateTime.ParseExact(s, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+        }
 
-        
         /// <summary>
         /// Utc时间转北京时间
         /// </summary>
         /// <param name="utcTime"></param>
         /// <returns></returns>
-        public static DateTime UtcToBeijingDateTime(this DateTime utcTime)
-            => TimeZoneInfo.ConvertTimeFromUtc(utcTime, BeijingTZ);
+        public static DateTime UtcToCNTime(this DateTime utcTime)
+            => TimeZoneInfo.ConvertTimeFromUtc(utcTime, CNTZ);
+        public static string UtcToCNString(this DateTime utcTime, bool isIso = true)
+            => UtcToCNTime(utcTime).ToFormatString(isIso);
+        #endregion
 
         #region 星座
         /// <summary>

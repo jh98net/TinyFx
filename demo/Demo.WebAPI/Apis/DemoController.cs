@@ -143,6 +143,7 @@ namespace Demo.WebAPI.Apis
             });
         }
         [HttpGet]
+        
         public JwtTokenInfo ReadJwtToken()
         {
             return HttpContextEx.GetJwtToken();

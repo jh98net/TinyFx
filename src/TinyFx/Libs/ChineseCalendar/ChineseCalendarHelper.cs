@@ -649,7 +649,7 @@ namespace TinyFx.ChineseCalendar
                     }
 
                     //星期
-                    int weekAtMonth = SolarDate.WeekOfMonth();
+                    int weekAtMonth = DateTimeUtil.WeekOfMonth(SolarDate);
                     foreach (WeekHoliday item in WeekHolidays)
                     {
                         if (item.Month == SolarDate.Month && item.WeekAtMonth == weekAtMonth && item.DayOfWeek == SolarDate.DayOfWeek)

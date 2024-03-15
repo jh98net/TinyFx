@@ -777,8 +777,6 @@ namespace TinyFx
         /// <returns></returns>
         public static DateTime? ToDateTimeN(this string src, DateTime defaultValue)
             => ToN(src, defaultValue, ToDateTime);
-        public static DateTime ToFormatDateTime(this string src)
-            => ToDateTime(src, "yyyy-MM-dd HH:mm:ss");
         /// <summary>
         /// 将String转换成DateTime
         /// </summary>

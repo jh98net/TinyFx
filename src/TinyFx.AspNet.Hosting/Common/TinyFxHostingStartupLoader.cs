@@ -21,13 +21,10 @@ namespace TinyFx.AspNet.Hosting
             var section = ConfigUtil.GetSection<AspNetSection>();
             if (section?.HostingStartupAssemblies?.Any() ?? false)
             {
-                foreach (var asm in section.HostingStartupAssemblies)
+                foreach (var asmName in section.HostingStartupAssemblies)
                 {
-                    if (string.IsNullOrEmpty(asm)) continue;
-                    var msg = $"加载配置文件AspNet:HostingStartupAssemblies中项失败。name:{asm}";
-                    var ignoreAssemblyError = asm.StartsWith('+');
-                    var file = asm.TrimStart('+');
-                    var types = from t in ReflectionUtil.GetAssemblyTypes(file, ignoreAssemblyError, msg)
+                    if (string.IsNullOrEmpty(asmName)) continue;
+                    var types = from t in DIUtil.GetService<IAssemblyContainer>().GetTypes(asmName, "加载配置文件AspNet:HostingStartupAssemblies中项失败。")
                                 where t.IsSubclassOfGeneric(typeof(ITinyFxHostingStartup))
                                 select t;
                     foreach (var type in types)

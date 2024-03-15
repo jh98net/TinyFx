@@ -122,6 +122,35 @@ namespace TinyFx.Net
         /// <returns></returns>
         public static IPAddress[] GetHostAddresses()
             => Dns.GetHostAddresses(Dns.GetHostName());
+        
+        /// <summary>
+        /// 是否是局域网地址
+        /// </summary>
+        /// <param name="ipv4Address"></param>
+        /// <returns></returns>
+        public static bool IsPrivateNetwork(string ipv4Address)
+        {
+            if (IPAddress.TryParse(ipv4Address, out _))
+            {
+                if (ipv4Address.StartsWith("192.168.") || ipv4Address.StartsWith("10."))
+                {
+                    return true;
+                }
+
+                if (ipv4Address.StartsWith("172."))
+                {
+                    string seg2 = ipv4Address[4..7];
+                    if (seg2.EndsWith('.') &&
+                        String.Compare(seg2, "16.") >= 0 &&
+                        String.Compare(seg2, "31.") <= 0)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
         #endregion
 
         /// <summary>

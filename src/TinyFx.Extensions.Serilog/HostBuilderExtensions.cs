@@ -34,9 +34,9 @@ namespace TinyFx
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(ConfigUtil.Configuration)
                 .Enrich.FromLogContext()
-                .Enrich.WithProperty(SerilogUtil.EnvironmentNamePropertyName, ConfigUtil.EnvironmentString)
+                .Enrich.WithProperty(SerilogUtil.EnvironmentNamePropertyName, ConfigUtil.Environment.Name)
                 .Enrich.WithProperty(SerilogUtil.ProjectIdPropertyName, ConfigUtil.Project?.ProjectId ?? "未知程序")
-                .Enrich.WithProperty(SerilogUtil.ServiceIdPropertyName, ConfigUtil.ServiceInfo.ServiceId ?? "未知服务")
+                .Enrich.WithProperty(SerilogUtil.ServiceIdPropertyName, ConfigUtil.Service.ServiceId ?? "未知服务")
                 .Enrich.WithProperty(SerilogUtil.MachineIPPropertyName, NetUtil.GetLocalIP())
                 //.Enrich.WithProperty(SerilogUtil.IndexNamePropertyName, ConfigUtil.Project?.ProjectId.Replace('.', '_').ToLowerInvariant())
                 .Enrich.WithTemplateHash()
@@ -60,8 +60,8 @@ namespace TinyFx
                 if (string.IsNullOrEmpty(idx))
                 {
                     var projectId = ConfigUtil.Project.ProjectId.Replace('.', '_');
-                    var env = !string.IsNullOrEmpty(ConfigUtil.EnvironmentString)
-                        ? $"-{ConfigUtil.EnvironmentString.ToLower().Replace('.', '_')}"
+                    var env = !string.IsNullOrEmpty(ConfigUtil.Environment.Name)
+                        ? $"-{ConfigUtil.Environment.Name.ToLower().Replace('.', '_')}"
                         : null;
                     config["Serilog:WriteTo:ELKSink:Args:indexFormat"]
                         = $"idx-{projectId}{env}-{{0:yyyyMMdd}}";

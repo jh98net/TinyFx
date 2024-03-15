@@ -4,36 +4,48 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using TinyFx.Configuration.Common;
 using TinyFx.Text;
 
 namespace TinyFx.Configuration
 {
     public class ServiceInfo
     {
+        #region Host
         /// <summary>
-        /// 服务启动时分配的GUID
-        /// </summary>
-        public string ServiceGuid { get; }
-
-        /// <summary>
-        /// 主机IP
+        /// 注册主机IP
         /// </summary>
         public string HostIp { get; set; }
         /// <summary>
-        /// 主机端口
+        /// 注册主机端口
         /// </summary>
         public int HostPort { get; set; }
+        public bool HostSecure { get; set; }
+        #endregion
+
+        public int HttpPort { get; set; }
+        public int GrpcPort { get; set; }
+
         /// <summary>
-        /// 服务的唯一标识，默认: projectId|guid
+        /// 服务的唯一标识，默认: projectId:guid
         /// </summary>
         public string ServiceId { get; internal set; }
+
         /// <summary>
         /// 服务外部访问地址
         /// </summary>
-        public string ServiceUrl { get; set; }
-        public ServiceInfo()
+        public string ServiceUrl => HostSecure
+            ? $"https://{HostIp}:{HostPort}"
+            : $"http://{HostIp}:{HostPort}";
+
+        public ServiceInfo(EnvironmentInfo env)
         {
-            ServiceGuid = ObjectId.NewId();
+            HostIp = new HostIpGetter(env).Get();
+
+            var portGetter = new HostPortGetter(env);
+            HostPort = portGetter.GetHostPort();
+            HttpPort = portGetter.GetHttpPort();
+            GrpcPort = portGetter.GetGrpcPort();
         }
     }
 }

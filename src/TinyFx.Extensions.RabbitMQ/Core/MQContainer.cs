@@ -40,7 +40,7 @@ namespace TinyFx.Extensions.RabbitMQ
                 // conn
                 var conn = connParser.Parse(element.ConnectionString);
                 if (element.UseEnvironmentVirtualHost && conn.VirtualHost == "/")
-                    conn.VirtualHost = ConfigUtil.EnvironmentString;
+                    conn.VirtualHost = ConfigUtil.Environment.Name;
                 conn.Product = ConfigUtil.Project.ProjectId;
                 conn.Platform = NetUtil.GetLocalIP();
                 data.Connection = conn;
@@ -60,13 +60,10 @@ namespace TinyFx.Extensions.RabbitMQ
         {
             if (section.ConsumerAssemblies == null || section.ConsumerAssemblies.Count == 0)
                 return;
-            foreach (var asm in section.ConsumerAssemblies)
+            foreach (var asmName in section.ConsumerAssemblies)
             {
-                if (string.IsNullOrEmpty(asm)) continue;
-                var msg = $"加载配置文件RRabbitMQ:ConsumerAssemblies中项失败。name:{asm}";
-                var ignoreAssemblyError = asm.StartsWith('+');
-                var file = asm.TrimStart('+');
-                var types = from t in ReflectionUtil.GetAssemblyTypes(file, ignoreAssemblyError, msg)
+                if (string.IsNullOrEmpty(asmName)) continue;
+                var types = from t in DIUtil.GetService<IAssemblyContainer>().GetTypes(asmName, "加载配置文件RRabbitMQ:ConsumerAssemblies中项失败。")
                             where t.IsSubclassOfGeneric(typeof(MQSubscribeConsumer<>))
                                 || t.IsSubclassOfGeneric(typeof(MQRespondConsumer<,>))
                                 || t.IsSubclassOfGeneric(typeof(MQReceiveConsumer))

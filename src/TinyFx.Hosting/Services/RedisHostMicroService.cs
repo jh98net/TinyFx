@@ -19,9 +19,9 @@ namespace TinyFx.Hosting.Services
         public async Task<List<string>> GetAllServiceNames()
             => (await _namesDCache.GetAllAsync()).ToList();
 
-        public async Task<string> SelectOneServiceUrl(string serviceName, bool isWebsocket = false)
+        public async Task<TinyFxHostEndPoint> SelectOneServiceEndPoint(string serviceName)
         {
-            string ret = null;
+            string host = null;
             var idsDCache = RedisUtil.CreateSetClient<string>($"{RedisHostRegisterService.HOST_IDS_KEY}:{serviceName}", _connectionStringName);
             var serviceIds = (await idsDCache.GetAllAsync()).ToList() ?? new List<string>();
             while (serviceIds.Count > 0)
@@ -32,7 +32,7 @@ namespace TinyFx.Hosting.Services
                 var url = await dataDCache.GetAsync<string>("HostUrl");
                 if (url.HasValue && !string.IsNullOrEmpty(url.Value))
                 {
-                    ret = url.Value;
+                    host = url.Value;
                     break;
                 }
                 else
@@ -40,14 +40,15 @@ namespace TinyFx.Hosting.Services
                     serviceIds.RemoveAt(idx);
                 }
             }
-            if (!string.IsNullOrEmpty(ret))
+            if (!string.IsNullOrEmpty(host))
             {
-                if (isWebsocket)
-                    ret = $"ws://{ret}";
-                else
-                    ret = $"http://{ret}";
+                var values = host.Split(':');
+                var ip = values[0];
+                var port = values[1].ToInt32();
+                return new TinyFxHostEndPoint(ip, port);
             }
-            return null;
+            else
+                return null;
         }
     }
 }

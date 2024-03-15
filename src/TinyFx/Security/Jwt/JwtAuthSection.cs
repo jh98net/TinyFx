@@ -20,7 +20,7 @@ namespace TinyFx.Configuration
         /// 签名秘钥,32长度密码
         /// NoiA32QqU0elJ0FW5qgnILF7M3WpP7fS
         /// </summary>
-        public string SigningKey { get; set; } = "ABASDfasfwe@#45346dfg";
+        public string SigningKey { get; set; } = "NoiA32QqU0elJ0FW5qgnILF7M3WpP7fS";
 
         public string Audience { get; set; } = "tinyfx.com";
         public string Issuer { get; set; } = "tinyfx.com";

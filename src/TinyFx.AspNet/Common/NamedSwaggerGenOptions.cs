@@ -38,10 +38,10 @@ namespace TinyFx.AspNet.Common
         {
             var sbDesc = new StringBuilder();
             sbDesc.Append("<pre><b>");
-            sbDesc.Append(GetDesc("ServiceId", ConfigUtil.ServiceInfo.ServiceId));
-            sbDesc.Append(GetDesc("Env", $"{ConfigUtil.Environment}({ConfigUtil.EnvironmentString})"));
-            sbDesc.Append(GetDesc("IsDebug", ConfigUtil.IsDebugEnvironment));
-            sbDesc.Append(GetDesc("IsStaging", ConfigUtil.IsStagingEnvironment));
+            sbDesc.Append(GetDesc("ServiceId", ConfigUtil.Service.ServiceId));
+            sbDesc.Append(GetDesc("Env", $"{ConfigUtil.Environment.Name}({ConfigUtil.Environment.Type})"));
+            sbDesc.Append(GetDesc("IsDebug", ConfigUtil.Environment.IsDebug));
+            sbDesc.Append(GetDesc("IsStaging", ConfigUtil.Environment.IsStaging));
             sbDesc.Append(GetDesc("PathBase", ConfigUtil.GetSection<AspNetSection>()?.PathBase));
             sbDesc.Append("</b></pre>");
             var info = new OpenApiInfo()

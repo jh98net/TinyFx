@@ -1,31 +1,17 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using TinyFx.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Asp.Versioning.ApiExplorer;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
-using TinyFx;
-using System.Web;
-using TinyFx.AspNet;
-using Microsoft.AspNetCore.HttpOverrides;
-using TinyFx.Extensions.Serilog;
-using Serilog;
-using TinyFx.Logging;
-using Microsoft.AspNetCore.Cors.Infrastructure;
-using TinyFx.AspNet.Auth.Cors;
-using static System.Collections.Specialized.BitVector32;
-using Serilog.Events;
-using TinyFx.AspNet.RequestLogging;
-using TinyFx.Extensions.AppMetric;
-using TinyFx.AspNet.Hosting;
 using Microsoft.Diagnostics.NETCore.Client;
-using Microsoft.Extensions.Options;
-using SqlSugar;
-using Asp.Versioning.ApiExplorer;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+using System.ServiceModel;
+using TinyFx.AspNet;
+using TinyFx.AspNet.Auth.Cors;
+using TinyFx.AspNet.Hosting;
+using TinyFx.AspNet.RequestLogging;
+using TinyFx.Configuration;
+using TinyFx.Logging;
+using TinyFx.Reflection;
 
 namespace TinyFx
 {
@@ -51,6 +37,7 @@ namespace TinyFx
             app.UseResponseCachingEx(); // 必须放在UseCors之后
             app.UseSwaggerEx();
             app.UseInternalMap();
+            app.UseGrpcEx();
             //
             TinyFxHostingStartupLoader.Instance.Configure(app);
 
@@ -63,27 +50,23 @@ namespace TinyFx
                         ? ihttp.HttpContext.RequestServices
                         : null;
                 });
-                LogUtil.Warning("===> 【AspNet服务已启动】 ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) IsDebug:{IsDebug} IsStaging:{IsStaging} URL:{Urls} PathBase:{PathBase} ServiceId:{ServiceId}"
+                LogUtil.Warning("===> 【AspNet服务已启动】 ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) URL:{Urls} PathBase:{PathBase} ServiceId:{ServiceId}"
                     , ConfigUtil.Project?.ProjectId
-                    , ConfigUtil.Environment
-                    , ConfigUtil.EnvironmentString
-                    , ConfigUtil.IsDebugEnvironment
-                    , ConfigUtil.IsStagingEnvironment
-                    , ConfigUtil.ServiceInfo.ServiceUrl
+                    , ConfigUtil.Environment.Type
+                    , ConfigUtil.Environment.Name
+                    , ConfigUtil.Service.ServiceUrl
                     , ConfigUtil.GetSection<AspNetSection>()?.PathBase
-                    , ConfigUtil.ServiceInfo.ServiceId);
+                    , ConfigUtil.Service.ServiceId);
             });
             app.Lifetime.ApplicationStopped.Register(() =>
             {
-                LogUtil.Warning("===> 【AspNet服务已停止】 ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) IsDebug:{IsDebug} IsStaging:{IsStaging} URL:{Urls} PathBase:{PathBase} ServiceId:{ServiceId}"
-                 , ConfigUtil.Project?.ProjectId
-                 , ConfigUtil.Environment
-                 , ConfigUtil.EnvironmentString
-                 , ConfigUtil.IsDebugEnvironment
-                 , ConfigUtil.IsStagingEnvironment
-                 , ConfigUtil.ServiceInfo.ServiceUrl
-                 , ConfigUtil.GetSection<AspNetSection>()?.PathBase
-                 , ConfigUtil.ServiceInfo.ServiceId);
+                LogUtil.Warning("===> 【AspNet服务已停止】 ProjectId:{ProjectId} Env:{EnvironmentName}({EnvironmentString}) URL:{Urls} PathBase:{PathBase} ServiceId:{ServiceId}"
+                    , ConfigUtil.Project?.ProjectId
+                    , ConfigUtil.Environment.Type
+                    , ConfigUtil.Environment.Name
+                    , ConfigUtil.Service.ServiceUrl
+                    , ConfigUtil.GetSection<AspNetSection>()?.PathBase
+                    , ConfigUtil.Service.ServiceId);
             });
             return app;
         }
@@ -215,6 +198,60 @@ namespace TinyFx
             app.MapGet("/env", () => AspNetHost.MapEnvPath());
             app.MapGet("/dump", (DumpType? t) => AspNetHost.MapDumpPath(t ?? DumpType.WithHeap));
             return app;
+        }
+        public static WebApplication UseGrpcEx(this WebApplication app)
+        {
+            var section = ConfigUtil.GetSection<GrpcSection>();
+            if (section != null && section.Enabled)
+            {
+                var grpcTypes = new List<Type>();
+                if (section.Assemblies != null && section.Assemblies.Count > 0)
+                {
+                    section.Assemblies.ForEach(x =>
+                    {
+                        var ams = DIUtil.GetService<IAssemblyContainer>().GetAssembly(x, "加载GRPC的Assemblies");
+                        grpcTypes.AddRange(GetGrpcTypes(ams));
+                    });
+                }
+                else
+                {
+                    grpcTypes.AddRange(GetGrpcTypes(Assembly.GetEntryAssembly()));
+                    grpcTypes.AddRange(GetGrpcTypes(Assembly.GetExecutingAssembly()));
+                }
+                // 注册
+                Type invokeType = typeof(GrpcEndpointRouteBuilderExtensions);
+                grpcTypes.ForEach(genericType =>
+                {
+                    // app.MapGrpcService<GreeterService>();
+                    ReflectionUtil.InvokeStaticGenericMethod(invokeType, "MapGrpcService", genericType, app);
+                });
+            }
+            return app;
+        }
+        private static List<Type> GetGrpcTypes(Assembly? assembly)
+        {
+            var ret = new List<Type>();
+            if (assembly != null)
+            {
+                foreach (var type in assembly.GetExportedTypes())
+                {
+                    if (!type.IsClass)
+                        continue;
+                    var itypes = type.GetInterfaces();
+                    if (itypes.Length == 0)
+                        continue;
+                    foreach (var itype in itypes)
+                    {
+                        var attr = itype.GetCustomAttribute<ServiceContractAttribute>();
+                        if (attr != null)
+                        {
+                            ret.Add(type);
+                            break;
+                        }
+                    }
+                }
+            }
+            return ret;
         }
     }
 }

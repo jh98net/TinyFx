@@ -115,7 +115,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.HCaptcha", "src\Tiny
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.BIZ.DataSplit.JOB", "src\TinyFx.BIZ.DataSplit.JOB\TinyFx.BIZ.DataSplit.JOB.csproj", "{898B7190-7451-4241-A8C6-D702C3CE5AF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyFx.SnowflakeId", "src\TinyFx.SnowflakeId\TinyFx.SnowflakeId.csproj", "{763C60C9-9DB4-495B-A9DF-CA06D1A73DE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyFx.SnowflakeId", "src\TinyFx.SnowflakeId\TinyFx.SnowflakeId.csproj", "{763C60C9-9DB4-495B-A9DF-CA06D1A73DE3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Shared", "demo\Demo.Shared\Demo.Shared.csproj", "{EAE3E61E-7217-4525-895A-8115D4161668}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -287,6 +289,10 @@ Global
 		{763C60C9-9DB4-495B-A9DF-CA06D1A73DE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{763C60C9-9DB4-495B-A9DF-CA06D1A73DE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{763C60C9-9DB4-495B-A9DF-CA06D1A73DE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAE3E61E-7217-4525-895A-8115D4161668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAE3E61E-7217-4525-895A-8115D4161668}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAE3E61E-7217-4525-895A-8115D4161668}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAE3E61E-7217-4525-895A-8115D4161668}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -337,6 +343,7 @@ Global
 		{2573CCCB-7476-4D20-A335-FCD25DCE62AC} = {1FF166BB-BDA2-4A20-8EE9-209B210B1185}
 		{898B7190-7451-4241-A8C6-D702C3CE5AF0} = {38EC6A5A-A374-4BCC-A5C7-2D2CD2D19D91}
 		{763C60C9-9DB4-495B-A9DF-CA06D1A73DE3} = {1FF166BB-BDA2-4A20-8EE9-209B210B1185}
+		{EAE3E61E-7217-4525-895A-8115D4161668} = {479C6C03-AE11-4CF0-B338-B6E98FE09C25}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6FDC92E-FBF2-40CE-9A71-2A4B6A4E6F3E}

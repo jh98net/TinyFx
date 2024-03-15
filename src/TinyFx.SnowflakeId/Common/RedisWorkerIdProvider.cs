@@ -31,15 +31,15 @@ namespace TinyFx.SnowflakeId.Common
             {
                 Ip = NetUtil.GetLocalIP(),
                 Pid = Process.GetCurrentProcess().Id,
-                Env = ConfigUtil.EnvironmentString,
+                Env = ConfigUtil.Environment.Name,
                 ProjectId = ConfigUtil.Project.ProjectId,
-                ServiceId = ConfigUtil.ServiceInfo.ServiceId
+                ServiceId = ConfigUtil.Service.ServiceId
             };
         }
 
         public async Task<int> GetNextWorkId()
         {
-            using (var redlock = await RedisUtil.LockAsync("__IDGeneratorWorkerId", 20))
+            using (var redlock = await RedisUtil.LockAsync("_IDGeneratorWorkerId", 20))
             {
                 if (!redlock.IsLocked)
                 {

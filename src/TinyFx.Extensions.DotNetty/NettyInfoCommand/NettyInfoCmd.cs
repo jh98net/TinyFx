@@ -16,7 +16,7 @@ namespace TinyFx.Extensions.DotNetty.NettyInfoCommand
     {
         public override Task<NettyInfoAck> Respond(RequestContext ctx, NettyInfoReq request)
         {
-            if (ConfigUtil.IsDebugEnvironment)
+            if (ConfigUtil.Environment.IsDebug)
             {
                 return null;
             }

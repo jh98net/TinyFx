@@ -7,16 +7,12 @@ namespace TinyFx.Configuration
     /// <summary>
     /// 软件开发环境
     /// </summary>
-    public enum EnvironmentNames
+    public enum EnvironmentType
     {
         /// <summary>
         /// 自定义
         /// </summary>
         Unknown,
-        /// <summary>
-        /// 开发人员电脑
-        /// </summary>
-        Local,
         /// <summary>
         /// dev 开发测试环境
         /// </summary>

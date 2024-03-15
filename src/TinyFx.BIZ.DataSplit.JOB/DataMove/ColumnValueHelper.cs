@@ -145,7 +145,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
                 case ColumnType.NumDay:
                     return date.ToString("yyyyMMdd");
                 case ColumnType.NumWeek:
-                    return date.ToYearWeekString();
+                    return DateTimeUtil.ToYearWeekString(date);
                 case ColumnType.NumMonth:
                     return date.ToString("yyyyMM");
                 case ColumnType.NumQuarter:

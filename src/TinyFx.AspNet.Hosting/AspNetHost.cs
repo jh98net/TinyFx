@@ -51,7 +51,7 @@ namespace TinyFx
                        .Select(o => { return $"id:{o.Id} name:{o.ProcessName} threads:{o.Threads.Count}"; })
                        .ToList();
             var lastBuildTime = File.GetLastWriteTimeUtc(Assembly.GetEntryAssembly().Location).AddHours(8).ToString("yyyy-MM-dd HH:mm:ss");
-            var startTime = ((long)ObjectId.Parse(ConfigUtil.ServiceInfo.ServiceGuid).Timestamp).TimestampToUtcDateTime().ToFormatString();
+            var startTime = ConfigUtil.Environment.StartUtcTime.UtcToCNString();
             string outputIp = null;
             try
             {
@@ -60,12 +60,11 @@ namespace TinyFx
             catch { }
             var dict = new Dictionary<string, object>
             {
-                { "服务启动UTC时间", startTime },
-                { "ConfigUtil.ServiceId", ConfigUtil.ServiceInfo.ServiceId },
-                { "ConfigUtil.ServiceUrl", ConfigUtil.ServiceInfo.ServiceUrl },
-                { "ConfigUtil.ServiceGuid", ConfigUtil.ServiceInfo.ServiceGuid },
-                { "ConfigUtil.EnvironmentString", ConfigUtil.EnvironmentString },
-                { "ConfigUtil.Environment", ConfigUtil.Environment.ToString() },
+                { "服务启动时间", startTime },
+                { "ConfigUtil.ServiceId", ConfigUtil.Service.ServiceId },
+                { "ConfigUtil.ServiceUrl", ConfigUtil.Service.ServiceUrl },
+                { "ConfigUtil.Environment.Name", ConfigUtil.Environment.Name },
+                { "ConfigUtil.Environment.Type", ConfigUtil.Environment.Type.ToString() },
                 { "header:Host", HttpContextEx.GetHeaderValue("Host") },
                 { "header:X-Forwarded-Proto",HttpContextEx.GetHeaderValue("X-Forwarded-Proto")},
                 { "header:Referer", HttpContextEx.GetHeaderValue("Referer") },
@@ -84,7 +83,7 @@ namespace TinyFx
             };
             ThreadPool.GetAvailableThreads(out var worker, out var completion);
             dict.Add("ThreadPool.GetAvailableThreads()", $"workerThreads:{worker} completionPortThreads:{completion}");
-            
+
             dict.Add("headers总量", HttpContextEx.Request.Headers.Count);
             foreach (var header in HttpContextEx.Request.Headers)
             {

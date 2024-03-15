@@ -29,7 +29,7 @@ namespace TinyFx.AspNet
                 if (!string.IsNullOrEmpty(userId))
                 {
                     var value = await _provider.GetNotify(userId);
-                    context?.HttpContext?.Response?.Headers?.Add(HEADER_NAME, Convert.ToString(value));
+                    context?.HttpContext?.Response?.Headers?.Add(HEADER_NAME, Convert.ToString(value).ToLower());
                 }
             }
         }

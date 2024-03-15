@@ -80,7 +80,7 @@ namespace TinyFx.Extensions.RabbitMQ
                 msg.MQMeta ??= new()
                 {
                     MessageId = ObjectId.NewId(),
-                    Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false)
+                    Timestamp = DateTime.UtcNow.ToTimestamp(true)
                 };
                 if (!string.IsNullOrEmpty(routingKey))
                     msg.MQMeta.RoutingKey = routingKey;
@@ -228,7 +228,7 @@ namespace TinyFx.Extensions.RabbitMQ
                 msg.MQMeta = new()
                 {
                     MessageId = ObjectId.NewId(),
-                    Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false),
+                    Timestamp = DateTime.UtcNow.ToTimestamp(true),
                     Delay = delay
                 };
             }
@@ -288,7 +288,7 @@ namespace TinyFx.Extensions.RabbitMQ
                 msg.MQMeta = new()
                 {
                     MessageId = ObjectId.NewId(),
-                    Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false),
+                    Timestamp = DateTime.UtcNow.ToTimestamp(true),
                 };
             }
             var attr = GetMessageAttribute<MQRequestMessageAttribute>(message);
@@ -355,7 +355,7 @@ namespace TinyFx.Extensions.RabbitMQ
                 msg.MQMeta = new()
                 {
                     MessageId = ObjectId.NewId(),
-                    Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false),
+                    Timestamp = DateTime.UtcNow.ToTimestamp(true),
                 };
             }
             var attr = GetMessageAttribute<MQSendMessageAttribute>(message);

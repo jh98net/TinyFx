@@ -25,8 +25,7 @@ namespace TinyFx
                 .AddRabbitMQEx()
                 .AddSnowflakeIdEx()
                 .AddDbCachingEx()
-                .AddIP2CountryEx()
-                .AddTinyFxHostEx();
+                .AddIP2CountryEx();
             return builder;
         }
 

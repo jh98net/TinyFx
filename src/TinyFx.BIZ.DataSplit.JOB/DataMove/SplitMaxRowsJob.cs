@@ -117,12 +117,12 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
             {
                 case ColumnType.DateTime: // DateTime
                     ret.Begin.Date = await query.MinAsync<DateTime>(_item.ColumnName);
-                    ret.Begin.Value = ret.Begin.Date.ToFormatString();
+                    ret.Begin.Value = ret.Begin.Date.ToFormatString(false);
                     ret.End.Date = await query.MaxAsync<DateTime>(_item.ColumnName);
-                    ret.End.Value = ret.End.Date.ToFormatString();
+                    ret.End.Value = ret.End.Date.ToFormatString(false);
                     var dt = ret.End.Date.AddHours(_item.MaxRowInterval);
                     ret.Next.Date = new DateTime(dt.Year, dt.Month, dt.Day, dt.Hour, 0, 0, DateTimeKind.Utc);
-                    ret.Next.Value = ret.Next.Date.ToFormatString();
+                    ret.Next.Value = ret.Next.Date.ToFormatString(false);
                     break;
                 case ColumnType.ObjectId: // ObjectId
                     query = query.Where($"LENGTH(`{_item.ColumnName}`)=24");
@@ -152,7 +152,7 @@ namespace TinyFx.BIZ.DataSplit.JOB.DataMove
                     ret.End.Date = _columnHelper.ColumnValueToDate(ret.End.Value);
                     var dt3 = DateTimeUtil.BeginDayOfNextWeek(ret.End.Date);
                     ret.Next.Date = new DateTime(dt3.Year, dt3.Month, dt3.Day, 0, 0, 0, DateTimeKind.Utc);
-                    ret.Next.Value = ret.Next.Date.ToYearWeekString();
+                    ret.Next.Value = DateTimeUtil.ToYearWeekString(ret.Next.Date);
                     break;
                 case ColumnType.NumMonth:
                     query = query.Where($"LENGTH(`{_item.ColumnName}`)=6");

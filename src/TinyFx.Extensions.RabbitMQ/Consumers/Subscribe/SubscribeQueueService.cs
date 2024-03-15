@@ -30,13 +30,13 @@ namespace TinyFx.Extensions.RabbitMQ
         public async Task<int> GetQueueCount(bool useCache = true)
         {
             // 缓存
-            if (useCache && DateTime.UtcNow.UtcDateTimeToTimestamp(false) - _lastTimestamp < QueueCountTimeout)
+            if (useCache && DateTime.UtcNow.ToTimestamp(true) - _lastTimestamp < QueueCountTimeout)
                 return _queueCount;
 
             var redisKey = GetQueueCountRedisKey();
             var client = RedisUtil.CreateStringClient<int>(redisKey, _connectionStringName);
             _queueCount = await client.GetOrDefaultAsync(1);
-            _lastTimestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+            _lastTimestamp = DateTime.UtcNow.ToTimestamp(true);
             return _queueCount;
         }
         public async Task SetQueueCount(int count)

@@ -25,7 +25,7 @@ namespace TinyFx.Hosting.Services
         public RedisHostRegisterService()
         {
             ServiceName = ConfigUtil.Project.ProjectId;
-            ServiceId = ConfigUtil.ServiceInfo.ServiceId;
+            ServiceId = ConfigUtil.Service.ServiceId;
             HEALTH_INTERVAL = ConfigUtil.Host.HeathInterval;
 
             _namesDCache = RedisUtil.CreateSetClient<string>(HOST_NAMES_KEY);
@@ -69,7 +69,7 @@ namespace TinyFx.Hosting.Services
         public async Task Health()
         {
             // 检查
-            using (var redLock = await RedisUtil.LockAsync($"__HostRegister:_HEALTH", 20))
+            using (var redLock = await RedisUtil.LockAsync($"_HostRegister:_HEALTH", 20))
             {
                 if (!redLock.IsLocked)
                 {
@@ -78,7 +78,7 @@ namespace TinyFx.Hosting.Services
                 }
 
                 var lastTs = await _healthDCache.GetOrDefaultAsync(0);
-                var utcTs = DateTime.UtcNow.UtcDateTimeToTimestamp(false);
+                var utcTs = DateTime.UtcNow.ToTimestamp(true);
                 if (utcTs - lastTs < HEALTH_INTERVAL)
                     return;
                 await _healthDCache.SetAsync(utcTs);
@@ -107,7 +107,7 @@ namespace TinyFx.Hosting.Services
 
         private async Task<RedLock> GetRedLock()
         {
-            var ret = await RedisUtil.LockAsync($"__HostRegister:{ServiceName}", 20);
+            var ret = await RedisUtil.LockAsync($"_HostRegister:{ServiceName}", 20);
             if (!ret.IsLocked)
             {
                 ret.Release();

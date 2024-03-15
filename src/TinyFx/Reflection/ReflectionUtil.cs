@@ -187,18 +187,30 @@ namespace TinyFx.Reflection
         #endregion
 
         #region InvokeMethod
-        public static object InvokeMethod(string typeName, string methodName, params object[] args)
+        public static object InvokeMethod(string invokeType, string invokeMethod, params object[] args)
         {
-            var type = Type.GetType(typeName);
-            var method = type.GetMethod(methodName);
+            var type = Type.GetType(invokeType);
+            var method = type.GetMethod(invokeMethod);
             var obj = Activator.CreateInstance(type);
             return method.Invoke(obj, args);
         }
-        public static object InvokeStaticMethod(string typeName, string methodName, params object[] args)
+        public static object InvokeStaticMethod(string invokeType, string invokeMethod, params object[] args)
         {
-            var type = Type.GetType(typeName);
-            var method = type.GetMethod(methodName);
+            var type = Type.GetType(invokeType);
+            var method = type.GetMethod(invokeMethod);
             return method.Invoke(null, args);
+        }
+        public static object InvokeStaticGenericMethod(string invokeType, string invokeMethod, string genericType, params object[] args)
+        {
+            var itype = Type.GetType(invokeType);
+            var gtype = Type.GetType(genericType);
+            return InvokeStaticGenericMethod(itype, invokeMethod, gtype, args);
+        }
+        public static object InvokeStaticGenericMethod(Type invokeType, string invokeMethod, Type genericType, params object[] args)
+        {
+            var method = invokeType.GetMethod(invokeMethod);
+            var gmethod = method.MakeGenericMethod(genericType);
+            return gmethod.Invoke(null, args);
         }
         #endregion
 
@@ -395,27 +407,6 @@ namespace TinyFx.Reflection
         {
             return type.FullName.StartsWith("System.");
             //return (type == typeof(object) || Type.GetTypeCode(type) != TypeCode.Object);
-        }
-
-        public static List<Type> GetAssemblyTypes(string asm, bool ignoreError, string msg = null)
-        {
-            if (string.IsNullOrEmpty(asm))
-                return new List<Type>();
-            if (!asm.EndsWith(".dll"))
-                asm += ".dll";
-            var file = asm;
-            if (!File.Exists(file))
-                file = Path.Combine(AppContext.BaseDirectory, asm);
-            if (File.Exists(file))
-                return Assembly.LoadFrom(file).GetTypes().ToList();
-            if (string.IsNullOrEmpty(msg))
-                msg = $"加载Assembly获取Types失败。name:{asm} file:{file}";
-            else
-                msg += $"name:{asm} file:{file}";
-            if (!ignoreError)
-                throw new Exception(msg);
-            LogUtil.Warning(msg);
-            return new List<Type>();
         }
     }
 }

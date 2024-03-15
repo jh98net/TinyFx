@@ -15,11 +15,11 @@ namespace TinyFx.Extensions.RabbitMQ
         private static bool _enabled;
         static MQLogger()
         {
-            ConfigUtil.ConfigChanged += (_, _) =>
+            ConfigUtil.RegisterChangedCallback(() =>
             {
                 var section = ConfigUtil.GetSection<RabbitMQSection>();
                 _enabled = section != null && section.LogEnabled;
-            };
+            });
         }
         public MQLogger()
         {

@@ -1,14 +1,18 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Grpc.Net.Client;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json.Linq;
+using ProtoBuf.Grpc.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TinyFx.Caching;
 using TinyFx.Hosting.Services;
+using TinyFx.Net;
 
 namespace TinyFx.Hosting
 {
@@ -106,16 +110,58 @@ namespace TinyFx.Hosting
 
         #region ITinyFxHostMicroService
         public static async Task<List<string>> GetAllServiceNames()
-            => await DIUtil.GetRequiredService<ITinyFxHostMicroService>().GetAllServiceNames();
+            => await GetMicroService().GetAllServiceNames();
+        public static async Task<TinyFxHostEndPoint> SelectOneServiceEndPoint(string serviceName)
+            => await GetMicroService().SelectOneServiceEndPoint(serviceName);
+        private static ITinyFxHostMicroService GetMicroService()
+        {
+            var ret = DIUtil.GetService<ITinyFxHostMicroService>();
+            if (ret == null)
+                throw new Exception("ITinyFxHostMicroService没有注入服务");
+            return ret;
+        }
 
         /// <summary>
-        /// 获取指定服务地址
+        /// 创建指定服务名的HttpClient
         /// </summary>
         /// <param name="serviceName"></param>
-        /// <param name="isWebsocket"></param>
         /// <returns></returns>
-        public static Task<string> SelectOneServiceUrl(string serviceName, bool isWebsocket = false)
-            => DIUtil.GetRequiredService<ITinyFxHostMicroService>().SelectOneServiceUrl(serviceName, isWebsocket);
+        public static async Task<JsonHttpClient> CreateJsonHttpClient(string serviceName)
+        {
+            var ret = new JsonHttpClient(serviceName);
+            var endpoint = await SelectOneServiceEndPoint(serviceName);
+            ret.SetBaseAddress(endpoint.ToString());
+            return ret;
+        }
+
+        /// <summary>
+        /// 创建指定服务名的GrpcClient（protobuf-net.Grpc）
+        /// </summary>
+        /// <typeparam name="TService">
+        /// 服务协定接口，例如:
+        /// [ServiceContract]
+        /// public interface IGreeterService
+        /// {
+        ///     [OperationContract]
+        ///     Task<HelloReply> SayHelloAsync(HelloRequest request, CallContext context = default);
+        /// }
+        /// 其中HelloRequest数据协定:
+        /// [DataContract]
+        /// public class HelloRequest
+        /// {
+        ///     [DataMember(Order = 1)]
+        ///     public string Name { get; set; }
+        /// }
+        /// <param name="serviceName"></param>
+        /// <returns></returns>
+        public static async Task<TService> CreateGrpcClient<TService>(string serviceName)
+            where TService : class
+        {
+            var endpoint = await SelectOneServiceEndPoint(serviceName);
+            using var channel = GrpcChannel.ForAddress(endpoint.ToString());
+            var client = channel.CreateGrpcService<TService>();
+            return client;
+        }
         #endregion
 
         #region ITinyFxHostRegDataService

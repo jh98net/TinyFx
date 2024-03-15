@@ -20,8 +20,7 @@ namespace TinyFx.Hosting.Services
         /// 负载均衡获取服务名中的其中一个服务地址
         /// </summary>
         /// <param name="serviceName"></param>
-        /// <param name="isWebsocket"></param>
         /// <returns></returns>
-        Task<string> SelectOneServiceUrl(string serviceName, bool isWebsocket = false);
+        Task<TinyFxHostEndPoint> SelectOneServiceEndPoint(string serviceName);
     }
 }

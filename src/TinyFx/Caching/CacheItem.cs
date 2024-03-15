@@ -38,35 +38,35 @@ namespace TinyFx.Caching
         [System.Text.Json.Serialization.JsonIgnore]
         [Newtonsoft.Json.JsonIgnore]
         public bool IsExpired => ExpireTime.HasValue
-            ? (DateTime.UtcNow.DateTimeToTimestamp() - ExpireTime) > 0
+            ? (DateTime.UtcNow.ToTimestamp() - ExpireTime) > 0
             : false;
         public void SetExpire(DateTime? expireAt)
         {
             if (expireAt.HasValue)
-                ExpireTime = expireAt.Value.DateTimeToTimestamp();
+                ExpireTime = expireAt.Value.ToTimestamp();
         }
         public void SetExpire(TimeSpan? expireSpan)
         {
             if (expireSpan.HasValue)
-                ExpireTime = DateTime.UtcNow.Add(expireSpan.Value).DateTimeToTimestamp();
+                ExpireTime = DateTime.UtcNow.Add(expireSpan.Value).ToTimestamp();
         }
         public TimeSpan? GetExpireSpan()
         {
             if (!ExpireTime.HasValue)
                 return null;
-            return ExpireTime.Value.TimestampToDateTime() - DateTime.UtcNow;
+            return DateTimeUtil.ParseTimestamp(ExpireTime.Value, true) - DateTime.UtcNow;
         }
         public DateTime? GetExpireUtcTime()
         {
             if (!ExpireTime.HasValue)
                 return null;
-            return ExpireTime.Value.TimestampToDateTime(false);
+            return DateTimeUtil.ParseTimestamp(ExpireTime.Value, true);
         }
         public DateTime? GetExpireTime()
         {
             if (!ExpireTime.HasValue)
                 return null;
-            return ExpireTime.Value.TimestampToDateTime(true);
+            return DateTimeUtil.ParseTimestamp(ExpireTime.Value);
         }
     }
 }

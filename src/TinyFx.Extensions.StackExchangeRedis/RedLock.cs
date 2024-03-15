@@ -47,7 +47,7 @@ namespace TinyFx.Extensions.StackExchangeRedis
             {
                 if (await Database.LockTakeAsync(LockKey, _token, Expiry))
                 {
-                    LogUtil.Debug("RedLock申请锁成功。lockKey:{lockKey} token:{token}", LockKey, _token);
+                    LogUtil.Trace("RedLock申请锁成功。lockKey:{lockKey} token:{token}", LockKey, _token);
                     IsLocked = true;
                     _timer.Elapsed += (sender, args) =>
                     {

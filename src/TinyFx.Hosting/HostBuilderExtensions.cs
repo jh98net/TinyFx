@@ -19,6 +19,7 @@ using TinyFx.Hosting.Common;
 using TinyFx.Hosting.Services;
 using TinyFx.Logging;
 using TinyFx.Net;
+using TinyFx.Reflection;
 
 namespace TinyFx
 {
@@ -51,20 +52,20 @@ namespace TinyFx
                     ret.IsContext = true;
                     return ret;
                 });
+                services.AddSingleton<IAssemblyContainer>(new AssemblyContainer());
 
                 // DistributedMemoryCache
                 services.AddDistributedMemoryCache();
             });
 
             // Configuration
-            ConfigUtil.ServiceInfo.HostIp = new HostIpGetter().Get();
-            ConfigUtil.ServiceInfo.HostPort = new HostPortGetter().Get();
-            var configHelper = new ConfigSourceBuilder(builder, envString);
+            var fileConfig = ConfigUtil.BuildConfiguration(envString);
+            var configHelper = new ConfigSourceBuilder(builder, fileConfig);
             var configuration = configHelper.Build();
-            ConfigUtil.InitConfiguration(configuration, configHelper.EnvString);
+            ConfigUtil.InitConfiguration(configuration);
             builder.ConfigureHostOptions((context, opts) =>
             {
-                context.HostingEnvironment.EnvironmentName = ConfigUtil.EnvironmentString;
+                context.HostingEnvironment.EnvironmentName = ConfigUtil.Environment.Name;
                 context.HostingEnvironment.ApplicationName = ConfigUtil.Project.ProjectId;
                 context.Configuration = ConfigUtil.Configuration;
             });
@@ -87,6 +88,7 @@ namespace TinyFx
                         services.AddSingleton<ITinyFxHostMicroService>(new NacosHostMicroService());
                         break;
                 }
+                services.AddHostedService<TinyFxHostedService>();
             });
 
             // HttpClient
@@ -125,15 +127,6 @@ namespace TinyFx
             });
 
             LogUtil.Info("配置 => [TinyFx]");
-            return builder;
-        }
-
-        public static IHostBuilder AddTinyFxHostEx(this IHostBuilder builder)
-        {
-            builder.ConfigureServices(services =>
-            {
-                services.AddHostedService<TinyFxHostedService>();
-            });
             return builder;
         }
     }

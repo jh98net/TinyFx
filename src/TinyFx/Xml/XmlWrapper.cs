@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Xml;
 
-namespace TinyFx
+namespace TinyFx.Xml
 {
     /// <summary>
     /// XML文档操作包装类，主要使用xpath
@@ -114,7 +114,7 @@ namespace TinyFx
         /// <returns></returns>
         public string GetInnerText(string xpath)
             => GetElement(xpath, false)?.InnerText;
-        
+
         /// <summary>
         /// 获取节点属性值
         /// </summary>

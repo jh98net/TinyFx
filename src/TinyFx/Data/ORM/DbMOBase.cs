@@ -23,10 +23,10 @@ namespace TinyFx.Data.ORM
         private static ConcurrentDictionary<string, ConnectionStringConfig> TypeNameDict = new();
         static DbMOBase()
         {
-            ConfigUtil.ConfigChanged += (_, _) =>
+            ConfigUtil.RegisterChangedCallback(() => 
             {
                 TypeNameDict.Clear();
-            };
+            });
         }
         /// <summary>
         /// 当前对象初始化,如果不指定connectionStringName，则使用命名空间过滤查询，而不是用默认

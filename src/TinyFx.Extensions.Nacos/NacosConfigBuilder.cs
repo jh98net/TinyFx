@@ -10,6 +10,11 @@ using TinyFx.Logging;
 
 namespace TinyFx.Extensions.Nacos
 {
+    /// <summary>
+    /// API: https://nacos.io/zh-cn/docs/open-api.html
+    /// nacos高可用: https://www.cnblogs.com/crazymakercircle/p/15393171.html
+    /// nacos-sdk-csharp: https://github.com/nacos-group/nacos-sdk-csharp/tree/dev?tab=readme-ov-file#nacos-sdk-csharp-------%E4%B8%AD%E6%96%87
+    /// </summary>
     public class NacosConfigBuilder : IExternalConfigBuilder
     {
         public IConfiguration Build(IConfiguration sourceConfig, IHostBuilder hostBuilder)
@@ -52,65 +57,33 @@ namespace TinyFx.Extensions.Nacos
 
         private void SetNacosConfig(NacosSection section, IConfigurationSection nacosConfig)
         {
+            ConfigUtil.Service.HostSecure = section.Secure;
+
             // HostIp
-            var hostIp = ConfigUtil.ServiceInfo.HostIp;
-            if (string.IsNullOrEmpty(section.Ip))
+            var envHostIp = ConfigUtil.Service.HostIp;
+            if (!string.IsNullOrEmpty(section.Ip))
             {
-                if (!string.IsNullOrEmpty(hostIp))
-                {
-                    nacosConfig["Ip"] = hostIp;
-                }
+                if (!string.IsNullOrEmpty(envHostIp) && envHostIp != section.Ip)
+                    throw new Exception($"Nacos:Ip配置[{section.Ip}]与ConfigUtil.ServiceInfo.HostIp[{envHostIp}]不一致。");
+                ConfigUtil.Service.HostIp = section.Ip;
             }
             else
             {
-                if (string.IsNullOrEmpty(hostIp))
-                {
-                    ConfigUtil.ServiceInfo.HostIp = section.Ip;
-                }
-                else
-                {
-                    if (hostIp != section.Ip)
-                        throw new Exception($"Nacos:Ip配置[{section.Ip}]与ConfigUtil.ServiceInfo.HostIp[{hostIp}]不一致。");
-                }
+                nacosConfig["Ip"] = envHostIp;
             }
 
             // HostPort
-            var hostPort = ConfigUtil.ServiceInfo.HostPort;
-            if (section.Port <= 0)
+            var envHostPort = ConfigUtil.Service.HostPort;
+            if (section.Port > 0)
             {
-                if (hostPort > 0)
-                {
-                    nacosConfig["Port"] = hostPort.ToString();
-                }
+                if (envHostPort > 0 && envHostPort != section.Port)
+                    throw new Exception($"Nacos:Port配置[{section.Port}]与ConfigUtil.ServiceInfo.HostPort[{envHostPort}]不一致。");
+                ConfigUtil.Service.HostPort = section.Port;
             }
             else
             {
-                if (hostPort <= 0)
-                {
-                    ConfigUtil.ServiceInfo.HostPort = section.Port;
-                }
-                else
-                {
-                    if (hostPort != section.Port)
-                        throw new Exception($"Nacos:Port配置[{section.Port}]与ConfigUtil.ServiceInfo.HostPort[{hostPort}]不一致。");
-                }
+                nacosConfig["Port"] = envHostPort.ToString();
             }
-
-            // FailoverDir
-            //if (!string.IsNullOrEmpty(section.FailoverDir))
-            //{
-            //    var file = Path.Combine(section.FailoverDir, "nacos", "naming", section.Namespace, "failover", UtilAndComs.FAILOVER_SWITCH);
-            //    var path = Path.GetDirectoryName(file);
-            //    try
-            //    {
-            //        if (!Directory.Exists(path))
-            //            Directory.CreateDirectory(path);
-            //        if (!File.Exists(file))
-            //            File.WriteAllText(file, "0");
-            //        System.Environment.SetEnvironmentVariable("JM.SNAPSHOT.PATH", section.FailoverDir);
-            //    }
-            //    catch { }
-            //}
         }
 
         private void SetReturnConfig(NacosSection section, IConfigurationRoot config)

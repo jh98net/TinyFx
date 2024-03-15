@@ -6,27 +6,41 @@ using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Net;
 
-namespace TinyFx.Hosting.Common
+namespace TinyFx.Configuration.Common
 {
     internal class HostIpGetter
     {
+        private EnvironmentInfo _info;
         private List<string> _envs = new List<string>()
         {
             "ENV_HOST_IP"
         };
+        public HostIpGetter(EnvironmentInfo info) 
+        {
+            _info = info;
+        }
         public string Get()
         {
             string ret = null;
+            // 1.env
             foreach (var env in _envs)
             {
                 ret = Environment.GetEnvironmentVariable(env);
                 if (!string.IsNullOrEmpty(ret))
-                    break;
+                    return ret;
             }
-            if (string.IsNullOrEmpty(ret))
-                ret = GetECSHostIp().GetTaskResult();
 
-            if (string.IsNullOrEmpty(ret))
+            // 2.aws ecs
+            ret = GetECSHostIp().GetTaskResult();
+            if (!string.IsNullOrEmpty(ret))
+                return ret;
+
+            // 3.ASPNETCORE_URLS
+            if (!string.IsNullOrEmpty(_info.UrlsEndPoint?.Ip))
+                return _info.UrlsEndPoint.Ip;
+
+            // 4.本机
+            if (!_info.IsRunningDocker)
                 ret = NetUtil.GetLocalIP();
             return ret;
         }
@@ -75,38 +89,5 @@ namespace TinyFx.Hosting.Common
         }
         #endregion
         #endregion
-    }
-    internal class HostPortGetter
-    {
-        private List<string> _envs = new List<string>()
-        {
-            "ENV_HOST_PORT",
-            "HTTP_PORTS",
-            "DOTNET_HTTP_PORTS",
-            "ASPNETCORE_HTTP_PORTS",
-        };
-        private const string _envUrls = "ASPNETCORE_URLS";
-        public int Get()
-        {
-            var ret = 0;
-            foreach (var env in _envs)
-            {
-                var port = Environment.GetEnvironmentVariable(env);
-                if (!string.IsNullOrEmpty(port))
-                {
-                    ret = port.Split(';').FirstOrDefault("0").ToInt32();
-                    if (ret > 0) break;
-                }
-            }
-            if (ret <= 0)
-            {
-                var port = Environment.GetEnvironmentVariable(_envUrls);
-                if (!string.IsNullOrEmpty(port))
-                {
-                    ret = port.Split(":").LastOrDefault("0").ToInt32();
-                }
-            }
-            return ret;
-        }
     }
 }

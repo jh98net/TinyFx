@@ -441,7 +441,7 @@ namespace TinyFx.Data
             ex.Data.Add("错误信息", string.Format("执行{0}出现异常。", commandType));
             if (command.Transaction != null)
                 ex.Data.Add("Transaction", "在事务中");
-            if (ConfigUtil.IsDebugEnvironment)
+            if (ConfigUtil.Environment.IsDebug)
                 ex.Data.Add("ConnectionString", command.ConnectionString);
             else
                 ex.Data.Add("Database: ", command.Connection.Database);

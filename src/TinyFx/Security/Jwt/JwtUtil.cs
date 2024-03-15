@@ -131,9 +131,9 @@ namespace TinyFx.Security
                 ? v5.Value : null;
 
             ret.IssuedAt = claimDict.TryGetValue("iat", out var v2) && v2 != null
-                ? DateTimeUtil.TimestampToDateTime(v2.Value) : null;
+                ? DateTimeUtil.ParseTimestamp(v2.Value) : null;
             ret.Expires = claimDict.TryGetValue("exp", out var v6) && v6 != null
-                ? DateTimeUtil.TimestampToUtcDateTime(v6.Value) : null;
+                ? DateTimeUtil.ParseTimestamp(v6.Value, true) : null;
              return ret;
         }
         private static JwtAuthSection GetSection(string signingKey = null)

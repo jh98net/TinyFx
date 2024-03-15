@@ -15,28 +15,17 @@ namespace TinyFx.Hosting.Common
     {
         public ConfigSourceFrom From { get; private set; } = ConfigSourceFrom.File;
         private IHostBuilder _builder { get; }
-        public string EnvString { get; }
-        private FileConfigBuilder _fileConfigBuilder = new();
-        public ConfigSourceBuilder(IHostBuilder builder, string envString)
+        private IConfiguration _fileConfig { get; }
+        public ConfigSourceBuilder(IHostBuilder builder, IConfiguration config)
         {
             _builder = builder;
-
-            if (string.IsNullOrEmpty(envString))
-                envString = System.Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
-            if (string.IsNullOrEmpty(envString))
-                envString = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            if (string.IsNullOrEmpty(envString))
-                envString = System.Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
-            EnvString = envString;
+            _fileConfig = config;
         }
 
         public IConfiguration Build()
         {
-            IConfiguration ret = null;
-            var sourceConfig = _fileConfigBuilder.Build(EnvString);
-            
             // nacos
-            ret = new NacosConfigBuilder().Build(sourceConfig, _builder);
+            var ret = new NacosConfigBuilder().Build(_fileConfig, _builder);
             if (ret != null)
             {
                 From = ConfigSourceFrom.Nacos;
@@ -45,8 +34,8 @@ namespace TinyFx.Hosting.Common
             //
 
             // file
-            LogUtil.Info($"配置管理 [加载文件配置源] appsettings.{EnvString}.json");
-            return sourceConfig;
+            LogUtil.Info($"配置管理 [加载文件配置源]");
+            return _fileConfig;
         }
     }
     internal enum ConfigSourceFrom

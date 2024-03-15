@@ -20,7 +20,7 @@ namespace TinyFx.Hosting.Services
             ServiceId = serviceId;
             Options.ConnectionStringName = connectionStringName;
             RedisKey = $"{RedisPrefixConst.HOSTS}:Data:{serviceId}";
-            _expireSpan = ConfigUtil.IsDebugEnvironment
+            _expireSpan = ConfigUtil.Environment.IsDebug
                 ? TimeSpan.FromMinutes(10) // 没有设置或Debug时10分钟
                 : TimeSpan.FromMilliseconds(ConfigUtil.Host.HeathInterval * 3);
         }
@@ -29,12 +29,12 @@ namespace TinyFx.Hosting.Services
         {
             var dict = new Dictionary<string, object>();
             dict.Add("ServiceId", ServiceId);
-            dict.Add("HostIp", ConfigUtil.ServiceInfo.HostIp);
-            dict.Add("HostPort", ConfigUtil.ServiceInfo.HostPort);
-            dict.Add("HostUrl", $"{ConfigUtil.ServiceInfo.HostIp}:{ConfigUtil.ServiceInfo.HostPort}");
-            dict.Add("RegisterDate", DateTime.UtcNow.UtcToBeijingDateTime().ToFormatString(true));
+            dict.Add("HostIp", ConfigUtil.Service.HostIp);
+            dict.Add("HostPort", ConfigUtil.Service.HostPort);
+            dict.Add("HostUrl", $"{ConfigUtil.Service.HostIp}:{ConfigUtil.Service.HostPort}");
+            dict.Add("RegisterDate", DateTime.UtcNow.UtcToCNString());
             await SetAsync(dict);
-            await KeyExpireAsync(_expireSpan);
+            await KeyExpireAsync(TimeSpan.FromSeconds(30));
         }
         /// <summary>
         /// 激活服务
@@ -42,7 +42,7 @@ namespace TinyFx.Hosting.Services
         /// <returns></returns>
         public async Task ActiveData()
         {
-            await SetAsync("ActiveDate", DateTime.UtcNow.UtcToBeijingDateTime().ToFormatString(true));
+            await SetAsync("ActiveDate", DateTime.UtcNow.ToTimestamp());
             await KeyExpireAsync(_expireSpan);
         }
 
@@ -50,11 +50,12 @@ namespace TinyFx.Hosting.Services
         {
             if (!await KeyExistsAsync())
                 return false;
-            var lastDate = await GetOrDefaultAsync<string>("ActiveDate", null);
-            if (string.IsNullOrEmpty(lastDate))
+            var lastTS = await GetOrDefaultAsync<long>("ActiveDate", 0);
+            if (lastTS == 0)
                 return false;
-            var lastTime = lastDate.ToFormatDateTime();
-            return DateTime.UtcNow - lastTime < _expireSpan;
+            var lastTime = DateTimeUtil.ParseTimestamp(lastTS);
+            var ret = DateTime.UtcNow - lastTime < _expireSpan;
+            return ret;
         }
         public async Task DeleteData()
         {

@@ -59,7 +59,7 @@ namespace TinyFx.Hosting.Services
                 TryCount = item.TryCount,
                 Callback = item.Callback,
                 Remain = item.Interval,
-                Timestamp = DateTime.UtcNow.UtcDateTimeToTimestamp(false)
+                Timestamp = DateTime.UtcNow.ToTimestamp(true)
             };
             if (tryUpdate)
             {

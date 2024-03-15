@@ -13,6 +13,7 @@ using System.Linq;
 using TinyFx.Net;
 using TinyFx.Security;
 using TinyFx.Logging;
+using TinyFx.Xml;
 
 namespace TinyFx.Extensions.DotNetty
 {

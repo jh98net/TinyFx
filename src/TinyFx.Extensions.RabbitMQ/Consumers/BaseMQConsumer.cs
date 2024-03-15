@@ -34,7 +34,7 @@ namespace TinyFx.Extensions.RabbitMQ
         }
 
         protected long GetElaspedTime(long? beginTimestamp)
-            => beginTimestamp.HasValue ? DateTime.UtcNow.UtcDateTimeToTimestamp(false) - beginTimestamp.Value : 0;
+            => beginTimestamp.HasValue ? DateTime.UtcNow.ToTimestamp(true) - beginTimestamp.Value : 0;
     }
     public interface IMQConsumer : IDisposable
     {

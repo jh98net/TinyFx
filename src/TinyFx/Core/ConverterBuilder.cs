@@ -174,10 +174,19 @@ namespace TinyFx
         {
             return (value) =>
             {
-                if (string.IsNullOrEmpty(value)) throw new Exception("要转换成DateTime的数据对象不能NULL或空。");
+                if (string.IsNullOrEmpty(value)) 
+                    throw new Exception("要转换成DateTime的数据对象不能NULL或空。");
                 if (string.IsNullOrEmpty(format))
-                    return DateTime.Parse(Convert.ToString(value), System.Globalization.CultureInfo.InvariantCulture);
-                return DateTime.ParseExact(Convert.ToString(value), format, System.Globalization.CultureInfo.InvariantCulture);
+                {
+                    try
+                    {
+                        return DateTimeUtil.ParseFormatString(value);
+                    }
+                    catch
+                    { }
+                    return DateTime.Parse(value, System.Globalization.CultureInfo.InvariantCulture);
+                }
+                return DateTime.ParseExact(value, format, System.Globalization.CultureInfo.InvariantCulture);
             };
         }
         /// <summary>

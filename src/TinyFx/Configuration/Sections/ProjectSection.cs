@@ -46,18 +46,10 @@ namespace TinyFx.Configuration
         /// 是否返回客户端异常详细信息（exception序列化信息）
         /// </summary>
         public bool ResponseErrorDetail { get; set; } = false;
-        /// <summary>
-        /// 是否测试环境
-        /// </summary>
-        public bool IsDebugEnvironment { get; set; }
 
         /// <summary>
         /// 项目环境 EnvironmentNames
         /// </summary>
         public string Environment { get; set; }
-        /// <summary>
-        /// 服务地址，设置ConfigUtil.ServiceUrl
-        /// </summary>
-        public string ServiceUrl { get; set; }
     }
 }

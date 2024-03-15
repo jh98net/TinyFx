@@ -46,16 +46,16 @@
     "SecretKey": "",
 
     "RegisterEnabled": true, // 是否注册到服务中心
+    "ServiceName": "demo_app", // 服务名称
+    "ClusterName": "DEFAULT",
+    "Ip": "", // 注册服务的IP地址
+    "PreferredNetworks": "", // 匹配本机IP作为服务注册IP。如: 10.0.
+    "Port": 0, // 注册服务的端口。0表示启动服务时的端口
+    "Secure": false, // 协议true: https
     "InstanceEnabled": true, // 服务注册后是否马上上线
     "NamingUseRpc": true, // 是否启用PRC作为服务发现，否则轮训
     "NamingLoadCacheAtStart": "false", // 启动时是否优先读取本地缓存默认false
     "NamingCacheRegistryDir": "",
-    "ServiceName": "demo_app", // 服务名称
-    "ClusterName": "DEFAULT",
-    "Secure": false, // 协议true: https
-    "Ip": "", // 注册服务的IP地址
-    "PreferredNetworks": "192.", // 匹配本机IP作为服务注册IP。如: 10.0.
-    "Port": 0, // 注册服务的端口。0表示启动服务时的端口
     "Weight": 100, // 负载均衡权重
     "Ephemeral": true, //是否是临时实例。默认值为 true
     "Metadata": {} //元数据
@@ -71,9 +71,7 @@
     "MinThreads": 100, // 线程池最小线程数，0-采用默认值
     "ResponseErrorMessage": true, //是否返回客户端错误信息(自定义异常和未处理异常的message)
     "ResponseErrorDetail": true, //是否返回客户端异常详细信息（exception序列化信息）
-    "IsDebugEnvironment": true, //否测试环境
-    "Environment": null, //当前环境:local,dev,fat(qa),uat(staging),pro(prod)
-    "ServiceUrl": null //服务地址
+    "Environment": null //当前环境:local,dev,fat(qa),uat(staging),pro(prod)
   },
 
   // 主机配置(TinyFx.Configuration.HostSection)
@@ -475,6 +473,13 @@
     "PathBase": null, // 项目基础路径
     "HostingStartupAssemblies": [], //启动时host配置assembly，继承ITinyFxHostingStartup
     "DynamicApiAssemblies": [] // 动态加载的API所在的 xxx.dll
+  },
+  
+  //启用gRPC服务
+  "Grpc": {
+    "Enabled": true,
+    "Port": 0,
+    "Assemblies": []
   },
 
   // 启用Session或者Cookie Identity (TinyFx.AspNet.Configuration.SessionAndCookieSection)

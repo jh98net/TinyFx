@@ -58,7 +58,7 @@ namespace TinyFx.IP2Country
             if (section.AllowIpDict.Contains(userIp) || section.AllowIpDict.Contains("*"))
                 return true;
             // 测试环境 内网环境
-            if (ConfigUtil.IsDebugEnvironment || NetUtil.GetIpMode(userIp) != IpAddressMode.External)
+            if (ConfigUtil.Environment.IsDebug || NetUtil.GetIpMode(userIp) != IpAddressMode.External)
                 return true;
             // 白名单
             if (allowIps != null && allowIps.Any(x => x == userIp))

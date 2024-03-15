@@ -15,15 +15,11 @@ namespace TinyFx.Extensions.StackExchangeRedis
         private readonly List<object> _list = new();
         public ConsumerContainer(List<string> asms)
         {
-            foreach (var asm in asms)
+            foreach (var asmName in asms)
             {
-                if (string.IsNullOrEmpty(asm))
+                if (string.IsNullOrEmpty(asmName))
                     continue;
-                var msg = $"加载配置文件Redis:ConsumerAssemblies中项失败。name:{asm}";
-
-                var ignoreAssemblyError = asm.StartsWith('+');
-                var file = asm.TrimStart('+');
-                var types = from t in ReflectionUtil.GetAssemblyTypes(file, ignoreAssemblyError, msg)
+                var types = from t in DIUtil.GetService<IAssemblyContainer>().GetTypes(asmName, "加载配置文件Redis:ConsumerAssemblies中项失败。")
                                 .Where(x => x.GetCustomAttribute<RedisConsumerRegisterIgnoreAttribute>() == null)
                             where t.IsSubclassOfGeneric(typeof(RedisSubscribeConsumer<>))
                                 || t.IsSubclassOfGeneric(typeof(RedisQueueConsumer<>))

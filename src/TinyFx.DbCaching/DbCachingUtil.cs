@@ -333,7 +333,7 @@ namespace TinyFx.DbCaching
             {
                 TraceId = ObjectId.NewId(),
                 RedisConnectionStringName = redisConnectionStringName,
-                CheckDate = DateTime.Now.ToFormatString(),
+                CheckDate = DateTime.UtcNow.UtcToCNString(),
                 CheckItems = checkItems,
             };
             await RedisUtil.PublishAsync(msg, redisConnectionStringName);

@@ -41,7 +41,7 @@ namespace TinyFx.Hosting.Services
 
         public async Task SetHostData<T>(string key, T value, string serviceId = null, string connectionStringName = null)
         {
-            serviceId ??= ConfigUtil.ServiceInfo.ServiceId;
+            serviceId ??= ConfigUtil.Service.ServiceId;
             if (string.IsNullOrEmpty(serviceId) || string.IsNullOrEmpty(key))
                 throw new Exception($"RedisHostRegDataService.SetHostData时ServiceId和Key不能为空。serviceId:{serviceId} key:{key}");
             var dcache = new TinyFxHostDataDCache(serviceId, connectionStringName);
@@ -49,7 +49,7 @@ namespace TinyFx.Hosting.Services
         }
         public async Task<CacheValue<T>> GetHostData<T>(string key, string serviceId = null, string connectionStringName = null)
         {
-            serviceId ??= ConfigUtil.ServiceInfo.ServiceId;
+            serviceId ??= ConfigUtil.Service.ServiceId;
             if (string.IsNullOrEmpty(serviceId) || string.IsNullOrEmpty(key))
                 throw new Exception($"RedisHostRegDataService.GetHostData时ServiceId和Key不能为空。serviceId:{serviceId} key:{key}");
             var dcache = new TinyFxHostDataDCache(serviceId, connectionStringName);

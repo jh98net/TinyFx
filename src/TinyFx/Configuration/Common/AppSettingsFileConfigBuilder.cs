@@ -6,13 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TinyFx.Hosting.Common
+namespace TinyFx.Configuration.Common
 {
-    internal class FileConfigBuilder
+    internal class AppSettingsFileConfigBuilder
     {
-        public FileConfigBuilder()
-        { }
-
         public IConfiguration Build(string envString)
         {
             IConfigurationBuilder ret = new ConfigurationBuilder();

@@ -1,10 +1,14 @@
+using GRPC;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
+using ProtoBuf.Grpc.Server;
 using Serilog;
 using System.Reflection.PortableExecutable;
 using TinyFx;
 using TinyFx.Logging;
 
 var builder = AspNetHost.CreateBuilder();
+
 // Add services to the container.
 builder.AddAspNetEx(AspNetType.Api);
 builder.Host.ConfigureServices(services =>
@@ -19,6 +23,7 @@ app.UseAspNetEx();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 app.Run();
 

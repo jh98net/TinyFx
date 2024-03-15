@@ -1,12 +1,15 @@
-﻿using Nacos;
+﻿using Microsoft.AspNetCore.Http;
+using Nacos;
+using Nacos.Naming.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
+using TinyFx.Hosting;
 using TinyFx.Hosting.Services;
-using static System.Collections.Specialized.BitVector32;
 
 namespace TinyFx.Extensions.Nacos
 {
@@ -19,29 +22,17 @@ namespace TinyFx.Extensions.Nacos
         public async Task<List<string>> GetAllServiceNames()
             => await new NacosOpenApiService().GetServices();
 
-        /// <summary>
-        /// 从nacos获取指定服务名的有效服务地址
-        /// </summary>
-        /// <param name="serviceName">注册的服务名</param>
-        /// <param name="isWebsocket"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public async Task<string> SelectOneServiceUrl(string serviceName, bool isWebsocket = false)
+        public async Task<TinyFxHostEndPoint> SelectOneServiceEndPoint(string serviceName)
         {
             var section = DIUtil.GetService<NacosSection>();
             var instance = await DIUtil.GetRequiredService<INacosNamingService>()
-                .SelectOneHealthyInstance(serviceName, section.GroupName);
+                .SelectOneHealthyInstance(serviceName, section.GroupName, true);
             if (instance == null)
                 throw new Exception($"NacosHostMicroService.SelectOneServiceUrl时没有有效实例。serviceName:{serviceName}");
-            var host = $"{instance.Ip}:{instance.Port}";
             var secure = instance.Metadata.TryGetValue("secure", out var value)
                 ? value.ToBoolean(false) : false;
-            string ret = null;
-            if (isWebsocket)
-                ret = secure ? $"wss://{host}" : $"ws://{host}";
-            else
-                ret = secure ? $"https://{host}" : $"http://{host}";
-            return ret;
+            
+            return new TinyFxHostEndPoint(instance.Ip, instance.Port, secure);
         }
     }
 }
