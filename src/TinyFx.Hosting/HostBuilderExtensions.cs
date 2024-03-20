@@ -35,7 +35,7 @@ namespace TinyFx
         {
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
-            
+
             // Logger
             if (Serilog.Log.Logger == null)
                 SerilogUtil.CreateBootstrapLogger();
@@ -75,19 +75,25 @@ namespace TinyFx
             // Hosting
             builder.ConfigureServices((context, services) =>
             {
-                services.AddSingleton<ITinyFxHostLifetimeService>(HostingUtil.LifetimeService);
-                services.AddSingleton<ITinyFxHostTimerService>(new DefaultTinyFxHostTimerService());
-                services.AddSingleton<ITinyFxHostRegisterService>(new RedisHostRegisterService());
-                services.AddSingleton<ITinyFxHostRegDataService>(new RedisHostRegDataService());
-                switch (configHelper.From)
+                var hostSection = ConfigUtil.GetSection<HostSection>();
+                services.Configure<HostOptions>(opts =>
                 {
-                    case ConfigSourceFrom.File:
+                    opts.ShutdownTimeout = TimeSpan.FromSeconds(hostSection.ShutdownTimeout);
+                });
+
+                services.AddSingleton<ITinyFxHostLifetimeService>(HostingUtil.LifetimeService);
+                services.AddSingleton<ITinyFxHostTimerService>(HostingUtil.TimerService);
+                services.AddSingleton<ITinyFxHostRegisterService>(HostingUtil.RegisterService);
+
+                if (hostSection != null && hostSection.RegisterEnabled)
+                {
+                    HostingUtil.RegisterService.AddProvider(new RedisHostRegisterProvider());
+                    services.AddSingleton<ITinyFxHostRegDataService>(new RedisHostRegDataService());
+                    if (configHelper.From == ConfigSourceFrom.File)
                         services.AddSingleton<ITinyFxHostMicroService>(new RedisHostMicroService());
-                        break;
-                    case ConfigSourceFrom.Nacos:
-                        services.AddSingleton<ITinyFxHostMicroService>(new NacosHostMicroService());
-                        break;
                 }
+                if (configHelper.From == ConfigSourceFrom.Nacos)
+                    services.AddSingleton<ITinyFxHostMicroService>(new NacosHostMicroService());
                 services.AddHostedService<TinyFxHostedService>();
             });
 

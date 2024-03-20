@@ -22,9 +22,9 @@ namespace TinyFx
 
             var watch = new Stopwatch();
             watch.Start();
-            var service = new IP2CountryService();
             builder.ConfigureServices(services => 
             {
+                var service = new IP2CountryService();
                 service.Init();
                 services.AddSingleton<IIP2CountryService>(service);
             });

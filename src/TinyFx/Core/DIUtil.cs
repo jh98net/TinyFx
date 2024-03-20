@@ -41,17 +41,17 @@ namespace TinyFx
         #region IServiceProvider
         private static IServiceProvider _serviceProvider;
         private static Func<IServiceProvider, IServiceProvider> _httpServiceProviderFunc;
-        private static bool _isBuilded = false;
+        public static bool HostBuilded { get; private set; }
         public static void InitServiceProvider(IServiceProvider provider, Func<IServiceProvider, IServiceProvider> func)
         {
             _serviceProvider = provider ?? Services.BuildServiceProvider();
             _httpServiceProviderFunc = func;
-            _isBuilded = true;
+            HostBuilded = true;
         }
         private static IServiceProvider GetServiceProvider()
         {
             // 启动中
-            if (!_isBuilded) 
+            if (!HostBuilded) 
                 return Services.BuildServiceProvider();
             // 运行中
             if (_serviceProvider == null || IsServiceProviderDisposed(_serviceProvider))

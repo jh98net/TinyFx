@@ -18,6 +18,8 @@ namespace TinyFx.Hosting
 {
     public static class HostingUtil
     {
+        public static readonly ITinyFxHostRegisterService RegisterService = new DefaultHostRegisterService();
+
         #region ITinyFxHostLifetimeService
         /// <summary>
         /// 注册Host启动中事件
@@ -74,8 +76,8 @@ namespace TinyFx.Hosting
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public static bool UnregisterTimer(string id)
-            => GetTimerService().Unregister(id);
+        public static bool DeregisterTimer(string id)
+            => GetTimerService().Deregister(id);
 
         /// <summary>
         /// 注册延迟任务
@@ -95,16 +97,14 @@ namespace TinyFx.Hosting
             });
         }
 
-        /// <summary>
-        /// 获取Host定时任务服务
-        /// </summary>
-        /// <returns></returns>
+        public static readonly DefaultTinyFxHostTimerService TimerService = new();
         private static ITinyFxHostTimerService GetTimerService()
         {
-            var ret = DIUtil.GetService<ITinyFxHostTimerService>();
-            if (ret == null)
-                throw new Exception("ITinyFxHostTimerService没有注入服务");
-            return ret;
+            return TimerService;
+            //var ret = DIUtil.GetService<ITinyFxHostTimerService>();
+            //if (ret == null)
+            //    throw new Exception("ITinyFxHostTimerService没有注入服务");
+            //return ret;
         }
         #endregion
 
@@ -115,6 +115,8 @@ namespace TinyFx.Hosting
             => await GetMicroService().SelectOneServiceEndPoint(serviceName);
         private static ITinyFxHostMicroService GetMicroService()
         {
+            if(!DIUtil.HostBuilded)
+                throw new Exception("Host没有build，ITinyFxHostMicroService没有注入服务");
             var ret = DIUtil.GetService<ITinyFxHostMicroService>();
             if (ret == null)
                 throw new Exception("ITinyFxHostMicroService没有注入服务");
@@ -185,6 +187,8 @@ namespace TinyFx.Hosting
             => GetRegDataService().GetHostData<T>(key);
         public static ITinyFxHostRegDataService GetRegDataService()
         {
+            if (!DIUtil.HostBuilded)
+                throw new Exception("Host没有build，ITinyFxHostRegDataService没有注入服务");
             var ret = DIUtil.GetService<ITinyFxHostRegDataService>();
             if (ret == null)
                 throw new Exception("ITinyFxHostRegDataService没有注入服务");

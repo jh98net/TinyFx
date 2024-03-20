@@ -14,10 +14,10 @@ namespace TinyFx.Hosting.Services
     /// </summary>
     public interface ITinyFxHostLifetimeService
     {
-        List<Func<Task>> StartingEvents { get; }
-        List<Func<Task>> StartedEvents { get; }
-        List<Func<Task>> StoppingEvents { get; }
-        List<Func<Task>> StoppedEvents { get; }
+        List<Func<Task>> StartingTasks { get; }
+        List<Func<Task>> StartedTasks { get; }
+        List<Func<Task>> StoppingTasks { get; }
+        List<Func<Task>> StoppedTasks { get; }
 
         void RegisterStarting(Func<Task> func);
         void RegisterStarted(Func<Task> func);
@@ -26,26 +26,26 @@ namespace TinyFx.Hosting.Services
     }
     public class DefaultTinyFxHostLifetimeService : ITinyFxHostLifetimeService
     {
-        public List<Func<Task>> StartingEvents { get; } = new();
-        public List<Func<Task>> StartedEvents { get; } = new();
-        public List<Func<Task>> StoppingEvents { get; } = new();
-        public List<Func<Task>> StoppedEvents { get; } = new();
+        public List<Func<Task>> StartingTasks { get; } = new();
+        public List<Func<Task>> StartedTasks { get; } = new();
+        public List<Func<Task>> StoppingTasks { get; } = new();
+        public List<Func<Task>> StoppedTasks { get; } = new();
 
         public void RegisterStarting(Func<Task> func)
         {
-            StartingEvents.Add(func);
+            StartingTasks.Add(func);
         }
         public void RegisterStarted(Func<Task> func)
         {
-            StartedEvents.Add(func);
+            StartedTasks.Add(func);
         }
         public void RegisterStopping(Func<Task> func)
         {
-            StoppingEvents.Add(func);
+            StoppingTasks.Add(func);
         }
         public void RegisterStopped(Func<Task> func)
         {
-            StoppedEvents.Add(func);
+            StoppedTasks.Add(func);
         }
     }
 }

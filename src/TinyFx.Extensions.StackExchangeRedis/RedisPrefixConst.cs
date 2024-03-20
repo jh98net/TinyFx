@@ -39,5 +39,10 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// TinyFx.AspNet.SyncNotifyAttribute使用
         /// </summary>
         public const string SYNC_NOTIFY = "_TINYFX:SyncNotify";
+
+        /// <summary>
+        /// TinyFx.Extensions.AWS.AwsGlobalDCache
+        /// </summary>
+        public const string AWS = "_TINYFX:AWS";
     }
 }

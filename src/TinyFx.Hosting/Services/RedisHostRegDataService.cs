@@ -13,11 +13,11 @@ namespace TinyFx.Hosting.Services
         public async Task<List<string>> GetAllServiceIds(string connectionStringName = null)
         {
             var ret = new List<string>();
-            var namesDCache = RedisUtil.CreateSetClient<string>(RedisHostRegisterService.HOST_NAMES_KEY, connectionStringName);
+            var namesDCache = RedisUtil.CreateSetClient<string>(RedisHostRegisterProvider.HOST_NAMES_KEY, connectionStringName);
             var serviceNames = (await namesDCache.GetAllAsync()).ToList();
             foreach (var serviceName in serviceNames)
             {
-                var idsDCache = RedisUtil.CreateSetClient<string>($"{RedisHostRegisterService.HOST_IDS_KEY}:{serviceName}", connectionStringName);
+                var idsDCache = RedisUtil.CreateSetClient<string>($"{RedisHostRegisterProvider.HOST_IDS_KEY}:{serviceName}", connectionStringName);
                 var serviceIds = (await idsDCache.GetAllAsync()).ToList();
                 foreach (var serviceId in serviceIds)
                 {
@@ -35,7 +35,7 @@ namespace TinyFx.Hosting.Services
             serviceName ??= ConfigUtil.Project.ProjectId;
             if (string.IsNullOrEmpty(serviceName))
                 throw new Exception($"RedisHostRegDataService.GetServiceIds时serviceName不能为空。serviceName:{serviceName}");
-            var idsDCache = RedisUtil.CreateSetClient<string>($"{RedisHostRegisterService.HOST_IDS_KEY}:{serviceName}", connectionStringName);
+            var idsDCache = RedisUtil.CreateSetClient<string>($"{RedisHostRegisterProvider.HOST_IDS_KEY}:{serviceName}", connectionStringName);
             return (await idsDCache.GetAllAsync()).ToList();
         }
 

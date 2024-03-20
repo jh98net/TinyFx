@@ -54,9 +54,7 @@ namespace TinyFx
                     // 分库分表
                     ret.CurrentConnectionConfig.ConfigureExternalServices.SplitTableService
                         = sp.GetRequiredService<IDbSplitProvider>().SplitTable();
-
-                    if (!config.SlaveEnabled)
-                        ret.Ado.IsDisableMasterSlaveSeparation = true;
+                    ret.Ado.IsDisableMasterSlaveSeparation = !config.SlaveEnabled;
                     return ret;
                 });
             });

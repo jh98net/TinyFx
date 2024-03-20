@@ -13,7 +13,7 @@ namespace TinyFx.Hosting.Services
         public RedisHostMicroService(string connectionStringName = null)
         {
             _connectionStringName = connectionStringName;
-            _namesDCache = RedisUtil.CreateSetClient<string>(RedisHostRegisterService.HOST_NAMES_KEY, _connectionStringName);
+            _namesDCache = RedisUtil.CreateSetClient<string>(RedisHostRegisterProvider.HOST_NAMES_KEY, _connectionStringName);
         }
 
         public async Task<List<string>> GetAllServiceNames()
@@ -22,7 +22,7 @@ namespace TinyFx.Hosting.Services
         public async Task<TinyFxHostEndPoint> SelectOneServiceEndPoint(string serviceName)
         {
             string host = null;
-            var idsDCache = RedisUtil.CreateSetClient<string>($"{RedisHostRegisterService.HOST_IDS_KEY}:{serviceName}", _connectionStringName);
+            var idsDCache = RedisUtil.CreateSetClient<string>($"{RedisHostRegisterProvider.HOST_IDS_KEY}:{serviceName}", _connectionStringName);
             var serviceIds = (await idsDCache.GetAllAsync()).ToList() ?? new List<string>();
             while (serviceIds.Count > 0)
             {

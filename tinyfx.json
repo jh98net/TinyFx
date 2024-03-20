@@ -61,6 +61,19 @@
     "Metadata": {} //元数据
   },
 
+  "AWS": {
+    "Enabled": true,
+    "Profile": "default",
+    "Region": "us-west-2",
+    "AccessKey": "AKIAULAJHBY2I5IW2HCX",
+    "SecretKey": "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",
+    "VpcName": "my-vpc",
+    "LoadBalancing": {
+      "RegisterTargetGroup": false,
+      "TargetGroupName": ""
+    }
+  },
+
   // #region ******** Common ********
   // 项目信息配置 (TinyFx.Configuration.ProjectSection)
   "Project": {
@@ -80,7 +93,8 @@
     "HeartbeatInterval": 5000, // 主机注册心跳间隔，默认5秒最小1秒
     "HeathInterval": 60000, // 主机检查间隔，默认1分钟最小10秒
     "TimerMinDelay": 200, // 主机Timer最小Delay时间, 默认200最小100
-    "TimerWaitTimeout": 20000 // 主机Timer关闭等待超时，默认20秒最小5秒
+    "TimerWaitTimeout": 20000, // 主机Timer关闭等待超时，默认20秒最小5秒
+    "ShutdownTimeout": 120 //关机timeout时间(秒)
   },
 
   // 自定义配置信息 (TinyFx.Configuration.AppSettingsSection)
@@ -474,11 +488,11 @@
     "HostingStartupAssemblies": [], //启动时host配置assembly，继承ITinyFxHostingStartup
     "DynamicApiAssemblies": [] // 动态加载的API所在的 xxx.dll
   },
-  
+
   //启用gRPC服务
   "Grpc": {
     "Enabled": true,
-    "Port": 0,
+    "Port": 0, //端口，取环境变量ENV_GRPC_PORT或HostPort+10000
     "Assemblies": []
   },
 

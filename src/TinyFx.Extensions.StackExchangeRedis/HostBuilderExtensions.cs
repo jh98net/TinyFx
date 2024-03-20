@@ -5,6 +5,7 @@ using StackExchange.Redis;
 using System.Diagnostics;
 using TinyFx.Configuration;
 using TinyFx.Extensions.StackExchangeRedis;
+using TinyFx.Hosting;
 using TinyFx.Logging;
 
 namespace TinyFx
@@ -57,16 +58,12 @@ namespace TinyFx
                     });
                     if (section.ConsumerAssemblies?.Count > 0)
                     {
-                        services.AddSingleton(sp =>
+                        services.AddSingleton(new ConsumerContainer(section.ConsumerAssemblies));
+                        HostingUtil.RegisterStopping(() =>
                         {
-                            var ret = new ConsumerContainer(section.ConsumerAssemblies);
-                            //redis 资源释放
-                            var lifetime = sp.GetService<IHostApplicationLifetime>();
-                            lifetime?.ApplicationStopped.Register(() =>
-                            {
-                                RedisUtil.ReleaseAllRedis();
-                            });
-                            return ret;
+                            RedisUtil.ReleaseAllRedis();
+                            LogUtil.Info("停止 => [Redis]资源释放");
+                            return Task.CompletedTask;
                         });
                     }
                 }

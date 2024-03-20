@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,11 +15,13 @@ namespace TinyFx.Hosting
 {
     public class TinyFxHostedService : BackgroundService
     {
+        private readonly ILogger _logger;
         private ITinyFxHostRegisterService _registerService;
         private ITinyFxHostTimerService _timerService;
         private ITinyFxHostLifetimeService _lifetimeService;
-        public TinyFxHostedService(ITinyFxHostRegisterService registerService, ITinyFxHostTimerService timerService, ITinyFxHostLifetimeService lifetimeService, IHostApplicationLifetime lifetime)
+        public TinyFxHostedService(ILogger<TinyFxHostedService> logger, ITinyFxHostRegisterService registerService, ITinyFxHostTimerService timerService, ITinyFxHostLifetimeService lifetimeService, IHostApplicationLifetime lifetime)
         {
+            _logger = logger;
             _registerService = registerService;
             _timerService = timerService;
             _lifetimeService = lifetimeService;
@@ -27,23 +30,11 @@ namespace TinyFx.Hosting
             // 3-ApplicationStopping
             // 4-StopAsync
             // 5-ApplicationStopped
-            lifetime.ApplicationStarted.Register(async () => 
+            lifetime.ApplicationStarted.Register(OnStarted);
+            lifetime.ApplicationStopping.Register(OnStopping);
+            lifetime.ApplicationStopped.Register(OnStopped);
+            if (registerService.RegisterEnabled)
             {
-                foreach (var item in _lifetimeService?.StartedEvents)
-                {
-                    await item.Invoke();
-                }
-            });
-            lifetime.ApplicationStopped.Register(async () =>
-            {
-                foreach (var item in _lifetimeService?.StoppedEvents)
-                {
-                    await item.Invoke();
-                }
-            });
-            if (ConfigUtil.Host.RegisterEnabled)
-            {
-                lifetime.ApplicationStarted.Register(async () => await _registerService.Register());
                 if (_timerService != null)
                 {
                     if (ConfigUtil.Host.HeartbeatInterval > 0)
@@ -76,28 +67,60 @@ namespace TinyFx.Hosting
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            foreach (var item in _lifetimeService?.StartingEvents)
+            _logger.LogDebug("启动 => 1. Host OnStarting");
+            foreach (var item in _lifetimeService?.StartingTasks)
             {
                 await item.Invoke();
             }
             await base.StartAsync(cancellationToken);
         }
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogDebug("启动 => 2. Host ExecuteAsync");
             await _timerService?.StartAsync(stoppingToken);
         }
-
+        private void OnStarted()
+        {
+            _logger.LogDebug("启动 => 3. Host OnStarted");
+            _registerService.Register().GetTaskResult();
+            foreach (var item in _lifetimeService?.StartedTasks)
+            {
+                item.Invoke().GetTaskResult();
+            }
+        }
+        private void OnStopping()
+        {
+            _logger.LogDebug("停止 => 4. Host OnStopping");
+            if (_registerService?.RegisterEnabled ?? false)
+            {
+                _registerService.DeregisterExternal().GetTaskResult();
+            }
+            foreach (var item in _lifetimeService?.StoppingTasks)
+            {
+                item.Invoke().GetTaskResult();
+            }
+            if (_registerService?.RegisterEnabled ?? false)
+            {
+                _timerService?.Deregister(new List<string> {
+                    "ITinyFxHostTimerService.Heartbeat",
+                    "ITinyFxHostTimerService.Health"
+                });
+                _registerService?.Deregister().GetTaskResult();
+            }
+        }
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
+            _logger.LogDebug("停止 => 5. Host StopAsync");
             await _timerService?.StopAsync();
-            if (ConfigUtil.Host.RegisterEnabled)
-                await _registerService?.Unregister();
-            foreach (var item in _lifetimeService?.StoppingEvents)
-            {
-                await item.Invoke();
-            }
             await base.StopAsync(cancellationToken);
+        }
+        private void OnStopped()
+        {
+            _logger.LogDebug("停止 => 6. Host OnStopped");
+            foreach (var item in _lifetimeService?.StoppedTasks)
+            {
+                item.Invoke().GetTaskResult();
+            }
         }
     }
 }

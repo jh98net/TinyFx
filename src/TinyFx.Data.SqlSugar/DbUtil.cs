@@ -310,12 +310,13 @@ namespace TinyFx.Data.SqlSugar
                     ? UtilMethods.GetSqlString(config.DbType, ex.Sql, (SugarParameter[])ex.Parametres)
                     : UtilMethods.GetNativeSql(ex.Sql, (SugarParameter[])ex.Parametres);
 
-                var log = LogUtil.GetContextLogger();
-                log.AddMessage("SqlSugar SQL执行异常");
-                log.AddField("SqlSugar.ConfigId", config?.ConfigId);
-                log.AddField("SqlSugar.SQL", tmpSql);
-                log.AddField("SqlSugar.Exception", ex);
-                log.Save();
+                LogUtil.GetContextLogger()
+                    .SetLevel(Microsoft.Extensions.Logging.LogLevel.Error)
+                    .AddMessage("SqlSugar:SQL执行异常")
+                    .AddField("SqlSugar.ConfigId", config?.ConfigId)
+                    .AddField("SqlSugar.SQL", tmpSql)
+                    .AddField("SqlSugar.Exception", ex)
+                    .Save();
             };
         }
         #endregion

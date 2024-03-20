@@ -34,6 +34,11 @@ namespace TinyFx.Configuration
         /// </summary>
         public int TimerWaitTimeout { get; set; } = 20000;
 
+        /// <summary>
+        /// 关机timeout时间(秒)
+        /// </summary>
+        public int ShutdownTimeout { get; set; } = 30;
+
         public override void Bind(IConfiguration configuration)
         {
             base.Bind(configuration);
@@ -46,6 +51,8 @@ namespace TinyFx.Configuration
                 TimerMinDelay = 100;
             if (TimerWaitTimeout <= 5000)
                 TimerWaitTimeout = 5000;
+            if (ShutdownTimeout <= 30)
+                ShutdownTimeout = 30;
         }
     }
 }

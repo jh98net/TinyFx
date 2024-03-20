@@ -38,7 +38,8 @@ namespace TinyFx
                 builder.WebHost.ConfigureKestrel(opts =>
                 {
                     var httpPort = ConfigUtil.Service.HttpPort > 0
-                        ? ConfigUtil.Service.HttpPort : 80;
+                        ? ConfigUtil.Service.HttpPort : ConfigUtil.Service.HostPort;
+                    httpPort = httpPort > 0 ? httpPort : 80;
                     ConfigUtil.Service.HttpPort = httpPort;
                     opts.ListenAnyIP(httpPort, listenOptions => listenOptions.Protocols = HttpProtocols.Http1);
                     if (section.RequestBytesPerSecond > 0 && section.RequestPeriodSecond > 0)
@@ -52,6 +53,9 @@ namespace TinyFx
                         opts.Limits.MinRequestBodyDataRate = null;
                     }
                 });
+                //TinyFxHostingStartupLoader 替换IHostingStartup
+                //var asms = string.Join(";", section.HostingStartupAssemblies);
+                //builder.WebHost.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, asms);
             }
             builder.AddGrpcEx();
             AddAspNetExDetail(builder.Services);

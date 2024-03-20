@@ -28,51 +28,63 @@ namespace TinyFx
 
             var watch = new Stopwatch();
             watch.Start();
-            var checkConsumer = new RedisDbCacheCheckConsumer();
-            IDbCacheChangeConsumer changeConsumer = null;
-            DbCacheUpdator updator = null;
-            switch (section.PublishMode)
+            builder.ConfigureServices(async (context, services) =>
             {
-                case DbCachingPublishMode.Redis:
-                    changeConsumer = new RedisDbCacheChangeConsumer(section.RedisConnectionStringName);
-                    updator = new DbCacheUpdator(DbCachingPublishMode.Redis);
-                    break;
-                case DbCachingPublishMode.MQ:
-                    changeConsumer = new MQDbCacheChangeConsumer(section.MQConnectionStringName);
-                    updator = new DbCacheUpdator(DbCachingPublishMode.MQ);
-                    break;
-                default:
-                    throw new Exception("未知的DbCachingPublishMode");
-            }
-            builder.ConfigureServices((context, services) =>
-            {
-                services.AddSingleton(changeConsumer!);
-                services.AddSingleton(checkConsumer);
-                services.AddSingleton(updator);
-            });
-            HostingUtil.RegisterStarting(async () =>
-            {
-                await changeConsumer!.RegisterConsumer();
-                checkConsumer.Register();
-                // preload
-                if (section.PreloadProviders != null && section.PreloadProviders.Count > 0)
+                var checkConsumer = new RedisDbCacheCheckConsumer();
+                IDbCacheChangeConsumer changeConsumer = null;
+                DbCacheUpdator updator = null;
+                switch (section.PublishMode)
                 {
-                    foreach (var providerType in section.PreloadProviders)
+                    case DbCachingPublishMode.Redis:
+                        changeConsumer = new RedisDbCacheChangeConsumer(section.RedisConnectionStringName);
+                        updator = new DbCacheUpdator(DbCachingPublishMode.Redis);
+                        break;
+                    case DbCachingPublishMode.MQ:
+                        changeConsumer = new MQDbCacheChangeConsumer(section.MQConnectionStringName);
+                        updator = new DbCacheUpdator(DbCachingPublishMode.MQ);
+                        break;
+                    default:
+                        throw new Exception("未知的DbCachingPublishMode");
+                }
+                HostingUtil.RegisterStarting(async () =>
+                {
+                    await changeConsumer!.RegisterConsumer();
+                    checkConsumer.Register();
+                    // preload
+                    if (section.PreloadProviders != null && section.PreloadProviders.Count > 0)
                     {
-                        var type = Type.GetType(providerType);
-                        var provider = Activator.CreateInstance(type) as IDbCachePreloadProvider;
-                        foreach (var preload in provider.GetPreloadList())
+                        foreach (var providerType in section.PreloadProviders)
                         {
-                            DbCachingUtil.PreloadCache(preload.EntityType, preload.SplitDbKey);
+                            var type = Type.GetType(providerType);
+                            var provider = Activator.CreateInstance(type) as IDbCachePreloadProvider;
+                            foreach (var preload in provider.GetPreloadList())
+                            {
+                                DbCachingUtil.PreloadCache(preload.EntityType, preload.SplitDbKey);
+                            }
                         }
                     }
-                }
-                LogUtil.Info("启动 => 内存缓存[DbCaching]");
+                    LogUtil.Info("启动 => 内存缓存[DbCaching]");
+                });
+                HostingUtil.RegisterStopping(async () =>
+                {
+                    LogUtil.Info("停止 => 内存缓存[DbCaching]");
+                });
+                await DetalRefleshTables(section, updator);
+
+                services.AddSingleton(checkConsumer);
+                services.AddSingleton(changeConsumer!);
+                services.AddSingleton(updator);
             });
-            HostingUtil.RegisterStopping(async () =>
-            {
-                LogUtil.Info("停止 => 内存缓存[DbCaching]");
-            });
+
+
+            watch.Stop();
+            LogUtil.Info("配置 => [DbCaching] [{ElapsedMilliseconds} 毫秒]"
+                , watch.ElapsedMilliseconds);
+            return builder;
+        }
+
+        private static async Task DetalRefleshTables(DbCachingSection section, DbCacheUpdator updator)
+        {
             if (section.RefleshTables != null && section.RefleshTables.Count > 0)
             {
                 foreach (var table in section.RefleshTables)
@@ -106,11 +118,6 @@ namespace TinyFx
                     });
                 }
             }
-
-            watch.Stop();
-            LogUtil.Info("配置 => [DbCaching] ChangeConsumer: {ChangeConsumer} [{ElapsedMilliseconds} 毫秒]"
-                , changeConsumer!.GetType().Name, watch.ElapsedMilliseconds);
-            return builder;
         }
     }
 }

@@ -42,10 +42,8 @@ namespace TinyFx.SnowflakeId.Common
             using (var redlock = await RedisUtil.LockAsync("_IDGeneratorWorkerId", 20))
             {
                 if (!redlock.IsLocked)
-                {
-                    redlock.Release();
                     throw new Exception("Redis没有能够获取WorkerId分布式锁");
-                }
+
                 for (int i = 0; i < _maxWorkerId; i++)
                 {
                     var workerId = await _idDCache.GetNextWorkId() - 1;

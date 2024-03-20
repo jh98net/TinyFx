@@ -78,12 +78,23 @@ namespace TinyFx.Hosting.Services
             return ret;
         }
 
+        public bool Deregister(List<string> ids)
+        {
+            var ret = false;
+            foreach (var id in ids)
+            {
+                ret = _jobs.TryRemove(id, out _) || ret;
+            }
+            if (ret)
+                _changeCts.Cancel();
+            return ret;
+        }
         /// <summary>
         /// 注销timer任务
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public bool Unregister(string id)
+        public bool Deregister(string id)
         {
             var ret = _jobs.TryRemove(id, out var job);
             if (ret)

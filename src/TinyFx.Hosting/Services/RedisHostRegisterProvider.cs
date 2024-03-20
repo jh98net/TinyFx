@@ -8,30 +8,36 @@ using TinyFx.Logging;
 
 namespace TinyFx.Hosting.Services
 {
-    public class RedisHostRegisterService : ITinyFxHostRegisterService
+    public class RedisHostRegisterProvider : ITinyFxHostRegisterProvider
     {
         public const string HOST_NAMES_KEY = $"{RedisPrefixConst.HOSTS}:ServiceNames";
         public const string HOST_IDS_KEY = $"{RedisPrefixConst.HOSTS}:ServiceIds";
         public const string HOST_HEALTH_KEY = $"{RedisPrefixConst.HOSTS}:Health";
 
+        private string _connectionStringName;
         public string ServiceName { get; }
         public string ServiceId { get; }
+
+        public bool IsExternal => false;
+
         private int HEALTH_INTERVAL;
 
         private RedisSetClient<string> _namesDCache;
         private RedisSetClient<string> _idsDCache;
         private RedisStringClient<long> _healthDCache;
         private TinyFxHostDataDCache _dataDCache;
-        public RedisHostRegisterService()
+        public RedisHostRegisterProvider(string connectionStringName = null)
         {
+            _connectionStringName = connectionStringName;
+
             ServiceName = ConfigUtil.Project.ProjectId;
             ServiceId = ConfigUtil.Service.ServiceId;
             HEALTH_INTERVAL = ConfigUtil.Host.HeathInterval;
 
-            _namesDCache = RedisUtil.CreateSetClient<string>(HOST_NAMES_KEY);
-            _idsDCache = RedisUtil.CreateSetClient<string>($"{HOST_IDS_KEY}:{ServiceName}");
-            _healthDCache = RedisUtil.CreateStringClient<long>(HOST_HEALTH_KEY);
-            _dataDCache = new TinyFxHostDataDCache(ServiceId);
+            _namesDCache = RedisUtil.CreateSetClient<string>(HOST_NAMES_KEY, _connectionStringName);
+            _idsDCache = RedisUtil.CreateSetClient<string>($"{HOST_IDS_KEY}:{ServiceName}", _connectionStringName);
+            _healthDCache = RedisUtil.CreateStringClient<long>(HOST_HEALTH_KEY, _connectionStringName);
+            _dataDCache = new TinyFxHostDataDCache(ServiceId, _connectionStringName);
         }
 
         #region 注册
@@ -45,7 +51,7 @@ namespace TinyFx.Hosting.Services
             }
             LogUtil.Info($"启动 => 注册Host[{GetType().Name}] ServerId:{ServiceId}");
         }
-        public async Task Unregister()
+        public async Task Deregister()
         {
             using (var redLock = await GetRedLock())
             {
@@ -69,13 +75,10 @@ namespace TinyFx.Hosting.Services
         public async Task Health()
         {
             // 检查
-            using (var redLock = await RedisUtil.LockAsync($"_HostRegister:_HEALTH", 20))
+            using (var redLock = await RedisUtil.LockAsync($"_HostRegister:_HEALTH", 20, connectionStringName: _connectionStringName))
             {
                 if (!redLock.IsLocked)
-                {
-                    redLock.Release();
                     throw new Exception($"RedisHostRegisterService获取缓存锁超时。key: __HostRegister:_HEALTH");
-                }
 
                 var lastTs = await _healthDCache.GetOrDefaultAsync(0);
                 var utcTs = DateTime.UtcNow.ToTimestamp(true);
@@ -87,11 +90,11 @@ namespace TinyFx.Hosting.Services
             var serviceNames = (await _namesDCache.GetAllAsync()).ToList();
             foreach (var serviceName in serviceNames)
             {
-                var idsDCache = RedisUtil.CreateSetClient<string>($"{HOST_IDS_KEY}:{serviceName}");
+                var idsDCache = RedisUtil.CreateSetClient<string>($"{HOST_IDS_KEY}:{serviceName}", _connectionStringName);
                 var serviceIds = (await idsDCache.GetAllAsync()).ToList();
                 foreach (var serviceId in serviceIds)
                 {
-                    var isValid = await new TinyFxHostDataDCache(serviceId).IsValid();
+                    var isValid = await new TinyFxHostDataDCache(serviceId, _connectionStringName).IsValid();
                     if (!isValid)
                         await idsDCache.RemoveAsync(serviceId);
                 }
@@ -107,12 +110,9 @@ namespace TinyFx.Hosting.Services
 
         private async Task<RedLock> GetRedLock()
         {
-            var ret = await RedisUtil.LockAsync($"_HostRegister:{ServiceName}", 20);
+            var ret = await RedisUtil.LockAsync($"_HostRegister:{ServiceName}", 20, connectionStringName: _connectionStringName);
             if (!ret.IsLocked)
-            {
-                ret.Release();
                 throw new Exception($"RedisHostRegisterService获取缓存锁超时。key: __HostRegister:{ServiceName}");
-            }
             return ret;
         }
     }

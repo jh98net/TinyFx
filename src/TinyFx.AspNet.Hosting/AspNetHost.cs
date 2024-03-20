@@ -20,6 +20,7 @@ using TinyFx.Net;
 using TinyFx.Extensions.Serilog;
 using System.Reflection;
 using TinyFx.Text;
+using TinyFx.Extensions.AWS;
 
 namespace TinyFx
 {
@@ -40,7 +41,8 @@ namespace TinyFx
                 .AddDbCachingEx()
                 .AddIP2CountryEx()
                 .AddOAuthEx()
-                .AddHCaptchaEx();
+                .AddHCaptchaEx()
+                .AddAWSEx();
             return builder;
         }
         internal static async Task<string> MapEnvPath()

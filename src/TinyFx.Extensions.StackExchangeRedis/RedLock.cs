@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using Newtonsoft.Json.Linq;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -60,11 +61,15 @@ namespace TinyFx.Extensions.StackExchangeRedis
                 retry--;
             }
             while (retry > 0);
+            Release();
             LogLockError();
         }
         private void LogLockError()
         {
-            LogUtil.Error("RedLock申请锁失败。lockKey:{lockKey} token:{token}", LockKey, _token);
+            LogUtil.GetContextLogger()
+                .SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning)
+                .AddMessage($"RedLock申请锁失败。lockKey:{LockKey} token:{_token}")
+                .Save();
         }
 
         #region IDisposable

@@ -40,10 +40,7 @@ namespace TinyFx.DbCaching
             // 避免并发
             using var redLock = await RedisUtil.LockAsync($"_DbCacheDataDCache:{_cacheKey}", 180);
             if (!redLock.IsLocked)
-            {
-                redLock.Release();
                 throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{_cacheKey}");
-            }
 
             // 装载数据
             var ret = await GetDbTableData();
@@ -93,10 +90,8 @@ namespace TinyFx.DbCaching
             // 避免并发
             using var redLock = await RedisUtil.LockAsync($"_DbCacheDataDCache:{_cacheKey}", 180);
             if (!redLock.IsLocked)
-            {
-                redLock.Release();
                 throw new Exception($"DbCacheDataDCache获取缓存锁超时。key:{_cacheKey}");
-            }
+
             var updateDate = await _dataDCache.GetOrDefaultAsync("0", null);
             if (!string.IsNullOrEmpty(updateDate) && updateDate != listDo.Value.UpdateDate)
                 throw new Exception($"DbCacheDataDCache.GetRedisValues()时，DbCacheListDCache的UpdateDate与DbCacheDataDCache的不同。key:{_cacheKey}");

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TinyFx.Hosting.Services
@@ -9,7 +10,8 @@ namespace TinyFx.Hosting.Services
     public interface ITinyFxHostTimerService
     {
         bool Register(TinyFxHostTimerItem item, bool tryUpdate = false);
-        bool Unregister(string id);
+        bool Deregister(string id);
+        bool Deregister(List<string> ids);
         Task StartAsync(CancellationToken stoppingToken = default);
         Task StopAsync(CancellationToken cancellationToken = default);
     }

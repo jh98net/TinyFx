@@ -33,8 +33,11 @@ namespace TinyFx
             });
 
             watch.Stop();
+            var asm = section.Assemblies?.Count > 0
+               ? string.Join('|', section.Assemblies)
+               : "NULL";
             LogUtil.Info("配置 => [AutoMapper] Assemblies: {Assemblies} [{ElapsedMilliseconds} 毫秒]"
-                , string.Join('|', section.Assemblies), watch.ElapsedMilliseconds);
+                , asm, watch.ElapsedMilliseconds);
             return builder;
         }
     }

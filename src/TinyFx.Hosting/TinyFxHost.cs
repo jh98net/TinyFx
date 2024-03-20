@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
+using TinyFx.Extensions.AWS;
 using TinyFx.Extensions.Serilog;
 
 namespace TinyFx
@@ -25,7 +26,8 @@ namespace TinyFx
                 .AddRabbitMQEx()
                 .AddSnowflakeIdEx()
                 .AddDbCachingEx()
-                .AddIP2CountryEx();
+                .AddIP2CountryEx()
+                .AddAWSEx();
             return builder;
         }
 

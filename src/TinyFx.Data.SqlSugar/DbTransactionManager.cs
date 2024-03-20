@@ -32,6 +32,19 @@ namespace TinyFx.Data.SqlSugar
         }
         #endregion
 
+        #region Callback
+        /// <summary>
+        /// 执行Callback时是否抛出异常
+        /// </summary>
+        public bool ThrowCallbackException { get; set; } = true;
+        private List<Action> _commitCallbacks = new List<Action>();
+        private List<Action> _rollbackCallbacks = new List<Action>();
+        public void AddCommitCallback(Action callback)
+            => _commitCallbacks.Add(callback);
+        public void AddRollbackCallback(Action callback)
+            => _rollbackCallbacks.Add(callback);
+        #endregion
+
         #region Begin
         public void Begin()
         {
@@ -261,22 +274,34 @@ namespace TinyFx.Data.SqlSugar
         public void Commit()
         {
             if (NeedSubmit())
+            {
                 _newDb.CommitTran();
+                SubmitCallback(true);
+            }
         }
         public async Task CommitAsync()
         {
             if (NeedSubmit())
+            {
                 await _newDb.CommitTranAsync();
+                SubmitCallback(true);
+            }
         }
         public void Rollback()
         {
             if (NeedSubmit())
+            {
                 _newDb.RollbackTran();
+                SubmitCallback(false);
+            }
         }
         public async Task RollbackAsync()
         {
             if (NeedSubmit())
+            {
                 await _newDb.RollbackTranAsync();
+                SubmitCallback(false);
+            }
         }
         private bool NeedSubmit()
         {
@@ -298,6 +323,31 @@ namespace TinyFx.Data.SqlSugar
             }
             _status = DbTransactionStatus.End;
             return ret;
+        }
+        private void SubmitCallback(bool isCommit)
+        {
+            int idx = 0;
+            try
+            {
+                if (isCommit)
+                    _commitCallbacks.ForEach(x => { idx++; x(); });
+                else
+                    _rollbackCallbacks.ForEach(x => { idx++; x(); });
+            }
+            catch (Exception ex)
+            {
+                if (ThrowCallbackException)
+                {
+                    throw;
+                }
+                else
+                {
+                    LogUtil.GetContextLogger()
+                        .SetLevel(Microsoft.Extensions.Logging.LogLevel.Warning)
+                        .AddField($"DbTransactionManager.Callback.{idx}", ex)
+                        .Save();
+                }
+            }
         }
         #endregion
 

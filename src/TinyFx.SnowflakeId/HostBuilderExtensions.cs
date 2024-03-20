@@ -36,33 +36,33 @@ namespace TinyFx
                 if (!redisSecion.ConnectionStrings.ContainsKey(section.RedisConnectionStringName))
                     throw new Exception($"启动IDGenerator时不存在redisConnectionName: {section.RedisConnectionStringName}");
             }
-            var service = new SnowflakeIdService();
             builder.ConfigureServices(services =>
             {
+                var service = new SnowflakeIdService();
                 services.AddSingleton<ISnowflakeIdService>(service);
-            });
-            HostingUtil.RegisterStarting(async () =>
-            {
-                await service.Init();
-                LogUtil.Info("启动 => 雪花ID服务[IDGenerator]");
-            });
-            HostingUtil.RegisterStopped(async () =>
-            {
-                await service.Dispose();
-                LogUtil.Info("停止 => 雪花ID服务[IDGenerator]");
-            });
-            if (section.UseRedis)
-            {
-                HostingUtil.RegisterTimer(new Hosting.Services.TinyFxHostTimerItem
+                HostingUtil.RegisterStarting(async () =>
                 {
-                    ExecuteCount = 0,
-                    Id = "IDGenerator.Heartbeat",
-                    Title = "IDGenerator心跳",
-                    Interval = section.RedisExpireMinutes * 60 * 1000 / 3,
-                    TryCount = 5,
-                    Callback = async (_) => await service.Active()
+                    await service.Init();
+                    LogUtil.Info("启动 => 雪花ID服务[IDGenerator]");
                 });
-            }
+                HostingUtil.RegisterStopped(async () =>
+                {
+                    await service.Dispose();
+                    LogUtil.Info("停止 => 雪花ID服务[IDGenerator]");
+                });
+                if (section.UseRedis)
+                {
+                    HostingUtil.RegisterTimer(new Hosting.Services.TinyFxHostTimerItem
+                    {
+                        ExecuteCount = 0,
+                        Id = "IDGenerator.Heartbeat",
+                        Title = "IDGenerator心跳",
+                        Interval = section.RedisExpireMinutes * 60 * 1000 / 3,
+                        TryCount = 5,
+                        Callback = async (_) => await service.Active()
+                    });
+                }
+            });
 
             watch.Stop();
             LogUtil.Info("配置 => [IDGenerator] [{ElapsedMilliseconds} 毫秒]", watch.ElapsedMilliseconds);

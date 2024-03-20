@@ -30,15 +30,15 @@ namespace TinyFx
             var watch = new Stopwatch();
             watch.Start();
             // 配置Log.Logger
-            SetELKSinkIndexFormat(ConfigUtil.Configuration);
+            var idxName = SetELKSinkIndexFormat(ConfigUtil.Configuration);
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(ConfigUtil.Configuration)
                 .Enrich.FromLogContext()
-                .Enrich.WithProperty(SerilogUtil.EnvironmentNamePropertyName, ConfigUtil.Environment.Name)
+                .Enrich.WithProperty(SerilogUtil.EnvironmentPropertyName, ConfigUtil.Environment.Name)
                 .Enrich.WithProperty(SerilogUtil.ProjectIdPropertyName, ConfigUtil.Project?.ProjectId ?? "未知程序")
                 .Enrich.WithProperty(SerilogUtil.ServiceIdPropertyName, ConfigUtil.Service.ServiceId ?? "未知服务")
-                .Enrich.WithProperty(SerilogUtil.MachineIPPropertyName, NetUtil.GetLocalIP())
-                //.Enrich.WithProperty(SerilogUtil.IndexNamePropertyName, ConfigUtil.Project?.ProjectId.Replace('.', '_').ToLowerInvariant())
+                .Enrich.WithProperty(SerilogUtil.HostPropertyName, $"{ConfigUtil.Service.HostIp}:{ConfigUtil.Service.HostPort}")
+                .Enrich.WithProperty(SerilogUtil.IndexNamePropertyName, idxName)
                 .Enrich.WithTemplateHash()
                 .CreateLogger();
             builder.UseSerilog(Log.Logger);
@@ -51,24 +51,24 @@ namespace TinyFx
             LogUtil.Info("配置 => [Serilog] [{ElapsedMilliseconds} 毫秒]", watch.ElapsedMilliseconds);
             return builder;
         }
-        private static bool SetELKSinkIndexFormat(IConfiguration config)
+        private static string SetELKSinkIndexFormat(IConfiguration config)
         {
+            string ret = null;
             var elk = config["Serilog:WriteTo:ELKSink:Name"];
             if (!string.IsNullOrEmpty(elk))
             {
-                var idx = config["Serilog:WriteTo:ELKSink:Args:indexFormat"];
-                if (string.IsNullOrEmpty(idx))
+                ret = config["Serilog:WriteTo:ELKSink:Args:indexFormat"];
+                if (string.IsNullOrEmpty(ret))
                 {
                     var projectId = ConfigUtil.Project.ProjectId.Replace('.', '_');
                     var env = !string.IsNullOrEmpty(ConfigUtil.Environment.Name)
                         ? $"-{ConfigUtil.Environment.Name.ToLower().Replace('.', '_')}"
                         : null;
-                    config["Serilog:WriteTo:ELKSink:Args:indexFormat"]
-                        = $"idx-{projectId}{env}-{{0:yyyyMMdd}}";
+                    ret = $"idx-{projectId}{env}-{{0:yyyyMMdd}}";
+                    config["Serilog:WriteTo:ELKSink:Args:indexFormat"] = ret;
                 }
-                return true;
             }
-            return false;
+            return ret;
         }
     }
 }

@@ -11,6 +11,7 @@
     <ProjectReference Include="..\TinyFx.DbCaching\TinyFx.DbCaching.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.AppMetric\TinyFx.Extensions.AppMetric.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.AutoMapper\TinyFx.Extensions.AutoMapper.csproj" />
+    <ProjectReference Include="..\TinyFx.Extensions.AWS\TinyFx.Extensions.AWS.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.Nacos\TinyFx.Extensions.Nacos.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.RabbitMQ\TinyFx.Extensions.RabbitMQ.csproj" />
     <ProjectReference Include="..\TinyFx.Extensions.Serilog\TinyFx.Extensions.Serilog.csproj" />

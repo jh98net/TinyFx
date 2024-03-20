@@ -10,6 +10,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.Configuration;
+using TinyFx.Logging;
 using TinyFx.Reflection;
 using static System.Collections.Specialized.BitVector32;
 
@@ -31,8 +32,8 @@ namespace TinyFx.AspNet.Hosting.Common
                     ? section.Port : ConfigUtil.Service.GrpcPort;
                 if (grpcPort <= 0)
                 {
-                    grpcPort = ConfigUtil.Service.HttpPort + 1;
-                    //throw new Exception($"启动GRPC服务时端口无效: {grpcPort}");
+                    grpcPort = ConfigUtil.Service.HostPort + 10000;
+                    LogUtil.Warning($"启动GRPC服务时端口未指定，默认增加10000。hostPort:{ConfigUtil.Service.HostPort} grpcPort:{grpcPort}");
                 }
                 ConfigUtil.Service.GrpcPort = grpcPort;
                 builder.WebHost.ConfigureKestrel(opts =>

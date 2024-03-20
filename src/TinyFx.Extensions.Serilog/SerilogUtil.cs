@@ -20,10 +20,10 @@ namespace TinyFx.Extensions.Serilog
     /// </summary>
     public static class SerilogUtil
     {
+        public const string EnvironmentPropertyName = "Environment";
         public const string ProjectIdPropertyName = "ProjectId";
         public const string ServiceIdPropertyName = "ServiceId";
-        public const string EnvironmentNamePropertyName = "EnvironmentName";
-        public const string MachineIPPropertyName = "MachineIP";
+        public const string HostPropertyName = "Host";
         public const string IndexNamePropertyName = "IndexName";
 
         public static MS.ILogger CreateBootstrapLogger()

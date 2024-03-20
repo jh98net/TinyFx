@@ -262,16 +262,20 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="lockKey">要锁定资源的键值（一般指业务范围）</param>
         /// <param name="waitSeconds">等待申请锁超时时间</param>
         /// <param name="retryInterval">申请锁间隔</param>
+        /// <param name="connectionStringName"></param>
         /// <returns></returns>
-        public static async Task<RedLock> LockAsync(string lockKey, int waitSeconds, int retryInterval = 500)
+        public static async Task<RedLock> LockAsync(string lockKey, int waitSeconds = 30, int retryInterval = 500, string connectionStringName = null)
         {
             var waitSpan = TimeSpan.FromSeconds(waitSeconds);
             var interval = TimeSpan.FromMilliseconds(retryInterval);
-            return await LockAsync(lockKey, waitSpan, interval);
+            return await LockAsync(lockKey, waitSpan, interval, connectionStringName);
         }
-        public static async Task<RedLock> LockAsync(string lockKey, TimeSpan waitSpan, TimeSpan? retryInterval = null)
+        public static async Task<RedLock> LockAsync(string lockKey, TimeSpan waitSpan, TimeSpan? retryInterval = null, string connectionStringName = null)
         {
-            var ret = new RedLock(DefaultDatabase, lockKey, waitSpan, retryInterval);
+            var database = !string.IsNullOrEmpty(connectionStringName)
+                ? GetRedis(connectionStringName).GetDatabase()
+                : DefaultDatabase;
+            var ret = new RedLock(database, lockKey, waitSpan, retryInterval);
             await ret.StartAsync();
             return ret;
         }
@@ -340,11 +344,12 @@ namespace TinyFx.Extensions.StackExchangeRedis
         /// <param name="redisKey">业务标识</param>
         /// <param name="expectedElements">预期总元素数</param>
         /// <param name="method">哈希算法</param>
+        /// <param name="connectionStringName"></param>
         /// <returns></returns>
-        public static IBloomFilter CreateBloomFilter(string redisKey, long expectedElements, HashMethod method = HashMethod.Murmur3)
+        public static IBloomFilter CreateBloomFilter(string redisKey, long expectedElements, HashMethod method = HashMethod.Murmur3, string connectionStringName = null)
         {
             var key = $"{RedisPrefixConst.BLOOM_FILTER}:{redisKey}";
-            var conn = GetRedis();
+            var conn = GetRedis(connectionStringName);
             return FilterRedisBuilder.Build(conn, key, expectedElements, method, redisKey);
         }
         #endregion

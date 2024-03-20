@@ -18,27 +18,26 @@ namespace TinyFx
 
             var watch = new Stopwatch();
             watch.Start();
-            var container = new MQContainer();
             builder.ConfigureServices((context, services) =>
             {
+                var container = new MQContainer();
                 services.AddSingleton(container);
+                HostingUtil.RegisterStarting(async () =>
+                {
+                    await container.InitAsync();
+                    LogUtil.Info("启动 => [RabbitMQ]资源加载");
+                });
+                HostingUtil.RegisterDelayTimer(
+                    TimeSpan.FromSeconds(section.SACBindDelay)
+                    , async (_) => await container.BindSACConsumer()
+                    , "RabbitMQ.BindSACConsumer"
+                    );
+                HostingUtil.RegisterStopping(async () =>
+                {
+                    container.Dispose();
+                    LogUtil.Info("停止 => [RabbitMQ]资源释放");
+                });
             });
-            HostingUtil.RegisterStarting(async () =>
-            {
-                await container.InitAsync();
-                LogUtil.Info("启动 => [RabbitMQ]资源加载");
-            });
-            HostingUtil.RegisterStopping(async () =>
-            {
-                container.Dispose();
-                LogUtil.Info("停止 => [RabbitMQ]资源释放");
-            });
-            HostingUtil.RegisterDelayTimer(
-                TimeSpan.FromSeconds(section.SACBindDelay)
-                , async (_) => await container.BindSACConsumer()
-                , "RabbitMQ.BindSACConsumer"
-                );
-
             watch.Stop();
             var asm = section.ConsumerAssemblies?.Count > 0
                 ? string.Join('|', section.ConsumerAssemblies)
