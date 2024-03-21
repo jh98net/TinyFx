@@ -76,10 +76,13 @@ namespace TinyFx
             builder.ConfigureServices((context, services) =>
             {
                 var hostSection = ConfigUtil.GetSection<HostSection>();
-                services.Configure<HostOptions>(opts =>
+                if (hostSection != null && hostSection.ShutdownTimeout > 0)
                 {
-                    opts.ShutdownTimeout = TimeSpan.FromSeconds(hostSection.ShutdownTimeout);
-                });
+                    services.Configure<HostOptions>(opts =>
+                    {
+                        opts.ShutdownTimeout = TimeSpan.FromSeconds(hostSection.ShutdownTimeout);
+                    });
+               }
 
                 services.AddSingleton<ITinyFxHostLifetimeService>(HostingUtil.LifetimeService);
                 services.AddSingleton<ITinyFxHostTimerService>(HostingUtil.TimerService);

@@ -91,16 +91,12 @@ namespace TinyFx.Configuration
             if (Sections.TryGetValue(key, out object value))
                 return (T)value;
             T ret = null;
-            if (Configuration != null)
+            var newItem = new T();
+            var section = Configuration.GetSection(newItem.SectionName);
+            if (section.Exists())
             {
-                var newItem = new T();
-                var section = Configuration.GetSection(newItem.SectionName);
-                if (section.Exists())
-                {
-                    newItem.Bind(section);
-                    //newItem.ChangeCallback(null);
-                    ret = newItem;
-                }
+                newItem.Bind(section);
+                ret = newItem;
             }
             Sections.TryAdd(key, ret);
             return ret;
