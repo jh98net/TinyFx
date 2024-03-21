@@ -712,10 +712,6 @@
     ]
   },
 
-  "AWS": {
-    "UseS3": false
-  },
-
   "Apollo": {
     "Enabled": true,
     "AppId": "nnbr_webapi", // 唯一，使用ProjectId,小写并_分割
