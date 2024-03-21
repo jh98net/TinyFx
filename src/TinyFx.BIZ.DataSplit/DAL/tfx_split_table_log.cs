@@ -113,6 +113,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
 
            /// <summary>
            /// Desc:分表最大记录数时下一个表的间隔
+			///              DateTime和ObjectId为小时数，其他为下一个周期
            /// Default:1
            /// Nullable:False
            /// </summary>           
@@ -168,18 +169,18 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public string? BeginValue {get;set;}
 
            /// <summary>
-           /// Desc:结束值
-           /// Default:
-           /// Nullable:True
-           /// </summary>           
-           public string? EndValue {get;set;}
-
-           /// <summary>
            /// Desc:起始日期
            /// Default:
            /// Nullable:True
            /// </summary>           
            public DateTime? BeginDate {get;set;}
+
+           /// <summary>
+           /// Desc:结束值
+           /// Default:
+           /// Nullable:True
+           /// </summary>           
+           public string? EndValue {get;set;}
 
            /// <summary>
            /// Desc:结束日期

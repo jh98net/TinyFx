@@ -18,11 +18,11 @@ namespace TinyFx.BIZ.DataSplit.DAL
             this.MoveKeepMode =0;
             this.MoveKeepValue =0;
             this.MoveTableMode =0;
-            this.MaxRowCount =0;
+            this.MaxRowCount =5000000;
             this.MaxRowInterval =1;
             this.HandleOrder =0;
-            this.DbTimeout =0;
-            this.BathPageSize =0;
+            this.DbTimeout =1800;
+            this.BathPageSize =500000;
             this.Status =0;
             this.RecDate =DateTime.Now;
 
@@ -48,7 +48,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
 			///              0-无
 			///              1-迁移-删除 ==> MoveMode + MoveKeepValue
 			///              2-迁移-备份 ==> MoveMode + MoveKeepValue
-			///              3-分表-按最大行数 ==> MaxRowCount + MaxRowHours
+			///              3-分表-按最大行数 ==> MaxRowCount + MaxRowInterval
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -69,7 +69,7 @@ namespace TinyFx.BIZ.DataSplit.DAL
            public string? ColumnName {get;set;}
 
            /// <summary>
-           /// Desc:迁移模式(0-无1-天2-周3-月4-季5-年)
+           /// Desc:迁移保留模式(0-无1-天2-周3-月4-季5-年)
            /// Default:0
            /// Nullable:False
            /// </summary>           
@@ -98,13 +98,14 @@ namespace TinyFx.BIZ.DataSplit.DAL
 
            /// <summary>
            /// Desc:分表最大记录数
-           /// Default:0
+           /// Default:5000000
            /// Nullable:False
            /// </summary>           
            public int MaxRowCount {get;set;}
 
            /// <summary>
            /// Desc:分表最大记录数时下一个表的间隔
+			///              DateTime和ObjectId为小时数，其他为下一个周期
            /// Default:1
            /// Nullable:False
            /// </summary>           
@@ -119,14 +120,14 @@ namespace TinyFx.BIZ.DataSplit.DAL
 
            /// <summary>
            /// Desc:数据库超时（秒）
-           /// Default:0
+           /// Default:1800
            /// Nullable:False
            /// </summary>           
            public int DbTimeout {get;set;}
 
            /// <summary>
            /// Desc:批处理分页行数
-           /// Default:0
+           /// Default:500000
            /// Nullable:False
            /// </summary>           
            public int BathPageSize {get;set;}
