@@ -10,6 +10,7 @@ using Grpc.Net.Client;
 using Microsoft.Extensions.Configuration;
 using ProtoBuf.Grpc.Client;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using TinyFx.BIZ.DataSplit;
 using TinyFx.BIZ.DataSplit.DAL;
 using TinyFx.Common;
@@ -31,11 +32,18 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
+            string input = "hello^world!@123";
+            string pattern = "[^a-zA-Z0-9]";
+            string replacement = "-";
+            string result = Regex.Replace(input, pattern, replacement);
+
+            Console.WriteLine(result);  // 输出：hello_world_123
+
             //var client = new LoadBalancingService();
             //var result = await client.GetTargetGroup("my-alb2-grp");
 
-            var client = DIUtil.GetService<IAmazonEC2>();
-            var rsp = await client.DescribeVpcsAsync();
+            //var client = DIUtil.GetService<IAmazonEC2>();
+            //var rsp = await client.DescribeVpcsAsync();
 
             Console.WriteLine("OK");
             //var url = "http://localhost:5000";
