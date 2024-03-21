@@ -32,28 +32,21 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
-            string input = "hello^world!@123";
-            string pattern = "[^a-zA-Z0-9]";
-            string replacement = "-";
-            string result = Regex.Replace(input, pattern, replacement);
-
-            Console.WriteLine(result);  // 输出：hello_world_123
-
             //var client = new LoadBalancingService();
             //var result = await client.GetTargetGroup("my-alb2-grp");
 
             //var client = DIUtil.GetService<IAmazonEC2>();
             //var rsp = await client.DescribeVpcsAsync();
 
+            var url = "http://localhost:5000";
+            using var channel = GrpcChannel.ForAddress(url);
+            var client = channel.CreateGrpcService<IGreeterService>();
+
+            var reply = await client.SayHelloAsync(
+                new HelloRequest { Name = "GreeterClient" });
+
+            Console.WriteLine($"Greeting: {reply.Message}");
             Console.WriteLine("OK");
-            //var url = "http://localhost:5000";
-            //using var channel = GrpcChannel.ForAddress(url);
-            //var client = channel.CreateGrpcService<IGreeterService>();
-
-            //var reply = await client.SayHelloAsync(
-            //    new HelloRequest { Name = "GreeterClient" });
-
-            //Console.WriteLine($"Greeting: {reply.Message}");
 
             //var dir = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
             //Console.WriteLine(dir);
