@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization.Formatters;
 using System.Text;
 using System.Threading.Tasks;
 using TinyFx.ChineseCalendar;
@@ -188,14 +189,15 @@ namespace TinyFx
         /// 将DateTime转换为Unix时间戳timestamp
         /// </summary>
         /// <param name="date">转换的日期时间</param>
-        /// <param name="toMilliseconds">unix时间戳使用秒, javascript时间戳使用毫秒<</param>
-        /// <param name="isUtcKind">指定date时间是UTC时间</param>
+        /// <param name="toMilliseconds">unix时间戳使用秒, javascript时间戳使用毫秒</param>
+        /// <param name="toUtcKind">是否指定date时间是UTC时间</param>
         /// <returns></returns>
-        public static long ToTimestamp(this DateTime date, bool toMilliseconds = false, bool isUtcKind = false)
+        public static long ToTimestamp(this DateTime date, bool toMilliseconds = true, bool toUtcKind = true)
         {
-            var dt = isUtcKind ? DateTime.SpecifyKind(date, DateTimeKind.Utc) : date;
-            return toMilliseconds ? ((DateTimeOffset)dt).ToUnixTimeMilliseconds()
-                : ((DateTimeOffset)dt).ToUnixTimeSeconds();
+            if (toUtcKind && date.Kind == DateTimeKind.Unspecified)
+                date = DateTime.SpecifyKind(date, DateTimeKind.Utc);
+            return toMilliseconds ? ((DateTimeOffset)date).ToUnixTimeMilliseconds()
+                : ((DateTimeOffset)date).ToUnixTimeSeconds();
         }
 
         /// <summary>
@@ -204,14 +206,14 @@ namespace TinyFx
         /// <param name="timeStamp">Unix时间戳或者javascript时间戳</param>
         /// <param name="toUtc">utc时间还是本地时间</param>
         /// <returns></returns>
-        public static DateTime ParseTimestamp(long timeStamp, bool toUtc = false)
+        public static DateTime ParseTimestamp(long timeStamp, bool toUtc = true)
         {
-            var hasMs = timeStamp.ToString().Length > 13;
+            var hasMs = timeStamp.ToString().Length > 10;
             var offset = hasMs ? DateTimeOffset.FromUnixTimeMilliseconds(timeStamp)
                 : DateTimeOffset.FromUnixTimeSeconds(timeStamp);
             return toUtc ? offset.UtcDateTime : offset.LocalDateTime;
         }
-        public static DateTime ParseTimestamp(string timeStamp, bool toUtc = false)
+        public static DateTime ParseTimestamp(string timeStamp, bool toUtc = true)
             => ParseTimestamp(long.Parse(timeStamp), toUtc);
         #endregion
 

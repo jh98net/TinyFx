@@ -54,10 +54,10 @@ namespace Demo.WebAPI.Apis
         {
             var ahash1 = DIUtil.GetService<TESTA>().GetHashCode();
             var ahash2 = a.GetHashCode();
-            var bhash1 = b.GetHashCode();
+            var bhash1 = b.GetHashCode();  
             var bHash2 = DIUtil.GetService<TESTB>().GetHashCode();
             if (ahash1 != ahash2 || bhash1 != bHash2)
-                throw new Exception("DI哈希不同");
+                throw new Exception("DI哈希不同2");
         }
         [HttpGet]
         public string Version()

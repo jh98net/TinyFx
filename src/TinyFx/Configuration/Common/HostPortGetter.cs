@@ -50,6 +50,10 @@ namespace TinyFx.Configuration.Common
         {
             return GetEnvPort("ENV_GRPC_PORT");
         }
+        public int GetWebSocketPort()
+        {
+            return GetEnvPort("ENV_WS_PORT");
+        }
         private int GetEnvPort(string env)
             => Environment.GetEnvironmentVariable(env).ToInt32(0);
 

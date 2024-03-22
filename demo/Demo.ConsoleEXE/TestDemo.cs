@@ -32,20 +32,32 @@ namespace TinyFx.Demos
     {
         public override async Task Execute()
         {
+            var no = DateTime.Now;
+            var no1 = DateTime.UtcNow;
+            var a = no.ToTimestamp(true, true);
+            var utc = DateTimeUtil.ParseTimestamp(a);
+            Console.WriteLine(utc.ToFormatString());
+            Console.WriteLine(no1.ToFormatString());
+            var local = DateTimeUtil.UtcToCNTime(utc);
+            Console.WriteLine(no.ToFormatString());
+            Console.WriteLine(local.ToFormatString());
+            Console.WriteLine(a);
+            var a1 = no.ToTimestamp(true,false);
+            Console.WriteLine(a1);
             //var client = new LoadBalancingService();
             //var result = await client.GetTargetGroup("my-alb2-grp");
 
             //var client = DIUtil.GetService<IAmazonEC2>();
             //var rsp = await client.DescribeVpcsAsync();
 
-            var url = "http://localhost:5000";
-            using var channel = GrpcChannel.ForAddress(url);
-            var client = channel.CreateGrpcService<IGreeterService>();
+            //var url = "http://localhost:5000";
+            //using var channel = GrpcChannel.ForAddress(url);
+            //var client = channel.CreateGrpcService<IGreeterService>();
 
-            var reply = await client.SayHelloAsync(
-                new HelloRequest { Name = "GreeterClient" });
+            //var reply = await client.SayHelloAsync(
+            //    new HelloRequest { Name = "GreeterClient" });
 
-            Console.WriteLine($"Greeting: {reply.Message}");
+            //Console.WriteLine($"Greeting: {reply.Message}");
             Console.WriteLine("OK");
 
             //var dir = Environment.GetFolderPath(Environment.SpecialFolder.Personal);

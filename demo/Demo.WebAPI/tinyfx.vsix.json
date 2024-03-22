@@ -35,5 +35,40 @@
         "IsDeletePartial": true
       }
     ]
+  },
+  "DockerPublish": {
+    "DefaultConfig": "default",
+    "Configs": [
+      {
+        "Name": "default",
+        "Desc": "默认的配置",
+        "BuildMode": 0,
+        "DockerfilePath": "",
+        "ServerIp": "192.168.1.121",
+        "Port": "22",
+        "Username": "root",
+        "Password": "Ing*zhixin@2022",
+        "IsSsh": false,
+        "ServerPath": "/root/hosts/test/Demo.WebAPI/upload",
+        "ImageName": "mcr.microsoft.com/dotnet/aspnet:6.0",
+        "ImgLocalPath": "images",
+        "ImgServerPath": "/root/hosts/Demo.WebAPI/images",
+        "Containers": [
+          {
+            "Name": "demo.webapi.01",
+            "HostPort": 9888,
+            "HttpPort": 0,
+            "GrpcPort": 0,
+            "WebsocketPort": 0,
+            "ServerPath": "",
+            "EnvString": "-e DOTNET_ENVIRONMENT=Development",
+            "LimitCoreFile": true,
+            "IsDefault": false,
+            "IsHost": false,
+            "IsAspNet": true
+          }
+        ]
+      }
+    ]
   }
 }
