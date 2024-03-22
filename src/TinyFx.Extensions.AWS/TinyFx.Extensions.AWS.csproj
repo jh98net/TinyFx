@@ -4,7 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <Description>AWS SDK封装</Description>
-    <Version>3.16.1</Version>
+    <Version>3.16.2</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AWSSDK.ACMPCA" Version="3.7.301.17" />
