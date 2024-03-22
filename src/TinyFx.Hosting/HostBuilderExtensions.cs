@@ -36,6 +36,17 @@ namespace TinyFx
             if (builder == null)
                 throw new ArgumentNullException(nameof(builder));
 
+            // dump
+            //if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_DbgEnableMiniDump")))
+            //    Environment.SetEnvironmentVariable("DOTNET_DbgEnableMiniDump", "1");
+            //if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_DbgMiniDumpName")))
+            //    Environment.SetEnvironmentVariable("DOTNET_DbgMiniDumpName", "./dumps/crash-%p-%e-%h-%t.dmp");
+            //    //Environment.SetEnvironmentVariable("DOTNET_DbgMiniDumpName", "./dumps/coredump.<pid>");
+            //if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_CreateDumpVerboseDiagnostics")))
+            //    Environment.SetEnvironmentVariable("DOTNET_CreateDumpVerboseDiagnostics", "1");
+            //if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_EnableCrashReport")))
+            //    Environment.SetEnvironmentVariable("DOTNET_EnableCrashReport", "1");
+
             // Logger
             if (Serilog.Log.Logger == null)
                 SerilogUtil.CreateBootstrapLogger();
@@ -82,7 +93,7 @@ namespace TinyFx
                     {
                         opts.ShutdownTimeout = TimeSpan.FromSeconds(hostSection.ShutdownTimeout);
                     });
-               }
+                }
 
                 services.AddSingleton<ITinyFxHostLifetimeService>(HostingUtil.LifetimeService);
                 services.AddSingleton<ITinyFxHostTimerService>(HostingUtil.TimerService);
